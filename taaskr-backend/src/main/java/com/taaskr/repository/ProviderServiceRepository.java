@@ -1,0 +1,12 @@
+package com.taaskr.repository;
+
+import com.taaskr.entity.ProviderService;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+@Repository
+public interface ProviderServiceRepository extends JpaRepository<ProviderService, Long> {
+    List<ProviderService> findByProviderId(Long providerId);
+    List<ProviderService> findByServiceId(Long serviceId);
+}
