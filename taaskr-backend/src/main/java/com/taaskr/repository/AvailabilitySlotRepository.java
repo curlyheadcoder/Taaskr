@@ -7,11 +7,17 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
+
 @Repository
 public interface AvailabilitySlotRepository extends JpaRepository<AvailabilitySlot, Long> {
-    List<AvailabilitySlot> findByProviderIdAndAvailableDateOrderByStartTimeAsc(Long provideId, LocalDate date);
+    List<AvailabilitySlot> findByProviderIdAndAvailableDateOrderByStartTimeAsc(Long providerId, LocalDate date);
 
     List<AvailabilitySlot> findByProviderIdAndAvailableDateAndBookedFalseOrderByStartTimeAsc(Long providerId, LocalDate date);
+
+    List<AvailabilitySlot> findByProviderIdOrderByAvailableDateAscStartTimeAsc(Long providerId);
+
+    Optional<AvailabilitySlot> findByIdAndProviderId(Long id, Long providerId);
 
     boolean existsByProviderIdAndAvailableDateAndStartTimeLessThanAndEndTimeGreaterThan(
             Long providerId,

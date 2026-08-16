@@ -1,9 +1,15 @@
 package com.taaskr.config;
 
+import com.taaskr.entity.AvailabilitySlot;
+import com.taaskr.entity.ProviderProfile;
+import com.taaskr.entity.ProviderService;
 import com.taaskr.entity.Service;
 import com.taaskr.entity.ServiceCategory;
 import com.taaskr.entity.User;
 import com.taaskr.enums.Role;
+import com.taaskr.repository.AvailabilitySlotRepository;
+import com.taaskr.repository.ProviderProfileRepository;
+import com.taaskr.repository.ProviderServiceRepository;
 import com.taaskr.repository.ServiceCategoryRepository;
 import com.taaskr.repository.ServiceRepository;
 import com.taaskr.repository.UserRepository;
@@ -13,6 +19,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
 
 @Configuration
 public class DataSeeder {
@@ -21,10 +30,14 @@ public class DataSeeder {
     CommandLineRunner seedData(UserRepository userRepository,
                                PasswordEncoder passwordEncoder,
                                ServiceCategoryRepository categoryRepository,
-                               ServiceRepository serviceRepository) {
+                               ServiceRepository serviceRepository,
+                               ProviderProfileRepository providerProfileRepository,
+                               ProviderServiceRepository providerServiceRepository,
+                               AvailabilitySlotRepository availabilitySlotRepository) {
         return args -> {
             seedUsers(userRepository, passwordEncoder);
             seedCatalog(categoryRepository, serviceRepository);
+            seedProviderData(userRepository, serviceRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository);
         };
     }
 
@@ -114,5 +127,74 @@ public class DataSeeder {
         serviceEntity.setActive(true);
 
         serviceRepository.save(serviceEntity);
+    }
+
+    private void seedProviderData(UserRepository userRepository,
+                                  ServiceRepository serviceRepository,
+                                  ProviderProfileRepository providerProfileRepository,
+                                  ProviderServiceRepository providerServiceRepository,
+                                  AvailabilitySlotRepository availabilitySlotRepository) {
+
+        User providerUser = userRepository.findByEmail("provider@taaskr.com").orElse(null);
+        if (providerUser == null) {
+            return;
+        }
+
+        ProviderProfile providerProfile = providerProfileRepository.findByUserId(providerUser.getId())
+                .orElseGet(() -> {
+                    ProviderProfile profile = new ProviderProfile();
+                    profile.setUser(providerUser);
+                    profile.setExperienceYears(3);
+                    profile.setCity(providerUser.getCity());
+                    profile.setPincode(providerUser.getPincode());
+                    profile.setApproved(true);
+                    profile.setRating(4.7);
+                    profile.setTotalJobs(12);
+                    profile.setBio("Experienced home service professional");
+                    return providerProfileRepository.save(profile);
+                });
+
+        List<Service> services = serviceRepository.findByActiveTrueOrderByNameAsc();
+        for (Service service : services) {
+            boolean mappingExists = providerServiceRepository.findByProviderId(providerProfile.getId())
+                    .stream()
+                    .anyMatch(ps -> ps.getService().getId().equals(service.getId()));
+
+            if (!mappingExists) {
+                ProviderService providerService = new ProviderService();
+                providerService.setProvider(providerProfile);
+                providerService.setService(service);
+                providerServiceRepository.save(providerService);
+            }
+        }
+
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+
+        seedAvailabilitySlot(availabilitySlotRepository, providerProfile, tomorrow, LocalTime.of(9, 0), LocalTime.of(11, 0));
+        seedAvailabilitySlot(availabilitySlotRepository, providerProfile, tomorrow, LocalTime.of(11, 30), LocalTime.of(13, 30));
+        seedAvailabilitySlot(availabilitySlotRepository, providerProfile, tomorrow, LocalTime.of(15, 0), LocalTime.of(18, 0));
+    }
+
+    private void seedAvailabilitySlot(AvailabilitySlotRepository availabilitySlotRepository,
+                                      ProviderProfile providerProfile,
+                                      LocalDate date,
+                                      LocalTime startTime,
+                                      LocalTime endTime) {
+        boolean exists = availabilitySlotRepository.findByProviderIdAndAvailableDateOrderByStartTimeAsc(providerProfile.getId(), date)
+                .stream()
+                .anyMatch(slot -> slot.getStartTime().equals(startTime) && slot.getEndTime().equals(endTime));
+
+        if (exists) {
+            return;
+        }
+
+        AvailabilitySlot slot = new AvailabilitySlot();
+        slot.setProvider(providerProfile);
+        slot.setAvailableDate(date);
+        slot.setStartTime(startTime);
+        slot.setEndTime(endTime);
+        slot.setBooked(false);
+
+        availabilitySlotRepository.save(slot);
     }
 }
