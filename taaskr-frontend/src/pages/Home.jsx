@@ -28,7 +28,6 @@ export default function Home() {
     loadCatalog();
   }, []);
 
-  // Filter services by category and search query
   const filteredServices = services.filter(service => {
     const matchesCategory = selectedCategory ? service.categoryId === selectedCategory : true;
     const matchesSearch = service.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -36,219 +35,200 @@ export default function Home() {
     return matchesCategory && matchesSearch;
   });
 
-  // Get matching category icon/emoji helper
   const getCategoryIcon = (categoryName) => {
     switch (categoryName.toLowerCase()) {
-      case 'plumbing': return '🪠';
-      case 'cleaning': return '🧹';
-      case 'electrical': return '⚡';
+      case 'plumbing': return '💧';
+      case 'cleaning': return '✨';
+      case 'electrical': return '🔌';
+      case 'appliances': return '❄️';
       default: return '🛠️';
     }
   };
 
   return (
     <div className="animate-fade-in">
-      {/* Hero Section */}
+      {/* Premium Hero Section */}
       <section style={{
-        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.08))',
-        borderBottom: '1px solid var(--border-glass)',
-        padding: '5rem 1.5rem',
-        textAlign: 'center',
         position: 'relative',
-        overflow: 'hidden',
-        borderRadius: 'var(--radius-lg)',
-        margin: '1rem'
+        backgroundImage: `linear-gradient(to right, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.5) 60%, transparent 100%), url('/hero-bg.jpg')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        padding: '8rem 2rem',
+        minHeight: '600px',
+        display: 'flex',
+        alignItems: 'center'
       }}>
-        <div style={{
-          position: 'absolute',
-          top: '-20%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '60%',
-          height: '140%',
-          background: 'radial-gradient(ellipse at center, rgba(99, 102, 241, 0.15) 0%, transparent 60%)',
-          pointerEvents: 'none',
-          zIndex: 0
-        }} />
+        <div style={{ maxWidth: '1280px', margin: '0 auto', width: '100%' }}>
+          <div style={{ maxWidth: '650px' }}>
+            <span className="badge" style={{ background: 'var(--secondary)', color: '#fff', marginBottom: '1.5rem', fontSize: '0.85rem' }}>
+              Premium Quality Guaranteed
+            </span>
+            <h1 style={{
+              fontSize: '4rem',
+              fontWeight: 800,
+              color: '#ffffff',
+              lineHeight: 1.1,
+              marginBottom: '1.5rem',
+              letterSpacing: '-0.02em'
+            }}>
+              Trusted Services.<br />Right at Your Door.
+            </h1>
+            <p style={{
+              fontSize: '1.25rem',
+              color: '#e2e8f0',
+              marginBottom: '2.5rem',
+              lineHeight: 1.6
+            }}>
+              Book verified professionals for home repairs, maintenance, and everyday services. Experience seamless booking and reliable execution.
+            </p>
 
-        <div style={{ position: 'relative', zIndex: 1, maxWidth: '800px', margin: '0 auto' }}>
-          <h1 style={{
-            fontSize: '3rem',
-            fontWeight: 800,
-            marginBottom: '1rem',
-            lineHeight: 1.1,
-            background: 'linear-gradient(to right, #ffffff, #cbd5e1)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            letterSpacing: '-0.04em'
-          }}>
-            Premium Home Services <br />
-            On Demand
-          </h1>
-          <p style={{
-            fontSize: '1.2rem',
-            color: 'var(--text-secondary)',
-            marginBottom: '2.5rem',
-            lineHeight: 1.5
-          }}>
-            Connect instantly with approved local professionals. Reliable, fast, and fully insured.
-          </p>
-
-          {/* Search bar */}
-          <div style={{
-            maxWidth: '600px',
-            margin: '0 auto',
-            position: 'relative'
-          }}>
-            <span style={{
-              position: 'absolute',
-              left: '1.25rem',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              fontSize: '1.2rem',
-              color: 'var(--text-muted)'
-            }}>🔍</span>
-            <input
-              type="text"
-              placeholder="Search for tap repair, home cleaning, electricians..."
-              className="form-control"
-              style={{
-                width: '100%',
-                paddingLeft: '3.25rem',
-                paddingRight: '1rem',
-                height: '3.5rem',
-                fontSize: '1.1rem',
-                borderRadius: 'var(--radius-full)',
-                background: 'rgba(15, 17, 26, 0.85)',
-                border: '1px solid rgba(255, 255, 255, 0.12)'
-              }}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+            {/* Search bar */}
+            <div style={{
+              display: 'flex',
+              background: 'var(--bg-card)',
+              padding: '0.5rem',
+              borderRadius: 'var(--radius-md)',
+              boxShadow: 'var(--shadow-lg)'
+            }}>
+              <div style={{ flex: 1, position: 'relative' }}>
+                <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }}>🔍</span>
+                <input
+                  type="text"
+                  placeholder="What do you need help with?"
+                  style={{
+                    width: '100%', border: 'none', padding: '1rem 1rem 1rem 3.5rem',
+                    fontSize: '1.05rem', outline: 'none', borderRadius: 'var(--radius-md)'
+                  }}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <button className="btn btn-primary" style={{ padding: '0 2rem' }}>
+                Search
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Main Catalog Area */}
-      <main className="app-container">
-        {/* Category Filters */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: '1rem',
-          flexWrap: 'wrap',
-          marginBottom: '3rem',
-        }}>
-          <button
-            onClick={() => setSelectedCategory(null)}
-            className={`btn ${selectedCategory === null ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ borderRadius: 'var(--radius-full)' }}
-          >
-            All Services
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
-              className={`btn ${selectedCategory === cat.id ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ borderRadius: 'var(--radius-full)' }}
-            >
-              {getCategoryIcon(cat.name)} {cat.name}
-            </button>
+      {/* Trust Section */}
+      <section style={{ background: 'var(--bg-card)', padding: '3rem 1.5rem', borderBottom: '1px solid var(--border-light)' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '2rem' }}>
+          {[
+            { icon: '🛡️', title: 'Verified Professionals', desc: 'Background checked & highly rated' },
+            { icon: '🏷️', title: 'Transparent Pricing', desc: 'No hidden fees or surprise charges' },
+            { icon: '💳', title: 'Secure Booking', desc: 'Pay safely online or after service' },
+            { icon: '⭐', title: 'Reliable Service', desc: 'Guaranteed quality execution' }
+          ].map((item, idx) => (
+            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1, minWidth: '200px' }}>
+              <div style={{ fontSize: '2rem', background: 'var(--bg-page)', padding: '1.25rem', borderRadius: '50%' }}>{item.icon}</div>
+              <div>
+                <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.2rem' }}>{item.title}</h4>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{item.desc}</p>
+              </div>
+            </div>
           ))}
         </div>
+      </section>
 
-        {/* Catalog Section Header */}
+      <main className="app-container" style={{ paddingTop: '4rem' }}>
+        {/* Service Discovery Section */}
+        <div style={{ marginBottom: '4rem', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '2.5rem', marginBottom: '2rem', color: 'var(--primary)' }}>What do you need help with?</h2>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className="premium-card premium-card-hover"
+              style={{
+                border: selectedCategory === null ? '2px solid var(--primary)' : '1px solid var(--border-light)',
+                padding: '1.5rem', cursor: 'pointer', minWidth: '150px'
+              }}
+            >
+              <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>📋</div>
+              <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>All Services</div>
+            </button>
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className="premium-card premium-card-hover"
+                style={{
+                  border: selectedCategory === cat.id ? '2px solid var(--primary)' : '1px solid var(--border-light)',
+                  padding: '1.5rem', cursor: 'pointer', minWidth: '150px'
+                }}
+              >
+                <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>{getCategoryIcon(cat.name)}</div>
+                <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{cat.name}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Dynamic Services Grid */}
         <div style={{ marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: '1.8rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span>⚡</span> Available Services
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
+          <h3 style={{ fontSize: '2rem', color: 'var(--primary)', marginBottom: '0.5rem' }}>
+            Popular Services
+          </h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: '1.05rem', marginBottom: '2.5rem' }}>
             Showing {filteredServices.length} home maintenance options
           </p>
         </div>
 
-        {/* Loading State */}
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '4rem 0', color: 'var(--text-secondary)' }}>
+          <div style={{ textAlign: 'center', padding: '4rem 0', color: 'var(--text-muted)' }}>
             <div style={{
-              display: 'inline-block',
-              width: '30px',
-              height: '30px',
-              border: '2.5px solid var(--border-glass)',
-              borderTopColor: 'var(--primary)',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite'
+              display: 'inline-block', width: '30px', height: '30px',
+              border: '3px solid var(--border-light)', borderTopColor: 'var(--primary)',
+              borderRadius: '50%', animation: 'spin 1s linear infinite'
             }} />
-            <p style={{ marginTop: '1rem' }}>Fetching services catalog...</p>
+            <p style={{ marginTop: '1rem', fontWeight: 500 }}>Fetching available services...</p>
           </div>
         ) : filteredServices.length === 0 ? (
-          <div className="glass-panel" style={{
-            padding: '4rem 2rem',
-            textAlign: 'center',
-            color: 'var(--text-secondary)'
-          }}>
-            <span style={{ fontSize: '3rem' }}>🔍</span>
-            <h3 style={{ color: '#fff', marginTop: '1rem', fontSize: '1.4rem' }}>No Services Found</h3>
-            <p style={{ marginTop: '0.5rem', fontSize: '0.95rem' }}>
-              We couldn't find any services matching your search or filters. Try adjusting your settings.
+          <div className="premium-card" style={{ padding: '6rem 2rem', textAlign: 'center' }}>
+            <span style={{ fontSize: '4rem' }}>🔍</span>
+            <h3 style={{ marginTop: '1rem', fontSize: '1.5rem' }}>No Services Found</h3>
+            <p style={{ marginTop: '0.5rem', color: 'var(--text-muted)' }}>
+              We couldn't find any services matching your search. Try adjusting your filters.
             </p>
           </div>
         ) : (
-          /* Cards Grid */
           <div className="grid-cols-3">
             {filteredServices.map((service) => {
               const cat = categories.find(c => c.id === service.categoryId);
               return (
                 <div
                   key={service.id}
-                  className="glass-card-interactive"
+                  className="premium-card premium-card-hover"
                   onClick={() => navigate(`/services/${service.id}`)}
+                  style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                    <span className="badge badge-assigned" style={{ fontSize: '0.7rem' }}>
-                      {cat ? cat.name : 'Service'}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                    <span className="badge" style={{ background: 'var(--bg-page)', color: 'var(--text-muted)', border: '1px solid var(--border-light)' }}>
+                      {cat ? cat.name.toUpperCase() : 'SERVICE'}
                     </span>
-                    <span style={{
-                      fontFamily: 'var(--font-display)',
-                      fontSize: '1.3rem',
-                      fontWeight: 700,
-                      color: 'var(--primary)'
-                    }}>
+                    <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--primary)' }}>
                       ₹{service.price}
                     </span>
                   </div>
 
-                  <h3 style={{ color: '#fff', fontSize: '1.25rem', marginBottom: '0.5rem' }}>{service.name}</h3>
-                  <p style={{
-                    color: 'var(--text-secondary)',
-                    fontSize: '0.9rem',
-                    lineHeight: 1.4,
-                    marginBottom: '1.5rem',
-                    minHeight: '40px'
-                  }}>
+                  <h3 style={{ fontSize: '1.25rem', marginBottom: '0.75rem', color: 'var(--text-main)', lineHeight: 1.3 }}>{service.name}</h3>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.5, marginBottom: '2rem', flex: 1 }}>
                     {service.description}
                   </p>
 
                   <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    borderTop: '1px solid var(--border-glass)',
-                    paddingTop: '1rem',
-                    fontSize: '0.85rem',
-                    color: 'var(--text-muted)'
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    borderTop: '1px solid var(--border-light)', paddingTop: '1.25rem'
                   }}>
-                    <span>⏱️ {service.durationMinutes} Mins</span>
-                    <span style={{
-                      color: 'var(--primary)',
-                      fontWeight: 600,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.2rem'
-                    }}>
-                      Book Now ➔
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                      ⏱️ {service.durationMinutes} Mins
                     </span>
+                    <button className="btn btn-accent btn-small" onClick={(e) => {
+                       e.stopPropagation();
+                       navigate(`/services/${service.id}`);
+                    }}>
+                      Book Now
+                    </button>
                   </div>
                 </div>
               );

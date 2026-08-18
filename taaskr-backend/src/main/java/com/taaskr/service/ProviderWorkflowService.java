@@ -5,6 +5,9 @@ import com.taaskr.dto.provider.CreateAvailabilityRequest;
 import com.taaskr.dto.provider.ProviderBookingResponse;
 import com.taaskr.dto.provider.UpdateProviderBookingStatusRequest;
 
+import com.taaskr.dto.provider.ProviderProfileResponse;
+import com.taaskr.dto.provider.UpdateProviderProfileRequest;
+
 import java.util.List;
 
 public interface ProviderWorkflowService {
@@ -23,4 +26,7 @@ public interface ProviderWorkflowService {
 
     ProviderBookingResponse updateBookingStatus(String providerEmail, Long bookingId, UpdateProviderBookingStatusRequest request);
 
+    ProviderProfileResponse getProviderProfile(String providerEmail);
+
+    ProviderProfileResponse updateProviderProfile(String providerEmail, UpdateProviderProfileRequest request);
 }

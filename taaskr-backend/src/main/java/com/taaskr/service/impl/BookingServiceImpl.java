@@ -1,10 +1,12 @@
 package com.taaskr.service.impl;
 
+import com.taaskr.dto.booking.AvailableProviderResponse;
 import com.taaskr.dto.booking.BookingResponse;
 import com.taaskr.dto.booking.CreateBookingRequest;
 import com.taaskr.entity.*;
 import com.taaskr.enums.BookingStatus;
 import com.taaskr.enums.PaymentStatus;
+import com.taaskr.enums.Role;
 import com.taaskr.exception.BadRequestException;
 import com.taaskr.exception.ResourceNotFoundException;
 import com.taaskr.repository.*;
@@ -18,6 +20,7 @@ import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class BookingServiceImpl implements BookingService {
@@ -27,14 +30,22 @@ public class BookingServiceImpl implements BookingService {
     private final ProviderServiceRepository providerServiceRepository;
     private final AvailabilitySlotRepository availabilitySlotRepository;
     private final BookingRepository bookingRepository;
+    private final ProviderProfileRepository providerProfileRepository;
 
-    public BookingServiceImpl(UserRepository userRepository, ServiceRepository serviceRepository, ProviderServiceRepository providerServiceRepository, AvailabilitySlotRepository availabilitySlotRepository, BookingRepository bookingRepository) {
+    public BookingServiceImpl(UserRepository userRepository, 
+                              ServiceRepository serviceRepository, 
+                              ProviderServiceRepository providerServiceRepository, 
+                              AvailabilitySlotRepository availabilitySlotRepository, 
+                              BookingRepository bookingRepository,
+                              ProviderProfileRepository providerProfileRepository) {
         this.userRepository = userRepository;
         this.serviceRepository = serviceRepository;
         this.providerServiceRepository = providerServiceRepository;
         this.availabilitySlotRepository = availabilitySlotRepository;
         this.bookingRepository = bookingRepository;
+        this.providerProfileRepository = providerProfileRepository;
     }
+
     @Override
     @Transactional
     public BookingResponse createBooking(String userEmail, CreateBookingRequest request) {
@@ -59,14 +70,48 @@ public class BookingServiceImpl implements BookingService {
             throw new BadRequestException("Invalid booking time range");
         }
 
-        ProviderAssignmentResult assignmentResult = assignProvider(
-                service,
-                request.getCity().trim(),
-                request.getPincode().trim(),
-                request.getBookingDate(),
-                startTime,
-                endTime
-        );
+        ProviderAssignmentResult assignmentResult;
+
+        if (request.getProviderId() != null) {
+            ProviderProfile selectedProvider = providerProfileRepository.findById(request.getProviderId())
+                    .orElseThrow(() -> new BadRequestException("Selected provider does not exist"));
+
+            if (!Boolean.TRUE.equals(selectedProvider.getApproved()) || !Boolean.TRUE.equals(selectedProvider.getUser().getEnabled())) {
+                throw new BadRequestException("Selected provider is not active or approved");
+            }
+
+            if (selectedProvider.getUser().getRole() != Role.PROVIDER) {
+                throw new BadRequestException("Selected user is not a provider");
+            }
+
+            boolean isMapped = providerServiceRepository.findByProviderId(selectedProvider.getId()).stream()
+                    .anyMatch(ps -> ps.getService().getId().equals(service.getId()));
+            if (!isMapped) {
+                throw new BadRequestException("Selected provider does not offer the requested service");
+            }
+
+            AvailabilitySlot matchingSlot = findMatchingSlot(selectedProvider, request.getBookingDate(), startTime, endTime);
+            if (matchingSlot == null) {
+                throw new BadRequestException("Selected provider is not available for the requested time slot");
+            }
+
+            boolean hasOverlap = bookingRepository.existsByProviderIdAndBookingDateAndStartTimeLessThanAndEndTimeGreaterThan(
+                    selectedProvider.getId(), request.getBookingDate(), endTime, startTime);
+            if (hasOverlap) {
+                throw new BadRequestException("Selected provider has an overlapping booking");
+            }
+
+            assignmentResult = new ProviderAssignmentResult(selectedProvider, matchingSlot);
+        } else {
+            assignmentResult = assignProvider(
+                    service,
+                    request.getCity().trim(),
+                    request.getPincode().trim(),
+                    request.getBookingDate(),
+                    startTime,
+                    endTime
+            );
+        }
 
         Booking booking = new Booking();
         booking.setBookingCode(generateBookingCode());
@@ -118,6 +163,53 @@ public class BookingServiceImpl implements BookingService {
         return mapBooking(booking);
     }
 
+    @Override
+    public List<AvailableProviderResponse> getAvailableProviders(Long serviceId, String city, String pincode, LocalDate date, LocalTime startTime) {
+        com.taaskr.entity.Service service = serviceRepository.findById(serviceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
+        
+        LocalTime endTime = startTime.plusMinutes(service.getDurationMinutes());
+        
+        List<ProviderService> providerServices = providerServiceRepository.findByServiceId(service.getId());
+
+        List<ProviderProfile> candidateProviders = providerServices.stream()
+                .map(ProviderService::getProvider)
+                .filter(provider -> Boolean.TRUE.equals(provider.getApproved()) && Boolean.TRUE.equals(provider.getUser().getEnabled()))
+                .filter(provider -> provider.getUser().getRole() == Role.PROVIDER)
+                .distinct()
+                .toList();
+                
+        // Filter those who have availability slot and no overlapping bookings
+        List<ProviderProfile> availableProviders = candidateProviders.stream()
+                .filter(provider -> {
+                    AvailabilitySlot slot = findMatchingSlot(provider, date, startTime, endTime);
+                    if (slot == null) return false;
+                    
+                    boolean hasOverlap = bookingRepository.existsByProviderIdAndBookingDateAndStartTimeLessThanAndEndTimeGreaterThan(
+                            provider.getId(), date, endTime, startTime);
+                    return !hasOverlap;
+                })
+                .toList();
+                
+        // Sort by location preference: Pincode match first, then City match, then rest
+        return availableProviders.stream()
+                .sorted(Comparator.<ProviderProfile, Integer>comparing(p -> {
+                    if (pincode != null && pincode.equalsIgnoreCase(safe(p.getPincode()))) return 0;
+                    if (city != null && city.equalsIgnoreCase(safe(p.getCity()))) return 1;
+                    return 2;
+                }).thenComparing(ProviderProfile::getRating, Comparator.reverseOrder()))
+                .map(p -> new AvailableProviderResponse(
+                        p.getId(),
+                        p.getUser().getName(),
+                        p.getRating(),
+                        p.getExperienceYears(),
+                        p.getCity(),
+                        p.getPincode(),
+                        p.getBio()
+                ))
+                .collect(Collectors.toList());
+    }
+
     private ProviderAssignmentResult assignProvider(com.taaskr.entity.Service service,
                                                     String city,
                                                     String pincode,
@@ -129,7 +221,8 @@ public class BookingServiceImpl implements BookingService {
 
         List<ProviderProfile> candidateProviders = providerServices.stream()
                 .map(ProviderService::getProvider)
-                .filter(provider -> Boolean.TRUE.equals(provider.getApproved()))
+                .filter(provider -> Boolean.TRUE.equals(provider.getApproved()) && Boolean.TRUE.equals(provider.getUser().getEnabled()))
+                .filter(provider -> provider.getUser().getRole() == Role.PROVIDER)
                 .distinct()
                 .toList();
 

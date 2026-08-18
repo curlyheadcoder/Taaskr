@@ -7,40 +7,35 @@ export default function Navbar() {
   const location = useLocation();
   const [user, setUser] = useState(null);
 
-  // Theme states with localStorage fallbacks
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    return localStorage.getItem('taaskr_theme_mode') !== 'light';
-  });
-  const [activeAccent, setActiveAccent] = useState(() => {
-    return localStorage.getItem('taaskr_theme_accent') || 'indigo';
-  });
+  const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
 
-  // Watch Dark/Light theme changes
   useEffect(() => {
-    if (isDarkMode) {
-      document.body.classList.remove('light-mode');
-      localStorage.setItem('taaskr_theme_mode', 'dark');
+    if (isDark) {
+      document.body.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
     } else {
-      document.body.classList.add('light-mode');
-      localStorage.setItem('taaskr_theme_mode', 'light');
+      document.body.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
     }
-  }, [isDarkMode]);
-
-  // Watch Accent Color changes
-  useEffect(() => {
-    const accents = ['theme-indigo', 'theme-emerald', 'theme-violet', 'theme-rose', 'theme-blue'];
-    accents.forEach(acc => document.body.classList.remove(acc));
-    document.body.classList.add(`theme-${activeAccent}`);
-    localStorage.setItem('taaskr_theme_accent', activeAccent);
-  }, [activeAccent]);
+  }, [isDark]);
 
   // Poll or watch for authentication changes by listening to storage events & route changes
   const checkUser = async () => {
     try {
       const profile = await api.auth.me();
       setUser(profile);
+      document.body.classList.remove('theme-user', 'theme-provider', 'theme-admin');
+      if (profile.role === 'PROVIDER') {
+        document.body.classList.add('theme-provider');
+      } else if (profile.role === 'ADMIN') {
+        document.body.classList.add('theme-admin');
+      } else {
+        document.body.classList.add('theme-user');
+      }
     } catch (e) {
       setUser(null);
+      document.body.classList.remove('theme-user', 'theme-provider', 'theme-admin');
+      document.body.classList.add('theme-user');
     }
   };
 
@@ -51,17 +46,21 @@ export default function Navbar() {
   const handleLogout = () => {
     api.auth.logout();
     setUser(null);
+    document.body.classList.remove('theme-provider', 'theme-admin');
+    document.body.classList.add('theme-user');
     navigate('/login');
   };
 
   return (
-    <header className="glass-panel" style={{
+    <header className="premium-card" style={{
       position: 'sticky',
       top: 0,
       zIndex: 50,
-      margin: '1rem',
-      borderRadius: 'var(--radius-md)',
-      padding: '0.75rem 1.5rem',
+      borderRadius: '0',
+      borderTop: 'none',
+      borderLeft: 'none',
+      borderRight: 'none',
+      padding: '1rem 2rem',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
@@ -69,7 +68,7 @@ export default function Navbar() {
       {/* Brand Logo */}
       <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         <span style={{
-          background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+          background: 'var(--primary)',
           padding: '0.4rem 0.6rem',
           borderRadius: 'var(--radius-sm)',
           fontSize: '1.2rem',
@@ -77,32 +76,29 @@ export default function Navbar() {
           color: '#fff',
           display: 'inline-flex',
           alignItems: 'center',
-          boxShadow: '0 4px 10px rgba(99, 102, 241, 0.4)'
-        }}>⚡</span>
+        }}>✨</span>
         <span style={{
-          fontFamily: 'var(--font-display)',
-          fontSize: '1.4rem',
+          fontFamily: 'var(--font-body)',
+          fontSize: '1.5rem',
           fontWeight: 800,
-          background: 'linear-gradient(to right, #ffffff, #94a3b8)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
+          color: 'var(--primary)',
           letterSpacing: '-0.03em'
         }}>Taaskr</span>
       </Link>
 
       {/* Navigation Links based on role */}
-      <nav style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+      <nav style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
         {(!user || user.role === 'USER') && (
           <>
             <Link to="/" style={{
-              color: location.pathname === '/' ? 'var(--primary)' : 'var(--text-secondary)',
-              fontWeight: 500,
+              color: location.pathname === '/' ? 'var(--secondary)' : 'var(--text-muted)',
+              fontWeight: 600,
               transition: 'var(--transition-fast)'
             }}>Browse Services</Link>
             {user && (
               <Link to="/bookings" style={{
-                color: location.pathname === '/bookings' ? 'var(--primary)' : 'var(--text-secondary)',
-                fontWeight: 500,
+                color: location.pathname === '/bookings' ? 'var(--secondary)' : 'var(--text-muted)',
+                fontWeight: 600,
                 transition: 'var(--transition-fast)'
               }}>My Bookings</Link>
             )}
@@ -111,7 +107,7 @@ export default function Navbar() {
 
         {user && user.role === 'PROVIDER' && (
           <Link to="/provider" style={{
-            color: 'var(--secondary)',
+            color: 'var(--primary)',
             fontWeight: 600,
             display: 'flex',
             alignItems: 'center',
@@ -123,7 +119,7 @@ export default function Navbar() {
 
         {user && user.role === 'ADMIN' && (
           <Link to="/admin" style={{
-            color: 'var(--amber)',
+            color: 'var(--primary)',
             fontWeight: 600,
             display: 'flex',
             alignItems: 'center',
@@ -134,72 +130,19 @@ export default function Navbar() {
         )}
       </nav>
 
-      {/* Theme Switched & User Actions */}
+      {/* User Actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        {/* Accent and Mode switchers */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          borderRight: '1px solid var(--border-glass)',
-          paddingRight: '1rem',
-          marginRight: '0.5rem'
-        }}>
-          {/* Light/Dark Toggle */}
-          <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            style={{
-              background: 'rgba(255, 255, 255, 0.08)',
-              border: '1px solid var(--border-glass)',
-              borderRadius: '50%',
-              width: '30px',
-              height: '30px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              fontSize: '0.9rem',
-              transition: 'var(--transition-fast)'
-            }}
-            title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          >
-            {isDarkMode ? '☀️' : '🌙'}
-          </button>
-
-          {/* Accent Selector Color Dots */}
-          {['indigo', 'violet', 'emerald', 'rose', 'blue'].map((color) => {
-            const hexColors = {
-              indigo: '#6366f1',
-              violet: '#a855f7',
-              emerald: '#10b981',
-              rose: '#f43f5e',
-              blue: '#0ea5e9'
-            };
-            return (
-              <button
-                key={color}
-                onClick={() => setActiveAccent(color)}
-                style={{
-                  background: hexColors[color],
-                  border: activeAccent === color ? '2px solid #ffffff' : '1px solid rgba(0,0,0,0.2)',
-                  borderRadius: '50%',
-                  width: '16px',
-                  height: '16px',
-                  cursor: 'pointer',
-                  padding: 0,
-                  boxShadow: activeAccent === color ? `0 0 8px ${hexColors[color]}` : 'none',
-                  transition: 'var(--transition-fast)'
-                }}
-                title={`Accent ${color}`}
-              />
-            );
-          })}
-        </div>
-
+        <button 
+          onClick={() => setIsDark(!isDark)} 
+          style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.2rem' }}
+          title="Toggle Dark Mode"
+        >
+          {isDark ? '☀️' : '🌙'}
+        </button>
         {user ? (
           <>
             <div style={{ textAlign: 'right', display: 'block' }}>
-              <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)' }}>
                 {user.name}
               </div>
               <span className={`badge ${

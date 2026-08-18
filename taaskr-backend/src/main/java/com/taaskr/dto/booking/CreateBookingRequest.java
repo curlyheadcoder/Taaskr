@@ -12,6 +12,9 @@ public class CreateBookingRequest {
     @NotNull(message="Service ID cannot be null")
     private Long serviceId;
 
+    private Long providerId;
+
+
     @NotNull(message = "Booking date is required")
     @FutureOrPresent(message = "Booking date must be today or in the future")
     private LocalDate bookingDate;
@@ -40,6 +43,14 @@ public class CreateBookingRequest {
 
     public void setServiceId(Long serviceId) {
         this.serviceId = serviceId;
+    }
+
+    public Long getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(Long providerId) {
+        this.providerId = providerId;
     }
 
     public LocalDate getBookingDate() {

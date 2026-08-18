@@ -65,8 +65,8 @@ export default function Register() {
         borderRadius: 'var(--radius-lg)'
       }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem', color: '#fff' }}>Join Taaskr</h2>
-          <p style={{ color: 'var(--text-secondary)' }}>Create an account to book or provide services</p>
+          <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem', color: 'var(--text-main)' }}>Join Taaskr</h2>
+          <p style={{ color: 'var(--text-secondary)' }}>Create an account to start booking services</p>
         </div>
 
         {error && (

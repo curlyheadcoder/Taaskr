@@ -143,36 +143,32 @@ export default function CustomerDashboard() {
     <div className="app-container animate-fade-in">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
         <div>
-          <h1 style={{ fontSize: '2.2rem', color: '#fff' }}>My Bookings Dashboard</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Track the real-time execution status of your service requests</p>
+          <h1 style={{ fontSize: '2.2rem', color: 'var(--primary)' }}>My Bookings Dashboard</h1>
+          <p style={{ color: 'var(--text-muted)', marginTop: '0.25rem' }}>Track the real-time execution status of your service requests</p>
         </div>
         <Link to="/" className="btn btn-primary">Book New Service</Link>
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '4rem 0', color: 'var(--text-secondary)' }}>
+        <div style={{ textAlign: 'center', padding: '4rem 0', color: 'var(--text-muted)' }}>
           <div style={{
-            display: 'inline-block',
-            width: '30px',
-            height: '30px',
-            border: '2.5px solid var(--border-glass)',
-            borderTopColor: 'var(--primary)',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
+            display: 'inline-block', width: '30px', height: '30px',
+            border: '3px solid var(--border-light)', borderTopColor: 'var(--primary)',
+            borderRadius: '50%', animation: 'spin 1s linear infinite'
           }} />
-          <p style={{ marginTop: '1rem' }}>Loading your booking history...</p>
+          <p style={{ marginTop: '1rem', fontWeight: 500 }}>Loading your booking history...</p>
         </div>
       ) : bookings.length === 0 ? (
-        <div className="glass-panel" style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
-          <span style={{ fontSize: '3rem' }}>🛒</span>
-          <h3 style={{ color: '#fff', marginTop: '1rem', fontSize: '1.4rem' }}>No Bookings Yet</h3>
-          <p style={{ marginTop: '0.5rem', fontSize: '0.95rem', marginBottom: '1.5rem' }}>
+        <div className="premium-card" style={{ padding: '5rem 2rem', textAlign: 'center' }}>
+          <span style={{ fontSize: '4rem' }}>🛒</span>
+          <h3 style={{ color: 'var(--primary)', marginTop: '1rem', fontSize: '1.4rem' }}>No Bookings Yet</h3>
+          <p style={{ marginTop: '0.5rem', fontSize: '1rem', marginBottom: '1.5rem', color: 'var(--text-muted)' }}>
             You haven't made any bookings yet. Choose a service from our catalog to get started.
           </p>
           <Link to="/" className="btn btn-primary">Browse Services</Link>
         </div>
       ) : (
-        <div className="table-container glass-panel">
+        <div className="table-container">
           <table className="custom-table">
             <thead>
               <tr>
@@ -190,10 +186,10 @@ export default function CustomerDashboard() {
               {bookings.map((booking) => (
                 <tr key={booking.id}>
                   <td style={{ fontFamily: 'monospace', color: 'var(--text-muted)' }}>#{String(booking.id).slice(-6)}</td>
-                  <td style={{ fontWeight: 600, color: '#fff' }}>{booking.serviceName}</td>
-                  <td>{booking.bookingDate}</td>
-                  <td>{formatLocalTime(booking.startTime)}</td>
-                  <td style={{ color: 'var(--primary)', fontWeight: 600 }}>₹{booking.finalAmount}</td>
+                  <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{booking.serviceName}</td>
+                  <td style={{ color: 'var(--text-main)' }}>{booking.bookingDate}</td>
+                  <td style={{ color: 'var(--text-main)' }}>{formatLocalTime(booking.startTime)}</td>
+                  <td style={{ color: 'var(--primary)', fontWeight: 700 }}>₹{booking.finalAmount}</td>
                   <td>
                     <span className={`badge ${getStatusClass(booking.status)}`}>
                       {booking.status}
@@ -208,7 +204,7 @@ export default function CustomerDashboard() {
                       <button
                         onClick={() => handlePayNow(booking)}
                         className="btn btn-primary btn-small"
-                        style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem' }}
+                        style={{ fontSize: '0.75rem', padding: '0.35rem 0.6rem' }}
                         disabled={payingBookingId === booking.id}
                       >
                         {payingBookingId === booking.id ? 'Loading...' : `Pay ₹${booking.finalAmount}`}
@@ -235,15 +231,12 @@ export default function CustomerDashboard() {
         <div className="modal-overlay" onClick={() => setSelectedBooking(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ color: '#fff', fontSize: '1.5rem' }}>Booking Summary</h2>
+              <h2 style={{ color: 'var(--primary)', fontSize: '1.5rem' }}>Booking Summary</h2>
               <button
                 onClick={() => setSelectedBooking(null)}
                 style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: 'var(--text-secondary)',
-                  fontSize: '1.5rem',
-                  cursor: 'pointer'
+                  background: 'transparent', border: 'none',
+                  color: 'var(--text-muted)', fontSize: '1.5rem', cursor: 'pointer'
                 }}
               >
                 &times;
@@ -251,58 +244,58 @@ export default function CustomerDashboard() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.95rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '0.75rem' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Status:</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Status:</span>
                 <span className={`badge ${getStatusClass(selectedBooking.status)}`}>
                   {selectedBooking.status}
                 </span>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '0.75rem' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Payment Status:</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Payment Status:</span>
                 <span className={`badge ${selectedBooking.paymentStatus === 'PAID' ? 'badge-completed' : 'badge-pending'}`}>
                   {selectedBooking.paymentStatus}
                 </span>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '0.75rem' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Service:</span>
-                <span style={{ color: '#fff', fontWeight: 600 }}>{selectedBooking.serviceName}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Service:</span>
+                <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{selectedBooking.serviceName}</span>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '0.75rem' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Category:</span>
-                <span style={{ color: '#fff' }}>{selectedBooking.categoryName}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Category:</span>
+                <span style={{ color: 'var(--text-main)' }}>{selectedBooking.categoryName}</span>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '0.75rem' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Scheduled Date & Time:</span>
-                <span style={{ color: '#fff' }}>{selectedBooking.bookingDate} at {formatLocalTime(selectedBooking.startTime)}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Scheduled Date & Time:</span>
+                <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>{selectedBooking.bookingDate} at {formatLocalTime(selectedBooking.startTime)}</span>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '0.75rem' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Service Address:</span>
-                <span style={{ color: '#fff', textAlign: 'right', maxWidth: '250px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Service Address:</span>
+                <span style={{ color: 'var(--text-main)', textAlign: 'right', maxWidth: '250px' }}>
                   {selectedBooking.address}, {selectedBooking.city} - {selectedBooking.pincode}
                 </span>
               </div>
 
               {selectedBooking.providerId ? (
-                <div style={{ background: 'rgba(99, 102, 241, 0.05)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(99, 102, 241, 0.15)', marginTop: '0.5rem' }}>
+                <div style={{ background: '#F8FAFC', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)', marginTop: '0.5rem' }}>
                   <h4 style={{ color: 'var(--primary)', fontSize: '0.9rem', marginBottom: '0.25rem' }}>Assigned Provider Details</h4>
-                  <p style={{ color: '#fff', fontWeight: 600, fontSize: '0.9rem' }}>{selectedBooking.providerName}</p>
+                  <p style={{ color: 'var(--text-main)', fontWeight: 600, fontSize: '0.95rem' }}>{selectedBooking.providerName}</p>
                 </div>
               ) : (
-                <div style={{ background: 'rgba(245, 158, 11, 0.05)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(245, 158, 11, 0.15)', marginTop: '0.5rem' }}>
-                  <h4 style={{ color: 'var(--amber)', fontSize: '0.9rem', marginBottom: '0.25rem' }}>Awaiting Assignment</h4>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Admin is matching you with a professional in your area.</p>
+                <div style={{ background: '#FEF3C7', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid #FDE68A', marginTop: '0.5rem' }}>
+                  <h4 style={{ color: '#D97706', fontSize: '0.9rem', marginBottom: '0.25rem' }}>Awaiting Assignment</h4>
+                  <p style={{ color: '#92400E', fontSize: '0.85rem' }}>Admin is matching you with a professional in your area.</p>
                 </div>
               )}
 
               {selectedBooking.notes && (
                 <div style={{ marginTop: '0.5rem' }}>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.25rem' }}>Your Notes:</p>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', background: 'rgba(0,0,0,0.2)', padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-glass)' }}>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '0.25rem' }}>Your Notes:</p>
+                  <p style={{ color: 'var(--text-main)', fontSize: '0.9rem', background: 'var(--bg-page)', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)' }}>
                     "{selectedBooking.notes}"
                   </p>
                 </div>

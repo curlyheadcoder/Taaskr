@@ -164,17 +164,13 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '5rem 0', color: 'var(--text-secondary)' }}>
+      <div style={{ textAlign: 'center', padding: '5rem 0', color: 'var(--text-muted)' }}>
         <div style={{
-          display: 'inline-block',
-          width: '30px',
-          height: '30px',
-          border: '2.5px solid var(--border-glass)',
-          borderTopColor: 'var(--primary)',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite'
+          display: 'inline-block', width: '30px', height: '30px',
+          border: '3px solid var(--border-light)', borderTopColor: 'var(--primary)',
+          borderRadius: '50%', animation: 'spin 1s linear infinite'
         }} />
-        <p style={{ marginTop: '1rem' }}>Loading Admin Console...</p>
+        <p style={{ marginTop: '1rem', fontWeight: 500 }}>Loading Admin Console...</p>
       </div>
     );
   }
@@ -188,34 +184,34 @@ export default function AdminDashboard() {
     <div className="app-container animate-fade-in">
       {/* Stats Cards Row */}
       <section className="grid-cols-4" style={{ marginBottom: '2.5rem' }}>
-        <div className="glass-panel" style={{ padding: '1.5rem', textAlign: 'center' }}>
+        <div className="premium-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 600 }}>Total Bookings</p>
-          <p style={{ fontSize: '2rem', color: '#fff', fontWeight: 800, marginTop: '0.25rem' }}>{bookings.length}</p>
+          <p style={{ fontSize: '2.2rem', color: 'var(--text-main)', fontWeight: 800, marginTop: '0.25rem' }}>{bookings.length}</p>
         </div>
-        <div className="glass-panel" style={{ padding: '1.5rem', textAlign: 'center' }}>
+        <div className="premium-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 600 }}>Total Revenue</p>
-          <p style={{ fontSize: '2rem', color: 'var(--emerald)', fontWeight: 800, marginTop: '0.25rem' }}>₹{totalRevenue}</p>
+          <p style={{ fontSize: '2.2rem', color: 'var(--success)', fontWeight: 800, marginTop: '0.25rem' }}>₹{totalRevenue}</p>
         </div>
-        <div className="glass-panel" style={{ padding: '1.5rem', textAlign: 'center' }}>
+        <div className="premium-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 600 }}>Active Providers</p>
-          <p style={{ fontSize: '2rem', color: 'var(--secondary)', fontWeight: 800, marginTop: '0.25rem' }}>{providers.filter(p => p.approved).length}</p>
+          <p style={{ fontSize: '2.2rem', color: 'var(--primary)', fontWeight: 800, marginTop: '0.25rem' }}>{providers.filter(p => p.approved).length}</p>
         </div>
-        <div className="glass-panel" style={{ padding: '1.5rem', textAlign: 'center' }}>
+        <div className="premium-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 600 }}>Registered Users</p>
-          <p style={{ fontSize: '2rem', color: 'var(--amber)', fontWeight: 800, marginTop: '0.25rem' }}>{users.length}</p>
+          <p style={{ fontSize: '2.2rem', color: 'var(--secondary)', fontWeight: 800, marginTop: '0.25rem' }}>{users.length}</p>
         </div>
       </section>
 
       {/* Tabs Switcher */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--border-glass)', marginBottom: '2rem', gap: '0.5rem' }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--border-light)', marginBottom: '2rem', gap: '0.5rem' }}>
         <button
           onClick={() => setActiveTab('catalog')}
           className="btn"
           style={{
             background: 'transparent',
             border: 'none',
-            color: activeTab === 'catalog' ? 'var(--primary)' : 'var(--text-secondary)',
-            borderBottom: activeTab === 'catalog' ? '2.5px solid var(--primary)' : 'none',
+            color: activeTab === 'catalog' ? 'var(--primary)' : 'var(--text-muted)',
+            borderBottom: activeTab === 'catalog' ? '3px solid var(--primary)' : 'none',
             borderRadius: 0,
             padding: '0.75rem 1.25rem',
             fontWeight: 600
@@ -229,8 +225,8 @@ export default function AdminDashboard() {
           style={{
             background: 'transparent',
             border: 'none',
-            color: activeTab === 'providers' ? 'var(--primary)' : 'var(--text-secondary)',
-            borderBottom: activeTab === 'providers' ? '2.5px solid var(--primary)' : 'none',
+            color: activeTab === 'providers' ? 'var(--primary)' : 'var(--text-muted)',
+            borderBottom: activeTab === 'providers' ? '3px solid var(--primary)' : 'none',
             borderRadius: 0,
             padding: '0.75rem 1.25rem',
             fontWeight: 600
@@ -244,8 +240,8 @@ export default function AdminDashboard() {
           style={{
             background: 'transparent',
             border: 'none',
-            color: activeTab === 'bookings' ? 'var(--primary)' : 'var(--text-secondary)',
-            borderBottom: activeTab === 'bookings' ? '2.5px solid var(--primary)' : 'none',
+            color: activeTab === 'bookings' ? 'var(--primary)' : 'var(--text-muted)',
+            borderBottom: activeTab === 'bookings' ? '3px solid var(--primary)' : 'none',
             borderRadius: 0,
             padding: '0.75rem 1.25rem',
             fontWeight: 600
@@ -259,8 +255,8 @@ export default function AdminDashboard() {
       {activeTab === 'catalog' && (
         <div className="grid-cols-3" style={{ gap: '2rem', alignItems: 'flex-start' }}>
           {/* Categories CRUD Form & List */}
-          <div className="glass-panel" style={{ padding: '1.75rem', borderRadius: 'var(--radius-lg)' }}>
-            <h2 style={{ fontSize: '1.25rem', color: '#fff', marginBottom: '1.25rem' }}>
+          <div className="premium-card" style={{ padding: '1.75rem' }}>
+            <h2 style={{ fontSize: '1.4rem', color: 'var(--primary)', marginBottom: '1.25rem' }}>
               {editingCatId ? 'Edit Category' : 'Create Category'}
             </h2>
             
@@ -284,10 +280,11 @@ export default function AdminDashboard() {
                   rows={2}
                   value={catDesc}
                   onChange={(e) => setCatDesc(e.target.value)}
+                  style={{ resize: 'none' }}
                 />
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button type="submit" className="btn btn-primary btn-small" style={{ flex: 1 }}>
+                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
                   {editingCatId ? 'Update' : 'Add Category'}
                 </button>
                 {editingCatId && (
@@ -298,7 +295,7 @@ export default function AdminDashboard() {
                       setCatName('');
                       setCatDesc('');
                     }}
-                    className="btn btn-secondary btn-small"
+                    className="btn btn-secondary"
                   >
                     Cancel
                   </button>
@@ -306,13 +303,13 @@ export default function AdminDashboard() {
               </div>
             </form>
 
-            <h3 style={{ fontSize: '1.05rem', color: '#fff', marginBottom: '0.75rem' }}>Current Categories</h3>
+            <h3 style={{ fontSize: '1.1rem', color: 'var(--text-main)', marginBottom: '0.75rem' }}>Current Categories</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '200px', overflowY: 'auto' }}>
               {categories.map(cat => (
-                <div key={cat.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-glass)', fontSize: '0.85rem' }}>
+                <div key={cat.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-page)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)', fontSize: '0.9rem' }}>
                   <div>
-                    <strong style={{ color: '#fff' }}>{cat.name}</strong>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{cat.description}</p>
+                    <strong style={{ color: 'var(--text-main)' }}>{cat.name}</strong>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{cat.description}</p>
                   </div>
                   <button onClick={() => handleEditCategory(cat)} style={{ background: 'transparent', border: 'none', color: 'var(--primary)', cursor: 'pointer' }} title="Edit">✏️</button>
                 </div>
@@ -322,8 +319,8 @@ export default function AdminDashboard() {
 
           {/* Services CRUD */}
           <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div className="glass-panel" style={{ padding: '1.75rem', borderRadius: 'var(--radius-lg)' }}>
-              <h2 style={{ fontSize: '1.25rem', color: '#fff', marginBottom: '1.25rem' }}>
+            <div className="premium-card" style={{ padding: '1.75rem' }}>
+              <h2 style={{ fontSize: '1.4rem', color: 'var(--primary)', marginBottom: '1.25rem' }}>
                 {editingSrvId ? 'Edit Service Details' : 'Register New Catalog Service'}
               </h2>
 
@@ -346,7 +343,6 @@ export default function AdminDashboard() {
                     value={srvCatId}
                     onChange={(e) => setSrvCatId(e.target.value)}
                     required
-                    style={{ background: 'var(--bg-slate-900)' }}
                   >
                     <option value="">Select Category</option>
                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -399,18 +395,18 @@ export default function AdminDashboard() {
                         setSrvDuration('');
                         setSrvCatId('');
                       }}
-                      className="btn btn-secondary btn-small"
+                      className="btn btn-secondary"
                     >
                       Cancel
                     </button>
                   )}
-                  <button type="submit" className="btn btn-primary btn-small">
+                  <button type="submit" className="btn btn-primary">
                     {editingSrvId ? 'Update Service' : 'Publish Service'}
                   </button>
                 </div>
               </form>
 
-              <h3 style={{ fontSize: '1.1rem', color: '#fff', marginBottom: '0.75rem' }}>Catalog Services</h3>
+              <h3 style={{ fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '0.75rem' }}>Catalog Services</h3>
               <div className="table-container">
                 <table className="custom-table">
                   <thead>
@@ -430,7 +426,7 @@ export default function AdminDashboard() {
                         <tr key={srv.id} style={{ opacity: srv.active ? 1 : 0.5 }}>
                           <td style={{ fontWeight: 600 }}>{srv.name}</td>
                           <td>{cat ? cat.name : 'Unknown'}</td>
-                          <td style={{ color: 'var(--primary)' }}>₹{srv.price}</td>
+                          <td style={{ color: 'var(--primary)', fontWeight: 700 }}>₹{srv.price}</td>
                           <td>{srv.durationMinutes} min</td>
                           <td>
                             <span className={`badge ${srv.active ? 'badge-completed' : 'badge-cancelled'}`}>
@@ -458,11 +454,11 @@ export default function AdminDashboard() {
 
       {/* Tab: Provider Approvals */}
       {activeTab === 'providers' && (
-        <div className="glass-panel" style={{ padding: '2rem', borderRadius: 'var(--radius-lg)' }}>
-          <h2 style={{ fontSize: '1.4rem', color: '#fff', marginBottom: '1.5rem' }}>Provider Profile Review Queue</h2>
+        <div className="premium-card" style={{ padding: '2rem' }}>
+          <h2 style={{ fontSize: '1.5rem', color: 'var(--primary)', marginBottom: '1.5rem' }}>Provider Profile Review Queue</h2>
 
           {providers.length === 0 ? (
-            <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem' }}>No providers registered in the database.</p>
+            <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>No providers registered in the database.</p>
           ) : (
             <div className="table-container">
               <table className="custom-table">
@@ -479,10 +475,10 @@ export default function AdminDashboard() {
                 <tbody>
                   {providers.map(p => (
                     <tr key={p.id}>
-                      <td style={{ fontWeight: 600, color: '#fff' }}>{p.name}</td>
+                      <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{p.name}</td>
                       <td>
-                        <div style={{ fontSize: '0.85rem' }}>{p.email}</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>📞 {p.phone}</div>
+                        <div style={{ fontSize: '0.9rem' }}>{p.email}</div>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>📞 {p.phone}</div>
                       </td>
                       <td>{p.experienceYears} Years</td>
                       <td style={{ maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={p.bio}>{p.bio}</td>
@@ -514,11 +510,11 @@ export default function AdminDashboard() {
 
       {/* Tab: Bookings Monitor */}
       {activeTab === 'bookings' && (
-        <div className="glass-panel" style={{ padding: '2rem', borderRadius: 'var(--radius-lg)' }}>
-          <h2 style={{ fontSize: '1.4rem', color: '#fff', marginBottom: '1.5rem' }}>Global Bookings Ledger</h2>
+        <div className="premium-card" style={{ padding: '2rem' }}>
+          <h2 style={{ fontSize: '1.5rem', color: 'var(--primary)', marginBottom: '1.5rem' }}>Global Bookings Ledger</h2>
 
           {bookings.length === 0 ? (
-            <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem' }}>No service bookings registered in system.</p>
+            <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>No service bookings registered in system.</p>
           ) : (
             <div className="table-container">
               <table className="custom-table">
@@ -537,26 +533,26 @@ export default function AdminDashboard() {
                 <tbody>
                   {bookings.map(b => (
                     <tr key={b.id}>
-                      <td style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>#{String(b.id).slice(-6)}</td>
+                      <td style={{ fontFamily: 'monospace', fontSize: '0.85rem', color: 'var(--text-muted)' }}>#{String(b.id).slice(-6)}</td>
                       <td>
-                        <div style={{ fontWeight: 600, color: '#fff' }}>{b.userName}</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>📞 {b.userPhone || 'N/A'}</div>
+                        <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{b.userName}</div>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>📞 {b.userPhone || 'N/A'}</div>
                       </td>
                       <td>
-                        <div>{b.serviceName}</div>
-                        <span className="badge badge-assigned" style={{ fontSize: '0.6rem', padding: '0.1rem 0.3rem' }}>{b.categoryName}</span>
+                        <div style={{ fontWeight: 500 }}>{b.serviceName}</div>
+                        <span className="badge badge-assigned" style={{ fontSize: '0.65rem', padding: '0.1rem 0.3rem', background: 'var(--bg-page)', color: 'var(--text-muted)', border: 'none' }}>{b.categoryName}</span>
                       </td>
                       <td>
-                        <div>{b.bookingDate}</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>⏱️ {formatLocalTime(b.startTime)}</div>
+                        <div style={{ color: 'var(--text-main)' }}>{b.bookingDate}</div>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>⏱️ {formatLocalTime(b.startTime)}</div>
                       </td>
                       <td>
                         {b.providerId ? (
                           <div>
-                            <div style={{ color: '#fff' }}>{b.providerName}</div>
+                            <div style={{ color: 'var(--text-main)', fontWeight: 500 }}>{b.providerName}</div>
                           </div>
                         ) : (
-                          <span style={{ color: 'var(--rose)', fontStyle: 'italic', fontSize: '0.85rem' }}>Awaiting Provider</span>
+                          <span style={{ color: 'var(--error)', fontStyle: 'italic', fontSize: '0.85rem' }}>Awaiting Provider</span>
                         )}
                       </td>
                       <td style={{ fontWeight: 700, color: 'var(--primary)' }}>₹{b.finalAmount}</td>

@@ -9,6 +9,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import com.taaskr.dto.booking.AvailableProviderResponse;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -32,5 +36,15 @@ public class BookingController {
     @GetMapping("/{bookingId}")
     public BookingResponse getMyBookingById(@PathVariable Long bookingId, Authentication authentication){
         return bookingService.getMyBookingById(authentication.getName(), bookingId);
+    }
+
+    @GetMapping("/available-providers")
+    public List<AvailableProviderResponse> getAvailableProviders(
+            @RequestParam Long serviceId,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String pincode,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime startTime) {
+        return bookingService.getAvailableProviders(serviceId, city, pincode, date, startTime);
     }
 }

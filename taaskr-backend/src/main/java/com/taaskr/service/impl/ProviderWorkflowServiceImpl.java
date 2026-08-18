@@ -20,6 +20,9 @@ import com.taaskr.service.ProviderWorkflowService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import com.taaskr.dto.provider.ProviderProfileResponse;
+import com.taaskr.dto.provider.UpdateProviderProfileRequest;
+
 import java.util.List;
 
 @Service
@@ -216,6 +219,50 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
                 booking.getPaymentStatus(),
                 booking.getNotes(),
                 booking.getCreatedAt()
+        );
+    }
+
+    @Override
+    public ProviderProfileResponse getProviderProfile(String providerEmail) {
+        ProviderProfile provider = getProviderByEmail(providerEmail);
+        return mapProfileResponse(provider);
+    }
+
+    @Override
+    @Transactional
+    public ProviderProfileResponse updateProviderProfile(String providerEmail, UpdateProviderProfileRequest request) {
+        ProviderProfile provider = getProviderByEmail(providerEmail);
+        User user = provider.getUser();
+
+        user.setName(request.getName().trim());
+        user.setPhone(request.getPhone());
+        user.setCity(request.getCity());
+        user.setPincode(request.getPincode());
+        userRepository.save(user);
+
+        provider.setExperienceYears(request.getExperienceYears());
+        provider.setBio(request.getBio());
+        provider.setCity(request.getCity());
+        provider.setPincode(request.getPincode());
+        providerProfileRepository.save(provider);
+
+        return mapProfileResponse(provider);
+    }
+
+    private ProviderProfileResponse mapProfileResponse(ProviderProfile provider) {
+        return new ProviderProfileResponse(
+                provider.getId(),
+                provider.getUser().getId(),
+                provider.getUser().getName(),
+                provider.getUser().getEmail(),
+                provider.getUser().getPhone(),
+                provider.getExperienceYears(),
+                provider.getCity(),
+                provider.getPincode(),
+                provider.getApproved(),
+                provider.getRating(),
+                provider.getTotalJobs(),
+                provider.getBio()
         );
     }
 }

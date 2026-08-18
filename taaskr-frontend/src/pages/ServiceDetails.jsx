@@ -79,7 +79,7 @@ export default function ServiceDetails() {
       <div className="app-container" style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
         <div className="glass-panel" style={{ padding: '3rem 2rem' }}>
           <span style={{ fontSize: '3rem' }}>⚠️</span>
-          <h2 style={{ color: '#fff', marginTop: '1rem' }}>Error Loading Service</h2>
+          <h2 style={{ color: 'var(--text-main)', marginTop: '1rem' }}>Error Loading Service</h2>
           <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>{error || 'Service not found.'}</p>
           <Link to="/" className="btn btn-primary" style={{ marginTop: '1.5rem' }}>Back to Services</Link>
         </div>
@@ -99,7 +99,7 @@ export default function ServiceDetails() {
         {/* Left Side: Service Details */}
         <div className="glass-panel" style={{ padding: '2.5rem', borderRadius: 'var(--radius-lg)' }}>
           <span className="badge badge-assigned" style={{ marginBottom: '1rem' }}>Active Service</span>
-          <h1 style={{ fontSize: '2.5rem', color: '#fff', marginBottom: '1rem' }}>{service.name}</h1>
+          <h1 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '1rem' }}>{service.name}</h1>
           
           <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--border-glass)' }}>
             <div>
@@ -108,11 +108,11 @@ export default function ServiceDetails() {
             </div>
             <div>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase' }}>Duration</p>
-              <p style={{ fontSize: '1.8rem', fontWeight: 800, color: '#fff' }}>{service.durationMinutes} min</p>
+              <p style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-main)' }}>{service.durationMinutes} min</p>
             </div>
           </div>
 
-          <h3 style={{ color: '#fff', marginBottom: '0.5rem', fontSize: '1.1rem' }}>Service Description</h3>
+          <h3 style={{ color: 'var(--text-main)', marginBottom: '0.5rem', fontSize: '1.1rem' }}>Service Description</h3>
           <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '0.95rem', marginBottom: '2rem' }}>
             {service.description} Includes all standard tools and inspection fees. Our certified technician will examine the issues, provide an expert fix, and offer tips to prevent recurrence.
           </p>
@@ -129,7 +129,7 @@ export default function ServiceDetails() {
 
         {/* Right Side: Appointment Scheduling */}
         <div className="glass-panel" style={{ padding: '2.5rem', borderRadius: 'var(--radius-lg)' }}>
-          <h2 style={{ fontSize: '1.5rem', color: '#fff', marginBottom: '1.5rem' }}>Select Date & Time</h2>
+          <h2 style={{ fontSize: '1.5rem', color: 'var(--text-main)', marginBottom: '1.5rem' }}>Select Date & Time</h2>
 
           <div className="form-group">
             <label className="form-label">Choose Service Date</label>
@@ -170,7 +170,7 @@ export default function ServiceDetails() {
                       onChange={() => setSelectedTime(slot.value)}
                       style={{ accentColor: 'var(--primary)', transform: 'scale(1.15)' }}
                     />
-                    <span style={{ fontSize: '0.95rem', color: '#fff', fontWeight: selectedTime === slot.value ? 600 : 400 }}>
+                    <span style={{ fontSize: '0.95rem', color: 'var(--text-main)', fontWeight: selectedTime === slot.value ? 600 : 400 }}>
                       {slot.label}
                     </span>
                   </div>

@@ -28,6 +28,10 @@ public class AuthController {
     }
     @GetMapping("/me")
     public MeResponse me(Authentication authentication) {
+        if (authentication == null) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.UNAUTHORIZED, "User not authenticated");
+        }
         return authService.me(authentication.getName());
     }
 }
