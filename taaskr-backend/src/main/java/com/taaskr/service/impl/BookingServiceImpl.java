@@ -63,6 +63,10 @@ public class BookingServiceImpl implements BookingService {
             throw new BadRequestException("Booking date cannot be in the past");
         }
 
+        if ((request.getLatitude() == null) != (request.getLongitude() == null)) {
+            throw new BadRequestException("Both latitude and longitude are required for a map location");
+        }
+
         LocalTime startTime = request.getStartTime();
         LocalTime endTime = startTime.plusMinutes(service.getDurationMinutes());
 
@@ -124,11 +128,14 @@ public class BookingServiceImpl implements BookingService {
         booking.setAddress(request.getAddress().trim());
         booking.setCity(request.getCity().trim());
         booking.setPincode(request.getPincode().trim());
+        booking.setLatitude(request.getLatitude());
+        booking.setLongitude(request.getLongitude());
         booking.setNotes(request.getNotes());
         booking.setTotalAmount(service.getPrice());
         booking.setDiscountAmount(BigDecimal.ZERO);
         booking.setFinalAmount(service.getPrice());
         booking.setPaymentStatus(PaymentStatus.PENDING);
+        booking.setPaymentMethod(request.getPaymentMethod());
         booking.setStatus(assignmentResult.provider() != null ? BookingStatus.ASSIGNED : BookingStatus.PENDING);
 
         Booking savedBooking = bookingRepository.save(booking);
@@ -317,11 +324,14 @@ public class BookingServiceImpl implements BookingService {
                 booking.getAddress(),
                 booking.getCity(),
                 booking.getPincode(),
+                booking.getLatitude(),
+                booking.getLongitude(),
                 booking.getStatus(),
                 booking.getTotalAmount(),
                 booking.getDiscountAmount(),
                 booking.getFinalAmount(),
                 booking.getPaymentStatus(),
+                booking.getPaymentMethod(),
                 booking.getNotes(),
                 booking.getCreatedAt(),
                 booking.getUpdatedAt()

@@ -1,6 +1,7 @@
 package com.taaskr.dto.booking;
 
 import com.taaskr.enums.BookingStatus;
+import com.taaskr.enums.PaymentMethod;
 import com.taaskr.enums.PaymentStatus;
 
 import java.math.BigDecimal;
@@ -32,12 +33,15 @@ public class BookingResponse {
     private String address;
     private String city;
     private String pincode;
+    private BigDecimal latitude;
+    private BigDecimal longitude;
 
     private BookingStatus status;
     private BigDecimal totalAmount;
     private BigDecimal discountAmount;
     private BigDecimal finalAmount;
     private PaymentStatus paymentStatus;
+    private PaymentMethod paymentMethod;
     private String notes;
 
     private LocalDateTime createdAt;
@@ -52,10 +56,10 @@ public class BookingResponse {
                            Long userId, String userName,
                            Long providerId, String providerName, Boolean assigned,
                            LocalDate bookingDate, LocalTime startTime, LocalTime endTime,
-                           String address, String city, String pincode,
+                           String address, String city, String pincode, BigDecimal latitude, BigDecimal longitude,
                            BookingStatus status,
                            BigDecimal totalAmount, BigDecimal discountAmount, BigDecimal finalAmount,
-                           PaymentStatus paymentStatus, String notes,
+                           PaymentStatus paymentStatus, PaymentMethod paymentMethod, String notes,
                            LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.bookingCode = bookingCode;
@@ -74,11 +78,14 @@ public class BookingResponse {
         this.address = address;
         this.city = city;
         this.pincode = pincode;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.status = status;
         this.totalAmount = totalAmount;
         this.discountAmount = discountAmount;
         this.finalAmount = finalAmount;
         this.paymentStatus = paymentStatus;
+        this.paymentMethod = paymentMethod;
         this.notes = notes;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -152,6 +159,14 @@ public class BookingResponse {
         return pincode;
     }
 
+    public BigDecimal getLatitude() {
+        return latitude;
+    }
+
+    public BigDecimal getLongitude() {
+        return longitude;
+    }
+
     public BookingStatus getStatus() {
         return status;
     }
@@ -170,6 +185,10 @@ public class BookingResponse {
 
     public PaymentStatus getPaymentStatus() {
         return paymentStatus;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
     }
 
     public String getNotes() {
@@ -252,6 +271,14 @@ public class BookingResponse {
         this.pincode = pincode;
     }
 
+    public void setLatitude(BigDecimal latitude) {
+        this.latitude = latitude;
+    }
+
+    public void setLongitude(BigDecimal longitude) {
+        this.longitude = longitude;
+    }
+
     public void setStatus(BookingStatus status) {
         this.status = status;
     }
@@ -270,6 +297,10 @@ public class BookingResponse {
 
     public void setPaymentStatus(PaymentStatus paymentStatus) {
         this.paymentStatus = paymentStatus;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
     public void setNotes(String notes) {

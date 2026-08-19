@@ -1,6 +1,7 @@
 package com.taaskr.entity;
 
 import com.taaskr.enums.BookingStatus;
+import com.taaskr.enums.PaymentMethod;
 import com.taaskr.enums.PaymentStatus;
 import jakarta.persistence.*;
 
@@ -50,6 +51,12 @@ public class Booking {
     @Column(nullable = false, length = 20)
     private String pincode;
 
+    @Column(precision = 10, scale = 7)
+    private BigDecimal latitude;
+
+    @Column(precision = 10, scale = 7)
+    private BigDecimal longitude;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private BookingStatus status;
@@ -66,6 +73,10 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20, columnDefinition = "varchar(20) default 'ONLINE'")
+    private PaymentMethod paymentMethod = PaymentMethod.ONLINE;
 
     @Column(length = 500)
     private String notes;
@@ -90,6 +101,9 @@ public class Booking {
         }
         if (this.paymentStatus == null) {
             this.paymentStatus = PaymentStatus.PENDING;
+        }
+        if (this.paymentMethod == null) {
+            this.paymentMethod = PaymentMethod.ONLINE;
         }
     }
 
@@ -142,6 +156,14 @@ public class Booking {
         return pincode;
     }
 
+    public BigDecimal getLatitude() {
+        return latitude;
+    }
+
+    public BigDecimal getLongitude() {
+        return longitude;
+    }
+
     public BookingStatus getStatus() {
         return status;
     }
@@ -160,6 +182,10 @@ public class Booking {
 
     public PaymentStatus getPaymentStatus() {
         return paymentStatus;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
     }
 
     public String getNotes() {
@@ -218,6 +244,14 @@ public class Booking {
         this.pincode = pincode;
     }
 
+    public void setLatitude(BigDecimal latitude) {
+        this.latitude = latitude;
+    }
+
+    public void setLongitude(BigDecimal longitude) {
+        this.longitude = longitude;
+    }
+
     public void setStatus(BookingStatus status) {
         this.status = status;
     }
@@ -236,6 +270,10 @@ public class Booking {
 
     public void setPaymentStatus(PaymentStatus paymentStatus) {
         this.paymentStatus = paymentStatus;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
     public void setNotes(String notes) {

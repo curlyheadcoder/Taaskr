@@ -3,6 +3,7 @@ import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { formatLocalTime } from '../utils/time';
 import confetti from 'canvas-confetti';
+import LocationPicker from '../components/LocationPicker';
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -30,6 +31,9 @@ export default function BookingFlow() {
   const [city, setCity] = useState('Indore');
   const [pincode, setPincode] = useState('452001');
   const [notes, setNotes] = useState('');
+  const [coordinates, setCoordinates] = useState(null);
+  const [showMap, setShowMap] = useState(false);
+  const [locationStatus, setLocationStatus] = useState('');
   const [loading, setLoading] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [newBooking, setNewBooking] = useState(null);
@@ -98,9 +102,12 @@ export default function BookingFlow() {
         providerId: selectedProviderId ? Number(selectedProviderId) : null,
         bookingDate,
         startTime,
+        paymentMethod: paymentMethod === 'after_service' ? 'AFTER_SERVICE' : 'ONLINE',
         address,
         city,
         pincode,
+        latitude: coordinates?.latitude,
+        longitude: coordinates?.longitude,
         notes
       });
       
@@ -185,6 +192,14 @@ export default function BookingFlow() {
       alert(err.message || 'Failed to complete booking. Please try again.');
       setLoading(false);
     }
+  };
+
+  const handleLocationConfirm = (loc) => {
+    setCoordinates({ latitude: loc.lat, longitude: loc.lng });
+    if (loc.address) {
+      setAddress(loc.address);
+    }
+    setShowMap(false);
   };
 
   if (!serviceId) {
@@ -294,6 +309,31 @@ export default function BookingFlow() {
               disabled={loading}
               required
             />
+          </div>
+
+          <div style={{ marginBottom: '1.25rem', padding: '1rem', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)', background: 'var(--bg-page)' }}>
+            {!showMap ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                  <div>
+                    <p style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '0.95rem' }}>Precise map location</p>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginTop: '0.2rem' }}>Required for better service delivery.</p>
+                  </div>
+                  <button type="button" onClick={() => setShowMap(true)} className="btn btn-secondary btn-small" disabled={loading}>
+                    {coordinates ? '📍 Change Location' : '📍 Select on Map'}
+                  </button>
+                </div>
+                {coordinates && (
+                  <div style={{ padding: '0.75rem', background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: 'var(--radius-sm)' }}>
+                    <div style={{ color: 'var(--success)', fontWeight: 600, fontSize: '0.85rem' }}>📍 Service Location Confirmed</div>
+                    <div style={{ color: 'var(--text-main)', fontSize: '0.85rem', marginTop: '0.25rem' }}>{address}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.25rem' }}>Lat: {coordinates.latitude.toFixed(6)}, Lng: {coordinates.longitude.toFixed(6)}</div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <LocationPicker onLocationConfirm={handleLocationConfirm} />
+            )}
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>

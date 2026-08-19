@@ -26,6 +26,8 @@ public interface ProviderWorkflowService {
 
     ProviderBookingResponse updateBookingStatus(String providerEmail, Long bookingId, UpdateProviderBookingStatusRequest request);
 
+    ProviderBookingResponse markAfterServicePaymentReceived(String providerEmail, Long bookingId);
+
     ProviderProfileResponse getProviderProfile(String providerEmail);
 
     ProviderProfileResponse updateProviderProfile(String providerEmail, UpdateProviderProfileRequest request);

@@ -26,7 +26,7 @@ const handleResponse = async (res) => {
     try {
       const err = await res.json();
       errorMsg = err.message || err.error || errorMsg;
-    } catch (e) {}
+    } catch (e) { }
     throw new Error(errorMsg);
   }
   if (res.status === 204) return null;
@@ -95,7 +95,7 @@ export const api = {
     },
 
     getServices: async (categoryId) => {
-      const query = categoryId ? `?catpegoryId=${categoryId}` : ''; // Using backend's actual typo 'catpegoryId'
+      const query = categoryId ? `?categoryId=${categoryId}` : ''; // Using backend's actual typo 'catpegoryId'
       return makeRequest(`/api/services${query}`);
     },
 
@@ -212,6 +212,12 @@ export const api = {
       return makeRequest(`/api/provider/bookings/${bookingId}/status`, {
         method: 'PUT',
         body: JSON.stringify({ status })
+      });
+    },
+
+    markAfterServicePaymentReceived: async (bookingId) => {
+      return makeRequest(`/api/provider/bookings/${bookingId}/payment-received`, {
+        method: 'PUT'
       });
     }
   },

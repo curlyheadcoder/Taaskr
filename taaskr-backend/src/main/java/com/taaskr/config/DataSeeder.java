@@ -52,6 +52,8 @@ public class DataSeeder {
         seedUser(userRepository, passwordEncoder, "Electrician 1", "electrician@taaskr.com", "Provider@123", "9999999996", Role.PROVIDER, "Indore", "452001");
         seedUser(userRepository, passwordEncoder, "Plumber 1", "plumber@taaskr.com", "Provider@123", "9999999997", Role.PROVIDER, "Indore", "452002");
         seedUser(userRepository, passwordEncoder, "Home Appliance Expert", "appliance@taaskr.com", "Provider@123", "9999999998", Role.PROVIDER, "Indore", "452001");
+        seedUser(userRepository, passwordEncoder, "Security Systems Expert", "security@taaskr.com", "Provider@123", "8880000001", Role.PROVIDER, "Indore", "452001");
+        seedUser(userRepository, passwordEncoder, "Security Guard Agency", "guard@taaskr.com", "Provider@123", "8880000002", Role.PROVIDER, "Indore", "452001");
     }
 
     private User seedUser(UserRepository userRepository, PasswordEncoder passwordEncoder, String name, String email, String rawPassword, String phone, Role role, String city, String pincode) {
@@ -60,7 +62,7 @@ public class DataSeeder {
             user.setName(name);
             user.setEmail(email);
             user.setPassword(passwordEncoder.encode(rawPassword));
-            user.setPhone(phone);
+            user.setPhone(findAvailablePhone(userRepository, phone, email));
             user.setRole(role);
             user.setCity(city);
             user.setPincode(pincode);
@@ -69,11 +71,24 @@ public class DataSeeder {
         });
     }
 
+    private String findAvailablePhone(UserRepository userRepository, String preferredPhone, String email) {
+        if (!userRepository.existsByPhone(preferredPhone)) {
+            return preferredPhone;
+        }
+
+        long candidate = 7_000_000_000L + Math.floorMod(email.hashCode(), 999_999_999);
+        while (userRepository.existsByPhone(Long.toString(candidate))) {
+            candidate++;
+        }
+        return Long.toString(candidate);
+    }
+
     private void seedCatalog(ServiceCategoryRepository categoryRepository, ServiceRepository serviceRepository) {
         ServiceCategory plumbing = seedCategory(categoryRepository, "Plumbing", "Home plumbing repair and installation services");
         ServiceCategory cleaning = seedCategory(categoryRepository, "Cleaning", "Home and deep cleaning services");
         ServiceCategory electrical = seedCategory(categoryRepository, "Electrical", "Electrical repair and fitting services");
         ServiceCategory appliances = seedCategory(categoryRepository, "Appliances", "Home appliance repair and maintenance");
+        ServiceCategory security = seedCategory(categoryRepository, "Security Services", "Home security installation and protection services");
 
         // Plumbing
         seedService(serviceRepository, "Tap Repair", "Fix leaking or damaged taps", new BigDecimal("299.00"), 60, plumbing);
@@ -96,6 +111,32 @@ public class DataSeeder {
         seedService(serviceRepository, "AC Maintenance", "Routine AC servicing and cleaning", new BigDecimal("599.00"), 90, appliances);
         seedService(serviceRepository, "Refrigerator Repair", "Refrigerator repair and maintenance", new BigDecimal("599.00"), 90, appliances);
         seedService(serviceRepository, "Washing Machine Repair", "Washing machine repair service", new BigDecimal("599.00"), 90, appliances);
+
+        // Security Services
+        seedService(serviceRepository, "CCTV Installation", "Install and configure CCTV cameras for your home", new BigDecimal("1199.00"), 120, security);
+        seedService(serviceRepository, "Smart Lock Installation", "Install and set up a smart door lock", new BigDecimal("799.00"), 90, security);
+        seedService(serviceRepository, "Video Doorbell Installation", "Install and configure a video doorbell", new BigDecimal("899.00"), 90, security);
+        seedService(serviceRepository, "Security Guard Service", "Professional security guard service for your premises", new BigDecimal("1499.00"), 480, security);
+
+        ServiceCategory diagnostic = seedCategory(categoryRepository, "Diagnostic Services", "Convenient diagnostic tests and sample collection at your doorstep.");
+        ServiceCategory healthcare = seedCategory(categoryRepository, "Healthcare Services", "At-home healthcare assistance and basic patient care services.");
+        ServiceCategory civil = seedCategory(categoryRepository, "Civil & Property Maintenance", "Construction, renovation, repair, and property maintenance services.");
+
+        // Diagnostic Services
+        seedService(serviceRepository, "Blood Test & Sample Collection", "At-home blood test and sample collection", new BigDecimal("499.00"), 30, diagnostic);
+        seedService(serviceRepository, "Full Body Health Checkup", "Comprehensive full body checkup package", new BigDecimal("1999.00"), 60, diagnostic);
+        seedService(serviceRepository, "Home Diagnostic Test", "Various home diagnostic tests and screenings", new BigDecimal("999.00"), 45, diagnostic);
+
+        // Healthcare Services
+        seedService(serviceRepository, "Compounder on Call", "Healthcare assistance for basic patient care and prescribed medication support at home.", new BigDecimal("599.00"), 60, healthcare);
+
+        // Civil & Property Maintenance
+        seedService(serviceRepository, "Masonry & Brickwork", "Professional masonry and brickwork services", new BigDecimal("899.00"), 240, civil);
+        seedService(serviceRepository, "Waterproofing", "Roof and bathroom waterproofing solutions", new BigDecimal("2499.00"), 360, civil);
+        seedService(serviceRepository, "Flooring & Tiling", "Floor tiling and repair services", new BigDecimal("1499.00"), 480, civil);
+        seedService(serviceRepository, "Roof & Terrace Maintenance", "Roof repair and terrace maintenance", new BigDecimal("1999.00"), 360, civil);
+        seedService(serviceRepository, "Home Renovation", "General home renovation and remodeling", new BigDecimal("4999.00"), 480, civil);
+        seedService(serviceRepository, "General Civil Repairs", "Minor civil repairs and wall plastering", new BigDecimal("799.00"), 120, civil);
     }
 
     private ServiceCategory seedCategory(ServiceCategoryRepository categoryRepository, String name, String description) {
@@ -154,6 +195,14 @@ public class DataSeeder {
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "provider@taaskr.com", 4.7, 12, 3, "Experienced home service professional",
                 serviceRepository, List.of("Tap Repair", "Bathroom Cleaning", "Full Home Cleaning"));
+
+        setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
+                "security@taaskr.com", 4.8, 38, 6, "Certified home security and surveillance systems specialist",
+                serviceRepository, List.of("CCTV Installation", "Smart Lock Installation", "Video Doorbell Installation"));
+
+        setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
+                "guard@taaskr.com", 4.6, 54, 5, "Professional residential and event security guard provider",
+                serviceRepository, List.of("Security Guard Service"));
     }
 
     private void setupProviderProfileAndServices(UserRepository userRepository,

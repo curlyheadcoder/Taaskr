@@ -8,6 +8,7 @@ export default function ProviderDashboard() {
   const [assignedBookings, setAssignedBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [notification, setNotification] = useState(null);
 
   // Profile Editor state
   const [editName, setEditName] = useState('');
@@ -26,6 +27,10 @@ export default function ProviderDashboard() {
   const [availDate, setAvailDate] = useState(tomorrowStr);
   const [availStart, setAvailStart] = useState('09:00');
   const [availEnd, setAvailEnd] = useState('11:00');
+
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type });
+  };
 
   const loadProviderDashboard = async () => {
     setLoading(true);
@@ -69,13 +74,13 @@ export default function ProviderDashboard() {
         startTime: availStart,
         endTime: availEnd
       });
-      alert('Availability slot added!');
+      showNotification('Availability slot added.');
       
       // Reload slots
       const slots = await api.provider.getAvailability();
       setAvailability(slots);
     } catch (err) {
-      alert(`Action failed: ${err.message}`);
+      showNotification(`Action failed: ${err.message}`, 'error');
     }
   };
 
@@ -85,17 +90,17 @@ export default function ProviderDashboard() {
       await api.provider.deleteAvailability(slotId);
       setAvailability(prev => prev.filter(s => s.id !== slotId));
     } catch (err) {
-      alert(`Action failed: ${err.message}`);
+      showNotification(`Action failed: ${err.message}`, 'error');
     }
   };
 
   const handleAcceptJob = async (bookingId) => {
     try {
       await api.provider.acceptBooking(bookingId);
-      alert('Job accepted!');
+      showNotification('Job accepted.');
       loadProviderDashboard(); // Reload lists
     } catch (err) {
-      alert(`Action failed: ${err.message}`);
+      showNotification(`Action failed: ${err.message}`, 'error');
     }
   };
 
@@ -103,21 +108,43 @@ export default function ProviderDashboard() {
     if (!window.confirm('Are you sure you want to reject this job?')) return;
     try {
       await api.provider.rejectBooking(bookingId);
-      alert('Job rejected.');
+      showNotification('Job rejected.');
       loadProviderDashboard();
     } catch (err) {
-      alert(`Action failed: ${err.message}`);
+      showNotification(`Action failed: ${err.message}`, 'error');
     }
   };
 
   const handleUpdateStatus = async (bookingId, status) => {
     try {
       await api.provider.updateBookingStatus(bookingId, status);
-      alert(`Job status updated to ${status}!`);
+      showNotification(status === 'COMPLETED' ? 'Job completed.' : `Job status updated to ${status}.`);
       loadProviderDashboard();
     } catch (err) {
-      alert(`Action failed: ${err.message}`);
+      showNotification(`Action failed: ${err.message}`, 'error');
     }
+  };
+
+  const handleMarkPaymentReceived = async (bookingId) => {
+    if (!window.confirm('Confirm that you received payment from the customer?')) return;
+    try {
+      await api.provider.markAfterServicePaymentReceived(bookingId);
+      showNotification('Payment marked as received.');
+      loadProviderDashboard();
+    } catch (err) {
+      showNotification(`Action failed: ${err.message}`, 'error');
+    }
+  };
+
+  const openCustomerDirections = (job) => {
+    const destination = Number.isFinite(job.latitude) && Number.isFinite(job.longitude)
+      ? `${job.latitude},${job.longitude}`
+      : [job.address, job.city, job.pincode].filter(Boolean).join(', ');
+    window.open(
+      `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`,
+      '_blank',
+      'noopener,noreferrer'
+    );
   };
 
   const handleUpdateProfile = async (e) => {
@@ -132,10 +159,10 @@ export default function ProviderDashboard() {
         pincode: editPincode,
         bio: editBio
       });
-      alert('Profile updated successfully!');
+      showNotification('Profile updated successfully.');
       setUserProfile(updated);
     } catch (err) {
-      alert(`Update failed: ${err.message}`);
+      showNotification(`Update failed: ${err.message}`, 'error');
     } finally {
       setSavingProfile(false);
     }
@@ -156,6 +183,28 @@ export default function ProviderDashboard() {
 
   return (
     <div className="app-container animate-fade-in">
+      {notification && (
+        <div role="status" style={{
+          position: 'fixed', top: '5.5rem', right: '1.5rem', zIndex: 100,
+          display: 'flex', alignItems: 'center', gap: '0.75rem', maxWidth: '380px',
+          padding: '0.9rem 1rem', borderRadius: 'var(--radius-md)',
+          background: notification.type === 'error' ? '#FEF2F2' : '#ECFDF5',
+          color: notification.type === 'error' ? '#B91C1C' : '#047857',
+          border: `1px solid ${notification.type === 'error' ? '#FCA5A5' : '#6EE7B7'}`,
+          boxShadow: 'var(--shadow-lg)'
+        }}>
+          <span aria-hidden="true" style={{ fontSize: '1.1rem' }}>{notification.type === 'error' ? '⚠' : '✓'}</span>
+          <span style={{ flex: 1, fontWeight: 600 }}>{notification.message}</span>
+          <button
+            onClick={() => setNotification(null)}
+            aria-label="Dismiss notification"
+            title="Dismiss"
+            style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1 }}
+          >
+            ×
+          </button>
+        </div>
+      )}
       {errorMessage && (
         <div style={{
           background: '#FEF2F2', border: '1px solid #FCA5A5', color: 'var(--error)',
@@ -262,6 +311,15 @@ export default function ProviderDashboard() {
                   <div>
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 600, marginBottom: '0.25rem' }}>Address & Schedule</p>
                     <p style={{ color: 'var(--text-main)', fontSize: '0.9rem' }}>{job.address}, {job.city} - {job.pincode}</p>
+                    <button
+                      type="button"
+                      onClick={() => openCustomerDirections(job)}
+                      className="btn btn-secondary btn-small"
+                      style={{ marginTop: '0.7rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                      title="Open customer location in Google Maps"
+                    >
+                      <span aria-hidden="true">📍</span> Navigate
+                    </button>
                     <p style={{ color: 'var(--text-main)', fontSize: '0.9rem', marginTop: '0.25rem', fontWeight: 500 }}>⏱️ {job.bookingDate} at {formatLocalTime(job.startTime)}</p>
                   </div>
                 </div>
@@ -279,6 +337,9 @@ export default function ProviderDashboard() {
                   <span className={`badge ${job.paymentStatus === 'PAID' ? 'badge-completed' : 'badge-pending'}`}>
                     {job.paymentStatus}
                   </span>
+                  {job.paymentMethod === 'AFTER_SERVICE' && (
+                    <span style={{ color: 'var(--text-muted)' }}>(after service)</span>
+                  )}
                 </div>
 
                 {/* Actions */}
@@ -296,9 +357,16 @@ export default function ProviderDashboard() {
                     <button onClick={() => handleUpdateStatus(job.id, 'COMPLETED')} className="btn btn-success btn-small">Mark Completed</button>
                   )}
                   {job.status === 'COMPLETED' && (
-                    <span style={{ color: 'var(--success)', fontSize: '0.95rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                      ✓ Job completed.
-                    </span>
+                    <>
+                      <span style={{ color: 'var(--success)', fontSize: '0.95rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        ✓ Job completed.
+                      </span>
+                      {job.paymentMethod === 'AFTER_SERVICE' && job.paymentStatus !== 'PAID' && (
+                        <button onClick={() => handleMarkPaymentReceived(job.id)} className="btn btn-primary btn-small">
+                          Mark Payment Received
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
               </div>

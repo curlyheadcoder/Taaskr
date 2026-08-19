@@ -1,6 +1,7 @@
 package com.taaskr.dto.provider;
 
 import com.taaskr.enums.BookingStatus;
+import com.taaskr.enums.PaymentMethod;
 import com.taaskr.enums.PaymentStatus;
 
 import java.math.BigDecimal;
@@ -28,10 +29,13 @@ public class ProviderBookingResponse {
     private String address;
     private String city;
     private String pincode;
+    private BigDecimal latitude;
+    private BigDecimal longitude;
 
     private BookingStatus status;
     private BigDecimal finalAmount;
     private PaymentStatus paymentStatus;
+    private PaymentMethod paymentMethod;
     private String notes;
 
     private LocalDateTime createdAt;
@@ -43,9 +47,9 @@ public class ProviderBookingResponse {
                                    Long serviceId, String serviceName, String categoryName,
                                    Long userId, String userName, String userPhone,
                                    LocalDate bookingDate, LocalTime startTime, LocalTime endTime,
-                                   String address, String city, String pincode,
+                                   String address, String city, String pincode, BigDecimal latitude, BigDecimal longitude,
                                    BookingStatus status, BigDecimal finalAmount,
-                                   PaymentStatus paymentStatus, String notes,
+                                   PaymentStatus paymentStatus, PaymentMethod paymentMethod, String notes,
                                    LocalDateTime createdAt) {
         this.id = id;
         this.bookingCode = bookingCode;
@@ -61,9 +65,12 @@ public class ProviderBookingResponse {
         this.address = address;
         this.city = city;
         this.pincode = pincode;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.status = status;
         this.finalAmount = finalAmount;
         this.paymentStatus = paymentStatus;
+        this.paymentMethod = paymentMethod;
         this.notes = notes;
         this.createdAt = createdAt;
     }
@@ -124,6 +131,14 @@ public class ProviderBookingResponse {
         return pincode;
     }
 
+    public BigDecimal getLatitude() {
+        return latitude;
+    }
+
+    public BigDecimal getLongitude() {
+        return longitude;
+    }
+
     public BookingStatus getStatus() {
         return status;
     }
@@ -134,6 +149,10 @@ public class ProviderBookingResponse {
 
     public PaymentStatus getPaymentStatus() {
         return paymentStatus;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
     }
 
     public String getNotes() {

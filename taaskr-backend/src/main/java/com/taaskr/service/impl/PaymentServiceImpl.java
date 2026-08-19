@@ -12,6 +12,7 @@ import com.taaskr.entity.Booking;
 import com.taaskr.entity.Payment;
 import com.taaskr.entity.User;
 import com.taaskr.enums.PaymentStatus;
+import com.taaskr.enums.PaymentMethod;
 import com.taaskr.exception.BadRequestException;
 import com.taaskr.exception.ResourceNotFoundException;
 import com.taaskr.repository.BookingRepository;
@@ -73,6 +74,12 @@ public class PaymentServiceImpl implements PaymentService {
         if (booking.getPaymentStatus() == PaymentStatus.PAID) {
             throw new BadRequestException(
                     "Booking is already paid"
+            );
+        }
+
+        if (booking.getPaymentMethod() == PaymentMethod.AFTER_SERVICE) {
+            throw new BadRequestException(
+                    "This booking is payable to the provider after the service is completed"
             );
         }
 

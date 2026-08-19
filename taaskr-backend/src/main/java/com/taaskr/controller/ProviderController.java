@@ -65,6 +65,12 @@ public class ProviderController {
         return providerWorkflowService.updateBookingStatus(authentication.getName(), bookingId, request);
     }
 
+    @PutMapping("/bookings/{bookingId}/payment-received")
+    public ProviderBookingResponse markAfterServicePaymentReceived(@PathVariable Long bookingId,
+                                                                    Authentication authentication) {
+        return providerWorkflowService.markAfterServicePaymentReceived(authentication.getName(), bookingId);
+    }
+
     @GetMapping("/profile")
     public ProviderProfileResponse getProviderProfile(Authentication authentication) {
         return providerWorkflowService.getProviderProfile(authentication.getName());

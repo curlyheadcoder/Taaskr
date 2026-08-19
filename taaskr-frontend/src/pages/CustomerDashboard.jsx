@@ -200,6 +200,10 @@ export default function CustomerDashboard() {
                       <span className="badge badge-completed" style={{ fontSize: '0.65rem' }}>
                         PAID
                       </span>
+                    ) : booking.paymentMethod === 'AFTER_SERVICE' ? (
+                      <span className="badge badge-pending" style={{ fontSize: '0.65rem' }}>
+                        PAY AFTER SERVICE
+                      </span>
                     ) : (
                       <button
                         onClick={() => handlePayNow(booking)}
@@ -303,7 +307,7 @@ export default function CustomerDashboard() {
             </div>
 
             <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
-              {selectedBooking.paymentStatus === 'PENDING' && (
+              {selectedBooking.paymentStatus === 'PENDING' && selectedBooking.paymentMethod !== 'AFTER_SERVICE' && (
                 <button
                   onClick={() => {
                     setSelectedBooking(null);

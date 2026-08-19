@@ -9,6 +9,8 @@ import com.taaskr.entity.Booking;
 import com.taaskr.entity.ProviderProfile;
 import com.taaskr.entity.User;
 import com.taaskr.enums.BookingStatus;
+import com.taaskr.enums.PaymentMethod;
+import com.taaskr.enums.PaymentStatus;
 import com.taaskr.enums.Role;
 import com.taaskr.exception.BadRequestException;
 import com.taaskr.exception.ResourceNotFoundException;
@@ -155,6 +157,26 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
         return mapBooking(saved);
     }
 
+    @Override
+    @Transactional
+    public ProviderBookingResponse markAfterServicePaymentReceived(String providerEmail, Long bookingId) {
+        ProviderProfile provider = getProviderByEmail(providerEmail);
+        Booking booking = getProviderBooking(provider.getId(), bookingId);
+
+        if (booking.getPaymentMethod() != PaymentMethod.AFTER_SERVICE) {
+            throw new BadRequestException("Only pay-after-service bookings can be marked as paid by a provider");
+        }
+        if (booking.getStatus() != BookingStatus.COMPLETED) {
+            throw new BadRequestException("Payment can be marked as received only after the service is completed");
+        }
+        if (booking.getPaymentStatus() == PaymentStatus.PAID) {
+            throw new BadRequestException("Booking is already marked as paid");
+        }
+
+        booking.setPaymentStatus(PaymentStatus.PAID);
+        return mapBooking(bookingRepository.save(booking));
+    }
+
     private boolean isValidTransition(BookingStatus current, BookingStatus target){
         if(current == BookingStatus.ACCEPTED && target == BookingStatus.IN_PROGRESS){
             return true;
@@ -214,9 +236,12 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
                 booking.getAddress(),
                 booking.getCity(),
                 booking.getPincode(),
+                booking.getLatitude(),
+                booking.getLongitude(),
                 booking.getStatus(),
                 booking.getFinalAmount(),
                 booking.getPaymentStatus(),
+                booking.getPaymentMethod(),
                 booking.getNotes(),
                 booking.getCreatedAt()
         );

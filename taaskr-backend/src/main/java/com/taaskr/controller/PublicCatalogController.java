@@ -13,18 +13,20 @@ import java.util.List;
 public class PublicCatalogController {
 
     private final CatalogService catalogService;
+
     @Autowired
     public PublicCatalogController(CatalogService catalogService) {
         this.catalogService = catalogService;
     }
+
     @GetMapping("/categories")
     public List<CategoryResponse> getAllCategories() {
         return catalogService.getAllActiveCategories();
     }
 
     @GetMapping("/services")
-    public List<ServiceResponse> getServices(@RequestParam(required = false) Long catpegoryId) {
-        return catalogService.getAllActiveServices(catpegoryId);
+    public List<ServiceResponse> getServices(@RequestParam(required = false) Long categoryId) {
+        return catalogService.getAllActiveServices(categoryId);
     }
 
     @GetMapping("/services/{serviceId}")
