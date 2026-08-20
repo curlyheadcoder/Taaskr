@@ -33,11 +33,15 @@ public class DataSeeder {
                                ServiceRepository serviceRepository,
                                ProviderProfileRepository providerProfileRepository,
                                ProviderServiceRepository providerServiceRepository,
-                               AvailabilitySlotRepository availabilitySlotRepository) {
+                               AvailabilitySlotRepository availabilitySlotRepository,
+                               org.springframework.transaction.support.TransactionTemplate transactionTemplate) {
         return args -> {
-            seedUsers(userRepository, passwordEncoder);
-            seedCatalog(categoryRepository, serviceRepository);
-            seedProviderData(userRepository, serviceRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository);
+            transactionTemplate.execute(status -> {
+                seedUsers(userRepository, passwordEncoder);
+                seedCatalog(categoryRepository, serviceRepository);
+                seedProviderData(userRepository, serviceRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository);
+                return null;
+            });
         };
     }
 
