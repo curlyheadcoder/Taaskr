@@ -1,6 +1,6 @@
 // Taaskr API Service Layer (Connected to Spring Boot Backend)
 
-const BASE_URL = ''; // Proxied via Vite config to http://localhost:8081
+const BASE_URL = 'http://3.108.215.92:8081';
 
 // ==========================================
 // HTTP CLIENT UTILITIES
@@ -95,7 +95,7 @@ export const api = {
     },
 
     getServices: async (categoryId) => {
-      const query = categoryId ? `?categoryId=${categoryId}` : ''; // Using backend's actual typo 'catpegoryId'
+      const query = categoryId ? `?categoryId=${categoryId}` : '';
       return makeRequest(`/api/services${query}`);
     },
 
@@ -212,12 +212,6 @@ export const api = {
       return makeRequest(`/api/provider/bookings/${bookingId}/status`, {
         method: 'PUT',
         body: JSON.stringify({ status })
-      });
-    },
-
-    markAfterServicePaymentReceived: async (bookingId) => {
-      return makeRequest(`/api/provider/bookings/${bookingId}/payment-received`, {
-        method: 'PUT'
       });
     }
   },
