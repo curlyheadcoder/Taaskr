@@ -8,6 +8,7 @@ import com.taaskr.exception.ResourceNotFoundException;
 import com.taaskr.repository.ServiceCategoryRepository;
 import com.taaskr.repository.ServiceRepository;
 import com.taaskr.service.CatalogService;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
+    @Transactional
     public List<CategoryResponse> getAllActiveCategories() {
         return categoryRepository.findByActiveTrueOrderByNameAsc()
                 .stream()
@@ -33,6 +35,7 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
+    @Transactional
     public List<ServiceResponse> getAllActiveServices(Long categoryId) {
         List<Service> services;
 
@@ -48,6 +51,7 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
+    @Transactional
     public ServiceResponse getServiceById(Long serviceId) {
         Service service = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Service not found with id: " + serviceId));
