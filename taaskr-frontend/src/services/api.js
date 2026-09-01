@@ -134,6 +134,13 @@ export const api = {
 
     getById: async (bookingId) => {
       return makeRequest(`/api/bookings/${bookingId}`);
+    },
+
+    rate: async (bookingId, ratingData) => {
+      return makeRequest(`/api/bookings/${bookingId}/rate`, {
+        method: 'POST',
+        body: JSON.stringify(ratingData)
+      });
     }
   },
 

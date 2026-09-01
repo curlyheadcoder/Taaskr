@@ -81,6 +81,12 @@ public class Booking {
     @Column(length = 500)
     private String notes;
 
+    @Column(name = "rating")
+    private Integer rating;
+
+    @Column(name = "review", length = 500)
+    private String review;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -278,5 +284,21 @@ public class Booking {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public Integer getRating() {
+        return rating;
+    }
+
+    public void setRating(Integer rating) {
+        this.rating = rating;
+    }
+
+    public String getReview() {
+        return review;
+    }
+
+    public void setReview(String review) {
+        this.review = review;
     }
 }

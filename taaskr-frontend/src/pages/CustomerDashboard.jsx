@@ -27,6 +27,11 @@ export default function CustomerDashboard() {
   const [payingBookingId, setPayingBookingId] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
 
+  const [ratingModalData, setRatingModalData] = useState(null);
+  const [ratingValue, setRatingValue] = useState(5);
+  const [reviewText, setReviewText] = useState('');
+  const [submittingRating, setSubmittingRating] = useState(false);
+
   const fetchMyBookings = async () => {
     setLoading(true);
     setErrorMessage('');
@@ -146,6 +151,24 @@ export default function CustomerDashboard() {
     }
   };
 
+  const handleRateSubmit = async () => {
+    if (!ratingModalData) return;
+    setSubmittingRating(true);
+    try {
+      await api.bookings.rate(ratingModalData.id, {
+        rating: ratingValue,
+        review: reviewText
+      });
+      alert('Thank you! Your rating has been submitted.');
+      setRatingModalData(null);
+      fetchMyBookings(); // Refresh bookings to show the new rating
+    } catch (err) {
+      alert(`Failed to submit rating: ${err.message}`);
+    } finally {
+      setSubmittingRating(false);
+    }
+  };
+
   return (
     <div className="app-container animate-fade-in">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
@@ -236,12 +259,33 @@ export default function CustomerDashboard() {
                     )}
                   </td>
                   <td>
-                    <button
-                      onClick={() => setSelectedBooking(booking)}
-                      className="btn btn-secondary btn-small"
-                    >
-                      View Details
-                    </button>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <button
+                        onClick={() => setSelectedBooking(booking)}
+                        className="btn btn-secondary btn-small"
+                      >
+                        View Details
+                      </button>
+                      
+                      {booking.status === 'COMPLETED' && !booking.rating && (
+                        <button
+                          onClick={() => {
+                            setRatingModalData(booking);
+                            setRatingValue(5);
+                            setReviewText('');
+                          }}
+                          className="btn btn-primary btn-small"
+                          style={{ background: 'var(--amber)', color: '#000', borderColor: 'var(--amber)' }}
+                        >
+                          Rate Provider
+                        </button>
+                      )}
+                      {booking.status === 'COMPLETED' && booking.rating && (
+                        <span className="badge" style={{ background: 'var(--amber)', color: '#000', border: 'none', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                          ⭐ {booking.rating}/5
+                        </span>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -345,6 +389,67 @@ export default function CustomerDashboard() {
                 style={{ flex: 1 }}
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rating Modal Overlay */}
+      {ratingModalData && (
+        <div className="modal-overlay" onClick={() => setRatingModalData(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <h3 style={{ fontSize: '1.4rem', color: 'var(--text-main)', marginBottom: '0.5rem' }}>Rate Provider</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+              How was your experience with {ratingModalData.providerName || 'the provider'}?
+            </p>
+
+            <div className="form-group">
+              <label className="form-label" style={{ textAlign: 'center', display: 'block', fontSize: '1.1rem' }}>Rating (1-5 Stars)</label>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', margin: '1rem 0' }}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span
+                    key={star}
+                    onClick={() => setRatingValue(star)}
+                    style={{
+                      fontSize: '2rem',
+                      cursor: 'pointer',
+                      color: ratingValue >= star ? 'var(--amber)' : 'var(--border-light)',
+                      transition: 'color 0.2s'
+                    }}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Review (Optional)</label>
+              <textarea
+                className="form-control"
+                placeholder="Share your experience..."
+                rows="3"
+                value={reviewText}
+                onChange={(e) => setReviewText(e.target.value)}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+              <button
+                onClick={handleRateSubmit}
+                className="btn btn-primary"
+                style={{ flex: 1, background: 'var(--amber)', color: '#000', borderColor: 'var(--amber)' }}
+                disabled={submittingRating}
+              >
+                {submittingRating ? 'Submitting...' : 'Submit Rating'}
+              </button>
+              <button
+                onClick={() => setRatingModalData(null)}
+                className="btn btn-secondary"
+                style={{ flex: 1 }}
+              >
+                Cancel
               </button>
             </div>
           </div>

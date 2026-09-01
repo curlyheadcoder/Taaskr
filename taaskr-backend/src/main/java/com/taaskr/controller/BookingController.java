@@ -38,6 +38,13 @@ public class BookingController {
         return bookingService.getMyBookingById(authentication.getName(), bookingId);
     }
 
+    @PostMapping("/{bookingId}/rate")
+    public BookingResponse rateBooking(@PathVariable Long bookingId, 
+                                       @Valid @RequestBody com.taaskr.dto.booking.RateBookingRequest request, 
+                                       Authentication authentication) {
+        return bookingService.rateBooking(authentication.getName(), bookingId, request);
+    }
+
     @GetMapping("/available-providers")
     public List<AvailableProviderResponse> getAvailableProviders(
             @RequestParam Long serviceId,

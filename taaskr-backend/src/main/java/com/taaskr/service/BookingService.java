@@ -13,5 +13,6 @@ public interface BookingService {
     BookingResponse createBooking(String userEmail, CreateBookingRequest request);
     List<BookingResponse> getMyBookings(String userEmail);
     BookingResponse getMyBookingById(String userEmail, Long bookingId);
+    BookingResponse rateBooking(String userEmail, Long bookingId, com.taaskr.dto.booking.RateBookingRequest request);
     List<AvailableProviderResponse> getAvailableProviders(Long serviceId, String city, String pincode, LocalDate date, LocalTime startTime);
 }

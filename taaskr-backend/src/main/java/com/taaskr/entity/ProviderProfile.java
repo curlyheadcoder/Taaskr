@@ -23,6 +23,8 @@ public class ProviderProfile {
     private Double rating = 0.0;
     @Column(nullable = false)
     private Integer totalJobs = 0;
+    @Column(nullable = false)
+    private Integer totalRatings = 0;
     @Column(length= 500)
     private String bio;
 
@@ -99,5 +101,13 @@ public class ProviderProfile {
 
     public void setBio(String bio) {
         this.bio = bio;
+    }
+
+    public Integer getTotalRatings() {
+        return totalRatings;
+    }
+
+    public void setTotalRatings(Integer totalRatings) {
+        this.totalRatings = totalRatings;
     }
 }

@@ -44,6 +44,9 @@ public class BookingResponse {
     private PaymentMethod paymentMethod;
     private String notes;
 
+    private Integer rating;
+    private String review;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -60,6 +63,7 @@ public class BookingResponse {
                            BookingStatus status,
                            BigDecimal totalAmount, BigDecimal discountAmount, BigDecimal finalAmount,
                            PaymentStatus paymentStatus, PaymentMethod paymentMethod, String notes,
+                           Integer rating, String review,
                            LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.bookingCode = bookingCode;
@@ -87,6 +91,8 @@ public class BookingResponse {
         this.paymentStatus = paymentStatus;
         this.paymentMethod = paymentMethod;
         this.notes = notes;
+        this.rating = rating;
+        this.review = review;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -313,5 +319,21 @@ public class BookingResponse {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Integer getRating() {
+        return rating;
+    }
+
+    public void setRating(Integer rating) {
+        this.rating = rating;
+    }
+
+    public String getReview() {
+        return review;
+    }
+
+    public void setReview(String review) {
+        this.review = review;
     }
 }

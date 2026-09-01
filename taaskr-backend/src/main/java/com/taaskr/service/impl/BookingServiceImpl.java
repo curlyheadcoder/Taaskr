@@ -189,6 +189,41 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional
+    public BookingResponse rateBooking(String userEmail, Long bookingId, com.taaskr.dto.booking.RateBookingRequest request) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Booking booking = bookingRepository.findByIdAndUserId(bookingId, user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+
+        if (booking.getStatus() != com.taaskr.enums.BookingStatus.COMPLETED) {
+            throw new IllegalStateException("You can only rate a completed booking.");
+        }
+
+        if (booking.getRating() != null) {
+            throw new IllegalStateException("Booking has already been rated.");
+        }
+
+        booking.setRating(request.getRating());
+        booking.setReview(request.getReview());
+
+        ProviderProfile provider = booking.getProvider();
+        if (provider != null) {
+            int currentTotalRatings = provider.getTotalRatings() != null ? provider.getTotalRatings() : 0;
+            double currentAverage = provider.getRating() != null ? provider.getRating() : 0.0;
+            
+            double newAverage = ((currentAverage * currentTotalRatings) + request.getRating()) / (currentTotalRatings + 1);
+            
+            provider.setTotalRatings(currentTotalRatings + 1);
+            provider.setRating(newAverage);
+            // JPA will dirty check and save provider profile along with booking
+        }
+
+        return mapBooking(booking);
+    }
+
+    @Override
     public List<AvailableProviderResponse> getAvailableProviders(Long serviceId, String city, String pincode, LocalDate date, LocalTime startTime) {
         com.taaskr.entity.Service service = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
@@ -351,6 +386,8 @@ public class BookingServiceImpl implements BookingService {
                 booking.getPaymentStatus(),
                 booking.getPaymentMethod(),
                 booking.getNotes(),
+                booking.getRating(),
+                booking.getReview(),
                 booking.getCreatedAt(),
                 booking.getUpdatedAt()
         );
