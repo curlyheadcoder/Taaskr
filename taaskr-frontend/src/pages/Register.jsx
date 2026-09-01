@@ -154,8 +154,8 @@ export default function Register() {
               disabled={loading}
               style={{ background: 'var(--bg-slate-900)' }}
             >
-              <option value="USER">Customer (Book services)</option>
-              <option value="PROVIDER">Provider (Deliver services)</option>
+              <option value="USER" style={{ color: '#0F172A', background: '#FFFFFF' }}>Customer (Book services)</option>
+              <option value="PROVIDER" style={{ color: '#0F172A', background: '#FFFFFF' }}>Provider (Deliver services)</option>
             </select>
           </div>
 
