@@ -230,10 +230,10 @@ public class BookingServiceImpl implements BookingService {
         
         LocalTime endTime = startTime.plusMinutes(service.getDurationMinutes());
         
-        List<ProviderCategory> providerCategories = providerCategoryRepository.findByCategoryId(service.getCategory().getId());
+        List<com.taaskr.entity.ProviderService> providerServices = providerServiceRepository.findByServiceId(service.getId());
 
-        List<ProviderProfile> candidateProviders = providerCategories.stream()
-                .map(ProviderCategory::getProvider)
+        List<ProviderProfile> candidateProviders = providerServices.stream()
+                .map(com.taaskr.entity.ProviderService::getProvider)
                 .filter(provider -> Boolean.TRUE.equals(provider.getApproved()) && Boolean.TRUE.equals(provider.getUser().getEnabled()))
                 .filter(provider -> provider.getUser().getRole() == Role.PROVIDER)
                 .distinct()
@@ -277,10 +277,10 @@ public class BookingServiceImpl implements BookingService {
                                                     LocalTime startTime,
                                                     LocalTime endTime) {
 
-        List<ProviderCategory> providerCategories = providerCategoryRepository.findByCategoryId(service.getCategory().getId());
+        List<com.taaskr.entity.ProviderService> providerServices = providerServiceRepository.findByServiceId(service.getId());
 
-        List<ProviderProfile> candidateProviders = providerCategories.stream()
-                .map(ProviderCategory::getProvider)
+        List<ProviderProfile> candidateProviders = providerServices.stream()
+                .map(com.taaskr.entity.ProviderService::getProvider)
                 .filter(provider -> Boolean.TRUE.equals(provider.getApproved()) && Boolean.TRUE.equals(provider.getUser().getEnabled()))
                 .filter(provider -> provider.getUser().getRole() == Role.PROVIDER)
                 .distinct()
