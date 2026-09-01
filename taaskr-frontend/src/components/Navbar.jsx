@@ -66,29 +66,19 @@ export default function Navbar() {
       justifyContent: 'space-between',
     }}>
       {/* Brand Logo */}
-      <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <div style={{
-          background: '#ffffff',
-          borderRadius: '50%',
-          padding: '0.35rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: 'var(--shadow-sm)'
-        }}>
-          <img
-            src="/taaskr-logo.png"
-            alt="Taaskr logo"
-            width="32"
-            height="32"
-            style={{ display: 'block', objectFit: 'contain' }}
-          />
-        </div>
+      <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+        <img
+          src="/taaskr-logo.png"
+          alt="Taaskr logo"
+          width="36"
+          height="36"
+          style={{ display: 'block', objectFit: 'contain' }}
+        />
         <span style={{
           fontFamily: 'var(--font-body)',
           fontSize: '1.5rem',
           fontWeight: 800,
-          color: 'var(--primary)',
+          color: '#2563EB',
           letterSpacing: '-0.03em'
         }}>Taaskr</span>
       </Link>

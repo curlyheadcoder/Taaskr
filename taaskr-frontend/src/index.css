@@ -40,14 +40,14 @@
 
 /* Provider Theme Override */
 body.theme-provider {
-  --primary: #064E3B;          /* Deep Emerald/Teal */
-  --primary-hover: #047857;
-  --secondary: #D97706;        /* Warm Gold */
-  --secondary-hover: #B45309;
-  --bg-page: #F0FDF4;          /* Soft mint-white */
-  --bg-hover: #DCFCE7;
-  --border-light: #D1FAE5;
-  --border-hover: #A7F3D0;
+  --primary: #1E40AF;          /* Deep Royal Blue - harmonious with logo */
+  --primary-hover: #1D4ED8;
+  --secondary: #0D9488;        /* Teal accent */
+  --secondary-hover: #0F766E;
+  --bg-page: #F8FAFC;          /* Clean Slate / Neutral Off-White */
+  --bg-hover: #F1F5F9;
+  --border-light: #E2E8F0;
+  --border-hover: #CBD5E1;
 }
 
 /* Admin Theme Override */
@@ -77,13 +77,13 @@ body.dark {
 
 /* Provider Dark */
 body.theme-provider.dark {
-  --primary: #34D399;
-  --primary-hover: #10B981;
-  --bg-page: #022C22;
-  --bg-card: #064E3B;
-  --bg-hover: #047857;
-  --border-light: #065F46;
-  --border-hover: #059669;
+  --primary: #60A5FA;
+  --primary-hover: #3B82F6;
+  --bg-page: #0B1120;
+  --bg-card: #1E293B;
+  --bg-hover: #334155;
+  --border-light: #334155;
+  --border-hover: #475569;
 }
 
 /* Admin Dark */
