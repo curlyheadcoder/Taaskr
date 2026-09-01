@@ -89,7 +89,9 @@ if (-not (Test-Path -Path $MAVEN_M2_PATH)) {
 }
 
 $MAVEN_WRAPPER_DISTS = $null
-if ((Get-Item $MAVEN_M2_PATH).Target[0] -eq $null) {
+# `Target` is $null for a normal directory. Indexing it throws in PowerShell,
+# preventing every Maven-wrapper command from starting.
+if (-not (Get-Item $MAVEN_M2_PATH).Target) {
   $MAVEN_WRAPPER_DISTS = "$MAVEN_M2_PATH/wrapper/dists"
 } else {
   $MAVEN_WRAPPER_DISTS = (Get-Item $MAVEN_M2_PATH).Target[0] + "/wrapper/dists"

@@ -16,6 +16,7 @@ import com.taaskr.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
@@ -24,6 +25,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 @Configuration
+@ConditionalOnProperty(name = "app.seed.demo-data", havingValue = "true")
 public class DataSeeder {
 
     @Bean

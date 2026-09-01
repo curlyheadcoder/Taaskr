@@ -1,6 +1,8 @@
 // Taaskr API Service Layer (Connected to Spring Boot Backend)
 
-const BASE_URL = 'http://3.108.215.92:8081';
+// In development, use Vite's `/api` proxy so browser requests stay on the
+// frontend origin. Deployments can set VITE_API_BASE_URL to their API URL.
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
 // ==========================================
 // HTTP CLIENT UTILITIES

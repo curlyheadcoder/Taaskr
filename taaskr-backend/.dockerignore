@@ -1,0 +1,5 @@
+.git
+.idea
+target
+*.log
+src/main/resources/application-local.properties
