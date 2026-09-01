@@ -142,9 +142,18 @@ export default function Navbar() {
               <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)' }}>
                 {user.name}
               </div>
-              <span className={`badge ${
-                user.role === 'ADMIN' ? 'badge-pending' : user.role === 'PROVIDER' ? 'badge-assigned' : 'badge-completed'
-              }`} style={{ fontSize: '0.65rem', padding: '0.1rem 0.4rem', marginTop: '0.1rem' }}>
+              <span style={{
+                fontSize: '0.68rem',
+                fontWeight: 700,
+                padding: '0.15rem 0.5rem',
+                borderRadius: 'var(--radius-full)',
+                marginTop: '0.15rem',
+                display: 'inline-block',
+                textTransform: 'uppercase',
+                background: user.role === 'ADMIN' ? '#EDE9FE' : user.role === 'PROVIDER' ? '#E0F2FE' : '#DBEAFE',
+                color: user.role === 'ADMIN' ? '#6D28D9' : user.role === 'PROVIDER' ? '#0369A1' : '#1D4ED8',
+                border: `1px solid ${user.role === 'ADMIN' ? '#DDD6FE' : user.role === 'PROVIDER' ? '#BAE6FD' : '#BFDBFE'}`
+              }}>
                 {user.role}
               </span>
             </div>

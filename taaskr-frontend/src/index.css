@@ -38,34 +38,49 @@
   --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Provider Theme Override */
-body.theme-provider {
-  --primary: #1E40AF;          /* Deep Royal Blue - harmonious with logo */
+/* Default / User Theme */
+body, body.theme-user {
+  --primary: #2563EB;          /* Royal Brand Blue */
   --primary-hover: #1D4ED8;
-  --secondary: #0D9488;        /* Teal accent */
-  --secondary-hover: #0F766E;
-  --bg-page: #F8FAFC;          /* Clean Slate / Neutral Off-White */
+  --secondary: #F59E0B;        /* Golden Amber */
+  --secondary-hover: #D97706;
+  --bg-page: #F8FAFC;          /* Clean Slate */
+  --bg-card: #FFFFFF;
   --bg-hover: #F1F5F9;
   --border-light: #E2E8F0;
   --border-hover: #CBD5E1;
 }
 
-/* Admin Theme Override */
+/* Provider Theme - Ocean Blue / Cyan */
+body.theme-provider {
+  --primary: #0369A1;          /* Deep Ocean Cyan */
+  --primary-hover: #0284C7;
+  --secondary: #F59E0B;        /* Warm Gold */
+  --secondary-hover: #D97706;
+  --bg-page: #F0F9FF;          /* Crisp Ice Blue */
+  --bg-card: #FFFFFF;
+  --bg-hover: #E0F2FE;
+  --border-light: #BAE6FD;
+  --border-hover: #7DD3FC;
+}
+
+/* Admin Theme - Royal Indigo & Violet */
 body.theme-admin {
-  --primary: #312E81;          /* Rich Indigo */
+  --primary: #4F46E5;          /* Electric Indigo */
   --primary-hover: #4338CA;
-  --secondary: #E11D48;        /* Coral/Rose */
-  --secondary-hover: #BE123C;
-  --bg-page: #F5F3FF;          /* Soft lavender-white */
+  --secondary: #8B5CF6;        /* Vivid Violet */
+  --secondary-hover: #7C3AED;
+  --bg-page: #F5F3FF;          /* Soft Lavender */
+  --bg-card: #FFFFFF;
   --bg-hover: #EDE9FE;
-  --border-light: #E0E7FF;
-  --border-hover: #C7D2FE;
+  --border-light: #DDD6FE;
+  --border-hover: #C4B5FD;
 }
 
 /* Base Dark Mode */
-body.dark {
-  --primary: #38BDF8;
-  --primary-hover: #0EA5E9;
+body.dark, body.theme-user.dark {
+  --primary: #60A5FA;
+  --primary-hover: #3B82F6;
   --bg-page: #0F172A;
   --bg-card: #1E293B;
   --bg-hover: #334155;
@@ -77,13 +92,13 @@ body.dark {
 
 /* Provider Dark */
 body.theme-provider.dark {
-  --primary: #60A5FA;
-  --primary-hover: #3B82F6;
-  --bg-page: #0B1120;
-  --bg-card: #1E293B;
-  --bg-hover: #334155;
-  --border-light: #334155;
-  --border-hover: #475569;
+  --primary: #38BDF8;
+  --primary-hover: #0EA5E9;
+  --bg-page: #082F49;
+  --bg-card: #0C4A6E;
+  --bg-hover: #075985;
+  --border-light: #0369A1;
+  --border-hover: #0284C7;
 }
 
 /* Admin Dark */
