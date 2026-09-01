@@ -372,7 +372,7 @@ export default function ProviderDashboard() {
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <p style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '1.3rem' }}>₹{job.finalAmount}</p>
-                      <button onClick={() => handleClaimTask(job.id)} className="btn btn-primary btn-small" style={{ marginTop: '0.5rem', background: 'var(--amber)', borderColor: 'var(--amber)', color: '#000' }}>
+                      <button onClick={() => handleClaimTask(job.id)} className="btn btn-primary btn-small" style={{ marginTop: '0.5rem', background: 'var(--text-main)', borderColor: 'var(--text-main)', color: 'var(--bg-page)' }}>
                         Accept Job
                       </button>
                     </div>

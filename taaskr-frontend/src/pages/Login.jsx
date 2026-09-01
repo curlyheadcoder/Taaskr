@@ -55,7 +55,7 @@ export default function Login() {
       minHeight: 'calc(100vh - 80px)',
       margin: '-2rem -1.5rem',
       padding: '2rem 1.5rem',
-      background: `linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.7)), url(${bgImage})`,
+      background: `linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.7))`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       transition: 'background 0.5s ease-in-out'

@@ -83,7 +83,7 @@ export default function Home() {
       {/* Premium Hero Section */}
       <section style={{
         position: 'relative',
-        backgroundImage: `linear-gradient(to right, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.5) 60%, transparent 100%), url('/hero-bg.jpg')`,
+        background: `linear-gradient(to right, #0F172A 0%, #1E293B 100%)`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         padding: '8rem 2rem',
