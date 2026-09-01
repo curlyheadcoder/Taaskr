@@ -22,6 +22,7 @@ export default function ServiceDetails() {
     { label: 'Morning (09:00 AM - 11:00 AM)', value: '09:00' },
     { label: 'Midday (11:30 AM - 01:30 PM)', value: '11:30' },
     { label: 'Afternoon (03:00 PM - 06:00 PM)', value: '15:00' },
+    { label: 'Evening (06:30 PM - 08:30 PM)', value: '18:30' }
   ];
 
   useEffect(() => {

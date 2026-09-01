@@ -150,6 +150,14 @@ public class BookingServiceImpl implements BookingService {
         if (assignmentResult.slot() != null) {
             assignmentResult.slot().setBooked(true);
             availabilitySlotRepository.save(assignmentResult.slot());
+        } else if (assignmentResult.provider() != null) {
+            AvailabilitySlot newSlot = new AvailabilitySlot();
+            newSlot.setProvider(assignmentResult.provider());
+            newSlot.setAvailableDate(request.getBookingDate());
+            newSlot.setStartTime(startTime);
+            newSlot.setEndTime(endTime);
+            newSlot.setBooked(true);
+            availabilitySlotRepository.save(newSlot);
         }
 
         // Publish asynchronous domain event
@@ -239,12 +247,9 @@ public class BookingServiceImpl implements BookingService {
                 .distinct()
                 .toList();
                 
-        // Filter those who have availability slot and no overlapping bookings
+        // Filter those who have no overlapping bookings
         List<ProviderProfile> availableProviders = candidateProviders.stream()
                 .filter(provider -> {
-                    AvailabilitySlot slot = findMatchingSlot(provider, date, startTime, endTime);
-                    if (slot == null) return false;
-                    
                     boolean hasOverlap = bookingRepository.existsByProviderIdAndBookingDateAndStartTimeLessThanAndEndTimeGreaterThan(
                             provider.getId(), date, endTime, startTime);
                     return !hasOverlap;
@@ -308,11 +313,6 @@ public class BookingServiceImpl implements BookingService {
                                                               LocalTime endTime) {
         return providers.stream()
                 .map(provider -> {
-                    AvailabilitySlot slot = findMatchingSlot(provider, bookingDate, startTime, endTime);
-                    if (slot == null) {
-                        return null;
-                    }
-
                     boolean overlappingBookingExists =
                             bookingRepository.existsByProviderIdAndBookingDateAndStartTimeLessThanAndEndTimeGreaterThan(
                                     provider.getId(),
@@ -324,6 +324,8 @@ public class BookingServiceImpl implements BookingService {
                     if (overlappingBookingExists) {
                         return null;
                     }
+
+                    AvailabilitySlot slot = findMatchingSlot(provider, bookingDate, startTime, endTime);
 
                     long workload = bookingRepository.countByProviderIdAndStatusIn(
                             provider.getId(),

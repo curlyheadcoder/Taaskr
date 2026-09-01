@@ -194,6 +194,7 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
     }
 
     @Override
+    @Transactional
     public List<ProviderBookingResponse> getAvailableTasks(String providerEmail) {
         ProviderProfile provider = getProviderByEmail(providerEmail);
         
