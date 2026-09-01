@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
+import AiAssistantModal from './components/AiAssistantModal';
 
 // Page Views
 import Home from './pages/Home';
@@ -70,6 +71,9 @@ export default function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
+
+        {/* Global AI Diagnostic Assistant Modal */}
+        <AiAssistantModal />
       </div>
     </Router>
   );

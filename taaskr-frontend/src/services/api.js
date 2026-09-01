@@ -313,5 +313,17 @@ export const api = {
         })
       });
     }
+  },
+
+  // ----------------------------------------
+  // AI DIAGNOSTIC ASSISTANT
+  // ----------------------------------------
+  ai: {
+    diagnose: async (query) => {
+      return makeRequest('/api/ai/diagnose', {
+        method: 'POST',
+        body: JSON.stringify({ query })
+      });
+    }
   }
 };
