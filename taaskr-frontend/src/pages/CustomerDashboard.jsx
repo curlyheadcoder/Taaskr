@@ -22,17 +22,24 @@ const loadRazorpayScript = () => {
 export default function CustomerDashboard() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [payingBookingId, setPayingBookingId] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
 
   const fetchMyBookings = async () => {
+    setLoading(true);
+    setErrorMessage('');
     try {
       const res = await api.bookings.getMyBookings();
-      // Sort: Newest bookings first
-      setBookings(res.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+      if (Array.isArray(res)) {
+        setBookings(res.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)));
+      } else {
+        setBookings([]);
+      }
     } catch (err) {
       console.error('Failed to fetch user bookings:', err);
+      setErrorMessage(err.message || 'Failed to load bookings');
     } finally {
       setLoading(false);
     }
@@ -149,6 +156,19 @@ export default function CustomerDashboard() {
         <Link to="/" className="btn btn-primary">Book New Service</Link>
       </div>
 
+      {errorMessage && (
+        <div style={{
+          background: '#FEF2F2', border: '1px solid #FCA5A5', color: 'var(--error)',
+          padding: '1rem 1.25rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+        }}>
+          <span>⚠️ {errorMessage}</span>
+          <button onClick={fetchMyBookings} className="btn btn-secondary btn-small">
+            Retry
+          </button>
+        </div>
+      )}
+
       {loading ? (
         <div style={{ textAlign: 'center', padding: '4rem 0', color: 'var(--text-muted)' }}>
           <div style={{
@@ -186,10 +206,10 @@ export default function CustomerDashboard() {
               {bookings.map((booking) => (
                 <tr key={booking.id}>
                   <td style={{ fontFamily: 'monospace', color: 'var(--text-muted)' }}>#{String(booking.id).slice(-6)}</td>
-                  <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{booking.serviceName}</td>
-                  <td style={{ color: 'var(--text-main)' }}>{booking.bookingDate}</td>
-                  <td style={{ color: 'var(--text-main)' }}>{formatLocalTime(booking.startTime)}</td>
-                  <td style={{ color: 'var(--primary)', fontWeight: 700 }}>₹{booking.finalAmount}</td>
+                  <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{booking.serviceName || 'Service'}</td>
+                  <td style={{ color: 'var(--text-main)' }}>{booking.bookingDate || 'N/A'}</td>
+                  <td style={{ color: 'var(--text-main)' }}>{formatLocalTime(booking.startTime) || 'N/A'}</td>
+                  <td style={{ color: 'var(--primary)', fontWeight: 700 }}>₹{booking.finalAmount ?? booking.totalAmount ?? 0}</td>
                   <td>
                     <span className={`badge ${getStatusClass(booking.status)}`}>
                       {booking.status}
