@@ -6,6 +6,7 @@ import com.taaskr.entity.User;
 import com.taaskr.exception.ResourceNotFoundException;
 import com.taaskr.repository.ProviderProfileRepository;
 import com.taaskr.service.AdminProviderService;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class AdminProviderServiceImpl implements AdminProviderService {
     }
 
     @Override
+    @Transactional
     public List<AdminProviderResponse> getAllProviders() {
 
         return providerProfileRepository.findAllByOrderByIdAsc()
@@ -29,6 +31,7 @@ public class AdminProviderServiceImpl implements AdminProviderService {
     }
 
     @Override
+    @Transactional
     public AdminProviderResponse approveProvider(Long providerId) {
         ProviderProfile providerProfile = providerProfileRepository.findById(providerId)
                 .orElseThrow(() ->
