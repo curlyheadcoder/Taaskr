@@ -75,6 +75,7 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
     }
 
     @Override
+    @Transactional
     public List<AvailabilityResponse> getMyAvailability(String providerEmail) {
         ProviderProfile provider = getProviderByEmail(providerEmail);
         return availabilitySlotRepository.findByProviderIdOrderByAvailableDateAscStartTimeAsc(provider.getId())
@@ -98,6 +99,7 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
     }
 
     @Override
+    @Transactional
     public List<ProviderBookingResponse> getMyAssignedBookings(String providerEmail) {
         ProviderProfile provider = getProviderByEmail(providerEmail);
         return bookingRepository.findByProviderIdOrderByCreatedAtDesc(provider.getId())
@@ -248,6 +250,7 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
     }
 
     @Override
+    @Transactional
     public ProviderProfileResponse getProviderProfile(String providerEmail) {
         ProviderProfile provider = getProviderByEmail(providerEmail);
         return mapProfileResponse(provider);
