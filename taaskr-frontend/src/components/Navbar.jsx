@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../services/api';
+import { Sun, Moon } from 'lucide-react';
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -131,10 +132,20 @@ export default function Navbar() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
         <button 
           onClick={() => setIsDark(!isDark)} 
-          style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.2rem' }}
-          title="Toggle Dark Mode"
+          style={{ 
+            background: 'var(--bg-hover)', 
+            border: '1px solid var(--border-light)', 
+            borderRadius: '9999px',
+            cursor: 'pointer', 
+            padding: '0.4rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'var(--transition-fast)'
+          }}
+          title="Toggle Theme"
         >
-          {isDark ? '☀️' : '🌙'}
+          {isDark ? <Sun size={18} color="var(--secondary)" /> : <Moon size={18} color="var(--primary)" />}
         </button>
         {user ? (
           <>

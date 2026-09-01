@@ -355,7 +355,7 @@ export default function ProviderDashboard() {
             </div>
 
             {availableTasks.length === 0 ? (
-              <div className="premium-card" style={{ padding: '3rem 1.5rem', textAlign: 'center', background: '#F8FAFC' }}>
+              <div className="premium-card" style={{ padding: '3rem 1.5rem', textAlign: 'center', background: 'var(--bg-hover)' }}>
                 <span style={{ fontSize: '2.5rem' }}>🔍</span>
                 <p style={{ marginTop: '1rem', fontSize: '0.95rem', color: 'var(--text-muted)' }}>No unassigned tasks in your area right now.</p>
               </div>
@@ -363,7 +363,7 @@ export default function ProviderDashboard() {
               availableTasks.map((job) => (
                 <div key={job.id} className="premium-card" style={{
                   padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem',
-                  borderLeft: '4px solid var(--amber)', background: '#FFFBFA'
+                  borderLeft: '4px solid var(--secondary)', background: 'var(--bg-card)'
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
@@ -377,7 +377,7 @@ export default function ProviderDashboard() {
                       </button>
                     </div>
                   </div>
-                  <div style={{ background: '#FFF', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
+                  <div style={{ background: 'var(--bg-hover)', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
                     <p style={{ color: 'var(--text-main)', fontSize: '0.9rem', fontWeight: 500 }}>⏱️ Scheduled for: {job.bookingDate} at {formatLocalTime(job.startTime)}</p>
                     {job.notes && <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.5rem', fontStyle: 'italic' }}>"{job.notes}"</p>}
                   </div>
