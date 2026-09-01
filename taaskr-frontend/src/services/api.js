@@ -19,7 +19,7 @@ const getHeaders = () => {
 };
 
 const handleResponse = async (res) => {
-  if (res.status === 401 || res.status === 403) {
+  if (res.status === 401) {
     localStorage.removeItem('taaskr_token');
     localStorage.removeItem('taaskr_current_user');
   }
@@ -214,6 +214,12 @@ export const api = {
       return makeRequest(`/api/provider/bookings/${bookingId}/status`, {
         method: 'PUT',
         body: JSON.stringify({ status })
+      });
+    },
+
+    markAfterServicePaymentReceived: async (bookingId) => {
+      return makeRequest(`/api/provider/bookings/${bookingId}/payment-received`, {
+        method: 'PUT'
       });
     },
 

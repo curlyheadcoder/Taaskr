@@ -32,7 +32,7 @@ export default function App() {
             <Route
               path="/booking-flow"
               element={
-                <ProtectedRoute allowedRoles={['USER']}>
+                <ProtectedRoute allowedRoles={['USER', 'PROVIDER', 'ADMIN']}>
                   <BookingFlow />
                 </ProtectedRoute>
               }
@@ -40,7 +40,7 @@ export default function App() {
             <Route
               path="/bookings"
               element={
-                <ProtectedRoute allowedRoles={['USER']}>
+                <ProtectedRoute allowedRoles={['USER', 'PROVIDER', 'ADMIN']}>
                   <CustomerDashboard />
                 </ProtectedRoute>
               }

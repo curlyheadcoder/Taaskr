@@ -16,7 +16,7 @@ import com.taaskr.dto.booking.AvailableProviderResponse;
 
 @RestController
 @RequestMapping("/api/bookings")
-@PreAuthorize("hasRole('USER')")
+@PreAuthorize("hasAnyRole('USER', 'PROVIDER', 'ADMIN')")
 public class BookingController {
 
     private final BookingService bookingService;
