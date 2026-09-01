@@ -205,6 +205,16 @@ export const api = {
       return makeRequest('/api/provider/bookings');
     },
 
+    getAvailableTasks: async () => {
+      return makeRequest('/api/provider/available-tasks');
+    },
+
+    claimTask: async (bookingId) => {
+      return makeRequest(`/api/provider/bookings/${bookingId}/claim`, {
+        method: 'PUT'
+      });
+    },
+
     acceptBooking: async (bookingId) => {
       return makeRequest(`/api/provider/bookings/${bookingId}/accept`, {
         method: 'PUT'

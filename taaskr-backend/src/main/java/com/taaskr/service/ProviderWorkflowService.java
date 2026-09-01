@@ -30,6 +30,10 @@ public interface ProviderWorkflowService {
 
     ProviderBookingResponse markAfterServicePaymentReceived(String providerEmail, Long bookingId);
 
+    List<ProviderBookingResponse> getAvailableTasks(String providerEmail);
+
+    ProviderBookingResponse claimTask(String providerEmail, Long bookingId);
+
     ProviderProfileResponse getProviderProfile(String providerEmail);
 
     ProviderProfileResponse updateProviderProfile(String providerEmail, UpdateProviderProfileRequest request);

@@ -6,6 +6,7 @@ export default function ProviderDashboard() {
   const [userProfile, setUserProfile] = useState(null);
   const [availability, setAvailability] = useState([]);
   const [assignedBookings, setAssignedBookings] = useState([]);
+  const [availableTasks, setAvailableTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
   const [notification, setNotification] = useState(null);
@@ -58,6 +59,10 @@ export default function ProviderDashboard() {
       // 3. Load assigned bookings (allowed for provider role)
       const bookingsList = await api.provider.getBookings();
       setAssignedBookings(bookingsList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+
+      // 3.5. Load available tasks
+      const tasksList = await api.provider.getAvailableTasks();
+      setAvailableTasks(tasksList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
 
       // 4. Load selected categories
       const myCats = await api.provider.getCategories();
@@ -114,6 +119,16 @@ export default function ProviderDashboard() {
       loadProviderDashboard(); // Reload lists
     } catch (err) {
       showNotification(`Action failed: ${err.message}`, 'error');
+    }
+  };
+
+  const handleClaimTask = async (bookingId) => {
+    try {
+      await api.provider.claimTask(bookingId);
+      showNotification('Task claimed successfully! It is now in your assigned bookings.');
+      loadProviderDashboard(); // Reload lists
+    } catch (err) {
+      showNotification(`Claim failed: ${err.message}`, 'error');
     }
   };
 
@@ -329,12 +344,54 @@ export default function ProviderDashboard() {
       )}
 
       <div className="grid-cols-3" style={{ gap: '2rem', alignItems: 'flex-start' }}>
-        {/* Left Column: Assigned Bookings */}
-        <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ fontSize: '1.6rem', color: 'var(--primary)' }}>Assigned Customer Bookings</h2>
-            <span className="badge badge-assigned">{assignedBookings.length} Total</span>
+        {/* Left Column: Assigned Bookings & Available Tasks */}
+        <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+          
+          {/* AVAILABLE TASKS SECTION */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ fontSize: '1.6rem', color: 'var(--amber)' }}>Available Tasks (Claim Now)</h2>
+              <span className="badge badge-pending">{availableTasks.length} Available</span>
+            </div>
+
+            {availableTasks.length === 0 ? (
+              <div className="premium-card" style={{ padding: '3rem 1.5rem', textAlign: 'center', background: '#F8FAFC' }}>
+                <span style={{ fontSize: '2.5rem' }}>🔍</span>
+                <p style={{ marginTop: '1rem', fontSize: '0.95rem', color: 'var(--text-muted)' }}>No unassigned tasks in your area right now.</p>
+              </div>
+            ) : (
+              availableTasks.map((job) => (
+                <div key={job.id} className="premium-card" style={{
+                  padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem',
+                  borderLeft: '4px solid var(--amber)', background: '#FFFBFA'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                      <h3 style={{ color: 'var(--text-main)', fontSize: '1.3rem', marginBottom: '0.25rem' }}>{job.serviceName}</h3>
+                      <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>📍 {job.city} - {job.pincode}</p>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <p style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '1.3rem' }}>₹{job.finalAmount}</p>
+                      <button onClick={() => handleClaimTask(job.id)} className="btn btn-primary btn-small" style={{ marginTop: '0.5rem', background: 'var(--amber)', borderColor: 'var(--amber)', color: '#000' }}>
+                        Accept Job
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{ background: '#FFF', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
+                    <p style={{ color: 'var(--text-main)', fontSize: '0.9rem', fontWeight: 500 }}>⏱️ Scheduled for: {job.bookingDate} at {formatLocalTime(job.startTime)}</p>
+                    {job.notes && <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.5rem', fontStyle: 'italic' }}>"{job.notes}"</p>}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
+
+          {/* ASSIGNED BOOKINGS SECTION */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ fontSize: '1.6rem', color: 'var(--primary)' }}>Assigned Customer Bookings</h2>
+              <span className="badge badge-assigned">{assignedBookings.length} Total</span>
+            </div>
 
           {assignedBookings.length === 0 ? (
             <div className="premium-card" style={{ padding: '4rem 1.5rem', textAlign: 'center' }}>
@@ -437,6 +494,7 @@ export default function ProviderDashboard() {
               </div>
             ))
           )}
+          </div>
         </div>
 
         {/* Right Column: Availability Calendar & Profile Edit */}

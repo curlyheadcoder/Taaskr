@@ -48,6 +48,17 @@ public class ProviderController {
         return providerWorkflowService.getMyAssignedBookings(authentication.getName());
     }
 
+    @GetMapping("/available-tasks")
+    public List<ProviderBookingResponse> getAvailableTasks(Authentication authentication) {
+        return providerWorkflowService.getAvailableTasks(authentication.getName());
+    }
+
+    @PutMapping("/bookings/{bookingId}/claim")
+    public ProviderBookingResponse claimTask(@PathVariable Long bookingId,
+                                             Authentication authentication) {
+        return providerWorkflowService.claimTask(authentication.getName(), bookingId);
+    }
+
     @PutMapping("/bookings/{bookingId}/accept")
     public ProviderBookingResponse acceptBooking(@PathVariable Long bookingId,
                                                  Authentication authentication) {

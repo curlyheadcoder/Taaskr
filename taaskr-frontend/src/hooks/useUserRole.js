@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { api } from '../services/api';
 
 export function useUserRole() {
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
 
   useEffect(() => {
     const fetchRole = async () => {
@@ -17,15 +19,7 @@ export function useUserRole() {
       }
     };
     fetchRole();
-    
-    const handleStorageChange = () => {
-      if (!localStorage.getItem('taaskr_token')) {
-        setRole(null);
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  }, [location.pathname]);
 
   return { role, loading };
 }

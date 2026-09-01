@@ -43,19 +43,22 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
     private final BookingRepository bookingRepository;
     private final ProviderCategoryRepository providerCategoryRepository;
     private final ServiceCategoryRepository serviceCategoryRepository;
+    private final com.taaskr.repository.ProviderServiceRepository providerServiceRepository;
 
     public ProviderWorkflowServiceImpl(UserRepository userRepository,
                                        ProviderProfileRepository providerProfileRepository,
                                        AvailabilitySlotRepository availabilitySlotRepository,
                                        BookingRepository bookingRepository,
                                        ProviderCategoryRepository providerCategoryRepository,
-                                       ServiceCategoryRepository serviceCategoryRepository) {
+                                       ServiceCategoryRepository serviceCategoryRepository,
+                                       com.taaskr.repository.ProviderServiceRepository providerServiceRepository) {
         this.userRepository = userRepository;
         this.providerProfileRepository = providerProfileRepository;
         this.availabilitySlotRepository = availabilitySlotRepository;
         this.bookingRepository = bookingRepository;
         this.providerCategoryRepository = providerCategoryRepository;
         this.serviceCategoryRepository = serviceCategoryRepository;
+        this.providerServiceRepository = providerServiceRepository;
     }
 
     @Override
@@ -178,18 +181,91 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
         ProviderProfile provider = getProviderByEmail(providerEmail);
         Booking booking = getProviderBooking(provider.getId(), bookingId);
 
-        if (booking.getPaymentMethod() != PaymentMethod.AFTER_SERVICE) {
-            throw new BadRequestException("Only pay-after-service bookings can be marked as paid by a provider");
-        }
         if (booking.getStatus() != BookingStatus.COMPLETED) {
-            throw new BadRequestException("Payment can be marked as received only after the service is completed");
+            throw new BadRequestException("Can only collect payment after job is completed");
         }
-        if (booking.getPaymentStatus() == PaymentStatus.PAID) {
-            throw new BadRequestException("Booking is already marked as paid");
+        if (booking.getPaymentMethod() != PaymentMethod.AFTER_SERVICE) {
+            throw new BadRequestException("This booking is not marked for Cash After Service");
+        }
+        
+        booking.setPaymentStatus(PaymentStatus.PAID);
+        Booking saved = bookingRepository.save(booking);
+        return mapBooking(saved);
+    }
+
+    @Override
+    public List<ProviderBookingResponse> getAvailableTasks(String providerEmail) {
+        ProviderProfile provider = getProviderByEmail(providerEmail);
+        
+        List<Long> providerServiceIds = providerServiceRepository.findByProviderId(provider.getId())
+                .stream().map(ps -> ps.getService().getId()).toList();
+                
+        if (providerServiceIds.isEmpty()) {
+            return List.of();
         }
 
-        booking.setPaymentStatus(PaymentStatus.PAID);
-        return mapBooking(bookingRepository.save(booking));
+        List<Booking> pendingBookings = bookingRepository.findByStatusAndCityAndServiceIdInOrderByCreatedAtDesc(
+                BookingStatus.PENDING, provider.getCity(), providerServiceIds);
+
+        return pendingBookings.stream().filter(booking -> {
+            java.time.LocalTime endTime = booking.getStartTime().plusMinutes(booking.getService().getDurationMinutes());
+            boolean hasOverlap = bookingRepository.existsByProviderIdAndBookingDateAndStartTimeLessThanAndEndTimeGreaterThan(
+                    provider.getId(), booking.getBookingDate(), endTime, booking.getStartTime());
+            return !hasOverlap;
+        }).map(this::mapBooking).toList();
+    }
+
+    @Override
+    @Transactional
+    public ProviderBookingResponse claimTask(String providerEmail, Long bookingId) {
+        ProviderProfile provider = getProviderByEmail(providerEmail);
+        
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+                
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            throw new BadRequestException("This booking is no longer available");
+        }
+        
+        if (booking.getProvider() != null) {
+            throw new BadRequestException("This booking has already been assigned");
+        }
+
+        java.time.LocalTime endTime = booking.getStartTime().plusMinutes(booking.getService().getDurationMinutes());
+        boolean hasOverlap = bookingRepository.existsByProviderIdAndBookingDateAndStartTimeLessThanAndEndTimeGreaterThan(
+                provider.getId(), booking.getBookingDate(), endTime, booking.getStartTime());
+        
+        if (hasOverlap) {
+            throw new BadRequestException("You have an overlapping booking at this time");
+        }
+        
+        booking.setProvider(provider);
+        booking.setStatus(BookingStatus.ASSIGNED);
+        
+        List<AvailabilitySlot> existingSlots = availabilitySlotRepository.findByProviderIdAndAvailableDateOrderByStartTimeAsc(provider.getId(), booking.getBookingDate());
+        boolean slotExists = existingSlots.stream().anyMatch(slot -> 
+            !slot.getStartTime().isAfter(booking.getStartTime()) && !slot.getEndTime().isBefore(endTime)
+        );
+        
+        if (!slotExists) {
+            AvailabilitySlot newSlot = new AvailabilitySlot();
+            newSlot.setProvider(provider);
+            newSlot.setAvailableDate(booking.getBookingDate());
+            newSlot.setStartTime(booking.getStartTime());
+            newSlot.setEndTime(endTime);
+            newSlot.setBooked(true);
+            availabilitySlotRepository.save(newSlot);
+        } else {
+            existingSlots.stream().filter(slot -> 
+                !slot.getStartTime().isAfter(booking.getStartTime()) && !slot.getEndTime().isBefore(endTime)
+            ).findFirst().ifPresent(slot -> {
+                slot.setBooked(true);
+                availabilitySlotRepository.save(slot);
+            });
+        }
+        
+        Booking saved = bookingRepository.save(booking);
+        return mapBooking(saved);
     }
 
     private boolean isValidTransition(BookingStatus current, BookingStatus target){
