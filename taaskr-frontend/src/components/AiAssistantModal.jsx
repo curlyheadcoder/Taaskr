@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { Sparkles, X, ArrowRight, AlertTriangle, CheckCircle, Wrench } from 'lucide-react';
+import { Bot, X, ArrowRight, AlertTriangle } from 'lucide-react';
 
 export default function AiAssistantModal() {
   const navigate = useNavigate();
@@ -12,10 +12,10 @@ export default function AiAssistantModal() {
   const [error, setError] = useState('');
 
   const quickPrompts = [
-    { label: '💧 Leaking Sink / Pipe', text: 'My kitchen sink pipe is leaking water continuously' },
-    { label: '❄️ AC Not Cooling', text: 'AC is not cooling properly and blowing warm air' },
+    { label: '❄️ AC Not Working', text: 'AC is not working and blowing warm air' },
+    { label: '💧 Pipe Leakage', text: 'Kitchen sink pipe is leaking water continuously' },
     { label: '⚡ Sparking Switchboard', text: 'Switchboard is sparking and smells like burning wire' },
-    { label: '🧹 Deep House Cleaning', text: 'Need deep cleaning for 2BHK apartment' },
+    { label: '🧹 Deep Cleaning', text: 'Need deep cleaning for 2BHK home' },
     { label: '🐜 Pest Control', text: 'Cockroaches and ants in kitchen cabinets' }
   ];
 
@@ -44,10 +44,10 @@ export default function AiAssistantModal() {
 
   return (
     <>
-      {/* Floating Action Button */}
+      {/* Floating Action Button: "Taasky" */}
       <button
         onClick={() => setIsOpen(true)}
-        aria-label="Open AI Home Diagnostic Assistant"
+        aria-label="Open Taasky Assistant"
         style={{
           position: 'fixed',
           bottom: '2rem',
@@ -55,40 +55,44 @@ export default function AiAssistantModal() {
           zIndex: 90,
           display: 'flex',
           alignItems: 'center',
-          gap: '0.5rem',
-          padding: '0.75rem 1.25rem',
-          background: 'var(--primary)',
+          gap: '0.55rem',
+          padding: '0.75rem 1.35rem',
+          background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
           color: '#ffffff',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
           borderRadius: 'var(--radius-full)',
-          boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.4)',
+          boxShadow: '0 8px 24px -4px rgba(37, 99, 235, 0.45)',
           cursor: 'pointer',
-          fontWeight: 600,
-          fontSize: '0.9rem',
+          fontWeight: 700,
+          fontSize: '0.95rem',
           transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
-          e.currentTarget.style.boxShadow = '0 14px 30px -5px rgba(37, 99, 235, 0.4)';
+          e.currentTarget.style.boxShadow = '0 12px 28px -4px rgba(37, 99, 235, 0.55)';
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = 'translateY(0) scale(1)';
-          e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(15, 23, 42, 0.4)';
+          e.currentTarget.style.boxShadow = '0 8px 24px -4px rgba(37, 99, 235, 0.45)';
         }}
       >
-        <Sparkles size={18} color="#F59E0B" />
-        <span>Ask AI</span>
+        <Bot size={20} color="#93C5FD" />
+        <span style={{ letterSpacing: '0.02em' }}>Taasky</span>
       </button>
 
-      {/* Diagnosis Modal */}
+      {/* Taasky Modal */}
       {isOpen && (
         <div 
           className="modal-overlay" 
           onClick={() => setIsOpen(false)} 
           style={{ 
             zIndex: 100,
-            backdropFilter: 'blur(6px)',
-            backgroundColor: 'rgba(15, 23, 42, 0.6)'
+            backdropFilter: 'blur(8px)',
+            backgroundColor: 'rgba(15, 23, 42, 0.65)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem'
           }}
         >
           <div
@@ -96,33 +100,34 @@ export default function AiAssistantModal() {
             onClick={(e) => e.stopPropagation()}
             style={{ 
               maxWidth: '520px', 
-              width: '92%', 
-              maxHeight: '88vh', 
+              width: '100%', 
+              maxHeight: '90vh', 
               overflowY: 'auto',
               borderRadius: 'var(--radius-lg)',
-              padding: '2rem',
+              padding: '1.75rem',
               border: '1px solid var(--border-light)',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
+              background: 'var(--bg-card)'
             }}
           >
             {/* Modal Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <div style={{ 
-                  background: 'rgba(245, 158, 11, 0.12)', 
-                  padding: '0.5rem', 
+                  background: 'rgba(37, 99, 235, 0.12)', 
+                  padding: '0.6rem', 
                   borderRadius: 'var(--radius-md)', 
                   display: 'flex', 
                   alignItems: 'center' 
                 }}>
-                  <Sparkles size={22} color="#F59E0B" />
+                  <Bot size={24} color="#2563EB" />
                 </div>
                 <div>
-                  <h2 style={{ fontSize: '1.3rem', color: 'var(--text-main)', margin: 0, fontWeight: 700 }}>
-                    AI Service Assistant
+                  <h2 style={{ fontSize: '1.35rem', color: 'var(--text-main)', margin: 0, fontWeight: 800 }}>
+                    Taasky
                   </h2>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', margin: 0 }}>
-                    Tell us what's wrong, we'll find the right fix
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', margin: '0.1rem 0 0' }}>
+                    Describe your problem and I will find the right service for you
                   </p>
                 </div>
               </div>
@@ -130,7 +135,7 @@ export default function AiAssistantModal() {
                 onClick={() => setIsOpen(false)}
                 style={{ 
                   background: 'var(--bg-page)', 
-                  border: 'none', 
+                  border: '1px solid var(--border-light)', 
                   borderRadius: '50%',
                   width: '32px',
                   height: '32px',
@@ -143,12 +148,15 @@ export default function AiAssistantModal() {
                 }}
                 title="Close"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
-            {/* Quick Prompt Chips */}
+            {/* Quick Suggestions */}
             <div style={{ marginBottom: '1.25rem' }}>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em', marginBottom: '0.4rem' }}>
+                Quick Issues
+              </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                 {quickPrompts.map((p, idx) => (
                   <button
@@ -164,18 +172,18 @@ export default function AiAssistantModal() {
                       borderRadius: 'var(--radius-full)',
                       padding: '0.35rem 0.75rem',
                       fontSize: '0.8rem',
-                      color: 'var(--text-muted)',
+                      color: 'var(--text-main)',
                       cursor: 'pointer',
                       transition: 'var(--transition-fast)',
                       fontWeight: 500
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.borderColor = 'var(--primary)';
-                      e.currentTarget.style.color = 'var(--text-main)';
+                      e.currentTarget.style.background = 'var(--bg-hover)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.borderColor = 'var(--border-light)';
-                      e.currentTarget.style.color = 'var(--text-muted)';
+                      e.currentTarget.style.background = 'var(--bg-page)';
                     }}
                   >
                     {p.label}
@@ -190,7 +198,7 @@ export default function AiAssistantModal() {
                 <textarea
                   className="form-control"
                   rows={3}
-                  placeholder="Describe your issue (e.g., tap leaking, switch sparking, AC making weird noise)..."
+                  placeholder="E.g., AC is not cooling properly, tap is leaking, switchboard sparking..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   style={{ 
@@ -199,7 +207,9 @@ export default function AiAssistantModal() {
                     padding: '0.85rem',
                     borderRadius: 'var(--radius-md)',
                     border: '1px solid var(--border-light)',
-                    background: 'var(--bg-page)'
+                    background: 'var(--bg-page)',
+                    color: 'var(--text-main)',
+                    width: '100%'
                   }}
                   disabled={loading}
                 />
@@ -209,13 +219,14 @@ export default function AiAssistantModal() {
                 className="btn btn-primary"
                 style={{ 
                   width: '100%', 
-                  padding: '0.75rem', 
+                  padding: '0.8rem', 
                   fontSize: '0.95rem',
-                  fontWeight: 600,
+                  fontWeight: 700,
                   display: 'flex', 
                   justifyContent: 'center', 
                   alignItems: 'center', 
-                  gap: '0.5rem' 
+                  gap: '0.5rem',
+                  borderRadius: 'var(--radius-md)'
                 }}
                 disabled={loading || !query.trim()}
               >
@@ -226,12 +237,12 @@ export default function AiAssistantModal() {
                       border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff',
                       borderRadius: '50%', animation: 'spin 1s linear infinite'
                     }} />
-                    <span>Analyzing issue...</span>
+                    <span>Taasky is analyzing...</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles size={16} />
-                    <span>Get Instant Recommendation</span>
+                    <Bot size={18} />
+                    <span>Ask Taasky</span>
                   </>
                 )}
               </button>
@@ -281,7 +292,7 @@ export default function AiAssistantModal() {
                     }}>
                       {result.urgency} Urgency
                     </span>
-                    <h3 style={{ color: 'var(--text-main)', fontSize: '1.15rem', marginTop: '0.35rem', fontWeight: 700 }}>
+                    <h3 style={{ color: 'var(--text-main)', fontSize: '1.15rem', marginTop: '0.4rem', fontWeight: 700 }}>
                       {result.serviceName}
                     </h3>
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', margin: '0.1rem 0 0' }}>
@@ -299,12 +310,12 @@ export default function AiAssistantModal() {
                   color: 'var(--text-main)', 
                   fontSize: '0.86rem', 
                   background: 'var(--bg-card)', 
-                  padding: '0.65rem 0.85rem', 
+                  padding: '0.75rem 0.9rem', 
                   borderRadius: 'var(--radius-sm)', 
                   border: '1px solid var(--border-light)',
                   lineHeight: 1.5
                 }}>
-                  💡 {result.reason}
+                  🤖 {result.reason}
                 </div>
 
                 <button
@@ -313,13 +324,14 @@ export default function AiAssistantModal() {
                   className="btn btn-primary"
                   style={{ 
                     width: '100%', 
-                    fontWeight: 600,
+                    fontWeight: 700,
                     fontSize: '0.92rem',
-                    padding: '0.7rem',
+                    padding: '0.75rem',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '0.5rem'
+                    gap: '0.5rem',
+                    borderRadius: 'var(--radius-md)'
                   }}
                 >
                   <span>Book This Service</span>

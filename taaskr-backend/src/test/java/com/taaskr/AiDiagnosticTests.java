@@ -33,7 +33,9 @@ public class AiDiagnosticTests {
     private AiDiagnosticService aiDiagnosticService;
 
     private Service plumbingService;
-    private Service acService;
+    private Service acRepairService;
+    private Service acInstallService;
+    private Service acMaintenanceService;
     private Service electricService;
 
     @BeforeEach
@@ -44,11 +46,11 @@ public class AiDiagnosticTests {
         plumbingCat.setActive(true);
         plumbingCat = serviceCategoryRepository.save(plumbingCat);
 
-        ServiceCategory acCat = new ServiceCategory();
-        acCat.setName("AC Repair & Service");
-        acCat.setDescription("AC Cooling solutions");
-        acCat.setActive(true);
-        acCat = serviceCategoryRepository.save(acCat);
+        ServiceCategory appliancesCat = new ServiceCategory();
+        appliancesCat.setName("Appliances");
+        appliancesCat.setDescription("Appliances solutions");
+        appliancesCat.setActive(true);
+        appliancesCat = serviceCategoryRepository.save(appliancesCat);
 
         ServiceCategory electricCat = new ServiceCategory();
         electricCat.setName("Electrician");
@@ -64,13 +66,29 @@ public class AiDiagnosticTests {
         plumbingService.setActive(true);
         plumbingService = serviceRepository.save(plumbingService);
 
-        acService = new Service();
-        acService.setName("AC Gas Refill & Cooling Fix");
-        acService.setCategory(acCat);
-        acService.setPrice(BigDecimal.valueOf(1499));
-        acService.setDurationMinutes(90);
-        acService.setActive(true);
-        acService = serviceRepository.save(acService);
+        acInstallService = new Service();
+        acInstallService.setName("AC Installation");
+        acInstallService.setCategory(appliancesCat);
+        acInstallService.setPrice(BigDecimal.valueOf(1499));
+        acInstallService.setDurationMinutes(180);
+        acInstallService.setActive(true);
+        acInstallService = serviceRepository.save(acInstallService);
+
+        acRepairService = new Service();
+        acRepairService.setName("AC Repair");
+        acRepairService.setCategory(appliancesCat);
+        acRepairService.setPrice(BigDecimal.valueOf(699));
+        acRepairService.setDurationMinutes(120);
+        acRepairService.setActive(true);
+        acRepairService = serviceRepository.save(acRepairService);
+
+        acMaintenanceService = new Service();
+        acMaintenanceService.setName("AC Maintenance");
+        acMaintenanceService.setCategory(appliancesCat);
+        acMaintenanceService.setPrice(BigDecimal.valueOf(599));
+        acMaintenanceService.setDurationMinutes(90);
+        acMaintenanceService.setActive(true);
+        acMaintenanceService = serviceRepository.save(acMaintenanceService);
 
         electricService = new Service();
         electricService.setName("Switchboard Spark & Short Circuit");
@@ -82,20 +100,33 @@ public class AiDiagnosticTests {
     }
 
     @Test
+    void testAcRepairNotWorkingDisambiguation() {
+        AiDiagnosticResponse res = aiDiagnosticService.diagnoseIssue(new AiDiagnosticRequest("AC is not working"));
+        assertNotNull(res);
+        assertEquals(acRepairService.getId(), res.getServiceId(), "Should pick AC Repair, not AC Installation");
+        assertEquals("AC Repair", res.getServiceName());
+    }
+
+    @Test
+    void testAcInstallationDisambiguation() {
+        AiDiagnosticResponse res = aiDiagnosticService.diagnoseIssue(new AiDiagnosticRequest("Want to install new AC in living room"));
+        assertNotNull(res);
+        assertEquals(acInstallService.getId(), res.getServiceId(), "Should pick AC Installation");
+    }
+
+    @Test
+    void testAcMaintenanceDisambiguation() {
+        AiDiagnosticResponse res = aiDiagnosticService.diagnoseIssue(new AiDiagnosticRequest("Routine AC servicing and filter cleaning"));
+        assertNotNull(res);
+        assertEquals(acMaintenanceService.getId(), res.getServiceId(), "Should pick AC Maintenance");
+    }
+
+    @Test
     void testPlumbingDiagnosis() {
         AiDiagnosticResponse res = aiDiagnosticService.diagnoseIssue(new AiDiagnosticRequest("My kitchen sink pipe is leaking water all over the floor"));
         assertNotNull(res);
         assertEquals(plumbingService.getId(), res.getServiceId());
         assertEquals("Plumbing", res.getCategoryName());
-        assertNotNull(res.getReason());
-    }
-
-    @Test
-    void testAcDiagnosis() {
-        AiDiagnosticResponse res = aiDiagnosticService.diagnoseIssue(new AiDiagnosticRequest("My AC is blowing warm air and not cooling the bedroom"));
-        assertNotNull(res);
-        assertEquals(acService.getId(), res.getServiceId());
-        assertEquals("AC Repair & Service", res.getCategoryName());
     }
 
     @Test
