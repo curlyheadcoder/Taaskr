@@ -33,6 +33,7 @@ public class BookingServiceImpl implements BookingService {
     private final ProviderProfileRepository providerProfileRepository;
 
     private final ProviderCategoryRepository providerCategoryRepository;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     public BookingServiceImpl(UserRepository userRepository, 
                               ServiceRepository serviceRepository, 
@@ -40,7 +41,8 @@ public class BookingServiceImpl implements BookingService {
                               AvailabilitySlotRepository availabilitySlotRepository, 
                               BookingRepository bookingRepository,
                               ProviderProfileRepository providerProfileRepository,
-                              ProviderCategoryRepository providerCategoryRepository) {
+                              ProviderCategoryRepository providerCategoryRepository,
+                              org.springframework.context.ApplicationEventPublisher eventPublisher) {
         this.userRepository = userRepository;
         this.serviceRepository = serviceRepository;
         this.providerServiceRepository = providerServiceRepository;
@@ -48,6 +50,7 @@ public class BookingServiceImpl implements BookingService {
         this.bookingRepository = bookingRepository;
         this.providerProfileRepository = providerProfileRepository;
         this.providerCategoryRepository = providerCategoryRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -148,6 +151,15 @@ public class BookingServiceImpl implements BookingService {
             assignmentResult.slot().setBooked(true);
             availabilitySlotRepository.save(assignmentResult.slot());
         }
+
+        // Publish asynchronous domain event
+        eventPublisher.publishEvent(new com.taaskr.event.BookingCreatedEvent(
+                savedBooking.getId(),
+                user.getId(),
+                user.getEmail(),
+                service.getId(),
+                service.getName()
+        ));
 
         return mapBooking(savedBooking);
     }

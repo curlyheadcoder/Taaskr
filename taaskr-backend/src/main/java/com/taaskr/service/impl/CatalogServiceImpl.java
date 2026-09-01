@@ -8,12 +8,12 @@ import com.taaskr.exception.ResourceNotFoundException;
 import com.taaskr.repository.ServiceCategoryRepository;
 import com.taaskr.repository.ServiceRepository;
 import com.taaskr.service.CatalogService;
-import jakarta.transaction.Transactional;
-import org.springframework.stereotype.Component;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@Component
+@org.springframework.stereotype.Service
 public class CatalogServiceImpl implements CatalogService {
 
     private final ServiceCategoryRepository categoryRepository;
@@ -26,7 +26,8 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
+    @Cacheable(value = "categories", key = "'all'")
     public List<CategoryResponse> getAllActiveCategories() {
         return categoryRepository.findByActiveTrueOrderByNameAsc()
                 .stream()
@@ -35,7 +36,8 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
+    @Cacheable(value = "services", key = "#categoryId != null ? #categoryId : 'all'")
     public List<ServiceResponse> getAllActiveServices(Long categoryId) {
         List<Service> services;
 
@@ -51,7 +53,8 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
+    @Cacheable(value = "service_details", key = "#serviceId")
     public ServiceResponse getServiceById(Long serviceId) {
         Service service = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Service not found with id: " + serviceId));

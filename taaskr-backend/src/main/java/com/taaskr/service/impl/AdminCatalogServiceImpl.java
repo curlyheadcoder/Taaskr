@@ -11,9 +11,10 @@ import com.taaskr.exception.ResourceNotFoundException;
 import com.taaskr.repository.ServiceCategoryRepository;
 import com.taaskr.repository.ServiceRepository;
 import com.taaskr.service.AdminCatalogService;
-import org.springframework.stereotype.Component;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.transaction.annotation.Transactional;
 
-@Component
+@org.springframework.stereotype.Service
 public class AdminCatalogServiceImpl implements AdminCatalogService {
 
     private final ServiceCategoryRepository categoryRepository;
@@ -25,9 +26,11 @@ public class AdminCatalogServiceImpl implements AdminCatalogService {
     }
 
     @Override
+    @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
     public CategoryResponse createCategory(CategoryRequest request) {
         categoryRepository.findByNameIgnoreCase(request.getName().trim())
-                .ifPresent(existing ->{
+                .ifPresent(existing -> {
                     throw new BadRequestException("Category already exists with name " + request.getName());
                 });
         ServiceCategory category = new ServiceCategory();
@@ -40,9 +43,11 @@ public class AdminCatalogServiceImpl implements AdminCatalogService {
     }
 
     @Override
+    @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
     public CategoryResponse updateCategory(Long categoryId, CategoryRequest request) {
         ServiceCategory category = categoryRepository.findById(categoryId)
-                .orElseThrow(()-> new ResourceNotFoundException("Category not found with id " + categoryId));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id " + categoryId));
         category.setName(request.getName().trim());
         category.setDescription(request.getDescription());
         category.setActive(request.getActive() != null ? request.getActive() : category.getActive());
@@ -52,9 +57,11 @@ public class AdminCatalogServiceImpl implements AdminCatalogService {
     }
 
     @Override
+    @Transactional
+    @CacheEvict(value = {"services", "service_details"}, allEntries = true)
     public ServiceResponse createService(ServiceRequest request) {
         ServiceCategory category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(()-> new ResourceNotFoundException("Category not found with id " + request.getCategoryId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id " + request.getCategoryId()));
         Service service = new Service();
         service.setName(request.getName().trim());
         service.setDescription(request.getDescription());
@@ -67,11 +74,13 @@ public class AdminCatalogServiceImpl implements AdminCatalogService {
     }
 
     @Override
+    @Transactional
+    @CacheEvict(value = {"services", "service_details"}, allEntries = true)
     public ServiceResponse updateService(Long serviceId, ServiceRequest request) {
         Service service = serviceRepository.findById(serviceId)
-                .orElseThrow(()-> new ResourceNotFoundException("Service not found with id " + serviceId));
+                .orElseThrow(() -> new ResourceNotFoundException("Service not found with id " + serviceId));
         ServiceCategory category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(()-> new ResourceNotFoundException("Category not found with id " + request.getCategoryId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id " + request.getCategoryId()));
         service.setName(request.getName().trim());
         service.setDescription(request.getDescription());
         service.setPrice(request.getPrice());
@@ -84,9 +93,11 @@ public class AdminCatalogServiceImpl implements AdminCatalogService {
     }
 
     @Override
+    @Transactional
+    @CacheEvict(value = {"services", "service_details"}, allEntries = true)
     public void deleteService(Long serviceId) {
         Service service = serviceRepository.findById(serviceId)
-                .orElseThrow(()-> new ResourceNotFoundException("Service not found with id " + serviceId));
+                .orElseThrow(() -> new ResourceNotFoundException("Service not found with id " + serviceId));
         serviceRepository.delete(service);
     }
 
@@ -98,7 +109,8 @@ public class AdminCatalogServiceImpl implements AdminCatalogService {
                 category.getActive()
         );
     }
-    private ServiceResponse mapService(Service service){
+
+    private ServiceResponse mapService(Service service) {
         return new ServiceResponse(
                 service.getId(),
                 service.getName(),
