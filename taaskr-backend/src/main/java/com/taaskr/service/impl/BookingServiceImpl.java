@@ -230,10 +230,10 @@ public class BookingServiceImpl implements BookingService {
         
         LocalTime endTime = startTime.plusMinutes(service.getDurationMinutes());
         
-        List<com.taaskr.entity.ProviderService> providerServices = providerServiceRepository.findByServiceId(service.getId());
+        List<com.taaskr.entity.ProviderCategory> providerCategories = providerCategoryRepository.findByCategoryId(service.getCategory().getId());
 
-        List<ProviderProfile> candidateProviders = providerServices.stream()
-                .map(com.taaskr.entity.ProviderService::getProvider)
+        List<ProviderProfile> candidateProviders = providerCategories.stream()
+                .map(com.taaskr.entity.ProviderCategory::getProvider)
                 .filter(provider -> Boolean.TRUE.equals(provider.getApproved()) && Boolean.TRUE.equals(provider.getUser().getEnabled()))
                 .filter(provider -> provider.getUser().getRole() == Role.PROVIDER)
                 .distinct()
@@ -277,10 +277,10 @@ public class BookingServiceImpl implements BookingService {
                                                     LocalTime startTime,
                                                     LocalTime endTime) {
 
-        List<com.taaskr.entity.ProviderService> providerServices = providerServiceRepository.findByServiceId(service.getId());
+        List<com.taaskr.entity.ProviderCategory> providerCategories = providerCategoryRepository.findByCategoryId(service.getCategory().getId());
 
-        List<ProviderProfile> candidateProviders = providerServices.stream()
-                .map(com.taaskr.entity.ProviderService::getProvider)
+        List<ProviderProfile> candidateProviders = providerCategories.stream()
+                .map(com.taaskr.entity.ProviderCategory::getProvider)
                 .filter(provider -> Boolean.TRUE.equals(provider.getApproved()) && Boolean.TRUE.equals(provider.getUser().getEnabled()))
                 .filter(provider -> provider.getUser().getRole() == Role.PROVIDER)
                 .distinct()

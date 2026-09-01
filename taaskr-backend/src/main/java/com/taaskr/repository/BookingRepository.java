@@ -30,5 +30,5 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             LocalTime startTime
     );
 
-    List<Booking> findByStatusAndCityAndServiceIdInOrderByCreatedAtDesc(BookingStatus status, String city, List<Long> serviceIds);
+    List<Booking> findByStatusAndCityAndServiceCategoryIdInOrderByCreatedAtDesc(BookingStatus status, String city, List<Long> categoryIds);
 }

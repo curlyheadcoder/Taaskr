@@ -197,15 +197,15 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
     public List<ProviderBookingResponse> getAvailableTasks(String providerEmail) {
         ProviderProfile provider = getProviderByEmail(providerEmail);
         
-        List<Long> providerServiceIds = providerServiceRepository.findByProviderId(provider.getId())
-                .stream().map(ps -> ps.getService().getId()).toList();
+        List<Long> providerCategoryIds = providerCategoryRepository.findByProviderId(provider.getId())
+                .stream().map(pc -> pc.getCategory().getId()).toList();
                 
-        if (providerServiceIds.isEmpty()) {
+        if (providerCategoryIds.isEmpty()) {
             return List.of();
         }
 
-        List<Booking> pendingBookings = bookingRepository.findByStatusAndCityAndServiceIdInOrderByCreatedAtDesc(
-                BookingStatus.PENDING, provider.getCity(), providerServiceIds);
+        List<Booking> pendingBookings = bookingRepository.findByStatusAndCityAndServiceCategoryIdInOrderByCreatedAtDesc(
+                BookingStatus.PENDING, provider.getCity(), providerCategoryIds);
 
         return pendingBookings.stream().filter(booking -> {
             java.time.LocalTime endTime = booking.getStartTime().plusMinutes(booking.getService().getDurationMinutes());
