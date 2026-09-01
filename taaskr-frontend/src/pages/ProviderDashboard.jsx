@@ -221,39 +221,65 @@ export default function ProviderDashboard() {
   }
 
   return (
-    <div className="app-container animate-fade-in">
-      {notification && (
-        <div role="status" style={{
-          position: 'fixed', top: '5.5rem', right: '1.5rem', zIndex: 100,
-          display: 'flex', alignItems: 'center', gap: '0.75rem', maxWidth: '380px',
-          padding: '0.9rem 1rem', borderRadius: 'var(--radius-md)',
-          background: notification.type === 'error' ? '#FEF2F2' : '#ECFDF5',
-          color: notification.type === 'error' ? '#B91C1C' : '#047857',
-          border: `1px solid ${notification.type === 'error' ? '#FCA5A5' : '#6EE7B7'}`,
-          boxShadow: 'var(--shadow-lg)'
-        }}>
-          <span aria-hidden="true" style={{ fontSize: '1.1rem' }}>{notification.type === 'error' ? '⚠' : '✓'}</span>
-          <span style={{ flex: 1, fontWeight: 600 }}>{notification.message}</span>
-          <button
-            onClick={() => setNotification(null)}
-            aria-label="Dismiss notification"
-            title="Dismiss"
-            style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1 }}
-          >
-            ×
+    <div className="enterprise-layout animate-fade-in">
+      {/* Provider Sidebar */}
+      <aside className="enterprise-sidebar">
+        <div style={{ padding: '0 1.5rem', marginBottom: '2rem' }}>
+          <h2 style={{ fontSize: '1.25rem', color: 'var(--text-main)', margin: 0 }}>Provider Portal</h2>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Partner Dashboard</p>
+        </div>
+        
+        <nav className="enterprise-sidebar-nav">
+          <button className="sidebar-item active">
+            <span style={{ fontSize: '1.25rem' }}>🏠</span> Overview
           </button>
-        </div>
-      )}
-      {errorMessage && (
-        <div style={{
-          background: '#FEF2F2', border: '1px solid #FCA5A5', color: 'var(--error)',
-          padding: '1rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', fontSize: '0.95rem'
-        }}>
-          ⚠️ {errorMessage}
-        </div>
-      )}
+          <button className="sidebar-item" onClick={() => window.scrollTo(0, document.body.scrollHeight)}>
+            <span style={{ fontSize: '1.25rem' }}>⚙️</span> Settings
+          </button>
+        </nav>
+      </aside>
 
-      {userProfile && (
+      {/* Main Content Area */}
+      <main className="enterprise-main">
+        {notification && (
+          <div role="status" style={{
+            position: 'fixed', top: '5.5rem', right: '1.5rem', zIndex: 100,
+            display: 'flex', alignItems: 'center', gap: '0.75rem', maxWidth: '380px',
+            padding: '0.9rem 1rem', borderRadius: 'var(--radius-md)',
+            background: notification.type === 'error' ? '#FEF2F2' : '#ECFDF5',
+            color: notification.type === 'error' ? '#B91C1C' : '#047857',
+            border: `1px solid ${notification.type === 'error' ? '#FCA5A5' : '#6EE7B7'}`,
+            boxShadow: 'var(--shadow-lg)'
+          }}>
+            <span aria-hidden="true" style={{ fontSize: '1.1rem' }}>{notification.type === 'error' ? '⚠' : '✓'}</span>
+            <span style={{ flex: 1, fontWeight: 600 }}>{notification.message}</span>
+            <button
+              onClick={() => setNotification(null)}
+              aria-label="Dismiss notification"
+              title="Dismiss"
+              style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1 }}
+            >
+              ×
+            </button>
+          </div>
+        )}
+        {errorMessage && (
+          <div style={{
+            background: '#FEF2F2', border: '1px solid #FCA5A5', color: 'var(--error)',
+            padding: '1rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', fontSize: '0.95rem'
+          }}>
+            ⚠️ {errorMessage}
+          </div>
+        )}
+
+        <div className="enterprise-header">
+          <div>
+            <h1>Dashboard Overview</h1>
+            <p>Welcome back, Provider. Here's your business at a glance.</p>
+          </div>
+        </div>
+
+        {userProfile && (
         <section className="premium-card" style={{
           marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between',
           alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem'
@@ -602,7 +628,7 @@ export default function ProviderDashboard() {
           </div>
   
         </div>
-      </div>
+      </main>
     </div>
   );
 }

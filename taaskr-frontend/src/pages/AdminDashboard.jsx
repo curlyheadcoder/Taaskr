@@ -181,75 +181,87 @@ export default function AdminDashboard() {
     .reduce((acc, curr) => acc + (Number(curr.finalAmount) || 0), 0);
 
   return (
-    <div className="app-container animate-fade-in">
-      {/* Stats Cards Row */}
-      <section className="grid-cols-4" style={{ marginBottom: '2.5rem' }}>
-        <div className="premium-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 600 }}>Total Bookings</p>
-          <p style={{ fontSize: '2.2rem', color: 'var(--text-main)', fontWeight: 800, marginTop: '0.25rem' }}>{bookings.length}</p>
+    <div className="enterprise-layout animate-fade-in">
+      {/* Enterprise Sidebar */}
+      <aside className="enterprise-sidebar">
+        <div style={{ padding: '0 1.5rem', marginBottom: '2rem' }}>
+          <h2 style={{ fontSize: '1.25rem', color: 'var(--text-main)', margin: 0 }}>Admin Center</h2>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Enterprise Management</p>
         </div>
-        <div className="premium-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 600 }}>Total Revenue</p>
-          <p style={{ fontSize: '2.2rem', color: 'var(--success)', fontWeight: 800, marginTop: '0.25rem' }}>₹{totalRevenue}</p>
-        </div>
-        <div className="premium-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 600 }}>Active Providers</p>
-          <p style={{ fontSize: '2.2rem', color: 'var(--primary)', fontWeight: 800, marginTop: '0.25rem' }}>{providers.filter(p => p.approved).length}</p>
-        </div>
-        <div className="premium-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 600 }}>Registered Users</p>
-          <p style={{ fontSize: '2.2rem', color: 'var(--secondary)', fontWeight: 800, marginTop: '0.25rem' }}>{users.length}</p>
-        </div>
-      </section>
+        
+        <nav className="enterprise-sidebar-nav">
+          <button 
+            onClick={() => setActiveTab('catalog')}
+            className={`sidebar-item ${activeTab === 'catalog' ? 'active' : ''}`}
+          >
+            <span style={{ fontSize: '1.25rem' }}>🗂️</span> Catalog Manager
+          </button>
+          <button 
+            onClick={() => setActiveTab('providers')}
+            className={`sidebar-item ${activeTab === 'providers' ? 'active' : ''}`}
+          >
+            <span style={{ fontSize: '1.25rem' }}>💼</span> Provider Approvals
+          </button>
+          <button 
+            onClick={() => setActiveTab('bookings')}
+            className={`sidebar-item ${activeTab === 'bookings' ? 'active' : ''}`}
+          >
+            <span style={{ fontSize: '1.25rem' }}>📝</span> Bookings Monitor
+          </button>
+        </nav>
+      </aside>
 
-      {/* Tabs Switcher */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--border-light)', marginBottom: '2rem', gap: '0.5rem' }}>
-        <button
-          onClick={() => setActiveTab('catalog')}
-          className="btn"
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: activeTab === 'catalog' ? 'var(--primary)' : 'var(--text-muted)',
-            borderBottom: activeTab === 'catalog' ? '3px solid var(--primary)' : 'none',
-            borderRadius: 0,
-            padding: '0.75rem 1.25rem',
-            fontWeight: 600
-          }}
-        >
-          🗂️ Catalog Manager
-        </button>
-        <button
-          onClick={() => setActiveTab('providers')}
-          className="btn"
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: activeTab === 'providers' ? 'var(--primary)' : 'var(--text-muted)',
-            borderBottom: activeTab === 'providers' ? '3px solid var(--primary)' : 'none',
-            borderRadius: 0,
-            padding: '0.75rem 1.25rem',
-            fontWeight: 600
-          }}
-        >
-          💼 Provider Approvals
-        </button>
-        <button
-          onClick={() => setActiveTab('bookings')}
-          className="btn"
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: activeTab === 'bookings' ? 'var(--primary)' : 'var(--text-muted)',
-            borderBottom: activeTab === 'bookings' ? '3px solid var(--primary)' : 'none',
-            borderRadius: 0,
-            padding: '0.75rem 1.25rem',
-            fontWeight: 600
-          }}
-        >
-          📝 Bookings Monitor
-        </button>
-      </div>
+      {/* Main Content Area */}
+      <main className="enterprise-main">
+        <div className="enterprise-header">
+          <div>
+            <h1>Dashboard Overview</h1>
+            <p>Welcome back, Admin. Here's what's happening today.</p>
+          </div>
+        </div>
+
+        {/* Stats Cards Row */}
+        <section className="grid-cols-4" style={{ marginBottom: '2.5rem' }}>
+          <div className="stat-card-modern">
+            <div className="stat-icon-container" style={{ backgroundColor: 'rgba(37, 99, 235, 0.1)' }}>
+              📋
+            </div>
+            <div className="stat-details">
+              <h3>Total Bookings</h3>
+              <p>{bookings.length}</p>
+            </div>
+          </div>
+          
+          <div className="stat-card-modern">
+            <div className="stat-icon-container" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)' }}>
+              ₹
+            </div>
+            <div className="stat-details">
+              <h3>Total Revenue</h3>
+              <p style={{ color: 'var(--success)' }}>₹{totalRevenue}</p>
+            </div>
+          </div>
+          
+          <div className="stat-card-modern">
+            <div className="stat-icon-container" style={{ backgroundColor: 'rgba(139, 92, 246, 0.1)', color: 'var(--secondary)' }}>
+              👷
+            </div>
+            <div className="stat-details">
+              <h3>Active Providers</h3>
+              <p style={{ color: 'var(--secondary)' }}>{providers.filter(p => p.approved).length}</p>
+            </div>
+          </div>
+          
+          <div className="stat-card-modern">
+            <div className="stat-icon-container" style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)', color: 'var(--warning)' }}>
+              👥
+            </div>
+            <div className="stat-details">
+              <h3>Registered Users</h3>
+              <p style={{ color: 'var(--warning)' }}>{users.length}</p>
+            </div>
+          </div>
+        </section>
 
       {/* Tab: Catalog Manager */}
       {activeTab === 'catalog' && (
@@ -576,6 +588,7 @@ export default function AdminDashboard() {
           )}
         </div>
       )}
+      </main>
     </div>
   );
 }

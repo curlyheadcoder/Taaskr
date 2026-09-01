@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { Bot, X, ArrowRight, AlertTriangle } from 'lucide-react';
+import { useUserRole } from '../hooks/useUserRole';
 
 export default function AiAssistantModal() {
   const navigate = useNavigate();
+  const { role, loading: roleLoading } = useUserRole();
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
@@ -41,6 +43,10 @@ export default function AiAssistantModal() {
     setIsOpen(false);
     navigate(`/services/${serviceId}`);
   };
+
+  if (roleLoading || role !== 'USER') {
+    return null;
+  }
 
   return (
     <>
