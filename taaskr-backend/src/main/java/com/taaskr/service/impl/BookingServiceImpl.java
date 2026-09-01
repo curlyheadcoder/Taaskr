@@ -316,7 +316,7 @@ public class BookingServiceImpl implements BookingService {
                 .findByProviderIdAndAvailableDateAndBookedFalseOrderByStartTimeAsc(provider.getId(), bookingDate);
 
         return slots.stream()
-                .filter(slot -> !slot.getStartTime().isAfter(startTime) && !slot.getEndTime().isBefore(endTime))
+                .filter(slot -> !slot.getStartTime().isAfter(startTime) && slot.getEndTime().isAfter(startTime))
                 .findFirst()
                 .orElse(null);
     }
