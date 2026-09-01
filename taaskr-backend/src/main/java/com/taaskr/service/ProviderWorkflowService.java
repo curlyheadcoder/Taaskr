@@ -7,6 +7,8 @@ import com.taaskr.dto.provider.UpdateProviderBookingStatusRequest;
 
 import com.taaskr.dto.provider.ProviderProfileResponse;
 import com.taaskr.dto.provider.UpdateProviderProfileRequest;
+import com.taaskr.dto.provider.UpdateProviderCategoriesRequest;
+import com.taaskr.dto.service.CategoryResponse;
 
 import java.util.List;
 
@@ -31,4 +33,8 @@ public interface ProviderWorkflowService {
     ProviderProfileResponse getProviderProfile(String providerEmail);
 
     ProviderProfileResponse updateProviderProfile(String providerEmail, UpdateProviderProfileRequest request);
+
+    List<CategoryResponse> getMyCategories(String providerEmail);
+    
+    List<CategoryResponse> updateMyCategories(String providerEmail, UpdateProviderCategoriesRequest request);
 }

@@ -215,6 +215,17 @@ export const api = {
         method: 'PUT',
         body: JSON.stringify({ status })
       });
+    },
+
+    getCategories: async () => {
+      return makeRequest('/api/provider/categories');
+    },
+
+    updateCategories: async (categoryIds) => {
+      return makeRequest('/api/provider/categories', {
+        method: 'PUT',
+        body: JSON.stringify({ categoryIds })
+      });
     }
   },
 

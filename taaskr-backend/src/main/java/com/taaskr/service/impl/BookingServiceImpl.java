@@ -32,18 +32,22 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final ProviderProfileRepository providerProfileRepository;
 
+    private final ProviderCategoryRepository providerCategoryRepository;
+
     public BookingServiceImpl(UserRepository userRepository, 
                               ServiceRepository serviceRepository, 
                               ProviderServiceRepository providerServiceRepository, 
                               AvailabilitySlotRepository availabilitySlotRepository, 
                               BookingRepository bookingRepository,
-                              ProviderProfileRepository providerProfileRepository) {
+                              ProviderProfileRepository providerProfileRepository,
+                              ProviderCategoryRepository providerCategoryRepository) {
         this.userRepository = userRepository;
         this.serviceRepository = serviceRepository;
         this.providerServiceRepository = providerServiceRepository;
         this.availabilitySlotRepository = availabilitySlotRepository;
         this.bookingRepository = bookingRepository;
         this.providerProfileRepository = providerProfileRepository;
+        this.providerCategoryRepository = providerCategoryRepository;
     }
 
     @Override
@@ -88,10 +92,10 @@ public class BookingServiceImpl implements BookingService {
                 throw new BadRequestException("Selected user is not a provider");
             }
 
-            boolean isMapped = providerServiceRepository.findByProviderId(selectedProvider.getId()).stream()
-                    .anyMatch(ps -> ps.getService().getId().equals(service.getId()));
+            boolean isMapped = providerCategoryRepository.findByProviderId(selectedProvider.getId()).stream()
+                    .anyMatch(pc -> pc.getCategory().getId().equals(service.getCategory().getId()));
             if (!isMapped) {
-                throw new BadRequestException("Selected provider does not offer the requested service");
+                throw new BadRequestException("Selected provider does not offer the requested service category");
             }
 
             AvailabilitySlot matchingSlot = findMatchingSlot(selectedProvider, request.getBookingDate(), startTime, endTime);
@@ -177,10 +181,10 @@ public class BookingServiceImpl implements BookingService {
         
         LocalTime endTime = startTime.plusMinutes(service.getDurationMinutes());
         
-        List<ProviderService> providerServices = providerServiceRepository.findByServiceId(service.getId());
+        List<ProviderCategory> providerCategories = providerCategoryRepository.findByCategoryId(service.getCategory().getId());
 
-        List<ProviderProfile> candidateProviders = providerServices.stream()
-                .map(ProviderService::getProvider)
+        List<ProviderProfile> candidateProviders = providerCategories.stream()
+                .map(ProviderCategory::getProvider)
                 .filter(provider -> Boolean.TRUE.equals(provider.getApproved()) && Boolean.TRUE.equals(provider.getUser().getEnabled()))
                 .filter(provider -> provider.getUser().getRole() == Role.PROVIDER)
                 .distinct()
@@ -224,10 +228,10 @@ public class BookingServiceImpl implements BookingService {
                                                     LocalTime startTime,
                                                     LocalTime endTime) {
 
-        List<ProviderService> providerServices = providerServiceRepository.findByServiceId(service.getId());
+        List<ProviderCategory> providerCategories = providerCategoryRepository.findByCategoryId(service.getCategory().getId());
 
-        List<ProviderProfile> candidateProviders = providerServices.stream()
-                .map(ProviderService::getProvider)
+        List<ProviderProfile> candidateProviders = providerCategories.stream()
+                .map(ProviderCategory::getProvider)
                 .filter(provider -> Boolean.TRUE.equals(provider.getApproved()) && Boolean.TRUE.equals(provider.getUser().getEnabled()))
                 .filter(provider -> provider.getUser().getRole() == Role.PROVIDER)
                 .distinct()

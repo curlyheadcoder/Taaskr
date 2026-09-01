@@ -10,6 +10,11 @@ export default function ProviderDashboard() {
   const [errorMessage, setErrorMessage] = useState('');
   const [notification, setNotification] = useState(null);
 
+  // Categories state
+  const [availableCategories, setAvailableCategories] = useState([]);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState([]);
+  const [savingCategories, setSavingCategories] = useState(false);
+
   // Profile Editor state
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
@@ -53,6 +58,14 @@ export default function ProviderDashboard() {
       // 3. Load assigned bookings (allowed for provider role)
       const bookingsList = await api.provider.getBookings();
       setAssignedBookings(bookingsList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+
+      // 4. Load selected categories
+      const myCats = await api.provider.getCategories();
+      setSelectedCategoryIds(myCats.map(c => c.id));
+
+      // 5. Load all active categories
+      const allCats = await api.catalog.getCategories();
+      setAvailableCategories(allCats.filter(c => c.active));
 
     } catch (err) {
       console.error('Failed to load provider dashboard:', err);
@@ -165,6 +178,32 @@ export default function ProviderDashboard() {
       showNotification(`Update failed: ${err.message}`, 'error');
     } finally {
       setSavingProfile(false);
+    }
+  };
+
+  const handleToggleCategory = (categoryId) => {
+    setSelectedCategoryIds(prev => {
+      if (prev.includes(categoryId)) {
+        return prev.filter(id => id !== categoryId);
+      }
+      return [...prev, categoryId];
+    });
+  };
+
+  const handleSaveCategories = async (e) => {
+    e.preventDefault();
+    if (selectedCategoryIds.length === 0) {
+      showNotification('Please select at least one category.', 'error');
+      return;
+    }
+    setSavingCategories(true);
+    try {
+      await api.provider.updateCategories(selectedCategoryIds);
+      showNotification('Categories updated successfully.');
+    } catch (err) {
+      showNotification(`Update failed: ${err.message}`, 'error');
+    } finally {
+      setSavingCategories(false);
     }
   };
 
@@ -456,6 +495,34 @@ export default function ProviderDashboard() {
             </div>
           </div>
   
+          {/* Categories Card */}
+          <div className="premium-card" style={{ padding: '1.75rem' }}>
+            <h2 style={{ fontSize: '1.4rem', color: 'var(--primary)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              🏷️ Service Categories
+            </h2>
+            <form onSubmit={handleSaveCategories}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem', maxHeight: '200px', overflowY: 'auto', padding: '0.5rem' }}>
+                {availableCategories.map(cat => (
+                  <label key={cat.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', fontSize: '0.95rem', color: 'var(--text-main)' }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedCategoryIds.includes(cat.id)}
+                      onChange={() => handleToggleCategory(cat.id)}
+                      style={{ width: '1.2rem', height: '1.2rem', accentColor: 'var(--primary)' }}
+                    />
+                    {cat.name}
+                  </label>
+                ))}
+                {availableCategories.length === 0 && (
+                  <p style={{ color: 'var(--text-muted)' }}>No categories available.</p>
+                )}
+              </div>
+              <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={savingCategories}>
+                {savingCategories ? 'Saving...' : 'Save Categories'}
+              </button>
+            </form>
+          </div>
+
           {/* Profile Editor Card */}
           <div className="premium-card" style={{ padding: '1.75rem' }}>
             <h2 style={{ fontSize: '1.4rem', color: 'var(--primary)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

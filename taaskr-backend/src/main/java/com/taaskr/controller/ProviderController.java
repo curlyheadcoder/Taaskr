@@ -7,6 +7,8 @@ import com.taaskr.dto.provider.ProviderBookingResponse;
 import com.taaskr.dto.provider.UpdateProviderBookingStatusRequest;
 import com.taaskr.dto.provider.ProviderProfileResponse;
 import com.taaskr.dto.provider.UpdateProviderProfileRequest;
+import com.taaskr.dto.provider.UpdateProviderCategoriesRequest;
+import com.taaskr.dto.service.CategoryResponse;
 import com.taaskr.service.ProviderWorkflowService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
@@ -80,5 +82,16 @@ public class ProviderController {
     public ProviderProfileResponse updateProviderProfile(@Valid @RequestBody UpdateProviderProfileRequest request,
                                                          Authentication authentication) {
         return providerWorkflowService.updateProviderProfile(authentication.getName(), request);
+    }
+
+    @GetMapping("/categories")
+    public List<CategoryResponse> getMyCategories(Authentication authentication) {
+        return providerWorkflowService.getMyCategories(authentication.getName());
+    }
+
+    @PutMapping("/categories")
+    public List<CategoryResponse> updateMyCategories(@Valid @RequestBody UpdateProviderCategoriesRequest request,
+                                                     Authentication authentication) {
+        return providerWorkflowService.updateMyCategories(authentication.getName(), request);
     }
 }

@@ -67,13 +67,23 @@ export default function Navbar() {
     }}>
       {/* Brand Logo */}
       <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <img
-          src="/taaskr-logo.png"
-          alt="Taaskr logo"
-          width="42"
-          height="42"
-          style={{ display: 'block', objectFit: 'contain' }}
-        />
+        <div style={{
+          background: '#ffffff',
+          borderRadius: '50%',
+          padding: '0.35rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: 'var(--shadow-sm)'
+        }}>
+          <img
+            src="/taaskr-logo.png"
+            alt="Taaskr logo"
+            width="32"
+            height="32"
+            style={{ display: 'block', objectFit: 'contain' }}
+          />
+        </div>
         <span style={{
           fontFamily: 'var(--font-body)',
           fontSize: '1.5rem',

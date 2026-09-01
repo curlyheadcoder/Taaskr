@@ -18,12 +18,19 @@ import com.taaskr.repository.AvailabilitySlotRepository;
 import com.taaskr.repository.BookingRepository;
 import com.taaskr.repository.ProviderProfileRepository;
 import com.taaskr.repository.UserRepository;
+import com.taaskr.repository.ProviderCategoryRepository;
+import com.taaskr.repository.ServiceCategoryRepository;
 import com.taaskr.service.ProviderWorkflowService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import com.taaskr.dto.provider.ProviderProfileResponse;
 import com.taaskr.dto.provider.UpdateProviderProfileRequest;
+import com.taaskr.dto.provider.UpdateProviderCategoriesRequest;
+import com.taaskr.dto.service.CategoryResponse;
+import com.taaskr.entity.ProviderCategory;
+import com.taaskr.entity.ServiceCategory;
+import java.util.stream.Collectors;
 
 import java.util.List;
 
@@ -34,15 +41,21 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
     private final ProviderProfileRepository providerProfileRepository;
     private final AvailabilitySlotRepository availabilitySlotRepository;
     private final BookingRepository bookingRepository;
+    private final ProviderCategoryRepository providerCategoryRepository;
+    private final ServiceCategoryRepository serviceCategoryRepository;
 
     public ProviderWorkflowServiceImpl(UserRepository userRepository,
                                        ProviderProfileRepository providerProfileRepository,
                                        AvailabilitySlotRepository availabilitySlotRepository,
-                                       BookingRepository bookingRepository) {
+                                       BookingRepository bookingRepository,
+                                       ProviderCategoryRepository providerCategoryRepository,
+                                       ServiceCategoryRepository serviceCategoryRepository) {
         this.userRepository = userRepository;
         this.providerProfileRepository = providerProfileRepository;
         this.availabilitySlotRepository = availabilitySlotRepository;
         this.bookingRepository = bookingRepository;
+        this.providerCategoryRepository = providerCategoryRepository;
+        this.serviceCategoryRepository = serviceCategoryRepository;
     }
 
     @Override
@@ -292,5 +305,40 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
                 provider.getTotalJobs(),
                 provider.getBio()
         );
+    }
+
+    @Override
+    @Transactional
+    public List<CategoryResponse> getMyCategories(String providerEmail) {
+        ProviderProfile provider = getProviderByEmail(providerEmail);
+        return providerCategoryRepository.findByProviderId(provider.getId())
+                .stream()
+                .map(pc -> new CategoryResponse(
+                        pc.getCategory().getId(),
+                        pc.getCategory().getName(),
+                        pc.getCategory().getDescription(),
+                        pc.getCategory().getActive()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public List<CategoryResponse> updateMyCategories(String providerEmail, UpdateProviderCategoriesRequest request) {
+        ProviderProfile provider = getProviderByEmail(providerEmail);
+        
+        providerCategoryRepository.deleteByProviderId(provider.getId());
+        
+        for (Long categoryId : request.getCategoryIds()) {
+            ServiceCategory category = serviceCategoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+            if (!Boolean.TRUE.equals(category.getActive())) {
+                throw new BadRequestException("Cannot select an inactive category");
+            }
+            ProviderCategory pc = new ProviderCategory(provider, category);
+            providerCategoryRepository.save(pc);
+        }
+        
+        return getMyCategories(providerEmail);
     }
 }
