@@ -275,7 +275,7 @@ export default function CustomerDashboard() {
                             setReviewText('');
                           }}
                           className="btn btn-primary btn-small"
-                          style={{ background: 'var(--amber)', color: '#000', borderColor: 'var(--amber)' }}
+                          style={{ background: '#f59e0b', color: '#fff', borderColor: '#f59e0b' }}
                         >
                           Rate Provider
                         </button>
