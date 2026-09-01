@@ -34,10 +34,7 @@ export default function Home() {
   }, []);
 
   const filteredServices = services.filter(service => {
-    const matchesCategory = selectedCategory ? service.categoryId === selectedCategory : true;
-    const matchesSearch = service.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          service.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    return selectedCategory ? service.categoryId === selectedCategory : true;
   });
 
   const getCategoryIcon = (categoryName) => {
@@ -118,32 +115,25 @@ export default function Home() {
               Book verified professionals for home repairs, maintenance, and everyday services. Experience seamless booking and reliable execution.
             </p>
 
-            {/* Search bar */}
-            <div style={{
-              display: 'flex',
-              background: 'var(--bg-card)',
-              padding: '0.5rem',
-              borderRadius: 'var(--radius-md)',
-              boxShadow: 'var(--shadow-lg)'
-            }}>
-              <div style={{ flex: 1, position: 'relative' }}>
-                <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
-                  <Search size={20} />
-                </span>
-                <input
-                  type="text"
-                  placeholder="What do you need help with?"
-                  style={{
-                    width: '100%', border: 'none', padding: '1rem 1rem 1rem 3.5rem',
-                    fontSize: '1.05rem', outline: 'none', borderRadius: 'var(--radius-md)'
-                  }}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <button className="btn btn-primary" style={{ padding: '0 2rem' }}>
-                Search
-              </button>
+            {/* Call to Action button */}
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+              <a
+                href="#catalog-section"
+                className="btn btn-primary"
+                style={{
+                  padding: '1rem 2.25rem',
+                  fontSize: '1.1rem',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  background: '#2563EB',
+                  border: 'none',
+                  boxShadow: '0 10px 25px -5px rgba(37, 99, 235, 0.5)'
+                }}
+              >
+                Explore Services <ArrowRight size={20} />
+              </a>
             </div>
           </div>
         </div>
@@ -170,7 +160,7 @@ export default function Home() {
       </section>
 
       {/* Main Services Area with Premium Background */}
-      <div className="services-section-bg">
+      <div id="catalog-section" className="services-section-bg">
         <main className="app-container" style={{ paddingTop: '5rem', paddingBottom: '6rem' }}>
           
           {/* Section Header */}
