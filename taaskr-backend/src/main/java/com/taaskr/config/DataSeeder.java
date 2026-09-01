@@ -256,8 +256,11 @@ public class DataSeeder {
         }
 
         LocalDate tomorrow = LocalDate.now().plusDays(1);
-        seedAvailabilitySlot(availabilitySlotRepository, providerProfile, tomorrow, LocalTime.of(9, 0), LocalTime.of(11, 0));
-        seedAvailabilitySlot(availabilitySlotRepository, providerProfile, tomorrow, LocalTime.of(11, 30), LocalTime.of(13, 30));
+        for (int i = 1; i <= 7; i++) {
+            LocalDate availableDate = LocalDate.now().plusDays(i);
+            seedAvailabilitySlot(availabilitySlotRepository, providerProfile, availableDate, LocalTime.of(9, 0), LocalTime.of(11, 0));
+            seedAvailabilitySlot(availabilitySlotRepository, providerProfile, availableDate, LocalTime.of(11, 30), LocalTime.of(13, 30));
+        }
         seedAvailabilitySlot(availabilitySlotRepository, providerProfile, tomorrow, LocalTime.of(15, 0), LocalTime.of(18, 0));
         
         LocalDate dayAfter = LocalDate.now().plusDays(2);
