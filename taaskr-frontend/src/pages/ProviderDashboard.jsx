@@ -628,6 +628,7 @@ export default function ProviderDashboard() {
           </div>
   
         </div>
+      </div>
       </main>
     </div>
   );
