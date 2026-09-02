@@ -4,12 +4,15 @@ import com.taaskr.dto.auth.AuthResponse;
 import com.taaskr.dto.auth.LoginRequest;
 import com.taaskr.dto.auth.MeResponse;
 import com.taaskr.dto.auth.RegisterRequest;
+import com.taaskr.entity.ProviderCategory;
 import com.taaskr.entity.ProviderProfile;
 import com.taaskr.entity.User;
 import com.taaskr.enums.Role;
 import com.taaskr.exception.BadRequestException;
 import com.taaskr.exception.ResourceNotFoundException;
+import com.taaskr.repository.ProviderCategoryRepository;
 import com.taaskr.repository.ProviderProfileRepository;
+import com.taaskr.repository.ServiceCategoryRepository;
 import com.taaskr.repository.UserRepository;
 import com.taaskr.security.JwtService;
 import com.taaskr.service.AuthService;
@@ -28,17 +31,23 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final ProviderProfileRepository providerProfileRepository;
+    private final ProviderCategoryRepository providerCategoryRepository;
+    private final ServiceCategoryRepository serviceCategoryRepository;
 
     public AuthServiceImpl(UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
                            AuthenticationManager authenticationManager,
                            JwtService jwtService,
-                           ProviderProfileRepository providerProfileRepository) {
+                           ProviderProfileRepository providerProfileRepository,
+                           ProviderCategoryRepository providerCategoryRepository,
+                           ServiceCategoryRepository serviceCategoryRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.providerProfileRepository = providerProfileRepository;
+        this.providerCategoryRepository = providerCategoryRepository;
+        this.serviceCategoryRepository = serviceCategoryRepository;
     }
 
     @Override
@@ -83,9 +92,21 @@ public class AuthServiceImpl implements AuthService {
             providerProfile.setApproved(false);
             providerProfile.setRating(0.0);
             providerProfile.setTotalJobs(0);
-            providerProfile.setBio(null);
+            providerProfile.setBio(Boolean.TRUE.equals(request.getIsLogisticsProvider())
+                    ? "Logistics & On-Demand Vehicle Transport Partner"
+                    : null);
 
-            providerProfileRepository.save(providerProfile);
+            ProviderProfile savedProfile = providerProfileRepository.save(providerProfile);
+
+            if (Boolean.TRUE.equals(request.getIsLogisticsProvider())) {
+                serviceCategoryRepository.findAll().stream()
+                        .filter(c -> c.getName() != null && (c.getName().toLowerCase().contains("vehicle") || c.getName().toLowerCase().contains("transport")))
+                        .findFirst()
+                        .ifPresent(cat -> {
+                            ProviderCategory pc = new ProviderCategory(savedProfile, cat);
+                            providerCategoryRepository.save(pc);
+                        });
+            }
         }
 
         UserDetails userDetails = org.springframework.security.core.userdetails.User

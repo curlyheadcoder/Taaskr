@@ -227,8 +227,8 @@ public class DataSeeder {
                 serviceRepository, List.of("Refrigerator Repair", "Washing Machine Repair", "RO Repair"));
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
-                "provider@taaskr.com", 4.7, 12, 3, "Experienced home service and vehicle transport partner",
-                serviceRepository, List.of("Tap Repair", "Bathroom Cleaning", "Mini Truck"));
+                "provider@taaskr.com", 4.7, 12, 3, "Experienced home service professional",
+                serviceRepository, List.of("Tap Repair", "Bathroom Cleaning", "Full Home Cleaning"));
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "security@taaskr.com", 4.8, 38, 6, "Certified home security and surveillance systems specialist",

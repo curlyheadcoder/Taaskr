@@ -286,6 +286,12 @@ export default function ProviderDashboard() {
     );
   }
 
+  const isLogisticsPartner = selectedCategoryIds.some(catId => {
+    const cat = availableCategories.find(c => c.id === catId);
+    const name = (cat?.name || '').toLowerCase();
+    return name.includes('vehicle') || name.includes('transport') || name.includes('logistic');
+  }) || Boolean(myVehicle?.id);
+
   return (
     <div className="enterprise-layout animate-fade-in" style={{ paddingBottom: '4rem' }}>
       {/* Sidebar Navigation */}
@@ -314,9 +320,11 @@ export default function ProviderDashboard() {
           <button className="sidebar-item" onClick={() => document.getElementById('assigned-section')?.scrollIntoView({ behavior: 'smooth' })}>
             <span style={{ fontSize: '1.1rem' }}>📋</span> My Bookings
           </button>
-          <button className="sidebar-item" onClick={() => document.getElementById('vehicle-section')?.scrollIntoView({ behavior: 'smooth' })}>
-            <span style={{ fontSize: '1.1rem' }}>🚚</span> My Vehicle
-          </button>
+          {isLogisticsPartner && (
+            <button className="sidebar-item" onClick={() => document.getElementById('vehicle-section')?.scrollIntoView({ behavior: 'smooth' })}>
+              <span style={{ fontSize: '1.1rem' }}>🚚</span> My Vehicle
+            </button>
+          )}
           <button className="sidebar-item" onClick={() => document.getElementById('schedule-section')?.scrollIntoView({ behavior: 'smooth' })}>
             <span style={{ fontSize: '1.1rem' }}>🕒</span> Schedule Slots
           </button>
@@ -642,105 +650,107 @@ export default function ProviderDashboard() {
           {/* Right Column: Vehicle Registration & Settings */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             
-            {/* VEHICLE PROFILE CARD */}
-            <div id="vehicle-section" className="premium-card" style={{ padding: '1.75rem', borderLeft: '4px solid var(--primary)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <h2 style={{ fontSize: '1.3rem', color: 'var(--primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <Truck className="w-5 h-5" /> My Transport Vehicle
-                </h2>
-                {myVehicle && (
-                  <span className="badge badge-completed" style={{ fontSize: '0.7rem' }}>
-                    {myVehicle.available ? 'Online & Available' : 'Offline'}
-                  </span>
-                )}
-              </div>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
-                Register your vehicle to receive on-demand intra-city delivery and transport trips.
-              </p>
-
-              <form onSubmit={handleSaveVehicle} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Vehicle Category *</label>
-                  <select
-                    className="form-control"
-                    value={vehicleType}
-                    onChange={(e) => setVehicleType(e.target.value)}
-                  >
-                    <option value="TWO_WHEELER_ELECTRIC">Electric Bike (Courier up to 25 KG)</option>
-                    <option value="TWO_WHEELER_PETROL">Petrol Bike (Courier up to 25 KG)</option>
-                    <option value="THREE_WHEELER_ELECTRIC">Electric Rickshaw (up to 250 KG)</option>
-                    <option value="LOADING_VEHICLE">Loading Vehicle 3W (up to 500 KG)</option>
-                    <option value="MINI_TRUCK">Mini Truck - Tata Ace (up to 1000 KG)</option>
-                    <option value="TRUCK">Truck 14ft / 17ft (up to 2500 KG)</option>
-                    <option value="HEAVY_TRUCK">Heavy Commercial Truck (up to 7000 KG)</option>
-                  </select>
+            {/* VEHICLE PROFILE CARD (Only visible for Logistics / Vehicle Transport Partners) */}
+            {isLogisticsPartner && (
+              <div id="vehicle-section" className="premium-card" style={{ padding: '1.75rem', borderLeft: '4px solid var(--primary)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <h2 style={{ fontSize: '1.3rem', color: 'var(--primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <Truck className="w-5 h-5" /> My Transport Vehicle
+                  </h2>
+                  {myVehicle && (
+                    <span className="badge badge-completed" style={{ fontSize: '0.7rem' }}>
+                      {myVehicle.available ? 'Online & Available' : 'Offline'}
+                    </span>
+                  )}
                 </div>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
+                  Register your vehicle to receive on-demand intra-city delivery and transport trips.
+                </p>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <form onSubmit={handleSaveVehicle} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">Fuel Type</label>
+                    <label className="form-label">Vehicle Category *</label>
                     <select
                       className="form-control"
-                      value={fuelType}
-                      onChange={(e) => setFuelType(e.target.value)}
+                      value={vehicleType}
+                      onChange={(e) => setVehicleType(e.target.value)}
                     >
-                      <option value="DIESEL">Diesel</option>
-                      <option value="CNG">CNG</option>
-                      <option value="PETROL">Petrol</option>
-                      <option value="ELECTRIC">Electric</option>
+                      <option value="TWO_WHEELER_ELECTRIC">Electric Bike (Courier up to 25 KG)</option>
+                      <option value="TWO_WHEELER_PETROL">Petrol Bike (Courier up to 25 KG)</option>
+                      <option value="THREE_WHEELER_ELECTRIC">Electric Rickshaw (up to 250 KG)</option>
+                      <option value="LOADING_VEHICLE">Loading Vehicle 3W (up to 500 KG)</option>
+                      <option value="MINI_TRUCK">Mini Truck - Tata Ace (up to 1000 KG)</option>
+                      <option value="TRUCK">Truck 14ft / 17ft (up to 2500 KG)</option>
+                      <option value="HEAVY_TRUCK">Heavy Commercial Truck (up to 7000 KG)</option>
                     </select>
                   </div>
 
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label">Fuel Type</label>
+                      <select
+                        className="form-control"
+                        value={fuelType}
+                        onChange={(e) => setFuelType(e.target.value)}
+                      >
+                        <option value="DIESEL">Diesel</option>
+                        <option value="CNG">CNG</option>
+                        <option value="PETROL">Petrol</option>
+                        <option value="ELECTRIC">Electric</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label">Capacity (KG)</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={vehicleCapacityKg}
+                        onChange={(e) => setVehicleCapacityKg(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
                   <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">Capacity (KG)</label>
+                    <label className="form-label">Model Name *</label>
                     <input
-                      type="number"
+                      type="text"
                       className="form-control"
-                      value={vehicleCapacityKg}
-                      onChange={(e) => setVehicleCapacityKg(e.target.value)}
+                      placeholder="e.g. Tata Ace Gold, Hero Electric Nyx, Piaggio Ape"
+                      value={vehicleModel}
+                      onChange={(e) => setVehicleModel(e.target.value)}
+                      required
                     />
                   </div>
-                </div>
 
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Model Name *</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="e.g. Tata Ace Gold, Hero Electric Nyx, Piaggio Ape"
-                    value={vehicleModel}
-                    onChange={(e) => setVehicleModel(e.target.value)}
-                    required
-                  />
-                </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label">Registration Plate / Number *</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="e.g. MP-09-TA-1234"
+                      value={registrationNumber}
+                      onChange={(e) => setRegistrationNumber(e.target.value)}
+                      required
+                    />
+                  </div>
 
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Registration Plate / Number *</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="e.g. MP-09-TA-1234"
-                    value={registrationNumber}
-                    onChange={(e) => setRegistrationNumber(e.target.value)}
-                    required
-                  />
-                </div>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-main)', marginTop: '0.25rem' }}>
+                    <input
+                      type="checkbox"
+                      checked={vehicleAvailable}
+                      onChange={(e) => setVehicleAvailable(e.target.checked)}
+                      style={{ accentColor: 'var(--primary)', width: '1rem', height: '1rem' }}
+                    />
+                    <span>Mark vehicle as Available for trips today</span>
+                  </label>
 
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-main)', marginTop: '0.25rem' }}>
-                  <input
-                    type="checkbox"
-                    checked={vehicleAvailable}
-                    onChange={(e) => setVehicleAvailable(e.target.checked)}
-                    style={{ accentColor: 'var(--primary)', width: '1rem', height: '1rem' }}
-                  />
-                  <span>Mark vehicle as Available for trips today</span>
-                </label>
-
-                <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }} disabled={savingVehicle}>
-                  {savingVehicle ? 'Saving Vehicle...' : myVehicle ? 'Update Vehicle Info' : 'Register My Vehicle'}
-                </button>
-              </form>
-            </div>
+                  <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }} disabled={savingVehicle}>
+                    {savingVehicle ? 'Saving Vehicle...' : myVehicle ? 'Update Vehicle Info' : 'Register My Vehicle'}
+                  </button>
+                </form>
+              </div>
+            )}
 
             {/* Availability Slots Card */}
             <div id="schedule-section" className="premium-card" style={{ padding: '1.75rem' }}>
