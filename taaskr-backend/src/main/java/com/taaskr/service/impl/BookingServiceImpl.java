@@ -7,10 +7,11 @@ import com.taaskr.entity.*;
 import com.taaskr.enums.BookingStatus;
 import com.taaskr.enums.PaymentStatus;
 import com.taaskr.enums.Role;
+import com.taaskr.enums.VehicleType;
 import com.taaskr.exception.BadRequestException;
 import com.taaskr.exception.ResourceNotFoundException;
 import com.taaskr.repository.*;
-import com.taaskr.service.BookingService;
+import com.taaskr.service.*;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -31,9 +32,13 @@ public class BookingServiceImpl implements BookingService {
     private final AvailabilitySlotRepository availabilitySlotRepository;
     private final BookingRepository bookingRepository;
     private final ProviderProfileRepository providerProfileRepository;
-
     private final ProviderCategoryRepository providerCategoryRepository;
     private final org.springframework.context.ApplicationEventPublisher eventPublisher;
+
+    private final MapService mapService;
+    private final VehiclePricingService vehiclePricingService;
+    private final VehicleEligibilityService vehicleEligibilityService;
+    private final VehicleDispatchService vehicleDispatchService;
 
     public BookingServiceImpl(UserRepository userRepository, 
                               ServiceRepository serviceRepository, 
@@ -42,7 +47,11 @@ public class BookingServiceImpl implements BookingService {
                               BookingRepository bookingRepository,
                               ProviderProfileRepository providerProfileRepository,
                               ProviderCategoryRepository providerCategoryRepository,
-                              org.springframework.context.ApplicationEventPublisher eventPublisher) {
+                              org.springframework.context.ApplicationEventPublisher eventPublisher,
+                              MapService mapService,
+                              VehiclePricingService vehiclePricingService,
+                              VehicleEligibilityService vehicleEligibilityService,
+                              VehicleDispatchService vehicleDispatchService) {
         this.userRepository = userRepository;
         this.serviceRepository = serviceRepository;
         this.providerServiceRepository = providerServiceRepository;
@@ -51,6 +60,10 @@ public class BookingServiceImpl implements BookingService {
         this.providerProfileRepository = providerProfileRepository;
         this.providerCategoryRepository = providerCategoryRepository;
         this.eventPublisher = eventPublisher;
+        this.mapService = mapService;
+        this.vehiclePricingService = vehiclePricingService;
+        this.vehicleEligibilityService = vehicleEligibilityService;
+        this.vehicleDispatchService = vehicleDispatchService;
     }
 
     @Override
@@ -79,6 +92,35 @@ public class BookingServiceImpl implements BookingService {
 
         if (!endTime.isAfter(startTime)) {
             throw new BadRequestException("Invalid booking time range");
+        }
+
+        boolean isVehicleBooking = (service.getCategory() != null && service.getCategory().getName() != null 
+                && (service.getCategory().getName().toLowerCase().contains("vehicle") || service.getCategory().getName().toLowerCase().contains("transport")))
+                || request.getDropCity() != null || request.getDropAddress() != null;
+
+        BigDecimal calculatedFare = service.getPrice();
+        BigDecimal distanceKm = null;
+        Vehicle matchedVehicle = null;
+
+        if (isVehicleBooking) {
+            if (request.getLatitude() != null && request.getLongitude() != null 
+                    && request.getDropLatitude() != null && request.getDropLongitude() != null) {
+                distanceKm = mapService.calculateDistanceKm(
+                        request.getLatitude(), request.getLongitude(),
+                        request.getDropLatitude(), request.getDropLongitude()
+                );
+            } else {
+                distanceKm = mapService.estimateDistanceKm(
+                        request.getCity(), request.getPincode(),
+                        request.getDropCity(), request.getDropPincode()
+                );
+            }
+            if (request.getDistanceKm() != null && request.getDistanceKm().compareTo(BigDecimal.ZERO) > 0) {
+                distanceKm = request.getDistanceKm();
+            }
+
+            VehicleType vehicleType = vehicleEligibilityService.determineVehicleTypeFromService(service);
+            calculatedFare = vehiclePricingService.calculatePrice(vehicleType, distanceKm);
         }
 
         ProviderAssignmentResult assignmentResult;
@@ -113,6 +155,26 @@ public class BookingServiceImpl implements BookingService {
             }
 
             assignmentResult = new ProviderAssignmentResult(selectedProvider, matchingSlot);
+        } else if (isVehicleBooking) {
+            // Attempt vehicle driver dispatch
+            VehicleType vehicleType = vehicleEligibilityService.determineVehicleTypeFromService(service);
+            var dispatchOpt = vehicleDispatchService.findBestDriverForTrip(
+                    vehicleType,
+                    request.getCity().trim(),
+                    request.getPincode() != null ? request.getPincode().trim() : null,
+                    request.getLatitude(),
+                    request.getLongitude(),
+                    request.getBookingDate(),
+                    startTime,
+                    endTime
+            );
+
+            if (dispatchOpt.isPresent()) {
+                assignmentResult = new ProviderAssignmentResult(dispatchOpt.get().provider(), null);
+                matchedVehicle = dispatchOpt.get().vehicle();
+            } else {
+                assignmentResult = new ProviderAssignmentResult(null, null);
+            }
         } else {
             assignmentResult = assignProvider(
                     service,
@@ -137,10 +199,24 @@ public class BookingServiceImpl implements BookingService {
         booking.setPincode(request.getPincode().trim());
         booking.setLatitude(request.getLatitude());
         booking.setLongitude(request.getLongitude());
+
+        // Vehicle & Route Fields
+        if (isVehicleBooking) {
+            booking.setDropAddress(request.getDropAddress() != null ? request.getDropAddress().trim() : request.getAddress().trim());
+            booking.setDropCity(request.getDropCity() != null ? request.getDropCity().trim() : request.getCity().trim());
+            booking.setDropPincode(request.getDropPincode() != null ? request.getDropPincode().trim() : request.getPincode().trim());
+            booking.setDropLatitude(request.getDropLatitude());
+            booking.setDropLongitude(request.getDropLongitude());
+            booking.setPackageDescription(request.getPackageDescription());
+            booking.setPackageWeightKg(request.getPackageWeightKg());
+            booking.setDistanceKm(distanceKm);
+            booking.setVehicle(matchedVehicle);
+        }
+
         booking.setNotes(request.getNotes());
-        booking.setTotalAmount(service.getPrice());
+        booking.setTotalAmount(calculatedFare);
         booking.setDiscountAmount(BigDecimal.ZERO);
-        booking.setFinalAmount(service.getPrice());
+        booking.setFinalAmount(calculatedFare);
         booking.setPaymentStatus(PaymentStatus.PENDING);
         booking.setPaymentMethod(request.getPaymentMethod());
         booking.setStatus(assignmentResult.provider() != null ? BookingStatus.ASSIGNED : BookingStatus.PENDING);
@@ -225,7 +301,6 @@ public class BookingServiceImpl implements BookingService {
             
             provider.setTotalRatings(currentTotalRatings + 1);
             provider.setRating(newAverage);
-            // JPA will dirty check and save provider profile along with booking
         }
 
         return mapBooking(booking);
@@ -360,8 +435,9 @@ public class BookingServiceImpl implements BookingService {
 
     private BookingResponse mapBooking(Booking booking) {
         ProviderProfile provider = booking.getProvider();
+        Vehicle vehicle = booking.getVehicle();
 
-        return new BookingResponse(
+        BookingResponse response = new BookingResponse(
                 booking.getId(),
                 booking.getBookingCode(),
                 booking.getService().getId(),
@@ -393,6 +469,23 @@ public class BookingServiceImpl implements BookingService {
                 booking.getCreatedAt(),
                 booking.getUpdatedAt()
         );
+
+        response.setDropAddress(booking.getDropAddress());
+        response.setDropCity(booking.getDropCity());
+        response.setDropPincode(booking.getDropPincode());
+        response.setDropLatitude(booking.getDropLatitude());
+        response.setDropLongitude(booking.getDropLongitude());
+        response.setPackageDescription(booking.getPackageDescription());
+        response.setPackageWeightKg(booking.getPackageWeightKg());
+        response.setDistanceKm(booking.getDistanceKm());
+
+        if (vehicle != null) {
+            response.setVehicleType(vehicle.getVehicleType());
+            response.setVehicleModel(vehicle.getModelName());
+            response.setVehicleRegistrationNumber(vehicle.getRegistrationNumber());
+        }
+
+        return response;
     }
 
     private String generateBookingCode() {

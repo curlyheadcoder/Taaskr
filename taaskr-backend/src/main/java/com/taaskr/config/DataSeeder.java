@@ -1,22 +1,14 @@
 package com.taaskr.config;
 
-import com.taaskr.entity.AvailabilitySlot;
-import com.taaskr.entity.ProviderProfile;
-import com.taaskr.entity.ProviderService;
-import com.taaskr.entity.Service;
-import com.taaskr.entity.ServiceCategory;
-import com.taaskr.entity.User;
+import com.taaskr.entity.*;
+import com.taaskr.enums.FuelType;
 import com.taaskr.enums.Role;
-import com.taaskr.repository.AvailabilitySlotRepository;
-import com.taaskr.repository.ProviderProfileRepository;
-import com.taaskr.repository.ProviderServiceRepository;
-import com.taaskr.repository.ServiceCategoryRepository;
-import com.taaskr.repository.ServiceRepository;
-import com.taaskr.repository.UserRepository;
+import com.taaskr.enums.VehicleType;
+import com.taaskr.repository.*;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
@@ -36,12 +28,15 @@ public class DataSeeder {
                                ProviderProfileRepository providerProfileRepository,
                                ProviderServiceRepository providerServiceRepository,
                                AvailabilitySlotRepository availabilitySlotRepository,
+                               VehicleRepository vehicleRepository,
+                               VehiclePricingRuleRepository vehiclePricingRuleRepository,
                                org.springframework.transaction.support.TransactionTemplate transactionTemplate) {
         return args -> {
             transactionTemplate.execute(status -> {
                 seedUsers(userRepository, passwordEncoder);
                 seedCatalog(categoryRepository, serviceRepository);
-                seedProviderData(userRepository, serviceRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository);
+                seedVehiclePricingRules(vehiclePricingRuleRepository);
+                seedProviderData(userRepository, serviceRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository, vehicleRepository);
                 return null;
             });
         };
@@ -60,6 +55,11 @@ public class DataSeeder {
         seedUser(userRepository, passwordEncoder, "Home Appliance Expert", "appliance@taaskr.com", "Provider@123", "9999999998", Role.PROVIDER, "Indore", "452001");
         seedUser(userRepository, passwordEncoder, "Security Systems Expert", "security@taaskr.com", "Provider@123", "8880000001", Role.PROVIDER, "Indore", "452001");
         seedUser(userRepository, passwordEncoder, "Security Guard Agency", "guard@taaskr.com", "Provider@123", "8880000002", Role.PROVIDER, "Indore", "452001");
+
+        // Dedicated Driver Providers
+        seedUser(userRepository, passwordEncoder, "Driver Ramesh (Mini Truck)", "driver.ramesh@taaskr.com", "Provider@123", "8880000003", Role.PROVIDER, "Indore", "452001");
+        seedUser(userRepository, passwordEncoder, "Driver Suresh (Loading 3W)", "driver.suresh@taaskr.com", "Provider@123", "8880000004", Role.PROVIDER, "Indore", "452001");
+        seedUser(userRepository, passwordEncoder, "Driver Ajay (E-Bike Courier)", "driver.ajay@taaskr.com", "Provider@123", "8880000005", Role.PROVIDER, "Indore", "452001");
     }
 
     private User seedUser(UserRepository userRepository, PasswordEncoder passwordEncoder, String name, String email, String rawPassword, String phone, Role role, String city, String pincode) {
@@ -143,6 +143,33 @@ public class DataSeeder {
         seedService(serviceRepository, "Roof & Terrace Maintenance", "Roof repair and terrace maintenance", new BigDecimal("1999.00"), 360, civil);
         seedService(serviceRepository, "Home Renovation", "General home renovation and remodeling", new BigDecimal("4999.00"), 480, civil);
         seedService(serviceRepository, "General Civil Repairs", "Minor civil repairs and wall plastering", new BigDecimal("799.00"), 120, civil);
+
+        // On-Demand Intra-City Vehicle Service Category
+        ServiceCategory vehicleCategory = seedCategory(categoryRepository, "On-Demand Vehicle", "Intra-city on-demand goods transport and vehicle with driver service.");
+        seedService(serviceRepository, "Electric Bike", "Fast eco-friendly two-wheeler for small parcels and urgent documents", new BigDecimal("40.00"), 30, vehicleCategory);
+        seedService(serviceRepository, "Petrol Bike", "Quick two-wheeler courier for lightweight goods and packages", new BigDecimal("45.00"), 30, vehicleCategory);
+        seedService(serviceRepository, "Electric Rickshaw", "Electric 3-wheeler for medium boxes and multi-package local transport", new BigDecimal("90.00"), 45, vehicleCategory);
+        seedService(serviceRepository, "Loading Vehicle", "Dedicated 3-wheeler loading tempo for appliances and furniture transport", new BigDecimal("150.00"), 60, vehicleCategory);
+        seedService(serviceRepository, "Mini Truck", "Reliable mini truck (Tata Ace / Pickup) for home shifting & heavy goods", new BigDecimal("250.00"), 90, vehicleCategory);
+        seedService(serviceRepository, "Truck", "Large 14ft/17ft truck for full house or office goods relocation", new BigDecimal("600.00"), 120, vehicleCategory);
+        seedService(serviceRepository, "Heavy Truck", "Heavy-duty commercial vehicle for heavy machinery and bulk items", new BigDecimal("1200.00"), 180, vehicleCategory);
+    }
+
+    private void seedVehiclePricingRules(VehiclePricingRuleRepository ruleRepository) {
+        seedRule(ruleRepository, VehicleType.TWO_WHEELER_ELECTRIC, "Electric Bike", new BigDecimal("40.00"), new BigDecimal("2.0"), new BigDecimal("12.00"), new BigDecimal("40.00"), new BigDecimal("20.00"));
+        seedRule(ruleRepository, VehicleType.TWO_WHEELER_PETROL, "Petrol Bike", new BigDecimal("45.00"), new BigDecimal("2.0"), new BigDecimal("14.00"), new BigDecimal("45.00"), new BigDecimal("25.00"));
+        seedRule(ruleRepository, VehicleType.THREE_WHEELER_ELECTRIC, "Electric Rickshaw", new BigDecimal("90.00"), new BigDecimal("2.0"), new BigDecimal("20.00"), new BigDecimal("90.00"), new BigDecimal("250.00"));
+        seedRule(ruleRepository, VehicleType.LOADING_VEHICLE, "Loading Vehicle (3W)", new BigDecimal("150.00"), new BigDecimal("2.0"), new BigDecimal("25.00"), new BigDecimal("150.00"), new BigDecimal("500.00"));
+        seedRule(ruleRepository, VehicleType.MINI_TRUCK, "Mini Truck (Tata Ace)", new BigDecimal("250.00"), new BigDecimal("3.0"), new BigDecimal("32.00"), new BigDecimal("250.00"), new BigDecimal("1000.00"));
+        seedRule(ruleRepository, VehicleType.TRUCK, "Truck (14ft / 17ft)", new BigDecimal("600.00"), new BigDecimal("5.0"), new BigDecimal("50.00"), new BigDecimal("600.00"), new BigDecimal("2500.00"));
+        seedRule(ruleRepository, VehicleType.HEAVY_TRUCK, "Heavy Truck", new BigDecimal("1200.00"), new BigDecimal("5.0"), new BigDecimal("85.00"), new BigDecimal("1200.00"), new BigDecimal("7000.00"));
+    }
+
+    private void seedRule(VehiclePricingRuleRepository repository, VehicleType type, String name, BigDecimal baseFare, BigDecimal baseDistance, BigDecimal perKmRate, BigDecimal minFare, BigDecimal maxCapacity) {
+        if (repository.findByVehicleType(type).isEmpty()) {
+            VehiclePricingRule rule = new VehiclePricingRule(type, name, baseFare, baseDistance, perKmRate, minFare, maxCapacity);
+            repository.save(rule);
+        }
     }
 
     private ServiceCategory seedCategory(ServiceCategoryRepository categoryRepository, String name, String description) {
@@ -176,7 +203,8 @@ public class DataSeeder {
                                   ServiceRepository serviceRepository,
                                   ProviderProfileRepository providerProfileRepository,
                                   ProviderServiceRepository providerServiceRepository,
-                                  AvailabilitySlotRepository availabilitySlotRepository) {
+                                  AvailabilitySlotRepository availabilitySlotRepository,
+                                  VehicleRepository vehicleRepository) {
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "ro@taaskr.com", 4.8, 45, 5, "RO water purifier specialist",
@@ -199,8 +227,8 @@ public class DataSeeder {
                 serviceRepository, List.of("Refrigerator Repair", "Washing Machine Repair", "RO Repair"));
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
-                "provider@taaskr.com", 4.7, 12, 3, "Experienced home service professional",
-                serviceRepository, List.of("Tap Repair", "Bathroom Cleaning", "Full Home Cleaning"));
+                "provider@taaskr.com", 4.7, 12, 3, "Experienced home service and vehicle transport partner",
+                serviceRepository, List.of("Tap Repair", "Bathroom Cleaning", "Mini Truck"));
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "security@taaskr.com", 4.8, 38, 6, "Certified home security and surveillance systems specialist",
@@ -209,18 +237,57 @@ public class DataSeeder {
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "guard@taaskr.com", 4.6, 54, 5, "Professional residential and event security guard provider",
                 serviceRepository, List.of("Security Guard Service"));
+
+        // Driver Providers setup
+        ProviderProfile ramesh = setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
+                "driver.ramesh@taaskr.com", 4.9, 88, 5, "Professional commercial driver for Tata Ace Mini Truck intra-city goods moving",
+                serviceRepository, List.of("Mini Truck", "Loading Vehicle"));
+        if (ramesh != null) {
+            seedDriverVehicle(vehicleRepository, ramesh, VehicleType.MINI_TRUCK, FuelType.DIESEL, "Tata Ace Gold", "MP-09-TA-1001", new BigDecimal("1000.00"), new BigDecimal("22.7196"), new BigDecimal("75.8577"));
+        }
+
+        ProviderProfile suresh = setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
+                "driver.suresh@taaskr.com", 4.7, 62, 4, "Reliable 3-wheeler loading tempo driver for furniture and heavy boxes",
+                serviceRepository, List.of("Loading Vehicle", "Electric Rickshaw"));
+        if (suresh != null) {
+            seedDriverVehicle(vehicleRepository, suresh, VehicleType.LOADING_VEHICLE, FuelType.CNG, "Piaggio Ape Auto Plus", "MP-09-LD-2002", new BigDecimal("500.00"), new BigDecimal("22.7244"), new BigDecimal("75.8839"));
+        }
+
+        ProviderProfile ajay = setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
+                "driver.ajay@taaskr.com", 4.8, 140, 3, "Fast EV two-wheeler parcel and document courier partner",
+                serviceRepository, List.of("Electric Bike", "Petrol Bike"));
+        if (ajay != null) {
+            seedDriverVehicle(vehicleRepository, ajay, VehicleType.TWO_WHEELER_ELECTRIC, FuelType.ELECTRIC, "Hero Electric Nyx", "MP-09-EV-3003", new BigDecimal("25.00"), new BigDecimal("22.7533"), new BigDecimal("75.8937"));
+        }
     }
 
-    private void setupProviderProfileAndServices(UserRepository userRepository,
-                                                 ProviderProfileRepository providerProfileRepository,
-                                                 ProviderServiceRepository providerServiceRepository,
-                                                 AvailabilitySlotRepository availabilitySlotRepository,
-                                                 String email, double rating, int totalJobs, int experienceYears, String bio,
-                                                 ServiceRepository serviceRepository,
-                                                 List<String> serviceNames) {
+    private void seedDriverVehicle(VehicleRepository vehicleRepository, ProviderProfile provider, VehicleType type, FuelType fuel, String model, String plate, BigDecimal capacity, BigDecimal lat, BigDecimal lng) {
+        if (vehicleRepository.findByProviderId(provider.getId()).isEmpty()) {
+            Vehicle vehicle = new Vehicle();
+            vehicle.setProvider(provider);
+            vehicle.setVehicleType(type);
+            vehicle.setFuelType(fuel);
+            vehicle.setModelName(model);
+            vehicle.setRegistrationNumber(plate);
+            vehicle.setCapacityKg(capacity);
+            vehicle.setActive(true);
+            vehicle.setAvailable(true);
+            vehicle.setCurrentLatitude(lat);
+            vehicle.setCurrentLongitude(lng);
+            vehicleRepository.save(vehicle);
+        }
+    }
+
+    private ProviderProfile setupProviderProfileAndServices(UserRepository userRepository,
+                                                            ProviderProfileRepository providerProfileRepository,
+                                                            ProviderServiceRepository providerServiceRepository,
+                                                            AvailabilitySlotRepository availabilitySlotRepository,
+                                                            String email, double rating, int totalJobs, int experienceYears, String bio,
+                                                            ServiceRepository serviceRepository,
+                                                            List<String> serviceNames) {
         
         User providerUser = userRepository.findByEmail(email).orElse(null);
-        if (providerUser == null) return;
+        if (providerUser == null) return null;
 
         ProviderProfile providerProfile = providerProfileRepository.findByUserId(providerUser.getId())
                 .orElseGet(() -> {
@@ -265,6 +332,8 @@ public class DataSeeder {
         
         LocalDate dayAfter = LocalDate.now().plusDays(2);
         seedAvailabilitySlot(availabilitySlotRepository, providerProfile, dayAfter, LocalTime.of(10, 0), LocalTime.of(14, 0));
+
+        return providerProfile;
     }
 
     private void seedAvailabilitySlot(AvailabilitySlotRepository availabilitySlotRepository,

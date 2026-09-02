@@ -4,6 +4,7 @@ import { api } from '../services/api';
 import { formatLocalTime } from '../utils/time';
 import confetti from 'canvas-confetti';
 import LocationPicker from '../components/LocationPicker';
+import { Truck, MapPin, Package, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -25,15 +26,21 @@ export default function BookingFlow() {
   const navigate = useNavigate();
 
   const bookingState = location.state || {};
-  const { serviceId, serviceName, price, bookingDate, startTime } = bookingState;
+  const { 
+    serviceId, serviceName, price, bookingDate, startTime,
+    isVehicle, pickupAddress, pickupCity, pickupPincode, pickupLatitude, pickupLongitude,
+    dropAddress, dropCity, dropPincode, dropLatitude, dropLongitude,
+    packageWeightKg, packageDescription, distanceKm, vehicleType
+  } = bookingState;
 
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('Indore');
-  const [pincode, setPincode] = useState('452001');
-  const [notes, setNotes] = useState('');
-  const [coordinates, setCoordinates] = useState(null);
+  const [address, setAddress] = useState(pickupAddress || '');
+  const [city, setCity] = useState(pickupCity || 'Indore');
+  const [pincode, setPincode] = useState(pickupPincode || '452001');
+  const [notes, setNotes] = useState(packageDescription || '');
+  const [coordinates, setCoordinates] = useState(
+    pickupLatitude && pickupLongitude ? { latitude: pickupLatitude, longitude: pickupLongitude } : null
+  );
   const [showMap, setShowMap] = useState(false);
-  const [locationStatus, setLocationStatus] = useState('');
   const [loading, setLoading] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [newBooking, setNewBooking] = useState(null);
@@ -42,7 +49,7 @@ export default function BookingFlow() {
 
   // Provider Selection State
   const [availableProviders, setAvailableProviders] = useState([]);
-  const [selectedProviderId, setSelectedProviderId] = useState(null); // null = "No preference"
+  const [selectedProviderId, setSelectedProviderId] = useState(null);
   const [isFetchingProviders, setIsFetchingProviders] = useState(false);
 
   useEffect(() => {
@@ -51,17 +58,17 @@ export default function BookingFlow() {
         const user = await api.auth.me();
         if (user) {
           setCurrentUser(user);
-          if (user.city) setCity(user.city);
-          if (user.pincode) setPincode(user.pincode);
+          if (!pickupCity && user.city) setCity(user.city);
+          if (!pickupPincode && user.pincode) setPincode(user.pincode);
         }
       } catch (e) {}
     };
     prefillUser();
-  }, []);
+  }, [pickupCity, pickupPincode]);
 
-  // Fetch Providers whenever Location changes
+  // Fetch Providers whenever Location changes (for standard services)
   useEffect(() => {
-    if (serviceId && bookingDate && startTime && city && pincode) {
+    if (!isVehicle && serviceId && bookingDate && startTime && city && pincode) {
       const fetchProviders = async () => {
         setIsFetchingProviders(true);
         try {
@@ -81,7 +88,7 @@ export default function BookingFlow() {
       
       return () => clearTimeout(delayDebounceFn);
     }
-  }, [serviceId, bookingDate, startTime, city, pincode]);
+  }, [isVehicle, serviceId, bookingDate, startTime, city, pincode]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -97,7 +104,7 @@ export default function BookingFlow() {
 
     setLoading(true);
     try {
-      const booking = await api.bookings.create({
+      const payload = {
         serviceId: Number(serviceId),
         providerId: selectedProviderId ? Number(selectedProviderId) : null,
         bookingDate,
@@ -108,8 +115,21 @@ export default function BookingFlow() {
         pincode,
         latitude: coordinates?.latitude,
         longitude: coordinates?.longitude,
-        notes
-      });
+        notes: isVehicle && packageDescription ? `${notes ? notes + ' | ' : ''}Cargo: ${packageDescription}` : notes
+      };
+
+      if (isVehicle) {
+        payload.dropAddress = dropAddress || address;
+        payload.dropCity = dropCity || city;
+        payload.dropPincode = dropPincode || pincode;
+        payload.dropLatitude = dropLatitude || coordinates?.latitude;
+        payload.dropLongitude = dropLongitude || coordinates?.longitude;
+        payload.packageDescription = packageDescription;
+        payload.packageWeightKg = packageWeightKg;
+        payload.distanceKm = distanceKm;
+      }
+
+      const booking = await api.bookings.create(payload);
       
       setNewBooking(booking);
 
@@ -144,7 +164,7 @@ export default function BookingFlow() {
           contact: currentUser?.phone || ''
         },
         theme: {
-          color: '#6366f1'
+          color: '#2563EB'
         },
         handler: async function (response) {
           try {
@@ -233,7 +253,7 @@ export default function BookingFlow() {
           
           <h1 style={{ color: 'var(--text-main)', fontSize: '2.2rem', marginBottom: '0.5rem' }}>Booking Confirmed!</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '1rem', marginBottom: '2rem' }}>
-            Your booking request has been placed successfully. {newBooking.status === 'PENDING' ? 'We will match you with a professional shortly.' : 'A professional has been assigned.'}
+            Your booking request has been placed successfully. {newBooking.status === 'PENDING' ? 'We are matching you with a verified driver shortly.' : 'A driver partner has been assigned.'}
           </p>
 
           <div style={{
@@ -250,16 +270,32 @@ export default function BookingFlow() {
                 <span style={{ color: 'var(--text-muted)' }}>Service:</span>
                 <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{serviceName}</span>
               </div>
+              {isVehicle && (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Pickup:</span>
+                    <span style={{ color: 'var(--emerald)', fontWeight: 600 }}>{address}, {city}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Drop-off:</span>
+                    <span style={{ color: '#F97316', fontWeight: 600 }}>{dropAddress || address}, {dropCity || city}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Est. Distance:</span>
+                    <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{distanceKm} KM</span>
+                  </div>
+                </>
+              )}
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Assigned To:</span>
-                <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{newBooking.providerName || 'Pending Assignment'}</span>
+                <span style={{ color: 'var(--text-muted)' }}>Assigned Partner:</span>
+                <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{newBooking.providerName || 'Assigning Nearby Driver...'}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Scheduled Date:</span>
                 <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{bookingDate}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Start Time:</span>
+                <span style={{ color: 'var(--text-muted)' }}>Time Slot:</span>
                 <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{formatLocalTime(startTime)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-light)', paddingTop: '0.75rem', marginTop: '0.25rem' }}>
@@ -286,23 +322,25 @@ export default function BookingFlow() {
     );
   }
 
-  const tax = Math.round(price * 0.18);
-  const total = price + tax;
-
   return (
     <div className="app-container animate-fade-in">
-      <h1 style={{ fontSize: '2rem', color: 'var(--text-main)', marginBottom: '2rem' }}>Confirm Booking & Address</h1>
+      <h1 style={{ fontSize: '2rem', color: 'var(--text-main)', marginBottom: '2rem' }}>
+        {isVehicle ? 'Confirm Vehicle Trip & Details' : 'Confirm Booking & Address'}
+      </h1>
       
       <div className="grid-cols-2" style={{ gap: '2rem', alignItems: 'flex-start' }}>
         {/* Left Side: Address Details Form */}
         <form onSubmit={handleSubmit} className="premium-card" style={{ padding: '2.5rem' }}>
-          <h2 style={{ fontSize: '1.4rem', color: 'var(--primary)', marginBottom: '1.5rem' }}>Service Address</h2>
+          <h2 style={{ fontSize: '1.4rem', color: 'var(--primary)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            {isVehicle ? <Truck className="w-5 h-5" /> : null}
+            {isVehicle ? 'Trip Addresses' : 'Service Address'}
+          </h2>
           
           <div className="form-group">
-            <label className="form-label">Street Address *</label>
+            <label className="form-label">{isVehicle ? '📍 Pickup Street Address *' : 'Street Address *'}</label>
             <input
               type="text"
-              placeholder="House/Flat No, Apartment Name, Street Name"
+              placeholder="House/Flat No, Landmark, Street"
               className="form-control"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
@@ -311,33 +349,8 @@ export default function BookingFlow() {
             />
           </div>
 
-          <div style={{ marginBottom: '1.25rem', padding: '1rem', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)', background: 'var(--bg-page)' }}>
-            {!showMap ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                  <div>
-                    <p style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '0.95rem' }}>Precise map location</p>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginTop: '0.2rem' }}>Required for better service delivery.</p>
-                  </div>
-                  <button type="button" onClick={() => setShowMap(true)} className="btn btn-secondary btn-small" disabled={loading}>
-                    {coordinates ? '📍 Change Location' : '📍 Select on Map'}
-                  </button>
-                </div>
-                {coordinates && (
-                  <div style={{ padding: '0.75rem', background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: 'var(--radius-sm)' }}>
-                    <div style={{ color: 'var(--success)', fontWeight: 600, fontSize: '0.85rem' }}>📍 Service Location Confirmed</div>
-                    <div style={{ color: 'var(--text-main)', fontSize: '0.85rem', marginTop: '0.25rem' }}>{address}</div>
-                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.25rem' }}>Lat: {coordinates.latitude.toFixed(6)}, Lng: {coordinates.longitude.toFixed(6)}</div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <LocationPicker onLocationConfirm={handleLocationConfirm} />
-            )}
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div className="form-group">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
+            <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">City *</label>
               <input
                 type="text"
@@ -350,7 +363,7 @@ export default function BookingFlow() {
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">Pincode *</label>
               <input
                 type="text"
@@ -364,165 +377,126 @@ export default function BookingFlow() {
             </div>
           </div>
 
-          {/* Provider Selection */}
-          <div className="form-group" style={{ marginBottom: '2rem', marginTop: '1rem' }}>
-            <label className="form-label" style={{ fontSize: '1.1rem', color: 'var(--text-main)' }}>Select Service Professional (Optional)</label>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1rem' }}>
-              Choose a specific professional for your service, or let us assign the best match.
-            </p>
+          {isVehicle && dropAddress && (
+            <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)', marginBottom: '1.25rem' }}>
+              <span style={{ fontSize: '0.8rem', color: '#F97316', fontWeight: 700, textTransform: 'uppercase' }}>🏁 Destination Drop-off</span>
+              <p style={{ margin: '0.25rem 0', fontWeight: 600, color: 'var(--text-main)' }}>{dropAddress}, {dropCity} ({dropPincode})</p>
+              {packageWeightKg && (
+                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  Cargo: {packageWeightKg} KG {packageDescription ? `• ${packageDescription}` : ''}
+                </p>
+              )}
+            </div>
+          )}
 
-            {isFetchingProviders ? (
-              <div style={{ color: 'var(--primary)', fontSize: '0.9rem', padding: '1rem', background: 'var(--bg-page)', borderRadius: 'var(--radius-md)' }}>
-                ⏳ Finding available professionals matching your location...
-              </div>
-            ) : availableProviders.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <label style={{
-                  display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', 
-                  background: selectedProviderId === null ? 'var(--bg-hover)' : 'var(--bg-card)',
-                  border: selectedProviderId === null ? '1px solid var(--primary)' : '1px solid var(--border-light)',
-                  borderRadius: 'var(--radius-md)', cursor: 'pointer', transition: 'all 0.2s'
-                }}>
-                  <input
-                    type="radio"
-                    name="providerSelection"
-                    checked={selectedProviderId === null}
-                    onChange={() => setSelectedProviderId(null)}
-                    style={{ accentColor: 'var(--primary)', transform: 'scale(1.2)' }}
-                  />
-                  <div>
-                    <div style={{ color: 'var(--text-main)', fontWeight: 600 }}>No Preference (Let Taaskr Choose)</div>
-                    <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>We will assign the nearest & highest-rated professional</div>
-                  </div>
-                </label>
-                
-                {availableProviders.map(p => (
-                  <label key={p.providerId} style={{
-                    display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem',
-                    background: selectedProviderId === p.providerId ? 'var(--bg-hover)' : 'var(--bg-card)',
-                    border: selectedProviderId === p.providerId ? '1px solid var(--primary)' : '1px solid var(--border-light)',
-                    borderRadius: 'var(--radius-md)', cursor: 'pointer', transition: 'all 0.2s'
-                  }}>
-                    <input
-                      type="radio"
-                      name="providerSelection"
-                      checked={selectedProviderId === p.providerId}
-                      onChange={() => setSelectedProviderId(p.providerId)}
-                      style={{ accentColor: 'var(--primary)', transform: 'scale(1.2)' }}
-                    />
-                    <div>
-                      <div style={{ color: 'var(--text-main)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        {p.name} 
-                        <span style={{ background: '#FEF3C7', color: '#D97706', padding: '2px 6px', borderRadius: '4px', fontSize: '0.8rem' }}>
-                          ⭐ {p.rating}
-                        </span>
-                      </div>
-                      <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.2rem' }}>
-                        {p.experienceYears} yrs experience • Serves {p.city} ({p.pincode})
-                      </div>
-                    </div>
-                  </label>
-                ))}
-              </div>
-            ) : (
-              <div style={{ color: '#DC2626', fontSize: '0.9rem', padding: '1rem', background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 'var(--radius-md)' }}>
-                <strong>No professionals available immediately.</strong><br/>
-                If you continue, your booking will be placed in PENDING status until a professional becomes available for this time slot.
-              </div>
-            )}
-          </div>
-
-          <div className="form-group" style={{ marginBottom: '2rem' }}>
-            <label className="form-label">Additional Instructions / Notes</label>
+          <div className="form-group">
+            <label className="form-label">Special Instructions / Cargo Notes (Optional)</label>
             <textarea
-              placeholder="Any specific instructions for the service provider (optional)..."
+              rows="2"
+              placeholder={isVehicle ? "e.g. Call sender before reaching, fragile items inside" : "e.g. Please call before arriving"}
               className="form-control"
-              rows={3}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               disabled={loading}
-              style={{ resize: 'none' }}
             />
           </div>
 
-          <div className="form-group" style={{ marginBottom: '2rem' }}>
-            <label className="form-label">Payment Option *</label>
-            <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.5rem' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-main)', cursor: 'pointer', fontSize: '0.95rem' }}>
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="online"
-                  checked={paymentMethod === 'online'}
-                  onChange={() => setPaymentMethod('online')}
-                  style={{ accentColor: 'var(--primary)' }}
-                />
-                💳 Pay Online
-              </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-main)', cursor: 'pointer', fontSize: '0.95rem' }}>
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="after_service"
-                  checked={paymentMethod === 'after_service'}
-                  onChange={() => setPaymentMethod('after_service')}
-                  style={{ accentColor: 'var(--primary)' }}
-                />
-                💵 Pay After Service
-              </label>
+          {/* Payment Method Selection */}
+          <div style={{ marginTop: '1.5rem', marginBottom: '2rem' }}>
+            <label className="form-label" style={{ fontWeight: 600, marginBottom: '0.75rem' }}>Payment Method</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('online')}
+                style={{
+                  padding: '1rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: paymentMethod === 'online' ? '2px solid var(--primary)' : '1px solid var(--border-light)',
+                  background: paymentMethod === 'online' ? 'rgba(37, 99, 235, 0.08)' : 'var(--bg-card)',
+                  color: 'var(--text-main)',
+                  cursor: 'pointer',
+                  textAlign: 'left'
+                }}
+              >
+                <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>💳 Online Payment</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>UPI, Cards, NetBanking (Razorpay)</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('after_service')}
+                style={{
+                  padding: '1rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: paymentMethod === 'after_service' ? '2px solid var(--primary)' : '1px solid var(--border-light)',
+                  background: paymentMethod === 'after_service' ? 'rgba(37, 99, 235, 0.08)' : 'var(--bg-card)',
+                  color: 'var(--text-main)',
+                  cursor: 'pointer',
+                  textAlign: 'left'
+                }}
+              >
+                <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>💵 Cash After Trip</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>Pay driver directly after completion</div>
+              </button>
             </div>
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '1rem', fontSize: '1.1rem' }} disabled={loading}>
-            {loading ? 'Processing Order...' : paymentMethod === 'after_service' ? 'Confirm Booking' : 'Pay & Confirm Booking'}
+          <button
+            type="submit"
+            className="btn btn-primary"
+            style={{ width: '100%', padding: '1rem', fontSize: '1.1rem' }}
+            disabled={loading}
+          >
+            {loading ? 'Processing Booking...' : paymentMethod === 'online' ? `Pay & Confirm (₹${price})` : `Place Booking (₹${price})`}
           </button>
         </form>
 
-        {/* Right Side: Order Summary Checkout Card */}
-        <div className="premium-card" style={{ padding: '2.5rem', position: 'sticky', top: '100px' }}>
-          <h2 style={{ fontSize: '1.4rem', color: 'var(--primary)', marginBottom: '1.5rem' }}>Order Summary</h2>
+        {/* Right Side: Order Summary */}
+        <div className="premium-card" style={{ padding: '2.5rem' }}>
+          <h2 style={{ fontSize: '1.4rem', color: 'var(--text-main)', marginBottom: '1.5rem' }}>Booking Summary</h2>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '1.25rem', borderBottom: '1px solid var(--border-light)' }}>
               <div>
-                <h4 style={{ color: 'var(--text-main)', fontSize: '1.05rem', fontWeight: 600 }}>{serviceName}</h4>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>On {bookingDate} at {formatLocalTime(startTime)}</p>
+                <h3 style={{ fontSize: '1.1rem', color: 'var(--text-main)', margin: 0 }}>{serviceName}</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.2rem' }}>
+                  {isVehicle ? `Intra-city transport (${distanceKm || '5.0'} KM)` : 'Home Service'}
+                </p>
               </div>
-              <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>₹{price}</span>
+              <span style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--primary)' }}>₹{price}</span>
             </div>
 
-            <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.95rem' }}>
-              <div style={{ display: 'flex', justifySelf: 'space-between', justifyContent: 'space-between', color: 'var(--text-muted)' }}>
-                <span>Subtotal:</span>
-                <span>₹{price}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.9rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Date:</span>
+                <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{bookingDate}</span>
               </div>
-              <div style={{ display: 'flex', justifySelf: 'space-between', justifyContent: 'space-between', color: 'var(--text-muted)' }}>
-                <span>GST (18%):</span>
-                <span>₹{tax}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Time Slot:</span>
+                <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{formatLocalTime(startTime)}</span>
               </div>
-              <div style={{ display: 'flex', justifySelf: 'space-between', justifyContent: 'space-between', color: 'var(--text-muted)' }}>
-                <span>Convenience Fee:</span>
-                <span style={{ color: 'var(--success)' }}>Free</span>
-              </div>
+              {isVehicle && (
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Dispatch Mode:</span>
+                  <span style={{ color: 'var(--emerald)', fontWeight: 600 }}>⚡ Nearby Live Driver Matching</span>
+                </div>
+              )}
             </div>
 
-            <div style={{
-              borderTop: '1px solid var(--border-light)',
-              paddingTop: '1.25rem',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              fontSize: '1.2rem',
-              fontWeight: 800
-            }}>
-              <span style={{ color: 'var(--text-main)' }}>Total Amount:</span>
-              <span style={{ color: 'var(--primary)' }}>₹{total}</span>
+            <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '1.25rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Subtotal:</span>
+                <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>₹{price}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Platform & Booking Fee:</span>
+                <span style={{ color: 'var(--emerald)', fontWeight: 600 }}>FREE</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px dashed var(--border-light)' }}>
+                <span style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '1.1rem' }}>Total Amount:</span>
+                <span style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '1.3rem' }}>₹{price}</span>
+              </div>
             </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', background: '#ECFDF5', border: '1px solid #A7F3D0', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)' }}>
-            <span style={{ color: 'var(--success)', fontSize: '1.2rem' }}>🛡️</span>
-            <span style={{ fontSize: '0.85rem', color: 'var(--success)' }}>Secure payments. If rejected, money is refunded instantly.</span>
           </div>
         </div>
       </div>

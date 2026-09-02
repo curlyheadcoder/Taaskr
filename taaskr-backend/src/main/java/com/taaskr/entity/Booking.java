@@ -57,6 +57,35 @@ public class Booking {
     @Column(precision = 10, scale = 7)
     private BigDecimal longitude;
 
+    // Optional fields for On-Demand Vehicle Transport Services
+    @Column(name = "drop_address", length = 300)
+    private String dropAddress;
+
+    @Column(name = "drop_city", length = 100)
+    private String dropCity;
+
+    @Column(name = "drop_pincode", length = 20)
+    private String dropPincode;
+
+    @Column(name = "drop_latitude", precision = 10, scale = 7)
+    private BigDecimal dropLatitude;
+
+    @Column(name = "drop_longitude", precision = 10, scale = 7)
+    private BigDecimal dropLongitude;
+
+    @Column(name = "package_description", length = 500)
+    private String packageDescription;
+
+    @Column(name = "package_weight_kg", precision = 10, scale = 2)
+    private BigDecimal packageWeightKg;
+
+    @Column(name = "distance_km", precision = 10, scale = 2)
+    private BigDecimal distanceKm;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vehicle_id")
+    private Vehicle vehicle;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private BookingStatus status;
@@ -300,5 +329,77 @@ public class Booking {
 
     public void setReview(String review) {
         this.review = review;
+    }
+
+    public String getDropAddress() {
+        return dropAddress;
+    }
+
+    public void setDropAddress(String dropAddress) {
+        this.dropAddress = dropAddress;
+    }
+
+    public String getDropCity() {
+        return dropCity;
+    }
+
+    public void setDropCity(String dropCity) {
+        this.dropCity = dropCity;
+    }
+
+    public String getDropPincode() {
+        return dropPincode;
+    }
+
+    public void setDropPincode(String dropPincode) {
+        this.dropPincode = dropPincode;
+    }
+
+    public BigDecimal getDropLatitude() {
+        return dropLatitude;
+    }
+
+    public void setDropLatitude(BigDecimal dropLatitude) {
+        this.dropLatitude = dropLatitude;
+    }
+
+    public BigDecimal getDropLongitude() {
+        return dropLongitude;
+    }
+
+    public void setDropLongitude(BigDecimal dropLongitude) {
+        this.dropLongitude = dropLongitude;
+    }
+
+    public String getPackageDescription() {
+        return packageDescription;
+    }
+
+    public void setPackageDescription(String packageDescription) {
+        this.packageDescription = packageDescription;
+    }
+
+    public BigDecimal getPackageWeightKg() {
+        return packageWeightKg;
+    }
+
+    public void setPackageWeightKg(BigDecimal packageWeightKg) {
+        this.packageWeightKg = packageWeightKg;
+    }
+
+    public BigDecimal getDistanceKm() {
+        return distanceKm;
+    }
+
+    public void setDistanceKm(BigDecimal distanceKm) {
+        this.distanceKm = distanceKm;
+    }
+
+    public Vehicle getVehicle() {
+        return vehicle;
+    }
+
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
     }
 }

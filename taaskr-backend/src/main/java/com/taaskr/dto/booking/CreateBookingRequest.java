@@ -1,27 +1,26 @@
 package com.taaskr.dto.booking;
 
 import com.taaskr.enums.PaymentMethod;
-import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.math.BigDecimal;
 
 public class CreateBookingRequest {
-    @NotNull(message="Service ID cannot be null")
+
+    @NotNull(message = "Service ID cannot be null")
     private Long serviceId;
 
     private Long providerId;
 
     @NotNull(message = "Payment method is required")
     private PaymentMethod paymentMethod;
-
 
     @NotNull(message = "Booking date is required")
     @FutureOrPresent(message = "Booking date must be today or in the future")
@@ -49,6 +48,31 @@ public class CreateBookingRequest {
     @DecimalMin(value = "-180.0", message = "Longitude is invalid")
     @DecimalMax(value = "180.0", message = "Longitude is invalid")
     private BigDecimal longitude;
+
+    // Optional fields for On-Demand Vehicle Transport Service
+    @Size(max = 300, message = "Drop address cannot exceed 300 characters")
+    private String dropAddress;
+
+    @Size(max = 50, message = "Drop city cannot exceed 50 characters")
+    private String dropCity;
+
+    @Size(max = 10, message = "Drop pincode cannot exceed 10 characters")
+    private String dropPincode;
+
+    @DecimalMin(value = "-90.0", message = "Drop latitude is invalid")
+    @DecimalMax(value = "90.0", message = "Drop latitude is invalid")
+    private BigDecimal dropLatitude;
+
+    @DecimalMin(value = "-180.0", message = "Drop longitude is invalid")
+    @DecimalMax(value = "180.0", message = "Drop longitude is invalid")
+    private BigDecimal dropLongitude;
+
+    @Size(max = 500, message = "Package description cannot exceed 500 characters")
+    private String packageDescription;
+
+    private BigDecimal packageWeightKg;
+
+    private BigDecimal distanceKm;
 
     @Size(max = 500, message = "Notes cannot exceed 500 characters")
     private String notes;
@@ -131,6 +155,70 @@ public class CreateBookingRequest {
 
     public void setLongitude(BigDecimal longitude) {
         this.longitude = longitude;
+    }
+
+    public String getDropAddress() {
+        return dropAddress;
+    }
+
+    public void setDropAddress(String dropAddress) {
+        this.dropAddress = dropAddress;
+    }
+
+    public String getDropCity() {
+        return dropCity;
+    }
+
+    public void setDropCity(String dropCity) {
+        this.dropCity = dropCity;
+    }
+
+    public String getDropPincode() {
+        return dropPincode;
+    }
+
+    public void setDropPincode(String dropPincode) {
+        this.dropPincode = dropPincode;
+    }
+
+    public BigDecimal getDropLatitude() {
+        return dropLatitude;
+    }
+
+    public void setDropLatitude(BigDecimal dropLatitude) {
+        this.dropLatitude = dropLatitude;
+    }
+
+    public BigDecimal getDropLongitude() {
+        return dropLongitude;
+    }
+
+    public void setDropLongitude(BigDecimal dropLongitude) {
+        this.dropLongitude = dropLongitude;
+    }
+
+    public String getPackageDescription() {
+        return packageDescription;
+    }
+
+    public void setPackageDescription(String packageDescription) {
+        this.packageDescription = packageDescription;
+    }
+
+    public BigDecimal getPackageWeightKg() {
+        return packageWeightKg;
+    }
+
+    public void setPackageWeightKg(BigDecimal packageWeightKg) {
+        this.packageWeightKg = packageWeightKg;
+    }
+
+    public BigDecimal getDistanceKm() {
+        return distanceKm;
+    }
+
+    public void setDistanceKm(BigDecimal distanceKm) {
+        this.distanceKm = distanceKm;
     }
 
     public String getNotes() {

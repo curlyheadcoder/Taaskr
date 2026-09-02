@@ -342,5 +342,46 @@ export const api = {
         body: JSON.stringify({ query })
       });
     }
+  },
+
+  // ----------------------------------------
+  // ON-DEMAND INTRA-CITY VEHICLE TRANSPORT
+  // ----------------------------------------
+  vehicle: {
+    estimate: async (estimateData) => {
+      return makeRequest('/api/vehicle/estimate', {
+        method: 'POST',
+        body: JSON.stringify(estimateData)
+      });
+    },
+
+    getMyVehicle: async () => {
+      return makeRequest('/api/vehicle/my-vehicle');
+    },
+
+    registerVehicle: async (vehicleData) => {
+      return makeRequest('/api/vehicle/register', {
+        method: 'POST',
+        body: JSON.stringify(vehicleData)
+      });
+    },
+
+    updateLocation: async (locationData) => {
+      return makeRequest('/api/vehicle/location', {
+        method: 'POST',
+        body: JSON.stringify(locationData)
+      });
+    },
+
+    getPricingRules: async () => {
+      return makeRequest('/api/vehicle/pricing-rules');
+    },
+
+    updatePricingRule: async (id, ruleData) => {
+      return makeRequest(`/api/vehicle/pricing-rules/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(ruleData)
+      });
+    }
   }
 };

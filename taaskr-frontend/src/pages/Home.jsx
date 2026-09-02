@@ -64,7 +64,7 @@ export default function Home() {
     if (cat.includes('appliance') || cat.includes('repair')) return <Settings className="w-8 h-8" />;
     if (cat.includes('paint')) return <Paintbrush className="w-8 h-8" />;
     if (cat.includes('garden') || cat.includes('lawn')) return <Leaf className="w-8 h-8" />;
-    if (cat.includes('mov')) return <Truck className="w-8 h-8" />;
+    if (cat.includes('mov') || cat.includes('vehicle') || cat.includes('transport') || cat.includes('truck')) return <Truck className="w-8 h-8" />;
     if (cat.includes('carpent') || cat.includes('wood')) return <Ruler className="w-8 h-8" />;
     if (cat.includes('diagnostic') || cat.includes('test')) return <Activity className="w-8 h-8" />;
     if (cat.includes('health') || cat.includes('care') || cat.includes('compound')) return <Stethoscope className="w-8 h-8" />;
@@ -76,6 +76,9 @@ export default function Home() {
     const name = serviceName.toLowerCase();
     const cat = (categoryName || '').toLowerCase();
     
+    if (cat.includes('vehicle') || cat.includes('transport') || name.includes('bike') || name.includes('truck') || name.includes('rickshaw') || name.includes('loading')) {
+      return { icon: <Truck className="service-icon" />, color: '#2563EB', bg: '#EFF6FF' };
+    }
     if (cat.includes('clean') || name.includes('clean')) return { icon: <Sparkles className="service-icon" />, color: '#3B82F6', bg: '#EFF6FF' };
     if (cat.includes('plumb') || name.includes('tap') || name.includes('pipe') || name.includes('leak')) return { icon: <Droplets className="service-icon" />, color: '#06B6D4', bg: '#ECFEFF' };
     if (cat.includes('electric') || name.includes('switch') || name.includes('fan') || name.includes('wire')) return { icon: <Zap className="service-icon" />, color: '#EAB308', bg: '#FEFCE8' };

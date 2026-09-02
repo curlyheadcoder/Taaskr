@@ -313,7 +313,7 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
     }
 
     private ProviderBookingResponse mapBooking(Booking booking) {
-        return new ProviderBookingResponse(
+        ProviderBookingResponse response = new ProviderBookingResponse(
                 booking.getId(),
                 booking.getBookingCode(),
                 booking.getService().getId(),
@@ -337,6 +337,22 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
                 booking.getNotes(),
                 booking.getCreatedAt()
         );
+
+        response.setDropAddress(booking.getDropAddress());
+        response.setDropCity(booking.getDropCity());
+        response.setDropPincode(booking.getDropPincode());
+        response.setDropLatitude(booking.getDropLatitude());
+        response.setDropLongitude(booking.getDropLongitude());
+        response.setPackageDescription(booking.getPackageDescription());
+        response.setPackageWeightKg(booking.getPackageWeightKg());
+        response.setDistanceKm(booking.getDistanceKm());
+
+        if (booking.getVehicle() != null) {
+            response.setVehicleType(booking.getVehicle().getVehicleType());
+            response.setVehicleRegistrationNumber(booking.getVehicle().getRegistrationNumber());
+        }
+
+        return response;
     }
 
     @Override

@@ -342,21 +342,53 @@ export default function CustomerDashboard() {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Service Address:</span>
+                <span style={{ color: 'var(--text-muted)' }}>{selectedBooking.dropAddress ? 'Pickup Location:' : 'Service Address:'}</span>
                 <span style={{ color: 'var(--text-main)', textAlign: 'right', maxWidth: '250px' }}>
                   {selectedBooking.address}, {selectedBooking.city} - {selectedBooking.pincode}
                 </span>
               </div>
 
+              {selectedBooking.dropAddress && (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
+                    <span style={{ color: '#F97316', fontWeight: 600 }}>Drop-off Destination:</span>
+                    <span style={{ color: 'var(--text-main)', textAlign: 'right', maxWidth: '250px', fontWeight: 500 }}>
+                      {selectedBooking.dropAddress}, {selectedBooking.dropCity} - {selectedBooking.dropPincode}
+                    </span>
+                  </div>
+
+                  {selectedBooking.distanceKm && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Est. Transit Distance:</span>
+                      <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{selectedBooking.distanceKm} KM</span>
+                    </div>
+                  )}
+
+                  {selectedBooking.packageWeightKg && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Package Weight:</span>
+                      <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{selectedBooking.packageWeightKg} KG</span>
+                    </div>
+                  )}
+                </>
+              )}
+
               {selectedBooking.providerId ? (
                 <div style={{ background: '#F8FAFC', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)', marginTop: '0.5rem' }}>
-                  <h4 style={{ color: 'var(--primary)', fontSize: '0.9rem', marginBottom: '0.25rem' }}>Assigned Provider Details</h4>
+                  <h4 style={{ color: 'var(--primary)', fontSize: '0.9rem', marginBottom: '0.25rem' }}>
+                    {selectedBooking.dropAddress ? 'Assigned Driver & Vehicle' : 'Assigned Provider Details'}
+                  </h4>
                   <p style={{ color: 'var(--text-main)', fontWeight: 600, fontSize: '0.95rem' }}>{selectedBooking.providerName}</p>
+                  {selectedBooking.vehicleRegistrationNumber && (
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.2rem' }}>
+                      Vehicle Plate: <strong style={{ color: 'var(--text-main)' }}>{selectedBooking.vehicleRegistrationNumber}</strong> {selectedBooking.vehicleModel ? `(${selectedBooking.vehicleModel})` : ''}
+                    </p>
+                  )}
                 </div>
               ) : (
                 <div style={{ background: '#FEF3C7', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid #FDE68A', marginTop: '0.5rem' }}>
-                  <h4 style={{ color: '#D97706', fontSize: '0.9rem', marginBottom: '0.25rem' }}>Awaiting Assignment</h4>
-                  <p style={{ color: '#92400E', fontSize: '0.85rem' }}>Admin is matching you with a professional in your area.</p>
+                  <h4 style={{ color: '#D97706', fontSize: '0.9rem', marginBottom: '0.25rem' }}>Awaiting Driver Assignment</h4>
+                  <p style={{ color: '#92400E', fontSize: '0.85rem' }}>Matching with a nearby verified driver in your city.</p>
                 </div>
               )}
 
