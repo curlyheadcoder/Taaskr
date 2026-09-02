@@ -16,7 +16,23 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadCatalog = async () => {
+    const checkRoleAndLoadCatalog = async () => {
+      // 1. If user is a Provider or Admin, send them directly to their dedicated dashboard
+      try {
+        const currentUser = await api.auth.me();
+        if (currentUser?.role === 'PROVIDER') {
+          navigate('/provider', { replace: true });
+          return;
+        }
+        if (currentUser?.role === 'ADMIN') {
+          navigate('/admin', { replace: true });
+          return;
+        }
+      } catch (e) {
+        // Guest / Unauthenticated user - continue to catalog
+      }
+
+      // 2. Load consumer catalog for customers/guests
       setLoading(true);
       try {
         const cats = await api.catalog.getCategories();
@@ -30,8 +46,8 @@ export default function Home() {
         setLoading(false);
       }
     };
-    loadCatalog();
-  }, []);
+    checkRoleAndLoadCatalog();
+  }, [navigate]);
 
   const filteredServices = services.filter(service => {
     return selectedCategory ? service.categoryId === selectedCategory : true;

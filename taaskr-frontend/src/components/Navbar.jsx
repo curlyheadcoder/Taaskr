@@ -66,8 +66,11 @@ export default function Navbar() {
       alignItems: 'center',
       justifyContent: 'space-between',
     }}>
-      {/* Brand Logo */}
-      <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+      {/* Brand Logo - Routes to role home */}
+      <Link 
+        to={user?.role === 'ADMIN' ? '/admin' : user?.role === 'PROVIDER' ? '/provider' : '/'} 
+        style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}
+      >
         <img
           src="/taaskr-logo.png"
           alt="Taaskr logo"
@@ -79,7 +82,7 @@ export default function Navbar() {
           fontFamily: 'var(--font-body)',
           fontSize: '1.5rem',
           fontWeight: 800,
-          color: '#2563EB',
+          color: user?.role === 'ADMIN' ? (isDark ? '#FAFAFA' : '#09090B') : user?.role === 'PROVIDER' ? (isDark ? '#34D399' : '#059669') : '#2563EB',
           letterSpacing: '-0.03em'
         }}>Taaskr</span>
       </Link>
@@ -105,25 +108,33 @@ export default function Navbar() {
 
         {user && user.role === 'PROVIDER' && (
           <Link to="/provider" style={{
-            color: 'var(--primary)',
-            fontWeight: 600,
+            color: 'var(--secondary)',
+            fontWeight: 700,
             display: 'flex',
             alignItems: 'center',
-            gap: '0.25rem'
+            gap: '0.4rem',
+            padding: '0.4rem 0.8rem',
+            borderRadius: 'var(--radius-sm)',
+            background: isDark ? 'rgba(16, 185, 129, 0.1)' : '#ECFDF5',
+            border: isDark ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid #A7F3D0'
           }}>
-            💼 Provider Dashboard
+            💼 Provider Partner Portal
           </Link>
         )}
 
         {user && user.role === 'ADMIN' && (
           <Link to="/admin" style={{
             color: 'var(--primary)',
-            fontWeight: 600,
+            fontWeight: 700,
             display: 'flex',
             alignItems: 'center',
-            gap: '0.25rem'
+            gap: '0.4rem',
+            padding: '0.4rem 0.8rem',
+            borderRadius: 'var(--radius-sm)',
+            background: isDark ? 'rgba(255, 255, 255, 0.08)' : '#F4F4F5',
+            border: isDark ? '1px solid #3F3F46' : '1px solid #E4E4E7'
           }}>
-            🛠️ Admin Panel
+            🛡️ Admin Center
           </Link>
         )}
       </nav>
@@ -161,9 +172,21 @@ export default function Navbar() {
                 marginTop: '0.15rem',
                 display: 'inline-block',
                 textTransform: 'uppercase',
-                background: user.role === 'ADMIN' ? '#EDE9FE' : user.role === 'PROVIDER' ? '#E0F2FE' : '#DBEAFE',
-                color: user.role === 'ADMIN' ? '#6D28D9' : user.role === 'PROVIDER' ? '#0369A1' : '#1D4ED8',
-                border: `1px solid ${user.role === 'ADMIN' ? '#DDD6FE' : user.role === 'PROVIDER' ? '#BAE6FD' : '#BFDBFE'}`
+                background: user.role === 'ADMIN'
+                  ? (isDark ? '#27272A' : '#18181B')
+                  : user.role === 'PROVIDER'
+                  ? (isDark ? '#064E3B' : '#ECFDF5')
+                  : (isDark ? '#1E3A8A' : '#EFF6FF'),
+                color: user.role === 'ADMIN'
+                  ? (isDark ? '#FAFAFA' : '#FFFFFF')
+                  : user.role === 'PROVIDER'
+                  ? (isDark ? '#6EE7B7' : '#047857')
+                  : (isDark ? '#93C5FD' : '#1D4ED8'),
+                border: user.role === 'ADMIN'
+                  ? (isDark ? '1px solid #3F3F46' : '1px solid #27272A')
+                  : user.role === 'PROVIDER'
+                  ? (isDark ? '1px solid #059669' : '1px solid #A7F3D0')
+                  : (isDark ? '1px solid #2563EB' : '1px solid #BFDBFE')
               }}>
                 {user.role}
               </span>

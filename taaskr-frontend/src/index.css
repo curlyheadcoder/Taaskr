@@ -49,9 +49,10 @@ body, body.theme-user {
   --bg-hover: #F1F5F9;
   --border-light: #E2E8F0;
   --border-hover: #CBD5E1;
+  --primary-rgb: 37, 99, 235;
 }
 
-/* Provider Theme - Premium Slate & Emerald */
+/* Provider Theme - High-End Slate & Emerald */
 body.theme-provider {
   --primary: #0F172A;          /* Deep Slate */
   --primary-hover: #1E293B;
@@ -62,22 +63,24 @@ body.theme-provider {
   --bg-hover: #F1F5F9;
   --border-light: #E2E8F0;
   --border-hover: #CBD5E1;
+  --primary-rgb: 15, 23, 42;
 }
 
-/* Admin Theme - Royal Indigo & Violet */
+/* Admin Theme - Sleek Modern Blackish / Obsidian Enterprise */
 body.theme-admin {
-  --primary: #4F46E5;          /* Electric Indigo */
-  --primary-hover: #4338CA;
-  --secondary: #8B5CF6;        /* Vivid Violet */
-  --secondary-hover: #7C3AED;
-  --bg-page: #F5F3FF;          /* Soft Lavender */
+  --primary: #09090B;          /* Deep Obsidian Black */
+  --primary-hover: #18181B;
+  --secondary: #52525B;        /* Zinc / Slate */
+  --secondary-hover: #3F3F46;
+  --bg-page: #F4F4F5;          /* Crisp light zinc */
   --bg-card: #FFFFFF;
-  --bg-hover: #EDE9FE;
-  --border-light: #DDD6FE;
-  --border-hover: #C4B5FD;
+  --bg-hover: #E4E4E7;
+  --border-light: #E4E4E7;
+  --border-hover: #D4D4D8;
+  --primary-rgb: 9, 9, 11;
 }
 
-/* Base Dark Mode */
+/* Base Dark Mode (User) */
 body.dark, body.theme-user.dark {
   --primary: #60A5FA;
   --primary-hover: #3B82F6;
@@ -88,28 +91,39 @@ body.dark, body.theme-user.dark {
   --text-muted: #94A3B8;
   --border-light: #334155;
   --border-hover: #475569;
+  --primary-rgb: 96, 165, 250;
 }
 
-/* Provider Dark */
+/* Provider Dark - Premium Carbon Slate & Emerald (No oversaturated dark cyan) */
 body.theme-provider.dark {
-  --primary: #38BDF8;
-  --primary-hover: #0EA5E9;
-  --bg-page: #082F49;
-  --bg-card: #0C4A6E;
-  --bg-hover: #075985;
-  --border-light: #0369A1;
-  --border-hover: #0284C7;
+  --primary: #F8FAFC;          /* Crisp Light Heading */
+  --primary-hover: #E2E8F0;
+  --secondary: #10B981;        /* Emerald Accent */
+  --secondary-hover: #059669;
+  --bg-page: #0B0F17;          /* Sleek Deep Slate */
+  --bg-card: #151D2E;          /* Carbon Slate Card */
+  --bg-hover: #1E293B;         /* Slate Hover */
+  --text-main: #F8FAFC;
+  --text-muted: #94A3B8;
+  --border-light: #1E293B;
+  --border-hover: #334155;
+  --primary-rgb: 16, 185, 129;
 }
 
-/* Admin Dark */
+/* Admin Dark - Sleek Obsidian & Charcoal Black Theme */
 body.theme-admin.dark {
-  --primary: #A5B4FC;
-  --primary-hover: #818CF8;
-  --bg-page: #1E1B4B;
-  --bg-card: #312E81;
-  --bg-hover: #4338CA;
-  --border-light: #3730A3;
-  --border-hover: #4F46E5;
+  --primary: #FAFAFA;          /* Crisp Light White */
+  --primary-hover: #E4E4E7;
+  --secondary: #A1A1AA;        /* Zinc Accent */
+  --secondary-hover: #71717A;
+  --bg-page: #09090B;          /* True Obsidian Black */
+  --bg-card: #141418;          /* Deep Charcoal Card */
+  --bg-hover: #202026;         /* Elevated Dark Hover */
+  --text-main: #FAFAFA;
+  --text-muted: #A1A1AA;
+  --border-light: #27272A;     /* Subtle Zinc Border */
+  --border-hover: #3F3F46;
+  --primary-rgb: 250, 250, 250;
 }
 
 * {
@@ -236,6 +250,33 @@ a {
   box-shadow: none !important;
 }
 
+body.theme-admin.dark .btn-primary {
+  background-color: #FAFAFA;
+  color: #09090B;
+}
+body.theme-admin.dark .btn-primary:hover {
+  background-color: #E4E4E7;
+}
+
+body.theme-provider.dark .btn-primary {
+  background-color: #10B981;
+  color: #FFFFFF;
+}
+body.theme-provider.dark .btn-primary:hover {
+  background-color: #059669;
+}
+
+body.dark .btn-secondary {
+  background-color: var(--bg-hover);
+  color: var(--text-main);
+  border-color: var(--border-light);
+}
+
+body.dark .btn-secondary:hover {
+  background-color: var(--border-light);
+  border-color: var(--border-hover);
+}
+
 /* Forms */
 .form-group {
   margin-bottom: 1.25rem;
@@ -309,6 +350,25 @@ a {
 .badge-inprogress { background-color: #DBEAFE; color: #2563EB; border: 1px solid #BFDBFE; }
 .badge-completed { background-color: #D1FAE5; color: #059669; border: 1px solid #A7F3D0; }
 .badge-cancelled, .badge-rejected { background-color: #FEE2E2; color: #DC2626; border: 1px solid #FECACA; }
+
+/* Dark mode badges */
+body.dark .badge-pending { background-color: rgba(245, 158, 11, 0.15); color: #FBBF24; border-color: rgba(245, 158, 11, 0.3); }
+body.dark .badge-assigned { background-color: rgba(59, 130, 246, 0.15); color: #60A5FA; border-color: rgba(59, 130, 246, 0.3); }
+body.dark .badge-accepted { background-color: rgba(16, 185, 129, 0.15); color: #34D399; border-color: rgba(16, 185, 129, 0.3); }
+body.dark .badge-inprogress { background-color: rgba(59, 130, 246, 0.15); color: #60A5FA; border-color: rgba(59, 130, 246, 0.3); }
+body.dark .badge-completed { background-color: rgba(16, 185, 129, 0.15); color: #34D399; border-color: rgba(16, 185, 129, 0.3); }
+body.dark .badge-cancelled, body.dark .badge-rejected { background-color: rgba(239, 68, 68, 0.15); color: #F87171; border-color: rgba(239, 68, 68, 0.3); }
+
+/* Dark mode inputs */
+body.dark .form-control {
+  background-color: var(--bg-card);
+  color: var(--text-main);
+  border-color: var(--border-light);
+}
+
+body.dark .form-control:focus {
+  border-color: var(--secondary);
+}
 
 /* Animations */
 @keyframes fadeIn {

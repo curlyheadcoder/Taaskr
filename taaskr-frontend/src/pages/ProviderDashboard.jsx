@@ -300,7 +300,7 @@ export default function ProviderDashboard() {
           alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem'
         }}>
           <div>
-            <span className="badge badge-assigned" style={{ marginBottom: '0.5rem', background: '#F1F5F9', color: 'var(--text-muted)', border: 'none' }}>Active Provider Account</span>
+            <span className="badge badge-accepted" style={{ marginBottom: '0.5rem' }}>Active Provider Account</span>
             <h1 style={{ color: 'var(--primary)', fontSize: '2.2rem' }}>{userProfile.name}</h1>
             <p style={{ color: 'var(--text-main)', marginTop: '0.25rem', fontSize: '1rem', fontWeight: 500 }}>
               ✉️ {userProfile.email} | 📞 {userProfile.phone || 'No phone added'}
@@ -350,7 +350,7 @@ export default function ProviderDashboard() {
           {/* AVAILABLE TASKS SECTION */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ fontSize: '1.6rem', color: 'var(--amber)' }}>Available Tasks (Claim Now)</h2>
+              <h2 style={{ fontSize: '1.6rem', color: 'var(--secondary)' }}>Available Tasks (Claim Now)</h2>
               <span className="badge badge-pending">{availableTasks.length} Available</span>
             </div>
 
@@ -371,8 +371,8 @@ export default function ProviderDashboard() {
                       <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>📍 {job.city} - {job.pincode}</p>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <p style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '1.3rem' }}>₹{job.finalAmount}</p>
-                      <button onClick={() => handleClaimTask(job.id)} className="btn btn-primary btn-small" style={{ marginTop: '0.5rem', background: 'var(--text-main)', borderColor: 'var(--text-main)', color: 'var(--bg-page)' }}>
+                      <p style={{ color: 'var(--secondary)', fontWeight: 800, fontSize: '1.3rem' }}>₹{job.finalAmount}</p>
+                      <button onClick={() => handleClaimTask(job.id)} className="btn btn-primary btn-small" style={{ marginTop: '0.5rem' }}>
                         Accept Job
                       </button>
                     </div>
@@ -447,9 +447,9 @@ export default function ProviderDashboard() {
                 </div>
 
                 {job.notes && (
-                  <div style={{ fontSize: '0.9rem', background: '#FEF3C7', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid #FDE68A' }}>
-                    <span style={{ color: '#92400E', fontWeight: 600 }}>Customer Instructions: </span>
-                    <span style={{ color: '#B45309', fontStyle: 'italic' }}>"{job.notes}"</span>
+                  <div style={{ fontSize: '0.9rem', background: 'rgba(245, 158, 11, 0.12)', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
+                    <span style={{ color: 'var(--secondary)', fontWeight: 600 }}>Customer Instructions: </span>
+                    <span style={{ color: 'var(--text-main)', fontStyle: 'italic' }}>"{job.notes}"</span>
                   </div>
                 )}
 
@@ -581,9 +581,12 @@ export default function ProviderDashboard() {
   
           {/* Categories Card */}
           <div className="premium-card" style={{ padding: '1.75rem' }}>
-            <h2 style={{ fontSize: '1.4rem', color: 'var(--primary)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              🏷️ Service Categories
+            <h2 style={{ fontSize: '1.4rem', color: 'var(--primary)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              🛠️ My Trade Categories
             </h2>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
+              Select the service categories you accept jobs for:
+            </p>
             <form onSubmit={handleSaveCategories}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem', maxHeight: '200px', overflowY: 'auto', padding: '0.5rem' }}>
                 {availableCategories.map(cat => (
