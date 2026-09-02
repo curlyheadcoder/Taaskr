@@ -52,18 +52,18 @@ body, body.theme-user {
   --primary-rgb: 37, 99, 235;
 }
 
-/* Provider Theme - High-End Slate & Emerald */
+/* Provider Theme - Harmonious Slate & Royal Blue */
 body.theme-provider {
-  --primary: #0F172A;          /* Deep Slate */
-  --primary-hover: #1E293B;
-  --secondary: #10B981;        /* Vivid Emerald */
-  --secondary-hover: #059669;
+  --primary: #1E293B;          /* Sleek Slate */
+  --primary-hover: #0F172A;
+  --secondary: #2563EB;        /* Brand Royal Blue */
+  --secondary-hover: #1D4ED8;
   --bg-page: #F8FAFC;          /* Clean off-white */
   --bg-card: #FFFFFF;
   --bg-hover: #F1F5F9;
   --border-light: #E2E8F0;
   --border-hover: #CBD5E1;
-  --primary-rgb: 15, 23, 42;
+  --primary-rgb: 37, 99, 235;
 }
 
 /* Admin Theme - Sleek Modern Blackish / Obsidian Enterprise */
@@ -94,20 +94,20 @@ body.dark, body.theme-user.dark {
   --primary-rgb: 96, 165, 250;
 }
 
-/* Provider Dark - Premium Carbon Slate & Emerald (No oversaturated dark cyan) */
+/* Provider Dark - Harmonious Deep Slate & Brand Blue */
 body.theme-provider.dark {
   --primary: #F8FAFC;          /* Crisp Light Heading */
   --primary-hover: #E2E8F0;
-  --secondary: #10B981;        /* Emerald Accent */
-  --secondary-hover: #059669;
-  --bg-page: #0B0F17;          /* Sleek Deep Slate */
+  --secondary: #3B82F6;        /* Brand Blue Accent */
+  --secondary-hover: #2563EB;
+  --bg-page: #0B0F19;          /* Sleek Deep Slate */
   --bg-card: #151D2E;          /* Carbon Slate Card */
   --bg-hover: #1E293B;         /* Slate Hover */
   --text-main: #F8FAFC;
   --text-muted: #94A3B8;
   --border-light: #1E293B;
   --border-hover: #334155;
-  --primary-rgb: 16, 185, 129;
+  --primary-rgb: 37, 99, 235;
 }
 
 /* Admin Dark - Sleek Obsidian & Charcoal Black Theme */
@@ -259,11 +259,11 @@ body.theme-admin.dark .btn-primary:hover {
 }
 
 body.theme-provider.dark .btn-primary {
-  background-color: #10B981;
+  background-color: #2563EB;
   color: #FFFFFF;
 }
 body.theme-provider.dark .btn-primary:hover {
-  background-color: #059669;
+  background-color: #1D4ED8;
 }
 
 body.dark .btn-secondary {

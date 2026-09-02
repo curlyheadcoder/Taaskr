@@ -82,7 +82,7 @@ export default function Navbar() {
           fontFamily: 'var(--font-body)',
           fontSize: '1.5rem',
           fontWeight: 800,
-          color: user?.role === 'ADMIN' ? (isDark ? '#FAFAFA' : '#09090B') : user?.role === 'PROVIDER' ? (isDark ? '#34D399' : '#059669') : '#2563EB',
+          color: isDark ? '#60A5FA' : '#2563EB',
           letterSpacing: '-0.03em'
         }}>Taaskr</span>
       </Link>
@@ -108,15 +108,15 @@ export default function Navbar() {
 
         {user && user.role === 'PROVIDER' && (
           <Link to="/provider" style={{
-            color: 'var(--secondary)',
+            color: isDark ? '#60A5FA' : '#1D4ED8',
             fontWeight: 700,
             display: 'flex',
             alignItems: 'center',
             gap: '0.4rem',
-            padding: '0.4rem 0.8rem',
+            padding: '0.4rem 0.85rem',
             borderRadius: 'var(--radius-sm)',
-            background: isDark ? 'rgba(16, 185, 129, 0.1)' : '#ECFDF5',
-            border: isDark ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid #A7F3D0'
+            background: isDark ? 'rgba(59, 130, 246, 0.12)' : '#EFF6FF',
+            border: isDark ? '1px solid rgba(59, 130, 246, 0.25)' : '1px solid #BFDBFE'
           }}>
             💼 Provider Partner Portal
           </Link>
@@ -129,7 +129,7 @@ export default function Navbar() {
             display: 'flex',
             alignItems: 'center',
             gap: '0.4rem',
-            padding: '0.4rem 0.8rem',
+            padding: '0.4rem 0.85rem',
             borderRadius: 'var(--radius-sm)',
             background: isDark ? 'rgba(255, 255, 255, 0.08)' : '#F4F4F5',
             border: isDark ? '1px solid #3F3F46' : '1px solid #E4E4E7'
@@ -174,19 +174,13 @@ export default function Navbar() {
                 textTransform: 'uppercase',
                 background: user.role === 'ADMIN'
                   ? (isDark ? '#27272A' : '#18181B')
-                  : user.role === 'PROVIDER'
-                  ? (isDark ? '#064E3B' : '#ECFDF5')
-                  : (isDark ? '#1E3A8A' : '#EFF6FF'),
+                  : (isDark ? 'rgba(59, 130, 246, 0.15)' : '#EFF6FF'),
                 color: user.role === 'ADMIN'
                   ? (isDark ? '#FAFAFA' : '#FFFFFF')
-                  : user.role === 'PROVIDER'
-                  ? (isDark ? '#6EE7B7' : '#047857')
-                  : (isDark ? '#93C5FD' : '#1D4ED8'),
+                  : (isDark ? '#60A5FA' : '#1D4ED8'),
                 border: user.role === 'ADMIN'
                   ? (isDark ? '1px solid #3F3F46' : '1px solid #27272A')
-                  : user.role === 'PROVIDER'
-                  ? (isDark ? '1px solid #059669' : '1px solid #A7F3D0')
-                  : (isDark ? '1px solid #2563EB' : '1px solid #BFDBFE')
+                  : (isDark ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid #BFDBFE')
               }}>
                 {user.role}
               </span>

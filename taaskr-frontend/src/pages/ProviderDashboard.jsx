@@ -300,7 +300,7 @@ export default function ProviderDashboard() {
           alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem'
         }}>
           <div>
-            <span className="badge badge-accepted" style={{ marginBottom: '0.5rem' }}>Active Provider Account</span>
+            <span className="badge badge-assigned" style={{ marginBottom: '0.5rem' }}>Active Provider Account</span>
             <h1 style={{ color: 'var(--primary)', fontSize: '2.2rem' }}>{userProfile.name}</h1>
             <p style={{ color: 'var(--text-main)', marginTop: '0.25rem', fontSize: '1rem', fontWeight: 500 }}>
               ✉️ {userProfile.email} | 📞 {userProfile.phone || 'No phone added'}
