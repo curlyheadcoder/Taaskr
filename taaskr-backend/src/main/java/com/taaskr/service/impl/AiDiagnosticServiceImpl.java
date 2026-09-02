@@ -70,7 +70,7 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
                 .collect(Collectors.joining(", "));
 
         String prompt = String.format(
-                "Task: Pick the single most accurate service for issue: \"%s\".\n" +
+                "Task: Pick the single most accurate service for user intent/issue: \"%s\".\n" +
                 "Catalog: [%s].\n" +
                 "Respond ONLY in JSON: {\"serviceId\": <number>, \"reason\": \"<brief 1-sentence reason>\", \"urgency\": \"<LOW|MEDIUM|HIGH|EMERGENCY>\"}",
                 query, catalogSummary
@@ -138,10 +138,12 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
         // 2. Identify Intent
         boolean isInstallIntent = lower.contains("install") || lower.contains("setup") || lower.contains("mount") || lower.contains("fitting") || lower.contains("new ");
         boolean isMaintenanceIntent = lower.contains("maintenance") || lower.contains("servicing") || lower.contains("cleaning") || lower.contains("filter");
-        boolean isRepairIntent = lower.contains("not working") || lower.contains("repair") || lower.contains("broken") || lower.contains("fix") ||
-                lower.contains("stopped") || lower.contains("issue") || lower.contains("fault") || lower.contains("spark") || lower.contains("leak") || (!isInstallIntent && !isMaintenanceIntent);
+        boolean isTransportIntent = isVehicleDomain(lower);
+        boolean isRepairIntent = !isTransportIntent && (lower.contains("not working") || lower.contains("repair") || lower.contains("broken") || lower.contains("fix") ||
+                lower.contains("stopped") || lower.contains("issue") || lower.contains("fault") || lower.contains("spark") || lower.contains("leak") || (!isInstallIntent && !isMaintenanceIntent));
 
         // 3. Domain Detection
+        boolean isVehicle = isVehicleDomain(lower);
         boolean isAc = isAcDomain(lower);
         boolean isRo = isRoDomain(lower);
         boolean isPlumb = isPlumbingDomain(lower);
@@ -165,14 +167,30 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
             // Word token matching
             for (String word : lower.split("[\\s,.]+")) {
                 if (word.length() < 2) continue;
-                if (word.equals("is") || word.equals("the") || word.equals("and") || word.equals("in") || word.equals("to") || word.equals("my")) continue;
+                if (word.equals("is") || word.equals("the") || word.equals("and") || word.equals("in") || word.equals("to") || word.equals("my") || word.equals("want")) continue;
 
                 if (nameLower.contains(word)) score += 6;
                 if (catLower.contains(word)) score += 3;
                 if (descLower.contains(word)) score += 2;
             }
 
-            // Strong Domain Affinity (+50 points)
+            // Strong Domain Affinity (+60 points)
+            if (isVehicle) {
+                if (catLower.contains("vehicle") || catLower.contains("moving") || catLower.contains("transport") || catLower.contains("shifting")) {
+                    score += 60;
+                }
+                // Small courier / parcel / office package heuristic
+                if (lower.contains("parcel") || lower.contains("courier") || lower.contains("office") || lower.contains("document") || lower.contains("small") || lower.contains("bag")) {
+                    if (nameLower.contains("bike") || nameLower.contains("courier") || nameLower.contains("two wheeler")) {
+                        score += 35;
+                    }
+                } else if (lower.contains("furniture") || lower.contains("shifting") || lower.contains("house") || lower.contains("heavy") || lower.contains("sofa") || lower.contains("bed")) {
+                    if (nameLower.contains("mini truck") || nameLower.contains("truck") || nameLower.contains("loading") || nameLower.contains("moving")) {
+                        score += 35;
+                    }
+                }
+            }
+
             if (isAc && (nameLower.contains("ac") || nameLower.contains("air condition"))) score += 50;
             if (isRo && (nameLower.contains("ro ") || nameLower.startsWith("ro") || nameLower.contains("purifier"))) score += 50;
             if (isPlumb && (catLower.contains("plumb") || nameLower.contains("pipe") || nameLower.contains("tap") || nameLower.contains("leak"))) score += 50;
@@ -205,7 +223,7 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
             bestMatch = services.get(0);
         }
 
-        String reason = generateReason(query, bestMatch, urgency);
+        String reason = generateReason(query, bestMatch, urgency, isVehicle);
 
         return new AiDiagnosticResponse(
                 bestMatch.getId(),
@@ -217,6 +235,16 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
                 reason,
                 urgency
         );
+    }
+
+    private boolean isVehicleDomain(String text) {
+        return text.contains("parcel") || text.contains("courier") || text.contains("package") || text.contains("send ") ||
+                text.contains("send my") || text.contains("deliver") || text.contains("delivery") || text.contains("luggage") ||
+                text.contains("goods") || text.contains("truck") || text.contains("tempo") || text.contains("vehicle") ||
+                text.contains("shifting") || text.contains("moving") || text.contains("transport") || text.contains("freight") ||
+                text.contains("loading") || text.contains("carton") || text.contains("box") || text.contains("dropoff") ||
+                text.contains("pickup and drop") || text.contains("intra-city") || text.contains("porter") || text.contains("office move") ||
+                text.contains("bike courier") || text.contains("mini truck") || text.contains("office");
     }
 
     private boolean isAcDomain(String text) {
@@ -265,7 +293,10 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
                 text.contains("renovation") || text.contains("plaster");
     }
 
-    private String generateReason(String query, Service service, String urgency) {
+    private String generateReason(String query, Service service, String urgency, boolean isVehicle) {
+        if (isVehicle) {
+            return "Recommended " + service.getName() + " for fast intra-city transport and door-to-door delivery.";
+        }
         if ("EMERGENCY".equals(urgency)) {
             return "Potential safety hazard detected. Professional " + service.getName() + " recommended immediately.";
         }

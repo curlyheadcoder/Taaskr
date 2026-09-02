@@ -14,11 +14,12 @@ export default function AiAssistantModal() {
   const [error, setError] = useState('');
 
   const quickPrompts = [
+    { label: '📦 Send Parcel', text: 'I want to send my parcel to office' },
+    { label: '🚚 Moving & Shifting', text: 'Need mini truck for furniture moving and home shifting' },
     { label: '❄️ AC Not Working', text: 'AC is not working and blowing warm air' },
     { label: '💧 Pipe Leakage', text: 'Kitchen sink pipe is leaking water continuously' },
     { label: '⚡ Sparking Switchboard', text: 'Switchboard is sparking and smells like burning wire' },
-    { label: '🧹 Deep Cleaning', text: 'Need deep cleaning for 2BHK home' },
-    { label: '🐜 Pest Control', text: 'Cockroaches and ants in kitchen cabinets' }
+    { label: '🧹 Deep Cleaning', text: 'Need deep cleaning for 2BHK home' }
   ];
 
   const handleDiagnose = async (textToDiagnose) => {

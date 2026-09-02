@@ -136,4 +136,26 @@ public class AiDiagnosticTests {
         assertEquals(electricService.getId(), res.getServiceId());
         assertEquals("EMERGENCY", res.getUrgency());
     }
+
+    @Test
+    void testParcelTransportDiagnosis() {
+        ServiceCategory vehicleCat = new ServiceCategory();
+        vehicleCat.setName("On-Demand Vehicle");
+        vehicleCat.setDescription("Vehicle Transport");
+        vehicleCat.setActive(true);
+        vehicleCat = serviceCategoryRepository.save(vehicleCat);
+
+        Service courierService = new Service();
+        courierService.setName("Electric Bike (Courier)");
+        courierService.setCategory(vehicleCat);
+        courierService.setPrice(BigDecimal.valueOf(99));
+        courierService.setDurationMinutes(30);
+        courierService.setActive(true);
+        courierService = serviceRepository.save(courierService);
+
+        AiDiagnosticResponse res = aiDiagnosticService.diagnoseIssue(new AiDiagnosticRequest("I want to send my parcel to office"));
+        assertNotNull(res);
+        assertEquals(courierService.getId(), res.getServiceId(), "Should pick Electric Bike (Courier) for parcel queries");
+        assertEquals("On-Demand Vehicle", res.getCategoryName());
+    }
 }
