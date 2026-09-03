@@ -17,6 +17,8 @@ import com.taaskr.service.EmailService;
 import jakarta.transaction.Transactional;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,8 @@ import java.time.LocalDateTime;
 
 @Service
 public class AuthServiceImpl implements AuthService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -99,7 +103,7 @@ public class AuthServiceImpl implements AuthService {
         try {
             emailService.sendVerificationOtp(savedUser.getEmail(), savedUser.getName(), otp);
         } catch (Exception e) {
-            // Log & don't fail registration
+            log.error("Failed to send verification email to {}: {}", savedUser.getEmail(), e.getMessage(), e);
         }
 
         /***

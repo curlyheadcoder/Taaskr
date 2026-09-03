@@ -7,9 +7,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
+
+import java.util.Properties;
 
 @Service
 public class EmailServiceImpl implements EmailService {
@@ -18,6 +18,12 @@ public class EmailServiceImpl implements EmailService {
 
     @Autowired(required = false)
     private JavaMailSender mailSender;
+
+    @Value("${spring.mail.host:smtp.gmail.com}")
+    private String mailHost;
+
+    @Value("${spring.mail.port:587}")
+    private int mailPort;
 
     @Value("${app.email.from:${spring.mail.username:noreply@taaskr.com}}")
     private String fromEmail;
@@ -125,28 +131,49 @@ public class EmailServiceImpl implements EmailService {
         log.info("Payload Summary: {}", summary);
         log.info("===============================================");
 
-        boolean hasSmtpConfig = mailSender != null 
-                && mailUsername != null && !mailUsername.isBlank() 
-                && mailPassword != null && !mailPassword.isBlank();
+        String user = mailUsername != null ? mailUsername.trim() : "";
+        String pass = mailPassword != null ? mailPassword.trim() : "";
+        boolean hasCredentials = !user.isBlank() && !pass.isBlank();
+        boolean isExplicitSimulation = "true".equalsIgnoreCase(simulationMode);
 
-        boolean shouldSendReal = hasSmtpConfig && !"true".equalsIgnoreCase(simulationMode);
-
-        if (shouldSendReal) {
+        if (hasCredentials && !isExplicitSimulation) {
             try {
-                MimeMessage message = mailSender.createMimeMessage();
-                MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-                String sender = (fromEmail != null && !fromEmail.isBlank()) ? fromEmail : mailUsername;
-                helper.setFrom(sender, "Taaskr");
+                JavaMailSender senderImpl = this.mailSender;
+                if (senderImpl == null) {
+                    JavaMailSenderImpl impl = new JavaMailSenderImpl();
+                    impl.setHost(mailHost != null && !mailHost.isBlank() ? mailHost : "smtp.gmail.com");
+                    impl.setPort(mailPort > 0 ? mailPort : 587);
+                    impl.setUsername(user);
+                    impl.setPassword(pass);
+
+                    Properties props = impl.getJavaMailProperties();
+                    props.put("mail.transport.protocol", "smtp");
+                    props.put("mail.smtp.auth", "true");
+                    props.put("mail.smtp.starttls.enable", "true");
+                    props.put("mail.smtp.starttls.required", "true");
+                    props.put("mail.smtp.ssl.protocols", "TLSv1.2");
+                    props.put("mail.smtp.connectiontimeout", "7000");
+                    props.put("mail.smtp.timeout", "7000");
+                    props.put("mail.smtp.writetimeout", "7000");
+                    senderImpl = impl;
+                }
+
+                MimeMessage message = senderImpl.createMimeMessage();
+                org.springframework.mail.javamail.MimeMessageHelper helper = 
+                        new org.springframework.mail.javamail.MimeMessageHelper(message, true, "UTF-8");
+                String senderAddress = (fromEmail != null && !fromEmail.isBlank()) ? fromEmail.trim() : user;
+                helper.setFrom(senderAddress, "Taaskr");
                 helper.setTo(toEmail);
                 helper.setSubject(subject);
                 helper.setText(htmlContent, true);
-                mailSender.send(message);
-                log.info("Email successfully sent via SMTP to: {}", toEmail);
+
+                senderImpl.send(message);
+                log.info("Email successfully dispatched via SMTP to: {}", toEmail);
             } catch (Exception e) {
-                log.warn("SMTP mail delivery failed (falling back to console delivery): {}", e.getMessage());
+                log.error("SMTP mail delivery failed to {}: {}", toEmail, e.getMessage(), e);
             }
         } else {
-            log.info("[SIMULATION / LOCAL MODE] Real SMTP credentials not configured. OTP displayed in logs and response for instant testing.");
+            log.info("[SIMULATION / CONSOLE MODE] SMTP credentials missing or simulation mode enabled. Email payload logged to console.");
         }
     }
 }
