@@ -95,40 +95,88 @@ public class AdminAnalyticsServiceImpl implements AdminAnalyticsService {
         double fulfillmentRate = nonCancelled > 0 ? ((double) completed / nonCancelled) * 100.0 : 0.0;
         kpi.setPlatformFulfillmentRate(Math.round(fulfillmentRate * 100.0) / 100.0);
 
-        // 2. Daily Trends (Last N days)
-        LocalDate startDate = LocalDate.now().minusDays(daysRange - 1);
-        Map<LocalDate, BigDecimal> dailyRevenueMap = new LinkedHashMap<>();
-        Map<LocalDate, Long> dailyCountMap = new LinkedHashMap<>();
+        // 2. Time Series Trends (Last N days or 24 Hours)
+        List<AdminAnalyticsResponse.DailyRevenueTrend> revenueTrends;
 
-        for (int i = 0; i < daysRange; i++) {
-            LocalDate d = startDate.plusDays(i);
-            dailyRevenueMap.put(d, BigDecimal.ZERO);
-            dailyCountMap.put(d, 0L);
-        }
+        if (daysRange == 1) {
+            // 24 Hours breakdown by time buckets
+            LocalDate today = LocalDate.now();
+            String[] timeBuckets = {"00:00", "04:00", "08:00", "12:00", "16:00", "20:00", "23:59"};
+            Map<String, BigDecimal> hourlyRevenueMap = new LinkedHashMap<>();
+            Map<String, Long> hourlyCountMap = new LinkedHashMap<>();
 
-        for (Booking b : allBookings) {
-            LocalDate bDate = b.getBookingDate();
-            if (bDate == null && b.getCreatedAt() != null) {
-                bDate = b.getCreatedAt().toLocalDate();
+            for (String bucket : timeBuckets) {
+                hourlyRevenueMap.put(bucket, BigDecimal.ZERO);
+                hourlyCountMap.put(bucket, 0L);
             }
-            if (bDate != null && !bDate.isBefore(startDate) && dailyRevenueMap.containsKey(bDate)) {
-                dailyCountMap.put(bDate, dailyCountMap.get(bDate) + 1);
-                if (b.getPaymentStatus() == PaymentStatus.PAID || b.getStatus() == BookingStatus.COMPLETED) {
-                    if (b.getFinalAmount() != null) {
-                        dailyRevenueMap.put(bDate, dailyRevenueMap.get(bDate).add(b.getFinalAmount()));
+
+            for (Booking b : allBookings) {
+                LocalDate bDate = b.getBookingDate();
+                if (bDate == null && b.getCreatedAt() != null) {
+                    bDate = b.getCreatedAt().toLocalDate();
+                }
+                if (today.equals(bDate)) {
+                    java.time.LocalTime time = b.getStartTime() != null ? b.getStartTime() : (b.getCreatedAt() != null ? b.getCreatedAt().toLocalTime() : java.time.LocalTime.NOON);
+                    int hour = time.getHour();
+                    String bucket;
+                    if (hour < 4) bucket = "00:00";
+                    else if (hour < 8) bucket = "04:00";
+                    else if (hour < 12) bucket = "08:00";
+                    else if (hour < 16) bucket = "12:00";
+                    else if (hour < 20) bucket = "16:00";
+                    else bucket = "20:00";
+
+                    hourlyCountMap.put(bucket, hourlyCountMap.getOrDefault(bucket, 0L) + 1);
+                    if (b.getPaymentStatus() == PaymentStatus.PAID || b.getStatus() == BookingStatus.COMPLETED) {
+                        if (b.getFinalAmount() != null) {
+                            hourlyRevenueMap.put(bucket, hourlyRevenueMap.getOrDefault(bucket, BigDecimal.ZERO).add(b.getFinalAmount()));
+                        }
                     }
                 }
             }
-        }
 
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd");
-        List<AdminAnalyticsResponse.DailyRevenueTrend> revenueTrends = dailyRevenueMap.entrySet().stream()
-                .map(entry -> new AdminAnalyticsResponse.DailyRevenueTrend(
-                        entry.getKey().format(dateFormatter),
-                        entry.getValue(),
-                        dailyCountMap.getOrDefault(entry.getKey(), 0L)
-                ))
-                .collect(Collectors.toList());
+            revenueTrends = hourlyRevenueMap.entrySet().stream()
+                    .map(entry -> new AdminAnalyticsResponse.DailyRevenueTrend(
+                            entry.getKey(),
+                            entry.getValue(),
+                            hourlyCountMap.getOrDefault(entry.getKey(), 0L)
+                    ))
+                    .collect(Collectors.toList());
+        } else {
+            LocalDate startDate = LocalDate.now().minusDays(daysRange - 1);
+            Map<LocalDate, BigDecimal> dailyRevenueMap = new LinkedHashMap<>();
+            Map<LocalDate, Long> dailyCountMap = new LinkedHashMap<>();
+
+            for (int i = 0; i < daysRange; i++) {
+                LocalDate d = startDate.plusDays(i);
+                dailyRevenueMap.put(d, BigDecimal.ZERO);
+                dailyCountMap.put(d, 0L);
+            }
+
+            for (Booking b : allBookings) {
+                LocalDate bDate = b.getBookingDate();
+                if (bDate == null && b.getCreatedAt() != null) {
+                    bDate = b.getCreatedAt().toLocalDate();
+                }
+                if (bDate != null && !bDate.isBefore(startDate) && dailyRevenueMap.containsKey(bDate)) {
+                    dailyCountMap.put(bDate, dailyCountMap.get(bDate) + 1);
+                    if (b.getPaymentStatus() == PaymentStatus.PAID || b.getStatus() == BookingStatus.COMPLETED) {
+                        if (b.getFinalAmount() != null) {
+                            dailyRevenueMap.put(bDate, dailyRevenueMap.get(bDate).add(b.getFinalAmount()));
+                        }
+                    }
+                }
+            }
+
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd");
+            revenueTrends = dailyRevenueMap.entrySet().stream()
+                    .map(entry -> new AdminAnalyticsResponse.DailyRevenueTrend(
+                            entry.getKey().format(dateFormatter),
+                            entry.getValue(),
+                            dailyCountMap.getOrDefault(entry.getKey(), 0L)
+                    ))
+                    .collect(Collectors.toList());
+        }
 
         // 3. Category Breakdown
         Map<String, Long> categoryCountMap = new HashMap<>();
