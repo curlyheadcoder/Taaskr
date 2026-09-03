@@ -713,8 +713,7 @@ export default function ProviderDashboard() {
 
                         {job.paymentStatus === 'PENDING' && job.paymentMethod === 'AFTER_SERVICE' && (
                           <button onClick={() => handleCollectCash(job.id)} className="btn btn-secondary btn-sm" style={{ color: 'var(--success)' }}>
-                            <DollarSign size={13} />
-                            <span>Collect Cash</span>
+                            Collect Cash
                           </button>
                         )}
                       </div>
