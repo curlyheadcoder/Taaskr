@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { formatLocalTime } from '../utils/time';
+import AnalyticsDashboardTab from '../components/admin/AnalyticsDashboardTab';
 
 export default function AdminDashboard() {
   const [categories, setCategories] = useState([]);
@@ -10,8 +11,8 @@ export default function AdminDashboard() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Tabs: 'catalog', 'providers', 'bookings'
-  const [activeTab, setActiveTab] = useState('catalog');
+  // Tabs: 'analytics', 'catalog', 'providers', 'bookings'
+  const [activeTab, setActiveTab] = useState('analytics');
 
   // Category CRUD states
   const [catName, setCatName] = useState('');
@@ -191,6 +192,12 @@ export default function AdminDashboard() {
         
         <nav className="enterprise-sidebar-nav">
           <button 
+            onClick={() => setActiveTab('analytics')}
+            className={`sidebar-item ${activeTab === 'analytics' ? 'active' : ''}`}
+          >
+            <span style={{ fontSize: '1.25rem' }}>📊</span> Analytics & Observability
+          </button>
+          <button 
             onClick={() => setActiveTab('catalog')}
             className={`sidebar-item ${activeTab === 'catalog' ? 'active' : ''}`}
           >
@@ -220,48 +227,10 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Stats Cards Row */}
-        <section className="grid-cols-4" style={{ marginBottom: '2.5rem' }}>
-          <div className="stat-card-modern">
-            <div className="stat-icon-container" style={{ backgroundColor: 'rgba(37, 99, 235, 0.1)' }}>
-              📋
-            </div>
-            <div className="stat-details">
-              <h3>Total Bookings</h3>
-              <p>{bookings.length}</p>
-            </div>
-          </div>
-          
-          <div className="stat-card-modern">
-            <div className="stat-icon-container" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)' }}>
-              ₹
-            </div>
-            <div className="stat-details">
-              <h3>Total Revenue</h3>
-              <p style={{ color: 'var(--success)' }}>₹{totalRevenue}</p>
-            </div>
-          </div>
-          
-          <div className="stat-card-modern">
-            <div className="stat-icon-container" style={{ backgroundColor: 'rgba(139, 92, 246, 0.1)', color: 'var(--secondary)' }}>
-              👷
-            </div>
-            <div className="stat-details">
-              <h3>Active Providers</h3>
-              <p style={{ color: 'var(--secondary)' }}>{providers.filter(p => p.approved).length}</p>
-            </div>
-          </div>
-          
-          <div className="stat-card-modern">
-            <div className="stat-icon-container" style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)', color: 'var(--warning)' }}>
-              👥
-            </div>
-            <div className="stat-details">
-              <h3>Registered Users</h3>
-              <p style={{ color: 'var(--warning)' }}>{users.length}</p>
-            </div>
-          </div>
-        </section>
+        {/* Tab: Analytics & Observability */}
+        {activeTab === 'analytics' && (
+          <AnalyticsDashboardTab />
+        )}
 
       {/* Tab: Catalog Manager */}
       {activeTab === 'catalog' && (

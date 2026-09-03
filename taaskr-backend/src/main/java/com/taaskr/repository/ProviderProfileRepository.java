@@ -10,5 +10,6 @@ import java.util.Optional;
 public interface ProviderProfileRepository extends JpaRepository<ProviderProfile, Long> {
     Optional<ProviderProfile> findByUserId(Long userId);
     List<ProviderProfile> findByApprovedFalseOrderByIdAsc();
+    long countByApprovedFalse();
     List<ProviderProfile> findAllByOrderByIdAsc();
 }

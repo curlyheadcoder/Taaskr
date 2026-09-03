@@ -306,6 +306,14 @@ export const api = {
 
     getAllBookings: async () => {
       return makeRequest('/api/admin/bookings');
+    },
+
+    getAnalytics: async (days = 30) => {
+      return makeRequest(`/api/admin/analytics/overview?days=${days}`);
+    },
+
+    getActuatorHealth: async () => {
+      return makeRequest('/actuator/health');
     }
   },
 

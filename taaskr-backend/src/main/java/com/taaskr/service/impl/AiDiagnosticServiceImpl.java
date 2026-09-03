@@ -25,12 +25,15 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
     private final ServiceRepository serviceRepository;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final com.taaskr.service.AppMetricsService appMetricsService;
 
     @Value("${gemini.api.key:${GEMINI_API_KEY:}}")
     private String geminiApiKey;
 
-    public AiDiagnosticServiceImpl(ServiceRepository serviceRepository) {
+    public AiDiagnosticServiceImpl(ServiceRepository serviceRepository,
+                                   com.taaskr.service.AppMetricsService appMetricsService) {
         this.serviceRepository = serviceRepository;
+        this.appMetricsService = appMetricsService;
         this.restTemplate = new RestTemplate();
         this.objectMapper = new ObjectMapper();
     }
@@ -38,28 +41,38 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
     @Override
     @Transactional(readOnly = true)
     public AiDiagnosticResponse diagnoseIssue(AiDiagnosticRequest request) {
-        String query = request.getQuery() == null ? "" : request.getQuery().trim();
-        List<Service> activeServices = serviceRepository.findByActiveTrueOrderByNameAsc();
+        long startTime = System.currentTimeMillis();
+        boolean success = false;
+        try {
+            String query = request.getQuery() == null ? "" : request.getQuery().trim();
+            List<Service> activeServices = serviceRepository.findByActiveTrueOrderByNameAsc();
 
-        if (activeServices.isEmpty()) {
-            return new AiDiagnosticResponse(null, "No Services Available", null, null, null, null,
-                    "Our catalog is currently being updated.", "LOW");
-        }
-
-        // 1. If Gemini API Key is provided, attempt ultra-low-token AI diagnosis
-        if (geminiApiKey != null && !geminiApiKey.isBlank()) {
-            try {
-                AiDiagnosticResponse aiResponse = callGeminiApi(query, activeServices);
-                if (aiResponse != null) {
-                    return aiResponse;
-                }
-            } catch (Exception e) {
-                log.warn("Gemini API invocation failed, falling back to semantic matching: {}", e.getMessage());
+            if (activeServices.isEmpty()) {
+                return new AiDiagnosticResponse(null, "No Services Available", null, null, null, null,
+                        "Our catalog is currently being updated.", "LOW");
             }
-        }
 
-        // 2. High-precision semantic fallback matching algorithm
-        return performSemanticMatching(query, activeServices);
+            // 1. If Gemini API Key is provided, attempt ultra-low-token AI diagnosis
+            if (geminiApiKey != null && !geminiApiKey.isBlank()) {
+                try {
+                    AiDiagnosticResponse aiResponse = callGeminiApi(query, activeServices);
+                    if (aiResponse != null) {
+                        success = true;
+                        return aiResponse;
+                    }
+                } catch (Exception e) {
+                    log.warn("Gemini API invocation failed, falling back to semantic matching: {}", e.getMessage());
+                }
+            }
+
+            // 2. High-precision semantic fallback matching algorithm
+            AiDiagnosticResponse response = performSemanticMatching(query, activeServices);
+            success = (response != null && response.getServiceId() != null);
+            return response;
+        } finally {
+            long durationMs = System.currentTimeMillis() - startTime;
+            appMetricsService.recordAiDiagnostic(success, java.time.Duration.ofMillis(durationMs));
+        }
     }
 
     private AiDiagnosticResponse callGeminiApi(String query, List<Service> services) throws Exception {
