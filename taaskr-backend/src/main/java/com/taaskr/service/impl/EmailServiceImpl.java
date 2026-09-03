@@ -1,5 +1,6 @@
 package com.taaskr.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taaskr.service.EmailService;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
@@ -11,15 +12,30 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.util.Properties;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.util.*;
 
 @Service
 public class EmailServiceImpl implements EmailService {
 
     private static final Logger log = LoggerFactory.getLogger(EmailServiceImpl.class);
+    private static final HttpClient httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(5))
+            .build();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired(required = false)
     private JavaMailSender mailSender;
+
+    @Value("${brevo.api.key:${BREVO_API_KEY:${EMAIL_API_KEY:}}}")
+    private String brevoApiKey;
+
+    @Value("${resend.api.key:${RESEND_API_KEY:}}}")
+    private String resendApiKey;
 
     @Value("${spring.mail.host:${MAIL_HOST:${SPRING_MAIL_HOST:smtp.gmail.com}}}")
     private String mailHost;
@@ -38,6 +54,22 @@ public class EmailServiceImpl implements EmailService {
 
     @Value("${app.email.simulation-mode:${EMAIL_SIMULATION_MODE:auto}}")
     private String simulationMode;
+
+    private String resolveBrevoApiKey() {
+        if (brevoApiKey != null && !brevoApiKey.trim().isBlank()) return brevoApiKey.trim();
+        String env1 = System.getenv("BREVO_API_KEY");
+        if (env1 != null && !env1.trim().isBlank()) return env1.trim();
+        String env2 = System.getenv("EMAIL_API_KEY");
+        if (env2 != null && !env2.trim().isBlank()) return env2.trim();
+        return "";
+    }
+
+    private String resolveResendApiKey() {
+        if (resendApiKey != null && !resendApiKey.trim().isBlank()) return resendApiKey.trim();
+        String env = System.getenv("RESEND_API_KEY");
+        if (env != null && !env.trim().isBlank()) return env.trim();
+        return "";
+    }
 
     private String resolveUsername() {
         if (mailUsername != null && !mailUsername.trim().isBlank()) return mailUsername.trim();
@@ -73,6 +105,69 @@ public class EmailServiceImpl implements EmailService {
         return 465;
     }
 
+    private boolean sendViaBrevoApi(String apiKey, String senderEmail, String toEmail, String subject, String htmlContent) throws Exception {
+        Map<String, Object> payload = new HashMap<>();
+        Map<String, String> sender = new HashMap<>();
+        sender.put("name", "Taaskr");
+        sender.put("email", senderEmail);
+        payload.put("sender", sender);
+
+        List<Map<String, String>> toList = new ArrayList<>();
+        Map<String, String> to = new HashMap<>();
+        to.put("email", toEmail);
+        toList.add(to);
+        payload.put("to", toList);
+
+        payload.put("subject", subject);
+        payload.put("htmlContent", htmlContent);
+
+        String json = objectMapper.writeValueAsString(payload);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
+                .header("Content-Type", "application/json")
+                .header("api-key", apiKey)
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .timeout(Duration.ofSeconds(8))
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() >= 200 && response.statusCode() < 300) {
+            log.info("Brevo API dispatched successfully to {} (HTTP {})", toEmail, response.statusCode());
+            return true;
+        } else {
+            log.error("Brevo API rejected request: HTTP {} - {}", response.statusCode(), response.body());
+            throw new RuntimeException("Brevo API error (" + response.statusCode() + "): " + response.body());
+        }
+    }
+
+    private boolean sendViaResendApi(String apiKey, String senderEmail, String toEmail, String subject, String htmlContent) throws Exception {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("from", "Taaskr <" + (senderEmail.contains("@") ? senderEmail : "onboarding@resend.dev") + ">");
+        payload.put("to", List.of(toEmail));
+        payload.put("subject", subject);
+        payload.put("html", htmlContent);
+
+        String json = objectMapper.writeValueAsString(payload);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.resend.com/emails"))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + apiKey)
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .timeout(Duration.ofSeconds(8))
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() >= 200 && response.statusCode() < 300) {
+            log.info("Resend API dispatched successfully to {} (HTTP {})", toEmail, response.statusCode());
+            return true;
+        } else {
+            log.error("Resend API error: HTTP {} - {}", response.statusCode(), response.body());
+            throw new RuntimeException("Resend API error (" + response.statusCode() + "): " + response.body());
+        }
+    }
+
     private JavaMailSenderImpl createSender(String host, int port, String user, String pass) {
         JavaMailSenderImpl impl = new JavaMailSenderImpl();
         impl.setHost(host);
@@ -83,9 +178,9 @@ public class EmailServiceImpl implements EmailService {
 
         Properties props = impl.getJavaMailProperties();
         props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.connectiontimeout", "6000");
-        props.put("mail.smtp.timeout", "6000");
-        props.put("mail.smtp.writetimeout", "6000");
+        props.put("mail.smtp.connectiontimeout", "3000");
+        props.put("mail.smtp.timeout", "4000");
+        props.put("mail.smtp.writetimeout", "4000");
         props.put("mail.smtp.ssl.trust", "*");
 
         if (port == 465) {
@@ -104,7 +199,7 @@ public class EmailServiceImpl implements EmailService {
         return impl;
     }
 
-    private void trySend(String host, int port, String user, String pass, String senderAddress, String toEmail, String subject, String htmlContent) throws Exception {
+    private void trySendSmtp(String host, int port, String user, String pass, String senderAddress, String toEmail, String subject, String htmlContent) throws Exception {
         JavaMailSenderImpl impl = createSender(host, port, user, pass);
         MimeMessage message = impl.createMimeMessage();
         org.springframework.mail.javamail.MimeMessageHelper helper = 
@@ -206,102 +301,149 @@ public class EmailServiceImpl implements EmailService {
     }
 
     private void sendHtmlEmail(String toEmail, String subject, String htmlContent, String summary) {
+        String brevoKey = resolveBrevoApiKey();
+        String resendKey = resolveResendApiKey();
         String user = resolveUsername();
         String pass = resolvePassword();
         String host = resolveHost();
         int initialPort = resolvePort();
-        boolean hasCredentials = !user.isBlank() && !pass.isBlank();
+        boolean hasSmtpCredentials = !user.isBlank() && !pass.isBlank();
         boolean isExplicitSimulation = "true".equalsIgnoreCase(simulationMode);
+
+        String senderAddress = (fromEmail != null && !fromEmail.isBlank() && !fromEmail.contains("noreply@taaskr.com"))
+                ? fromEmail.trim()
+                : (user.isBlank() ? "mayankdeployment@gmail.com" : user);
 
         log.info("========== [TAASKR EMAIL DISPATCHER] ==========");
         log.info("To: {}", toEmail);
         log.info("Subject: {}", subject);
         log.info("Payload Summary: {}", summary);
-        log.info("SMTP Host: {}:{} | Authenticated User: {} | Real Delivery: {}", 
-                host, initialPort, user.isBlank() ? "NONE" : user, (hasCredentials && !isExplicitSimulation));
+        log.info("Sender: {} | Brevo API: {} | Resend API: {} | SMTP: {}", 
+                senderAddress, !brevoKey.isBlank(), !resendKey.isBlank(), hasSmtpCredentials);
         log.info("===============================================");
 
-        if (hasCredentials && !isExplicitSimulation) {
-            String senderAddress = (host.contains("gmail") || fromEmail == null || fromEmail.isBlank() || fromEmail.contains("noreply@taaskr.com")) 
+        if (isExplicitSimulation) {
+            log.info("[SIMULATION MODE] Email payload logged to console.");
+            return;
+        }
+
+        // 1. Try Brevo REST API (HTTPS Port 443 - 100% cloud firewall proof)
+        if (!brevoKey.isBlank()) {
+            try {
+                sendViaBrevoApi(brevoKey, senderAddress, toEmail, subject, htmlContent);
+                return;
+            } catch (Exception e) {
+                log.warn("Brevo API delivery failed: {}", e.getMessage());
+            }
+        }
+
+        // 2. Try Resend REST API (HTTPS Port 443)
+        if (!resendKey.isBlank()) {
+            try {
+                sendViaResendApi(resendKey, senderAddress, toEmail, subject, htmlContent);
+                return;
+            } catch (Exception e) {
+                log.warn("Resend API delivery failed: {}", e.getMessage());
+            }
+        }
+
+        // 3. Try SMTP (Ports 465 / 587)
+        if (hasSmtpCredentials) {
+            String smtpSender = (host.contains("gmail") || fromEmail == null || fromEmail.isBlank() || fromEmail.contains("noreply@taaskr.com")) 
                     ? user 
                     : fromEmail.trim();
 
-            int[] portsToTry = initialPort == 465 ? new int[]{465, 587} : new int[]{initialPort, 465, 587};
-            boolean sent = false;
-            Exception lastError = null;
-
+            int[] portsToTry = initialPort == 465 ? new int[]{465, 587} : new int[]{initialPort, 465};
             for (int port : portsToTry) {
                 try {
-                    log.info("Attempting SMTP delivery to {} on port {}...", toEmail, port);
-                    trySend(host, port, user, pass, senderAddress, toEmail, subject, htmlContent);
-                    log.info("SUCCESS: Email dispatched via SMTP on port {} to: {} from: {}", port, toEmail, senderAddress);
-                    sent = true;
-                    break;
+                    log.info("Attempting SMTP delivery on port {}...", port);
+                    trySendSmtp(host, port, user, pass, smtpSender, toEmail, subject, htmlContent);
+                    log.info("SUCCESS: Email dispatched via SMTP on port {} to: {}", port, toEmail);
+                    return;
                 } catch (Exception e) {
-                    lastError = e;
-                    log.warn("SMTP attempt on port {} failed: {}. Retrying next port if available...", port, e.getMessage());
+                    log.warn("SMTP attempt on port {} failed: {}", port, e.getMessage());
                 }
             }
-
-            if (!sent && lastError != null) {
-                log.error("ERROR: All SMTP ports failed for {}: {}", toEmail, lastError.getMessage(), lastError);
-            }
-        } else {
-            log.info("[SIMULATION / CONSOLE MODE] Real SMTP credentials missing or simulation mode enabled. Email payload logged to console.");
         }
+
+        log.info("[FALLBACK] Could not deliver via real email provider. Code logged to console.");
     }
 
     @Override
-    public java.util.Map<String, Object> testEmailDispatch(String toEmail) {
-        java.util.Map<String, Object> result = new java.util.HashMap<>();
+    public Map<String, Object> testEmailDispatch(String toEmail) {
+        Map<String, Object> result = new HashMap<>();
+        String brevoKey = resolveBrevoApiKey();
+        String resendKey = resolveResendApiKey();
         String user = resolveUsername();
         String pass = resolvePassword();
         String host = resolveHost();
         int initialPort = resolvePort();
 
-        result.put("host", host);
-        result.put("initialPort", initialPort);
-        result.put("username", user.isBlank() ? "NOT_CONFIGURED" : user);
-        result.put("passwordConfigured", !pass.isBlank());
-        result.put("simulationMode", simulationMode);
         result.put("to", toEmail);
+        result.put("hasBrevoApiKey", !brevoKey.isBlank());
+        result.put("hasResendApiKey", !resendKey.isBlank());
+        result.put("smtpUsername", user.isBlank() ? "NOT_CONFIGURED" : user);
+        result.put("smtpPasswordConfigured", !pass.isBlank());
+        result.put("smtpHost", host);
+        result.put("smtpPort", initialPort);
 
-        if (user.isBlank() || pass.isBlank()) {
-            result.put("status", "ERROR");
-            result.put("error", "SMTP credentials missing. Please set MAIL_USERNAME and MAIL_PASSWORD environment variables.");
-            return result;
-        }
+        String senderAddress = (fromEmail != null && !fromEmail.isBlank() && !fromEmail.contains("noreply@taaskr.com"))
+                ? fromEmail.trim()
+                : (user.isBlank() ? "mayankdeployment@gmail.com" : user);
 
-        String senderAddress = (host.contains("gmail") || fromEmail == null || fromEmail.isBlank() || fromEmail.contains("noreply@taaskr.com")) 
-                ? user 
-                : fromEmail.trim();
-
-        int[] portsToTry = initialPort == 465 ? new int[]{465, 587} : new int[]{initialPort, 465, 587};
-        Exception lastError = null;
-
-        for (int port : portsToTry) {
+        // 1. Try Brevo API if key is present
+        if (!brevoKey.isBlank()) {
             try {
-                trySend(host, port, user, pass, senderAddress, toEmail, 
-                        "Taaskr - SMTP Test Ping", 
-                        "<div style='font-family:sans-serif;'><h2>SMTP Test Successful!</h2><p>Your Taaskr email service is working properly over port " + port + ".</p></div>");
-
+                sendViaBrevoApi(brevoKey, senderAddress, toEmail, "Taaskr - Brevo API Test Ping",
+                        "<div style='font-family:sans-serif;'><h2>Brevo API Test Successful!</h2><p>Your Taaskr emails are working via Brevo HTTPS API.</p></div>");
                 result.put("status", "SUCCESS");
-                result.put("connectedPort", port);
-                result.put("message", "Test email successfully sent to " + toEmail + " via port " + port);
-                result.put("from", senderAddress);
+                result.put("provider", "Brevo HTTPS API (Port 443)");
+                result.put("message", "Test email successfully sent to " + toEmail + " via Brevo API!");
                 return result;
             } catch (Exception e) {
-                lastError = e;
+                result.put("brevoError", e.getMessage());
+            }
+        }
+
+        // 2. Try Resend API if key is present
+        if (!resendKey.isBlank()) {
+            try {
+                sendViaResendApi(resendKey, senderAddress, toEmail, "Taaskr - Resend API Test Ping",
+                        "<div style='font-family:sans-serif;'><h2>Resend API Test Successful!</h2><p>Your Taaskr emails are working via Resend HTTPS API.</p></div>");
+                result.put("status", "SUCCESS");
+                result.put("provider", "Resend HTTPS API (Port 443)");
+                result.put("message", "Test email successfully sent to " + toEmail + " via Resend API!");
+                return result;
+            } catch (Exception e) {
+                result.put("resendError", e.getMessage());
+            }
+        }
+
+        // 3. Try SMTP
+        if (!user.isBlank() && !pass.isBlank()) {
+            String smtpSender = (host.contains("gmail") || fromEmail == null || fromEmail.isBlank() || fromEmail.contains("noreply@taaskr.com")) 
+                    ? user 
+                    : fromEmail.trim();
+
+            int[] portsToTry = initialPort == 465 ? new int[]{465, 587} : new int[]{initialPort, 465};
+            for (int port : portsToTry) {
+                try {
+                    trySendSmtp(host, port, user, pass, smtpSender, toEmail,
+                            "Taaskr - SMTP Test Ping",
+                            "<div style='font-family:sans-serif;'><h2>SMTP Test Successful!</h2><p>Your Taaskr email service is working properly over port " + port + ".</p></div>");
+
+                    result.put("status", "SUCCESS");
+                    result.put("provider", "SMTP (Port " + port + ")");
+                    result.put("message", "Test email successfully sent to " + toEmail + " via port " + port);
+                    return result;
+                } catch (Exception e) {
+                    result.put("smtpPort" + port + "Error", e.getMessage());
+                }
             }
         }
 
         result.put("status", "ERROR");
-        if (lastError != null) {
-            result.put("error", lastError.getClass().getSimpleName() + ": " + lastError.getMessage());
-            if (lastError.getCause() != null) {
-                result.put("cause", lastError.getCause().getClass().getSimpleName() + ": " + lastError.getCause().getMessage());
-            }
-        }
+        result.put("error", "All delivery methods failed. On cloud hosts like Render, raw SMTP ports (465/587) are often firewalled. Recommend adding BREVO_API_KEY or RESEND_API_KEY.");
         return result;
     }
 }
