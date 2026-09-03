@@ -140,37 +140,41 @@ public class EmailServiceImpl implements EmailService {
 
         if (hasCredentials && !isExplicitSimulation) {
             try {
-                JavaMailSender senderImpl = this.mailSender;
-                if (senderImpl == null) {
-                    JavaMailSenderImpl impl = new JavaMailSenderImpl();
-                    impl.setHost(mailHost != null && !mailHost.isBlank() ? mailHost : "smtp.gmail.com");
-                    impl.setPort(mailPort > 0 ? mailPort : 587);
-                    impl.setUsername(user);
-                    impl.setPassword(pass);
+                JavaMailSenderImpl impl = new JavaMailSenderImpl();
+                String host = (mailHost != null && !mailHost.isBlank()) ? mailHost.trim() : "smtp.gmail.com";
+                int port = mailPort > 0 ? mailPort : 587;
+                impl.setHost(host);
+                impl.setPort(port);
+                impl.setUsername(user);
+                impl.setPassword(pass);
 
-                    Properties props = impl.getJavaMailProperties();
-                    props.put("mail.transport.protocol", "smtp");
-                    props.put("mail.smtp.auth", "true");
-                    props.put("mail.smtp.starttls.enable", "true");
-                    props.put("mail.smtp.starttls.required", "true");
-                    props.put("mail.smtp.ssl.protocols", "TLSv1.2");
-                    props.put("mail.smtp.connectiontimeout", "7000");
-                    props.put("mail.smtp.timeout", "7000");
-                    props.put("mail.smtp.writetimeout", "7000");
-                    senderImpl = impl;
-                }
+                Properties props = impl.getJavaMailProperties();
+                props.put("mail.transport.protocol", "smtp");
+                props.put("mail.smtp.auth", "true");
+                props.put("mail.smtp.starttls.enable", "true");
+                props.put("mail.smtp.starttls.required", "true");
+                props.put("mail.smtp.ssl.protocols", "TLSv1.2");
+                props.put("mail.smtp.ssl.trust", host);
+                props.put("mail.smtp.connectiontimeout", "8000");
+                props.put("mail.smtp.timeout", "8000");
+                props.put("mail.smtp.writetimeout", "8000");
 
-                MimeMessage message = senderImpl.createMimeMessage();
+                MimeMessage message = impl.createMimeMessage();
                 org.springframework.mail.javamail.MimeMessageHelper helper = 
                         new org.springframework.mail.javamail.MimeMessageHelper(message, true, "UTF-8");
-                String senderAddress = (fromEmail != null && !fromEmail.isBlank()) ? fromEmail.trim() : user;
+
+                // When using Gmail SMTP, the From address must be the authenticated Gmail account
+                String senderAddress = (host.contains("gmail") || fromEmail == null || fromEmail.isBlank() || fromEmail.contains("noreply@taaskr.com")) 
+                        ? user 
+                        : fromEmail.trim();
+
                 helper.setFrom(senderAddress, "Taaskr");
                 helper.setTo(toEmail);
                 helper.setSubject(subject);
                 helper.setText(htmlContent, true);
 
-                senderImpl.send(message);
-                log.info("Email successfully dispatched via SMTP to: {}", toEmail);
+                impl.send(message);
+                log.info("Email successfully dispatched via SMTP to: {} from: {}", toEmail, senderAddress);
             } catch (Exception e) {
                 log.error("SMTP mail delivery failed to {}: {}", toEmail, e.getMessage(), e);
             }
