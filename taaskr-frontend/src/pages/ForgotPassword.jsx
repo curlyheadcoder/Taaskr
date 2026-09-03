@@ -38,12 +38,7 @@ export default function ForgotPassword() {
 
     try {
       const res = await api.auth.forgotPassword(email.trim());
-      if (res?.devOtp) {
-        setOtp(res.devOtp);
-        setMessage(`Password reset code: ${res.devOtp} (Sent to ${email})`);
-      } else {
-        setMessage(res.message || `Password reset code sent to ${email}`);
-      }
+      setMessage(res.message || `Password reset code sent to ${email}. Please check your inbox.`);
       setStep(2);
       setResendCooldown(60);
     } catch (err) {

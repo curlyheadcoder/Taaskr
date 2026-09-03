@@ -216,7 +216,7 @@ public class AuthServiceImpl implements AuthService {
 
         emailService.sendVerificationOtp(user.getEmail(), user.getName(), otp);
 
-        return new AuthMessageResponse(true, "Verification code sent to " + normalizedEmail, normalizedEmail, otp);
+        return new AuthMessageResponse(true, "Verification code sent to " + normalizedEmail, normalizedEmail);
     }
 
     @Override
@@ -270,7 +270,7 @@ public class AuthServiceImpl implements AuthService {
 
         emailService.sendPasswordResetOtp(user.getEmail(), user.getName(), otp);
 
-        return new AuthMessageResponse(true, "Password reset OTP sent to " + email, email, otp);
+        return new AuthMessageResponse(true, "Password reset OTP sent to " + email, email);
     }
 
     @Override

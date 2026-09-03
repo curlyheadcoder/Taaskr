@@ -77,12 +77,7 @@ export default function VerifyEmail() {
     setLoading(true);
     try {
       const res = await api.auth.sendVerificationOtp(email.trim());
-      if (res?.devOtp) {
-        setOtp(res.devOtp);
-        setMessage(`Verification code: ${res.devOtp} (Sent to ${email})`);
-      } else {
-        setMessage(res.message || `Fresh verification code sent to ${email}`);
-      }
+      setMessage(res.message || `Verification code sent to ${email}. Please check your inbox.`);
       setResendCooldown(60);
     } catch (err) {
       setError(err.message || 'Failed to resend code');
