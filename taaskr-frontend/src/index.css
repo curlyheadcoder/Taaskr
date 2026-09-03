@@ -106,28 +106,28 @@ body.theme-admin {
    -------------------------------------------------------------------------- */
 
 body.dark, body.theme-user.dark {
-  --bg-page: #0B0F19;
-  --bg-card: #111827;
-  --bg-subtle: #1F2937;
-  --bg-hover: #374151;
-  --bg-active: #4B5563;
+  --bg-page: #0F172A;
+  --bg-card: #1E293B;
+  --bg-subtle: #1E293B;
+  --bg-hover: #334155;
+  --bg-active: #475569;
 
-  --text-main: #F9FAFB;
-  --text-muted: #9CA3AF;
-  --text-light: #6B7280;
-  --text-inverse: #111827;
+  --text-main: #F8FAFC;
+  --text-muted: #94A3B8;
+  --text-light: #64748B;
+  --text-inverse: #0F172A;
 
-  --border-subtle: #1F2937;
-  --border-light: #374151;
-  --border-strong: #4B5563;
-  --border-hover: #6B7280;
+  --border-subtle: #1E293B;
+  --border-light: #334155;
+  --border-strong: #475569;
+  --border-hover: #64748B;
 
   --primary: #3B82F6;
   --primary-hover: #60A5FA;
-  --primary-subtle: rgba(59, 130, 246, 0.12);
+  --primary-subtle: rgba(59, 130, 246, 0.15);
 
-  --secondary: #F3F4F6;
-  --secondary-hover: #E5E7EB;
+  --secondary: #F8FAFC;
+  --secondary-hover: #E2E8F0;
 
   --success-bg: rgba(5, 150, 105, 0.15);
   --success-border: rgba(5, 150, 105, 0.3);
@@ -137,29 +137,36 @@ body.dark, body.theme-user.dark {
 
   --error-bg: rgba(220, 38, 38, 0.15);
   --error-border: rgba(220, 38, 38, 0.3);
-
-  --info-bg: rgba(37, 99, 235, 0.15);
-  --info-border: rgba(37, 99, 235, 0.3);
 }
 
 body.theme-provider.dark {
-  --bg-page: #090D16;
-  --bg-card: #111827;
+  --bg-page: #0F172A;
+  --bg-card: #1E293B;
   --bg-subtle: #1E293B;
   --bg-hover: #334155;
+  --bg-active: #475569;
+
+  --text-main: #F8FAFC;
+  --text-muted: #94A3B8;
+  --text-light: #64748B;
+
+  --border-subtle: #1E293B;
+  --border-light: #334155;
+  --border-strong: #475569;
+  --border-hover: #64748B;
+
   --primary: #3B82F6;
   --primary-hover: #60A5FA;
+  --primary-subtle: rgba(59, 130, 246, 0.15);
 }
 
 body.theme-admin.dark {
-  --bg-page: #09090B;
-  --bg-card: #141417;
-  --bg-subtle: #1F1F23;
-  --bg-hover: #2C2C32;
-  --primary: #FAFAFA;
-  --primary-hover: #E4E4E7;
-  --border-light: #27272A;
-  --border-strong: #3F3F46;
+  --bg-page: #0F172A;
+  --bg-card: #1E293B;
+  --bg-subtle: #1E293B;
+  --bg-hover: #334155;
+  --border-light: #334155;
+  --border-hover: #475569;
 }
 
 /* ==========================================================================
