@@ -190,6 +190,36 @@ export default function CustomerDashboard() {
         </div>
       </div>
 
+      {currentUser && currentUser.emailVerified === false && (
+        <div style={{
+          background: '#FFFBEB',
+          border: '1px solid #FDE68A',
+          color: '#92400E',
+          padding: '0.75rem 1rem',
+          borderRadius: 'var(--radius-sm)',
+          marginBottom: '1.25rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '0.5rem'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <AlertCircle size={16} color="#D97706" />
+            <span style={{ fontSize: '0.8125rem' }}>
+              Your email (<strong>{currentUser.email}</strong>) is not verified yet. Verify your email to ensure uninterrupted booking updates and invoices.
+            </span>
+          </div>
+          <Link 
+            to={`/verify-email?email=${encodeURIComponent(currentUser.email || '')}`}
+            className="btn btn-sm"
+            style={{ backgroundColor: '#D97706', color: '#fff', padding: '0.25rem 0.65rem', fontSize: '0.75rem' }}
+          >
+            Verify Now
+          </Link>
+        </div>
+      )}
+
       {errorMessage && (
         <div style={{
           background: 'var(--error-bg)', border: '1px solid var(--error-border)', color: 'var(--error)',

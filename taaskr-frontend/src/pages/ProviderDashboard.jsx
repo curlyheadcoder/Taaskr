@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { formatLocalTime } from '../utils/time';
 import { 
@@ -444,6 +445,36 @@ export default function ProviderDashboard() {
             padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1.25rem', fontSize: '0.8125rem'
           }}>
             {errorMessage}
+          </div>
+        )}
+
+        {userProfile && userProfile.emailVerified === false && (
+          <div style={{
+            background: '#FFFBEB',
+            border: '1px solid #FDE68A',
+            color: '#92400E',
+            padding: '0.75rem 1rem',
+            borderRadius: 'var(--radius-sm)',
+            marginBottom: '1.25rem',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '0.5rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <AlertCircle size={16} color="#D97706" />
+              <span style={{ fontSize: '0.8125rem' }}>
+                Your partner account email (<strong>{userProfile.email}</strong>) is not verified. Verify your email to activate job notifications and automated dispatch.
+              </span>
+            </div>
+            <Link 
+              to={`/verify-email?email=${encodeURIComponent(userProfile.email || '')}`}
+              className="btn btn-sm"
+              style={{ backgroundColor: '#D97706', color: '#fff', padding: '0.25rem 0.65rem', fontSize: '0.75rem' }}
+            >
+              Verify Email
+            </Link>
           </div>
         )}
 
