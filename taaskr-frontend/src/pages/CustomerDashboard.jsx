@@ -3,6 +3,11 @@ import { api } from '../services/api';
 import { Link } from 'react-router-dom';
 import { formatLocalTime } from '../utils/time';
 import confetti from 'canvas-confetti';
+import { 
+  Calendar, Clock, CreditCard, Star, Truck, MapPin, User, 
+  ExternalLink, AlertCircle, CheckCircle2, ChevronRight, X, 
+  RefreshCw, FileText
+} from 'lucide-react';
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -53,7 +58,6 @@ export default function CustomerDashboard() {
   useEffect(() => {
     fetchMyBookings();
     
-    // Load current user profile for prefill
     const loadUser = async () => {
       try {
         const profile = await api.auth.me();
@@ -63,36 +67,39 @@ export default function CustomerDashboard() {
     loadUser();
   }, []);
 
-  const getStatusClass = (status) => {
+  const getStatusBadge = (status) => {
     switch (status) {
-      case 'PENDING': return 'badge-pending';
-      case 'ASSIGNED': return 'badge-assigned';
-      case 'ACCEPTED': return 'badge-accepted';
-      case 'IN_PROGRESS': return 'badge-inprogress';
-      case 'COMPLETED': return 'badge-completed';
+      case 'PENDING':
+        return <span className="badge badge-pending"><span className="badge-dot" /> Pending Dispatch</span>;
+      case 'ASSIGNED':
+        return <span className="badge badge-assigned"><span className="badge-dot" /> Assigned</span>;
+      case 'ACCEPTED':
+        return <span className="badge badge-accepted"><span className="badge-dot" /> Accepted</span>;
+      case 'IN_PROGRESS':
+        return <span className="badge badge-inprogress"><span className="badge-dot" /> In Progress</span>;
+      case 'COMPLETED':
+        return <span className="badge badge-completed"><span className="badge-dot" /> Completed</span>;
       case 'CANCELLED':
-      case 'REJECTED': return 'badge-cancelled';
-      default: return '';
+      case 'REJECTED':
+        return <span className="badge badge-cancelled"><span className="badge-dot" /> {status}</span>;
+      default:
+        return <span className="badge badge-pending">{status}</span>;
     }
   };
 
-  // Pay Now handler for pending payments
   const handlePayNow = async (booking) => {
     setPayingBookingId(booking.id);
     try {
-      // 1. Load Razorpay script
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded) {
         throw new Error('Failed to load Razorpay SDK. Please check your internet connection.');
       }
 
-      // 2. Call backend orders API
       const order = await api.payments.createOrder(booking.id);
 
-      // 3. Open Razorpay Checkout options
       const options = {
         key: order.razorpayKeyId,
-        amount: Math.round(order.amount * 100), // in paise
+        amount: Math.round(order.amount * 100),
         currency: order.currency || 'INR',
         name: 'Taaskr',
         description: `Payment for ${booking.serviceName}`,
@@ -103,27 +110,24 @@ export default function CustomerDashboard() {
           contact: currentUser?.phone || ''
         },
         theme: {
-          color: '#6366f1'
+          color: '#2563EB'
         },
         handler: async function (response) {
           try {
             setPayingBookingId(booking.id);
-            // 4. Verify payment via backend
             await api.payments.verifyPayment({
               razorpayPaymentId: response.razorpay_payment_id,
               razorpayOrderId: response.razorpay_order_id,
               razorpaySignature: response.razorpay_signature
             });
 
-            // Confetti effect
             confetti({
-              particleCount: 120,
+              particleCount: 100,
               spread: 60,
-              origin: { y: 0.5 }
+              origin: { y: 0.6 }
             });
 
-            alert('Payment successful!');
-            fetchMyBookings(); // Refresh bookings
+            fetchMyBookings();
           } catch (err) {
             alert(`Payment verification failed: ${err.message}`);
           } finally {
@@ -133,7 +137,6 @@ export default function CustomerDashboard() {
         modal: {
           ondismiss: function () {
             setPayingBookingId(null);
-            alert('Payment window closed.');
           }
         }
       };
@@ -159,9 +162,8 @@ export default function CustomerDashboard() {
         rating: ratingValue,
         review: reviewText
       });
-      alert('Thank you! Your rating has been submitted.');
       setRatingModalData(null);
-      fetchMyBookings(); // Refresh bookings to show the new rating
+      fetchMyBookings();
     } catch (err) {
       alert(`Failed to submit rating: ${err.message}`);
     } finally {
@@ -170,101 +172,112 @@ export default function CustomerDashboard() {
   };
 
   return (
-    <div className="app-container animate-fade-in">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
+    <div className="app-container animate-fade-in" style={{ paddingBottom: '3rem' }}>
+      {/* Header Bar */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h1 style={{ fontSize: '2.2rem', color: 'var(--primary)' }}>My Bookings Dashboard</h1>
-          <p style={{ color: 'var(--text-muted)', marginTop: '0.25rem' }}>Track the real-time execution status of your service requests</p>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>My Bookings</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>Track and manage your scheduled services, trips, and payment receipts.</p>
         </div>
-        <Link to="/" className="btn btn-primary">Book New Service</Link>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button onClick={fetchMyBookings} className="btn btn-secondary btn-sm">
+            <RefreshCw size={13} />
+            <span>Refresh</span>
+          </button>
+          <Link to="/" className="btn btn-primary btn-sm">
+            Book New Service
+          </Link>
+        </div>
       </div>
 
       {errorMessage && (
         <div style={{
-          background: '#FEF2F2', border: '1px solid #FCA5A5', color: 'var(--error)',
-          padding: '1rem 1.25rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem',
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+          background: 'var(--error-bg)', border: '1px solid var(--error-border)', color: 'var(--error)',
+          padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8125rem'
         }}>
-          <span>⚠️ {errorMessage}</span>
-          <button onClick={fetchMyBookings} className="btn btn-secondary btn-small">
+          <span>{errorMessage}</span>
+          <button onClick={fetchMyBookings} className="btn btn-secondary btn-sm" style={{ padding: '0.2rem 0.5rem' }}>
             Retry
           </button>
         </div>
       )}
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '4rem 0', color: 'var(--text-muted)' }}>
-          <div style={{
-            display: 'inline-block', width: '30px', height: '30px',
-            border: '3px solid var(--border-light)', borderTopColor: 'var(--primary)',
-            borderRadius: '50%', animation: 'spin 1s linear infinite'
-          }} />
-          <p style={{ marginTop: '1rem', fontWeight: 500 }}>Loading your booking history...</p>
+        <div className="panel" style={{ height: '300px', display: 'flex', flexDirection: 'column', gap: '1rem', justifyContent: 'center', alignItems: 'center' }}>
+          <div className="skeleton" style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
+          <div className="skeleton" style={{ width: '200px', height: '16px' }} />
         </div>
       ) : bookings.length === 0 ? (
-        <div className="premium-card" style={{ padding: '5rem 2rem', textAlign: 'center' }}>
-          <span style={{ fontSize: '4rem' }}>🛒</span>
-          <h3 style={{ color: 'var(--primary)', marginTop: '1rem', fontSize: '1.4rem' }}>No Bookings Yet</h3>
-          <p style={{ marginTop: '0.5rem', fontSize: '1rem', marginBottom: '1.5rem', color: 'var(--text-muted)' }}>
-            You haven't made any bookings yet. Choose a service from our catalog to get started.
+        <div className="empty-state">
+          <div className="empty-state-icon">
+            <Calendar size={22} />
+          </div>
+          <h3 className="empty-state-title">No bookings yet</h3>
+          <p className="empty-state-description">
+            You haven't placed any bookings yet. Choose from our verified services catalog to get started.
           </p>
-          <Link to="/" className="btn btn-primary">Browse Services</Link>
+          <Link to="/" className="btn btn-primary btn-sm">Browse Services</Link>
         </div>
       ) : (
         <div className="table-container">
-          <table className="custom-table">
+          <table className="enterprise-table">
             <thead>
               <tr>
-                <th>Booking ID</th>
+                <th>Booking Ref</th>
                 <th>Service Name</th>
                 <th>Scheduled Date</th>
-                <th>Time Slot</th>
+                <th>Time Window</th>
                 <th>Amount</th>
                 <th>Status</th>
                 <th>Payment</th>
-                <th>Actions</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {bookings.map((booking) => (
                 <tr key={booking.id}>
-                  <td style={{ fontFamily: 'monospace', color: 'var(--text-muted)' }}>#{String(booking.id).slice(-6)}</td>
-                  <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{booking.serviceName || 'Service'}</td>
-                  <td style={{ color: 'var(--text-main)' }}>{booking.bookingDate || 'N/A'}</td>
-                  <td style={{ color: 'var(--text-main)' }}>{formatLocalTime(booking.startTime) || 'N/A'}</td>
-                  <td style={{ color: 'var(--primary)', fontWeight: 700 }}>₹{booking.finalAmount ?? booking.totalAmount ?? 0}</td>
-                  <td>
-                    <span className={`badge ${getStatusClass(booking.status)}`}>
-                      {booking.status}
-                    </span>
+                  <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--text-muted)' }}>
+                    #{String(booking.id).slice(-6)}
                   </td>
                   <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      {booking.dropAddress && <Truck size={14} color="var(--primary)" />}
+                      <strong style={{ color: 'var(--text-main)' }}>{booking.serviceName || 'Service'}</strong>
+                    </div>
+                  </td>
+                  <td style={{ color: 'var(--text-main)' }}>{booking.bookingDate || 'N/A'}</td>
+                  <td style={{ color: 'var(--text-muted)' }}>{formatLocalTime(booking.startTime) || 'N/A'}</td>
+                  <td>
+                    <span style={{ fontWeight: 600, color: 'var(--text-main)', fontFeatureSettings: 'tnum' }}>
+                      ₹{booking.finalAmount ?? booking.totalAmount ?? 0}
+                    </span>
+                  </td>
+                  <td>{getStatusBadge(booking.status)}</td>
+                  <td>
                     {booking.paymentStatus === 'PAID' ? (
-                      <span className="badge badge-completed" style={{ fontSize: '0.65rem' }}>
-                        PAID
-                      </span>
+                      <span className="badge badge-completed">Paid</span>
                     ) : booking.paymentMethod === 'AFTER_SERVICE' ? (
-                      <span className="badge badge-pending" style={{ fontSize: '0.65rem' }}>
-                        PAY AFTER SERVICE
-                      </span>
+                      <span className="badge badge-pending">Cash on Completion</span>
                     ) : (
                       <button
                         onClick={() => handlePayNow(booking)}
-                        className="btn btn-primary btn-small"
-                        style={{ fontSize: '0.75rem', padding: '0.35rem 0.6rem' }}
+                        className="btn btn-primary btn-sm"
+                        style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}
                         disabled={payingBookingId === booking.id}
                       >
-                        {payingBookingId === booking.id ? 'Loading...' : `Pay ₹${booking.finalAmount}`}
+                        {payingBookingId === booking.id ? 'Processing...' : `Pay ₹${booking.finalAmount}`}
                       </button>
                     )}
                   </td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <td style={{ textAlign: 'right' }}>
+                    <div style={{ display: 'inline-flex', gap: '0.35rem', alignItems: 'center' }}>
                       <button
                         onClick={() => setSelectedBooking(booking)}
-                        className="btn btn-secondary btn-small"
+                        className="btn btn-secondary btn-sm"
+                        style={{ padding: '0.25rem 0.5rem' }}
                       >
-                        View Details
+                        Details
                       </button>
                       
                       {booking.status === 'COMPLETED' && !booking.rating && (
@@ -274,15 +287,16 @@ export default function CustomerDashboard() {
                             setRatingValue(5);
                             setReviewText('');
                           }}
-                          className="btn btn-primary btn-small"
-                          style={{ background: '#f59e0b', color: '#fff', borderColor: '#f59e0b' }}
+                          className="btn btn-ghost btn-sm"
+                          style={{ color: '#D97706', padding: '0.25rem 0.5rem' }}
                         >
-                          Rate Provider
+                          <Star size={13} fill="#D97706" />
+                          <span>Rate</span>
                         </button>
                       )}
                       {booking.status === 'COMPLETED' && booking.rating && (
-                        <span className="badge" style={{ background: 'var(--amber)', color: '#000', border: 'none', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                          ⭐ {booking.rating}/5
+                        <span style={{ fontSize: '0.75rem', color: '#D97706', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
+                          <Star size={12} fill="#D97706" /> {booking.rating}/5
                         </span>
                       )}
                     </div>
@@ -294,136 +308,118 @@ export default function CustomerDashboard() {
         </div>
       )}
 
-      {/* Details Modal Overlay */}
+      {/* Booking Details Modal */}
       {selectedBooking && (
         <div className="modal-overlay" onClick={() => setSelectedBooking(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ color: 'var(--primary)', fontSize: '1.5rem' }}>Booking Summary</h2>
+            <div className="modal-header">
+              <div>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>
+                  Booking Summary
+                </h3>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                  Ref: #{String(selectedBooking.id).slice(-6)}
+                </span>
+              </div>
               <button
                 onClick={() => setSelectedBooking(null)}
-                style={{
-                  background: 'transparent', border: 'none',
-                  color: 'var(--text-muted)', fontSize: '1.5rem', cursor: 'pointer'
-                }}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
               >
-                &times;
+                <X size={18} />
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.95rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.8125rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Status:</span>
-                <span className={`badge ${getStatusClass(selectedBooking.status)}`}>
-                  {selectedBooking.status}
-                </span>
+                <div>{getStatusBadge(selectedBooking.status)}</div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Payment Status:</span>
-                <span className={`badge ${selectedBooking.paymentStatus === 'PAID' ? 'badge-completed' : 'badge-pending'}`}>
-                  {selectedBooking.paymentStatus}
-                </span>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Service:</span>
-                <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{selectedBooking.serviceName}</span>
+                <strong style={{ color: 'var(--text-main)' }}>{selectedBooking.serviceName}</strong>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Category:</span>
-                <span style={{ color: 'var(--text-main)' }}>{selectedBooking.categoryName}</span>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Scheduled Date & Time:</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Scheduled Time:</span>
                 <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>{selectedBooking.bookingDate} at {formatLocalTime(selectedBooking.startTime)}</span>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
                 <span style={{ color: 'var(--text-muted)' }}>{selectedBooking.dropAddress ? 'Pickup Location:' : 'Service Address:'}</span>
-                <span style={{ color: 'var(--text-main)', textAlign: 'right', maxWidth: '250px' }}>
+                <span style={{ color: 'var(--text-main)', textAlign: 'right', maxWidth: '240px' }}>
                   {selectedBooking.address}, {selectedBooking.city} - {selectedBooking.pincode}
                 </span>
               </div>
 
               {selectedBooking.dropAddress && (
                 <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
-                    <span style={{ color: '#F97316', fontWeight: 600 }}>Drop-off Destination:</span>
-                    <span style={{ color: 'var(--text-main)', textAlign: 'right', maxWidth: '250px', fontWeight: 500 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Drop-off Destination:</span>
+                    <span style={{ color: 'var(--text-main)', textAlign: 'right', maxWidth: '240px' }}>
                       {selectedBooking.dropAddress}, {selectedBooking.dropCity} - {selectedBooking.dropPincode}
                     </span>
                   </div>
 
                   {selectedBooking.distanceKm && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>Est. Transit Distance:</span>
-                      <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{selectedBooking.distanceKm} KM</span>
-                    </div>
-                  )}
-
-                  {selectedBooking.packageWeightKg && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>Package Weight:</span>
-                      <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{selectedBooking.packageWeightKg} KG</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Transit Distance:</span>
+                      <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{selectedBooking.distanceKm} KM</span>
                     </div>
                   )}
                 </>
               )}
 
-              {selectedBooking.providerId ? (
-                <div style={{ background: 'var(--bg-page)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)', marginTop: '0.5rem' }}>
-                  <h4 style={{ color: 'var(--primary)', fontSize: '0.9rem', marginBottom: '0.25rem' }}>
-                    {selectedBooking.dropAddress ? 'Assigned Driver & Vehicle' : 'Assigned Provider Details'}
-                  </h4>
-                  <p style={{ color: 'var(--text-main)', fontWeight: 600, fontSize: '0.95rem' }}>{selectedBooking.providerName}</p>
-                  {selectedBooking.vehicleRegistrationNumber && (
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.2rem' }}>
-                      Vehicle Plate: <strong style={{ color: 'var(--text-main)' }}>{selectedBooking.vehicleRegistrationNumber}</strong> {selectedBooking.vehicleModel ? `(${selectedBooking.vehicleModel})` : ''}
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <div style={{ background: 'rgba(245, 158, 11, 0.12)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(245, 158, 11, 0.3)', marginTop: '0.5rem' }}>
-                  <h4 style={{ color: '#D97706', fontSize: '0.9rem', marginBottom: '0.25rem' }}>
-                    {selectedBooking.dropAddress ? 'Awaiting Driver Assignment' : 'Awaiting Service Provider Assignment'}
-                  </h4>
-                  <p style={{ color: 'var(--text-main)', fontSize: '0.85rem' }}>
+              {/* Provider Assignment Box */}
+              <div style={{ background: 'var(--bg-subtle)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', marginTop: '0.25rem' }}>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.6875rem', textTransform: 'uppercase', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>
+                  {selectedBooking.dropAddress ? 'Assigned Driver & Vehicle' : 'Assigned Service Expert'}
+                </span>
+                {selectedBooking.providerId ? (
+                  <div>
+                    <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{selectedBooking.providerName}</div>
+                    {selectedBooking.vehicleRegistrationNumber && (
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
+                        Vehicle: <strong>{selectedBooking.vehicleRegistrationNumber}</strong> {selectedBooking.vehicleModel ? `(${selectedBooking.vehicleModel})` : ''}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div style={{ color: 'var(--warning)', fontSize: '0.75rem' }}>
                     {selectedBooking.dropAddress
-                      ? 'Matching with a nearby verified driver in your city.'
-                      : 'Matching with a nearby verified service expert in your city.'}
-                  </p>
-                </div>
-              )}
+                      ? 'Matching nearby available driver in your city.'
+                      : 'Matching verified service expert in your city.'}
+                  </div>
+                )}
+              </div>
 
               {selectedBooking.notes && (
-                <div style={{ marginTop: '0.5rem' }}>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '0.25rem' }}>Your Notes:</p>
-                  <p style={{ color: 'var(--text-main)', fontSize: '0.9rem', background: 'var(--bg-page)', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)' }}>
+                <div style={{ marginTop: '0.25rem' }}>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Special Instructions:</span>
+                  <p style={{ color: 'var(--text-main)', background: 'var(--bg-subtle)', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', marginTop: '0.2rem' }}>
                     "{selectedBooking.notes}"
                   </p>
                 </div>
               )}
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem' }}>
               {selectedBooking.paymentStatus === 'PENDING' && selectedBooking.paymentMethod !== 'AFTER_SERVICE' && (
                 <button
                   onClick={() => {
+                    const b = selectedBooking;
                     setSelectedBooking(null);
-                    handlePayNow(selectedBooking);
+                    handlePayNow(b);
                   }}
-                  className="btn btn-primary"
+                  className="btn btn-primary btn-sm"
                   style={{ flex: 1 }}
                 >
-                  Pay ₹{selectedBooking.finalAmount}
+                  Pay ₹{selectedBooking.finalAmount} Now
                 </button>
               )}
               <button
                 onClick={() => setSelectedBooking(null)}
-                className="btn btn-secondary"
+                className="btn btn-secondary btn-sm"
                 style={{ flex: 1 }}
               >
                 Close
@@ -433,58 +429,67 @@ export default function CustomerDashboard() {
         </div>
       )}
 
-      {/* Rating Modal Overlay */}
+      {/* Rating Modal */}
       {ratingModalData && (
         <div className="modal-overlay" onClick={() => setRatingModalData(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
-            <h3 style={{ fontSize: '1.4rem', color: 'var(--text-main)', marginBottom: '0.5rem' }}>Rate Provider</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-              How was your experience with {ratingModalData.providerName || 'the provider'}?
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '380px' }}>
+            <div className="modal-header">
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>Rate Service Experience</h3>
+              <button onClick={() => setRatingModalData(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                <X size={16} />
+              </button>
+            </div>
+
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', marginBottom: '1rem' }}>
+              How was your experience with {ratingModalData.providerName || 'the provider'} for {ratingModalData.serviceName}?
             </p>
 
-            <div className="form-group">
-              <label className="form-label" style={{ textAlign: 'center', display: 'block', fontSize: '1.1rem' }}>Rating (1-5 Stars)</label>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', margin: '1rem 0' }}>
+            <div className="form-group" style={{ textAlign: 'center' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '0.4rem', margin: '0.5rem 0 1rem 0' }}>
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <span
+                  <button
                     key={star}
+                    type="button"
                     onClick={() => setRatingValue(star)}
                     style={{
-                      fontSize: '2rem',
+                      background: 'transparent',
+                      border: 'none',
                       cursor: 'pointer',
-                      color: ratingValue >= star ? 'var(--amber)' : 'var(--border-light)',
-                      transition: 'color 0.2s'
+                      fontSize: '1.5rem',
+                      color: ratingValue >= star ? '#D97706' : 'var(--border-strong)',
+                      padding: '0.2rem'
                     }}
                   >
                     ★
-                  </span>
+                  </button>
                 ))}
               </div>
             </div>
 
             <div className="form-group">
-              <label className="form-label">Review (Optional)</label>
+              <label className="form-label">Review / Feedback (Optional)</label>
               <textarea
                 className="form-control"
-                placeholder="Share your experience..."
+                placeholder="Describe the quality of work, punctuality, and professionalism..."
                 rows="3"
                 value={reviewText}
                 onChange={(e) => setReviewText(e.target.value)}
+                style={{ resize: 'none' }}
               />
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.25rem' }}>
               <button
                 onClick={handleRateSubmit}
-                className="btn btn-primary"
-                style={{ flex: 1, background: 'var(--amber)', color: '#000', borderColor: 'var(--amber)' }}
+                className="btn btn-primary btn-sm"
+                style={{ flex: 1 }}
                 disabled={submittingRating}
               >
-                {submittingRating ? 'Submitting...' : 'Submit Rating'}
+                {submittingRating ? 'Submitting...' : 'Submit Feedback'}
               </button>
               <button
                 onClick={() => setRatingModalData(null)}
-                className="btn btn-secondary"
+                className="btn btn-secondary btn-sm"
                 style={{ flex: 1 }}
               >
                 Cancel

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Search, MapPin, Navigation } from 'lucide-react';
+import { Search, MapPin, Navigation, Check } from 'lucide-react';
 
 // Fix Leaflet's default icon path issues in React
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
@@ -21,7 +21,6 @@ const DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-// Component to recenter map when location changes
 function RecenterAutomatically({ lat, lng }) {
   const map = useMap();
   useEffect(() => {
@@ -30,8 +29,10 @@ function RecenterAutomatically({ lat, lng }) {
   return null;
 }
 
-export default function LocationPicker({ onLocationConfirm }) {
-  const [position, setPosition] = useState({ lat: 22.7196, lng: 75.8577 }); // Default: Indore
+export default function LocationPicker({ onLocationConfirm, onLocationSelect, initialCoords }) {
+  const [position, setPosition] = useState(
+    initialCoords ? { lat: initialCoords.latitude || 22.7196, lng: initialCoords.longitude || 75.8577 } : { lat: 22.7196, lng: 75.8577 }
+  );
   const [address, setAddress] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
@@ -39,17 +40,19 @@ export default function LocationPicker({ onLocationConfirm }) {
   
   const markerRef = useRef(null);
 
-  // Reverse geocode
   const fetchAddress = async (lat, lng) => {
     try {
       const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`);
       const data = await response.json();
       if (data && data.display_name) {
         setAddress(data.display_name);
+        if (onLocationSelect) {
+          onLocationSelect({ latitude: lat, longitude: lng }, data.address || { display_name: data.display_name });
+        }
       }
     } catch (error) {
       console.error('Error reverse geocoding:', error);
-      setErrorMsg('Unable to fetch address for this location.');
+      setErrorMsg('Unable to fetch address for this coordinate location.');
     }
   };
 
@@ -70,8 +73,8 @@ export default function LocationPicker({ onLocationConfirm }) {
         fetchAddress(lat, lng);
         setLoading(false);
       },
-      (err) => {
-        setErrorMsg('Unable to retrieve your location. Please ensure location permissions are granted.');
+      () => {
+        setErrorMsg('Unable to retrieve location. Please check browser permissions.');
         setLoading(false);
       }
     );
@@ -91,12 +94,15 @@ export default function LocationPicker({ onLocationConfirm }) {
         const lng = parseFloat(data[0].lon);
         setPosition({ lat, lng });
         setAddress(data[0].display_name);
+        if (onLocationSelect) {
+          onLocationSelect({ latitude: lat, longitude: lng }, { display_name: data[0].display_name });
+        }
       } else {
-        setErrorMsg('Location not found. Try a different search term.');
+        setErrorMsg('Location not found. Please try another search term.');
       }
     } catch (error) {
       console.error('Search error:', error);
-      setErrorMsg('Search failed. Please try again later.');
+      setErrorMsg('Search failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -111,7 +117,6 @@ export default function LocationPicker({ onLocationConfirm }) {
     }
   };
 
-  // Click map to set pin
   const MapEvents = () => {
     useMapEvents({
       click(e) {
@@ -123,64 +128,64 @@ export default function LocationPicker({ onLocationConfirm }) {
   };
 
   const handleConfirm = () => {
-    onLocationConfirm({
-      lat: position.lat,
-      lng: position.lng,
-      address: address
-    });
+    if (onLocationConfirm) {
+      onLocationConfirm({
+        lat: position.lat,
+        lng: position.lng,
+        address: address
+      });
+    }
   };
 
   return (
-    <div className="location-picker premium-card" style={{ padding: '1.5rem', marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-      <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <MapPin className="w-5 h-5" /> Select Service Location
-      </h3>
+    <div className="panel" style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h4 style={{ fontSize: '0.875rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem', margin: 0, color: 'var(--text-main)' }}>
+          <MapPin size={15} color="var(--primary)" />
+          <span>Interactive Location Pin</span>
+        </h4>
+        <button 
+          type="button"
+          onClick={handleGetCurrentLocation} 
+          className="btn btn-secondary btn-sm" 
+          style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem' }}
+          disabled={loading}
+        >
+          <Navigation size={12} />
+          <span>Use GPS Location</span>
+        </button>
+      </div>
       
       {errorMsg && (
-        <div style={{ padding: '0.75rem', background: '#fee2e2', color: '#b91c1c', borderRadius: 'var(--radius-sm)', fontSize: '0.875rem' }}>
+        <div style={{ padding: '0.5rem', background: 'var(--error-bg)', border: '1px solid var(--error-border)', color: 'var(--error)', borderRadius: 'var(--radius-xs)', fontSize: '0.75rem' }}>
           {errorMsg}
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+      {/* Search Input */}
+      <form onSubmit={handleSearch} style={{ display: 'flex', gap: '0.35rem' }}>
+        <input 
+          type="text" 
+          placeholder="Search street, landmark, area..." 
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="form-control"
+          style={{ fontSize: '0.8125rem', padding: '0.4rem 0.65rem' }}
+        />
         <button 
-          onClick={handleGetCurrentLocation} 
-          className="btn btn-secondary" 
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: '1', minWidth: '200px' }}
+          type="submit" 
+          className="btn btn-primary btn-sm"
           disabled={loading}
         >
-          <Navigation className="w-4 h-4" /> Use My Current Location
+          <Search size={14} />
         </button>
-        
-        <form onSubmit={handleSearch} style={{ display: 'flex', flex: '2', minWidth: '250px' }}>
-          <input 
-            type="text" 
-            placeholder="Search your location (Area, City, Pincode)" 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ 
-              flex: 1, 
-              padding: '0.75rem 1rem', 
-              border: '1px solid var(--border)', 
-              borderRadius: 'var(--radius-sm) 0 0 var(--radius-sm)',
-              outline: 'none'
-            }}
-          />
-          <button 
-            type="submit" 
-            className="btn btn-primary"
-            style={{ borderRadius: '0 var(--radius-sm) var(--radius-sm) 0' }}
-            disabled={loading}
-          >
-            <Search className="w-4 h-4" />
-          </button>
-        </form>
-      </div>
+      </form>
 
-      <div style={{ height: '300px', borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--border)', zIndex: 0 }}>
+      {/* Map Canvas */}
+      <div style={{ height: '220px', borderRadius: 'var(--radius-sm)', overflow: 'hidden', border: '1px solid var(--border-light)', zIndex: 0 }}>
         <MapContainer center={[position.lat, position.lng]} zoom={13} style={{ height: '100%', width: '100%' }}>
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution='&copy; OpenStreetMap'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <Marker 
@@ -196,24 +201,24 @@ export default function LocationPicker({ onLocationConfirm }) {
         </MapContainer>
       </div>
 
-      <div style={{ background: 'var(--surface-50)', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
-        <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Selected Location</div>
-        <div style={{ fontWeight: 600, color: 'var(--text-main)', marginBottom: '0.5rem' }}>
-          {address || 'Drag the pin or search to set address'}
-        </div>
-        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          Lat: {position.lat.toFixed(6)}, Lng: {position.lng.toFixed(6)}
+      <div style={{ background: 'var(--bg-subtle)', padding: '0.65rem 0.75rem', borderRadius: 'var(--radius-xs)', border: '1px solid var(--border-light)', fontSize: '0.75rem' }}>
+        <span style={{ color: 'var(--text-muted)', display: 'block', fontWeight: 600 }}>Resolved Address:</span>
+        <div style={{ color: 'var(--text-main)', marginTop: '0.15rem' }}>
+          {address || 'Click map or drag the pin to resolve address'}
         </div>
       </div>
 
-      <button 
-        className="btn btn-primary" 
-        style={{ width: '100%', padding: '1rem', fontSize: '1.1rem' }}
-        onClick={handleConfirm}
-        disabled={!address}
-      >
-        Confirm Location
-      </button>
+      {onLocationConfirm && (
+        <button 
+          type="button"
+          className="btn btn-primary btn-sm" 
+          onClick={handleConfirm}
+          disabled={!address}
+        >
+          <Check size={14} />
+          <span>Confirm Pin Location</span>
+        </button>
+      )}
     </div>
   );
 }

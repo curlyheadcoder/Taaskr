@@ -4,7 +4,10 @@ import { api } from '../services/api';
 import { formatLocalTime } from '../utils/time';
 import confetti from 'canvas-confetti';
 import LocationPicker from '../components/LocationPicker';
-import { Truck, MapPin, Package, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { 
+  Truck, MapPin, Package, ArrowRight, ShieldCheck, CheckCircle2, 
+  CreditCard, Banknote, Calendar, Clock, Navigation, Check, Lock, ChevronRight
+} from 'lucide-react';
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -130,14 +133,13 @@ export default function BookingFlow() {
       }
 
       const booking = await api.bookings.create(payload);
-      
       setNewBooking(booking);
 
       if (paymentMethod === 'after_service') {
         confetti({
-          particleCount: 150,
-          spread: 80,
-          origin: { y: 0.5 }
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
         });
         setCompleted(true);
         setLoading(false);
@@ -146,7 +148,7 @@ export default function BookingFlow() {
 
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded) {
-        throw new Error('Failed to load Razorpay SDK. Please check your internet connection.');
+        throw new Error('Failed to load payment gateway SDK. Please check your network connection.');
       }
 
       const order = await api.payments.createOrder(booking.id);
@@ -176,9 +178,9 @@ export default function BookingFlow() {
             });
 
             confetti({
-              particleCount: 150,
-              spread: 80,
-              origin: { y: 0.5 }
+              particleCount: 100,
+              spread: 70,
+              origin: { y: 0.6 }
             });
             
             const updatedBooking = await api.bookings.getById(booking.id);
@@ -194,7 +196,7 @@ export default function BookingFlow() {
         modal: {
           ondismiss: function () {
             setLoading(false);
-            alert('Payment window closed. You can complete the payment later from your Dashboard.');
+            alert('Payment window closed. You can complete the payment anytime from your Bookings dashboard.');
             navigate('/bookings');
           }
         }
@@ -214,22 +216,16 @@ export default function BookingFlow() {
     }
   };
 
-  const handleLocationConfirm = (loc) => {
-    setCoordinates({ latitude: loc.lat, longitude: loc.lng });
-    if (loc.address) {
-      setAddress(loc.address);
-    }
-    setShowMap(false);
-  };
-
   if (!serviceId) {
     return (
-      <div className="app-container" style={{ textAlign: 'center', padding: '4rem 1.5rem' }}>
-        <div className="premium-card" style={{ padding: '3rem 2rem', display: 'inline-block' }}>
-          <span style={{ fontSize: '3rem' }}>🛍️</span>
-          <h2 style={{ color: 'var(--text-main)', marginTop: '1rem' }}>No Active Booking Session</h2>
-          <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem' }}>Please select a service from our catalog to book.</p>
-          <Link to="/" className="btn btn-primary" style={{ marginTop: '1.5rem' }}>Browse Catalog</Link>
+      <div className="app-container" style={{ padding: '4rem 1rem' }}>
+        <div className="empty-state">
+          <div className="empty-state-icon">
+            <Package size={22} />
+          </div>
+          <h2 className="empty-state-title">No Active Booking Session</h2>
+          <p className="empty-state-description">Please choose a service from our catalog to start checkout.</p>
+          <Link to="/" className="btn btn-primary btn-sm">Browse Catalog</Link>
         </div>
       </div>
     );
@@ -237,35 +233,42 @@ export default function BookingFlow() {
 
   if (completed && newBooking) {
     return (
-      <div className="app-container animate-fade-in" style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center', padding: '3rem 1.5rem' }}>
-        <div className="premium-card" style={{ padding: '3.5rem 2rem' }}>
-          <span style={{
-            fontSize: '3rem',
-            background: '#D1FAE5',
-            padding: '1.25rem',
+      <div className="app-container animate-fade-in" style={{ maxWidth: '580px', margin: '0 auto', padding: '3rem 1rem' }}>
+        <div className="panel" style={{ padding: '2rem', textAlign: 'center' }}>
+          <div style={{
+            width: '48px',
+            height: '48px',
             borderRadius: '50%',
-            color: '#10B981',
-            display: 'inline-flex',
+            backgroundColor: 'var(--success-bg)',
+            color: 'var(--success)',
+            border: '1px solid var(--success-border)',
+            display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            marginBottom: '1.5rem'
-          }}>🎉</span>
+            margin: '0 auto 1.25rem auto'
+          }}>
+            <CheckCircle2 size={26} />
+          </div>
           
-          <h1 style={{ color: 'var(--text-main)', fontSize: '2.2rem', marginBottom: '0.5rem' }}>Booking Confirmed!</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '1rem', marginBottom: '2rem' }}>
-            Your booking request has been placed successfully. {newBooking.status === 'PENDING' ? (isVehicle ? 'We are matching you with a verified driver shortly.' : 'We are matching you with a verified service expert shortly.') : (isVehicle ? 'A driver partner has been assigned.' : 'A service professional has been assigned.')}
+          <h1 style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.35rem' }}>
+            Booking Confirmed
+          </h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', marginBottom: '1.5rem', lineHeight: 1.45 }}>
+            Your order #{String(newBooking.id).slice(-6)} has been registered. {newBooking.status === 'PENDING' ? (isVehicle ? 'Matching nearby available driver for dispatch.' : 'Dispatching verified service expert.') : (isVehicle ? 'Driver assigned to trip.' : 'Service expert assigned.')}
           </p>
 
           <div style={{
-            padding: '1.5rem',
+            padding: '1rem',
             textAlign: 'left',
-            marginBottom: '2rem',
-            background: 'var(--bg-page)',
+            marginBottom: '1.5rem',
+            background: 'var(--bg-subtle)',
             border: '1px solid var(--border-light)',
-            borderRadius: 'var(--radius-md)'
+            borderRadius: 'var(--radius-sm)'
           }}>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '0.75rem', fontWeight: 600 }}>Booking details</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.95rem' }}>
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.5rem', fontWeight: 600, display: 'block' }}>
+              Order Details
+            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.8125rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Service:</span>
                 <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{serviceName}</span>
@@ -274,48 +277,48 @@ export default function BookingFlow() {
                 <>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span style={{ color: 'var(--text-muted)' }}>Pickup:</span>
-                    <span style={{ color: 'var(--emerald)', fontWeight: 600 }}>{address}, {city}</span>
+                    <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{address}, {city}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span style={{ color: 'var(--text-muted)' }}>Drop-off:</span>
-                    <span style={{ color: '#F97316', fontWeight: 600 }}>{dropAddress || address}, {dropCity || city}</span>
+                    <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{dropAddress || address}, {dropCity || city}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Est. Distance:</span>
+                    <span style={{ color: 'var(--text-muted)' }}>Distance:</span>
                     <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{distanceKm} KM</span>
                   </div>
                 </>
               )}
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Assigned Partner:</span>
-                <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{newBooking.providerName || (isVehicle ? 'Assigning Nearby Driver...' : 'Assigning Service Expert...')}</span>
+                <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>
+                  {newBooking.providerName || (isVehicle ? 'Assigning nearby driver...' : 'Assigning service expert...')}
+                </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Scheduled Date:</span>
-                <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{bookingDate}</span>
+                <span style={{ color: 'var(--text-muted)' }}>Scheduled Time:</span>
+                <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{bookingDate} at {formatLocalTime(startTime)}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Time Slot:</span>
-                <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{formatLocalTime(startTime)}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-light)', paddingTop: '0.75rem', marginTop: '0.25rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Payment Status:</span>
-                <span className={`badge ${newBooking.paymentStatus === 'PAID' ? 'badge-completed' : 'badge-pending'}`} style={{ fontSize: '0.7rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.5rem', marginTop: '0.2rem' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Payment:</span>
+                <span className={`badge ${newBooking.paymentStatus === 'PAID' ? 'badge-completed' : 'badge-pending'}`}>
                   {newBooking.paymentStatus}
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>
-                  {newBooking.paymentStatus === 'PAID' ? 'Amount Paid:' : 'Amount to Pay:'}
-                </span>
-                <span style={{ color: 'var(--primary)', fontWeight: 800 }}>₹{newBooking.finalAmount}</span>
+                <span style={{ color: 'var(--text-muted)' }}>Amount:</span>
+                <span style={{ color: 'var(--text-main)', fontWeight: 700, fontFeatureSettings: 'tnum' }}>₹{newBooking.finalAmount}</span>
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            <Link to="/bookings" className="btn btn-primary" style={{ flex: 1 }}>Go to My Bookings</Link>
-            <Link to="/" className="btn btn-secondary" style={{ flex: 1 }}>Back to Catalog</Link>
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <Link to="/bookings" className="btn btn-primary btn-sm" style={{ flex: 1 }}>
+              View in My Bookings
+            </Link>
+            <Link to="/" className="btn btn-secondary btn-sm" style={{ flex: 1 }}>
+              Browse Catalog
+            </Link>
           </div>
         </div>
       </div>
@@ -323,24 +326,42 @@ export default function BookingFlow() {
   }
 
   return (
-    <div className="app-container animate-fade-in">
-      <h1 style={{ fontSize: '2rem', color: 'var(--text-main)', marginBottom: '2rem' }}>
-        {isVehicle ? 'Confirm Vehicle Trip & Details' : 'Confirm Booking & Address'}
-      </h1>
+    <div className="app-container animate-fade-in" style={{ paddingBottom: '3rem' }}>
+      {/* Breadcrumb Navigation */}
+      <nav style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
+        <Link to="/" style={{ color: 'var(--text-muted)' }}>Catalog</Link>
+        <ChevronRight size={13} />
+        <Link to={`/services/${serviceId}`} style={{ color: 'var(--text-muted)' }}>{serviceName}</Link>
+        <ChevronRight size={13} />
+        <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>Checkout</span>
+      </nav>
+
+      <div style={{ marginBottom: '1.5rem' }}>
+        <h1 style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--text-main)' }}>
+          {isVehicle ? 'Confirm Trip Address & Checkout' : 'Confirm Service Location & Checkout'}
+        </h1>
+        <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+          Review your booking location, preferred payment method, and service summary.
+        </p>
+      </div>
       
-      <div className="grid-cols-2" style={{ gap: '2rem', alignItems: 'flex-start' }}>
+      <div className="grid-cols-2" style={{ gap: '1.5rem', alignItems: 'flex-start' }}>
         {/* Left Side: Address Details Form */}
-        <form onSubmit={handleSubmit} className="premium-card" style={{ padding: '2.5rem' }}>
-          <h2 style={{ fontSize: '1.4rem', color: 'var(--primary)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            {isVehicle ? <Truck className="w-5 h-5" /> : null}
-            {isVehicle ? 'Trip Addresses' : 'Service Address'}
-          </h2>
+        <form onSubmit={handleSubmit} className="panel">
+          <div className="panel-header">
+            <h2 className="panel-title">
+              <MapPin size={16} color="var(--primary)" />
+              <span>{isVehicle ? 'Pickup & Trip Location' : 'Service Address'}</span>
+            </h2>
+          </div>
           
           <div className="form-group">
-            <label className="form-label">{isVehicle ? '📍 Pickup Street Address *' : 'Street Address *'}</label>
+            <label className="form-label">
+              <span>{isVehicle ? 'Pickup Street Address *' : 'Street Address *'}</span>
+            </label>
             <input
               type="text"
-              placeholder="House/Flat No, Landmark, Street"
+              placeholder="Flat/House No, Building, Landmark, Street"
               className="form-control"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
@@ -349,7 +370,7 @@ export default function BookingFlow() {
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">City *</label>
               <input
@@ -378,13 +399,17 @@ export default function BookingFlow() {
           </div>
 
           {isVehicle && dropAddress && (
-            <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)', marginBottom: '1.25rem' }}>
-              <span style={{ fontSize: '0.8rem', color: '#F97316', fontWeight: 700, textTransform: 'uppercase' }}>🏁 Destination Drop-off</span>
-              <p style={{ margin: '0.25rem 0', fontWeight: 600, color: 'var(--text-main)' }}>{dropAddress}, {dropCity} ({dropPincode})</p>
+            <div style={{ padding: '0.75rem', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', marginBottom: '1rem' }}>
+              <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', display: 'block' }}>
+                Drop-off Destination
+              </span>
+              <p style={{ margin: '0.2rem 0', fontWeight: 600, color: 'var(--text-main)', fontSize: '0.8125rem' }}>
+                {dropAddress}, {dropCity} ({dropPincode})
+              </p>
               {packageWeightKg && (
-                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                   Cargo: {packageWeightKg} KG {packageDescription ? `• ${packageDescription}` : ''}
-                </p>
+                </span>
               )}
             </div>
           )}
@@ -393,52 +418,71 @@ export default function BookingFlow() {
             <label className="form-label">Special Instructions (Optional)</label>
             <textarea
               rows="2"
-              placeholder="e.g. Landmark, access notes, or specific requirements..."
+              placeholder="Gate code, landmark notes, or special handling instructions..."
               className="form-control"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               disabled={loading}
+              style={{ resize: 'none' }}
             />
           </div>
 
           {/* Payment Method Selection */}
-          <div style={{ marginTop: '1.5rem', marginBottom: '2rem' }}>
-            <label className="form-label" style={{ fontWeight: 600, marginBottom: '0.75rem' }}>Payment Method</label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div style={{ marginTop: '1.25rem', marginBottom: '1.5rem' }}>
+            <label className="form-label" style={{ marginBottom: '0.5rem' }}>Payment Method</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
               <button
                 type="button"
                 onClick={() => setPaymentMethod('online')}
                 style={{
-                  padding: '1rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: paymentMethod === 'online' ? '2px solid var(--primary)' : '1px solid var(--border-light)',
-                  background: paymentMethod === 'online' ? 'rgba(37, 99, 235, 0.08)' : 'var(--bg-card)',
+                  padding: '0.75rem',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid',
+                  borderColor: paymentMethod === 'online' ? 'var(--primary)' : 'var(--border-light)',
+                  backgroundColor: paymentMethod === 'online' ? 'var(--primary-subtle)' : 'var(--bg-card)',
                   color: 'var(--text-main)',
                   cursor: 'pointer',
-                  textAlign: 'left'
+                  textAlign: 'left',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.2rem',
+                  transition: 'var(--transition-fast)'
                 }}
               >
-                <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>💳 Online Payment</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>UPI, Cards, NetBanking (Razorpay)</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600, fontSize: '0.8125rem' }}>
+                  <CreditCard size={15} color="var(--primary)" />
+                  <span>Online Payment</span>
+                </div>
+                <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
+                  Instant UPI, Cards & NetBanking
+                </span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setPaymentMethod('after_service')}
                 style={{
-                  padding: '1rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: paymentMethod === 'after_service' ? '2px solid var(--primary)' : '1px solid var(--border-light)',
-                  background: paymentMethod === 'after_service' ? 'rgba(37, 99, 235, 0.08)' : 'var(--bg-card)',
+                  padding: '0.75rem',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid',
+                  borderColor: paymentMethod === 'after_service' ? 'var(--primary)' : 'var(--border-light)',
+                  backgroundColor: paymentMethod === 'after_service' ? 'var(--primary-subtle)' : 'var(--bg-card)',
                   color: 'var(--text-main)',
                   cursor: 'pointer',
-                  textAlign: 'left'
+                  textAlign: 'left',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.2rem',
+                  transition: 'var(--transition-fast)'
                 }}
               >
-                <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>💵 {isVehicle ? 'Cash After Trip' : 'Cash After Service'}</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-                  {isVehicle ? 'Pay driver directly after completion' : 'Pay service expert after job completion'}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600, fontSize: '0.8125rem' }}>
+                  <Banknote size={15} color="var(--primary)" />
+                  <span>{isVehicle ? 'Cash on Trip' : 'Cash on Service'}</span>
                 </div>
+                <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
+                  Pay expert directly upon completion
+                </span>
               </button>
             </div>
           </div>
@@ -446,7 +490,7 @@ export default function BookingFlow() {
           <button
             type="submit"
             className="btn btn-primary"
-            style={{ width: '100%', padding: '1rem', fontSize: '1.1rem' }}
+            style={{ width: '100%' }}
             disabled={loading}
           >
             {loading ? 'Processing Booking...' : paymentMethod === 'online' ? `Pay & Confirm (₹${price})` : `Place Booking (₹${price})`}
@@ -454,50 +498,62 @@ export default function BookingFlow() {
         </form>
 
         {/* Right Side: Order Summary */}
-        <div className="premium-card" style={{ padding: '2.5rem' }}>
-          <h2 style={{ fontSize: '1.4rem', color: 'var(--text-main)', marginBottom: '1.5rem' }}>Booking Summary</h2>
+        <div className="panel">
+          <div className="panel-header">
+            <h2 className="panel-title">
+              <Package size={16} color="var(--primary)" />
+              <span>Order Summary</span>
+            </h2>
+          </div>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '1.25rem', borderBottom: '1px solid var(--border-light)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.875rem', borderBottom: '1px solid var(--border-subtle)' }}>
               <div>
-                <h3 style={{ fontSize: '1.1rem', color: 'var(--text-main)', margin: 0 }}>{serviceName}</h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.2rem' }}>
-                  {isVehicle ? `Intra-city transport (${distanceKm || '5.0'} KM)` : 'Home Service'}
-                </p>
+                <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>{serviceName}</h3>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                  {isVehicle ? `Freight transit (${distanceKm || '5.0'} KM)` : 'Home Service'}
+                </span>
               </div>
-              <span style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--primary)' }}>₹{price}</span>
+              <span style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', fontFeatureSettings: 'tnum' }}>
+                ₹{price}
+              </span>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.9rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.8125rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Date:</span>
-                <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{bookingDate}</span>
+                <span style={{ color: 'var(--text-muted)' }}>Scheduled Date:</span>
+                <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>{bookingDate}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Time Slot:</span>
-                <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{formatLocalTime(startTime)}</span>
+                <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>{formatLocalTime(startTime)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Dispatch Mode:</span>
-                <span style={{ color: 'var(--emerald)', fontWeight: 600 }}>
-                  {isVehicle ? '⚡ Nearby Live Driver Matching' : '⚡ Verified Local Pro Matching'}
+                <span style={{ color: 'var(--success)', fontWeight: 500 }}>
+                  {isVehicle ? 'Live Driver Auto-Match' : 'Verified Partner Dispatch'}
                 </span>
               </div>
             </div>
 
-            <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '1.25rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.875rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', fontSize: '0.8125rem' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Subtotal:</span>
-                <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>₹{price}</span>
+                <span style={{ color: 'var(--text-main)', fontWeight: 500, fontFeatureSettings: 'tnum' }}>₹{price}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Platform & Booking Fee:</span>
-                <span style={{ color: 'var(--emerald)', fontWeight: 600 }}>FREE</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', fontSize: '0.8125rem' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Platform Fee:</span>
+                <span style={{ color: 'var(--success)', fontWeight: 600 }}>FREE</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px dashed var(--border-light)' }}>
-                <span style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '1.1rem' }}>Total Amount:</span>
-                <span style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '1.3rem' }}>₹{price}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px dashed var(--border-light)' }}>
+                <span style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '0.9375rem' }}>Total Amount:</span>
+                <span style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '1.2rem', fontFeatureSettings: 'tnum' }}>₹{price}</span>
               </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+              <Lock size={12} />
+              <span>256-bit encrypted checkout with verified partner guarantee.</span>
             </div>
           </div>
         </div>

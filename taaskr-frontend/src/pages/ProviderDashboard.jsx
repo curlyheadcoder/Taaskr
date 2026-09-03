@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { formatLocalTime } from '../utils/time';
-import { Truck, MapPin, Package, Navigation, CheckCircle2, ShieldCheck, Clock, Check, X, AlertCircle } from 'lucide-react';
+import { 
+  Truck, MapPin, Package, Navigation, CheckCircle2, ShieldCheck, 
+  Clock, Check, X, AlertCircle, Plus, Trash2, Edit2, Phone, Mail, 
+  Star, Briefcase, Calendar, CheckSquare, Settings, User, RefreshCw,
+  DollarSign, ExternalLink, Power
+} from 'lucide-react';
 
 export default function ProviderDashboard() {
   const [userProfile, setUserProfile] = useState(null);
@@ -11,6 +16,9 @@ export default function ProviderDashboard() {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
   const [notification, setNotification] = useState(null);
+
+  // Active Tab state for desktop/mobile views
+  const [activeTab, setActiveTab] = useState('tasks');
 
   // Categories state
   const [availableCategories, setAvailableCategories] = useState([]);
@@ -49,13 +57,13 @@ export default function ProviderDashboard() {
 
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
+    setTimeout(() => setNotification(null), 4000);
   };
 
   const loadProviderDashboard = async () => {
     setLoading(true);
     setErrorMessage('');
     try {
-      // 1. Get current provider details
       const user = await api.provider.getProfile();
       setUserProfile(user);
       setEditName(user.name || '');
@@ -65,27 +73,21 @@ export default function ProviderDashboard() {
       setEditPincode(user.pincode || '');
       setEditBio(user.bio || '');
 
-      // 2. Load availability slots
       const slots = await api.provider.getAvailability();
-      setAvailability(slots);
+      setAvailability(slots || []);
 
-      // 3. Load assigned bookings
       const bookingsList = await api.provider.getBookings();
-      setAssignedBookings(bookingsList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+      setAssignedBookings((bookingsList || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
 
-      // 4. Load available tasks
       const tasksList = await api.provider.getAvailableTasks();
-      setAvailableTasks(tasksList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+      setAvailableTasks((tasksList || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
 
-      // 5. Load selected categories
       const myCats = await api.provider.getCategories();
-      setSelectedCategoryIds(myCats.map(c => c.id));
+      setSelectedCategoryIds((myCats || []).map(c => c.id));
 
-      // 6. Load all active categories
       const allCats = await api.catalog.getCategories();
-      setAvailableCategories(allCats.filter(c => c.active));
+      setAvailableCategories((allCats || []).filter(c => c.active !== false));
 
-      // 7. Load vehicle fleet
       try {
         const vehicles = await api.vehicle.getMyVehicles();
         if (Array.isArray(vehicles)) {
@@ -120,9 +122,9 @@ export default function ProviderDashboard() {
         startTime: availStart,
         endTime: availEnd
       });
-      showNotification('Availability slot added.');
+      showNotification('Availability slot added successfully.');
       const slots = await api.provider.getAvailability();
-      setAvailability(slots);
+      setAvailability(slots || []);
     } catch (err) {
       showNotification(`Action failed: ${err.message}`, 'error');
     }
@@ -152,7 +154,7 @@ export default function ProviderDashboard() {
   const handleClaimTask = async (bookingId) => {
     try {
       await api.provider.claimTask(bookingId);
-      showNotification('Task claimed successfully! It is now in your assigned bookings.');
+      showNotification('Task claimed successfully. It is now listed under My Bookings.');
       loadProviderDashboard();
     } catch (err) {
       showNotification(`Claim failed: ${err.message}`, 'error');
@@ -181,7 +183,7 @@ export default function ProviderDashboard() {
   };
 
   const handleCollectCash = async (bookingId) => {
-    if (!window.confirm('Confirm that you have collected cash payment from the customer?')) return;
+    if (!window.confirm('Confirm that you have collected the cash payment from the customer?')) return;
     try {
       await api.provider.markAfterServicePaymentReceived(bookingId);
       showNotification('Cash payment recorded successfully.');
@@ -293,10 +295,10 @@ export default function ProviderDashboard() {
       });
       if (editingVehicleId) {
         setMyVehicles(prev => prev.map(v => v.id === editingVehicleId ? saved : v));
-        showNotification('Vehicle details updated successfully!');
+        showNotification('Vehicle details updated successfully.');
       } else {
         setMyVehicles(prev => [...prev, saved]);
-        showNotification('🚚 New vehicle registered to your fleet!');
+        showNotification('New vehicle registered to fleet.');
       }
       setShowVehicleForm(false);
       setEditingVehicleId(null);
@@ -323,17 +325,17 @@ export default function ProviderDashboard() {
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '6rem 0', color: 'var(--text-muted)' }}>
-        <div style={{
-          display: 'inline-block',
-          width: '32px',
-          height: '32px',
-          border: '3px solid var(--border-light)',
-          borderTopColor: 'var(--primary)',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite'
-        }} />
-        <p style={{ marginTop: '1.25rem', fontWeight: 500 }}>Loading Partner Dashboard...</p>
+      <div className="enterprise-layout">
+        <aside className="enterprise-sidebar">
+          <div className="skeleton" style={{ width: '100%', height: '40px', marginBottom: '1rem' }} />
+          <div className="skeleton" style={{ width: '100%', height: '30px' }} />
+        </aside>
+        <main className="enterprise-main">
+          <div className="panel" style={{ height: '300px', display: 'flex', flexDirection: 'column', gap: '1rem', justifyContent: 'center', alignItems: 'center' }}>
+            <div className="skeleton" style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
+            <div className="skeleton" style={{ width: '180px', height: '16px' }} />
+          </div>
+        </main>
       </div>
     );
   }
@@ -345,719 +347,689 @@ export default function ProviderDashboard() {
   }) || (myVehicles && myVehicles.length > 0);
 
   return (
-    <div className="enterprise-layout animate-fade-in" style={{ paddingBottom: '4rem' }}>
+    <div className="enterprise-layout animate-fade-in">
       {/* Sidebar Navigation */}
       <aside className="enterprise-sidebar">
-        <div style={{ padding: '0.5rem 0.75rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div style={{ padding: '0.25rem 0.5rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
           <div style={{
-            width: '40px', height: '40px', borderRadius: 'var(--radius-md)',
-            background: 'var(--primary)', color: '#fff', display: 'flex',
-            alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.1rem'
+            width: '36px', height: '36px', borderRadius: 'var(--radius-sm)',
+            backgroundColor: 'var(--primary-subtle)', color: 'var(--primary)', display: 'flex',
+            alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.95rem'
           }}>
             {userProfile?.name?.charAt(0) || 'P'}
           </div>
           <div>
-            <h3 style={{ fontSize: '1rem', color: 'var(--text-main)', margin: 0 }}>{userProfile?.name || 'Partner'}</h3>
-            <span style={{ fontSize: '0.75rem', color: 'var(--emerald)', fontWeight: 600 }}>● Active Partner</span>
+            <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)', lineHeight: 1.1 }}>
+              {userProfile?.name || 'Partner'}
+            </div>
+            <span style={{ fontSize: '0.6875rem', color: 'var(--success)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <span className="badge-dot" style={{ backgroundColor: 'var(--success)' }} /> Active Partner
+            </span>
           </div>
         </div>
 
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-          <button className="sidebar-item active">
-            <span style={{ fontSize: '1.1rem' }}>📊</span> Overview
+        <nav className="enterprise-sidebar-nav">
+          <button 
+            className={`sidebar-item ${activeTab === 'tasks' ? 'active' : ''}`}
+            onClick={() => setActiveTab('tasks')}
+          >
+            <CheckSquare size={16} />
+            <span>Task Feed ({availableTasks.length})</span>
           </button>
-          <button className="sidebar-item" onClick={() => document.getElementById('tasks-section')?.scrollIntoView({ behavior: 'smooth' })}>
-            <span style={{ fontSize: '1.1rem' }}>⚡</span> Available Tasks
+
+          <button 
+            className={`sidebar-item ${activeTab === 'bookings' ? 'active' : ''}`}
+            onClick={() => setActiveTab('bookings')}
+          >
+            <Briefcase size={16} />
+            <span>My Bookings ({assignedBookings.length})</span>
           </button>
-          <button className="sidebar-item" onClick={() => document.getElementById('assigned-section')?.scrollIntoView({ behavior: 'smooth' })}>
-            <span style={{ fontSize: '1.1rem' }}>📋</span> My Bookings
-          </button>
+
           {isLogisticsPartner && (
-            <button className="sidebar-item" onClick={() => document.getElementById('vehicle-section')?.scrollIntoView({ behavior: 'smooth' })}>
-              <span style={{ fontSize: '1.1rem' }}>🚚</span> My Vehicle
+            <button 
+              className={`sidebar-item ${activeTab === 'fleet' ? 'active' : ''}`}
+              onClick={() => setActiveTab('fleet')}
+            >
+              <Truck size={16} />
+              <span>Fleet Manager ({myVehicles.length})</span>
             </button>
           )}
-          <button className="sidebar-item" onClick={() => document.getElementById('schedule-section')?.scrollIntoView({ behavior: 'smooth' })}>
-            <span style={{ fontSize: '1.1rem' }}>🕒</span> Schedule Slots
+
+          <button 
+            className={`sidebar-item ${activeTab === 'schedule' ? 'active' : ''}`}
+            onClick={() => setActiveTab('schedule')}
+          >
+            <Calendar size={16} />
+            <span>Availability Slots ({availability.length})</span>
+          </button>
+
+          <button 
+            className={`sidebar-item ${activeTab === 'profile' ? 'active' : ''}`}
+            onClick={() => setActiveTab('profile')}
+          >
+            <Settings size={16} />
+            <span>Profile & Services</span>
           </button>
         </nav>
       </aside>
 
-      {/* Main Content Area */}
+      {/* Main Operations Work Area */}
       <main className="enterprise-main">
+        {/* Toast Notification */}
         {notification && (
-          <div role="status" style={{
-            position: 'fixed', top: '5.5rem', right: '1.5rem', zIndex: 100,
-            display: 'flex', alignItems: 'center', gap: '0.75rem', maxWidth: '380px',
-            padding: '0.9rem 1rem', borderRadius: 'var(--radius-md)',
-            background: notification.type === 'error' ? '#FEF2F2' : '#ECFDF5',
-            color: notification.type === 'error' ? '#B91C1C' : '#047857',
-            border: `1px solid ${notification.type === 'error' ? '#FCA5A5' : '#6EE7B7'}`,
-            boxShadow: 'var(--shadow-lg)'
+          <div style={{
+            position: 'fixed', top: '4.5rem', right: '1.5rem', zIndex: 100,
+            display: 'flex', alignItems: 'center', gap: '0.5rem',
+            padding: '0.65rem 1rem', borderRadius: 'var(--radius-sm)',
+            backgroundColor: notification.type === 'error' ? 'var(--error-bg)' : 'var(--success-bg)',
+            color: notification.type === 'error' ? 'var(--error)' : 'var(--success)',
+            border: `1px solid ${notification.type === 'error' ? 'var(--error-border)' : 'var(--success-border)'}`,
+            boxShadow: 'var(--shadow-md)',
+            fontSize: '0.8125rem',
+            fontWeight: 500
           }}>
-            <span aria-hidden="true" style={{ fontSize: '1.1rem' }}>{notification.type === 'error' ? '⚠' : '✓'}</span>
-            <span style={{ flex: 1, fontWeight: 600 }}>{notification.message}</span>
+            <span>{notification.message}</span>
             <button
               onClick={() => setNotification(null)}
-              aria-label="Dismiss notification"
-              title="Dismiss"
-              style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1 }}
+              style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0 }}
             >
-              ×
+              <X size={14} />
             </button>
           </div>
         )}
+
         {errorMessage && (
           <div style={{
-            background: '#FEF2F2', border: '1px solid #FCA5A5', color: 'var(--error)',
-            padding: '1rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', fontSize: '0.95rem'
+            backgroundColor: 'var(--error-bg)', border: '1px solid var(--error-border)', color: 'var(--error)',
+            padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1.25rem', fontSize: '0.8125rem'
           }}>
-            ⚠️ {errorMessage}
+            {errorMessage}
           </div>
         )}
 
+        {/* Dashboard Header */}
         <div className="enterprise-header">
           <div>
-            <h1>Partner Dashboard</h1>
-            <p>Manage jobs, transport requests, live availability, and your commercial vehicle.</p>
+            <h1>Partner Console</h1>
+            <p>Live job dispatch, fleet status, and schedule management.</p>
+          </div>
+          <button onClick={loadProviderDashboard} className="btn btn-secondary btn-sm">
+            <RefreshCw size={13} />
+            <span>Refresh Data</span>
+          </button>
+        </div>
+
+        {/* Key Metrics Strip */}
+        <div className="grid-cols-4" style={{ marginBottom: '1.5rem' }}>
+          <div className="stat-card-modern">
+            <div className="stat-icon-container">
+              <Star size={18} color="#D97706" />
+            </div>
+            <div className="stat-details">
+              <h3>Rating</h3>
+              <p>{userProfile?.rating !== undefined ? userProfile.rating.toFixed(1) : '0.0'}</p>
+            </div>
+          </div>
+
+          <div className="stat-card-modern">
+            <div className="stat-icon-container">
+              <Briefcase size={18} color="var(--primary)" />
+            </div>
+            <div className="stat-details">
+              <h3>Total Jobs</h3>
+              <p>{userProfile?.totalJobs || 0}</p>
+            </div>
+          </div>
+
+          <div className="stat-card-modern">
+            <div className="stat-icon-container">
+              <Truck size={18} color="var(--primary)" />
+            </div>
+            <div className="stat-details">
+              <h3>Fleet Units</h3>
+              <p>{myVehicles.length}</p>
+            </div>
+          </div>
+
+          <div className="stat-card-modern">
+            <div className="stat-icon-container">
+              <Calendar size={18} color="var(--success)" />
+            </div>
+            <div className="stat-details">
+              <h3>Active Slots</h3>
+              <p>{availability.length}</p>
+            </div>
           </div>
         </div>
 
-        {userProfile && (
-          <section className="premium-card" style={{
-            marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between',
-            alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem'
-          }}>
-            <div>
-              <span className="badge badge-assigned" style={{ marginBottom: '0.5rem' }}>Active Partner Account</span>
-              <h1 style={{ color: 'var(--primary)', fontSize: '2.2rem' }}>{userProfile.name}</h1>
-              <p style={{ color: 'var(--text-main)', marginTop: '0.25rem', fontSize: '1rem', fontWeight: 500 }}>
-                ✉️ {userProfile.email} | 📞 {userProfile.phone || 'No phone added'}
-              </p>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>
-                📍 Service Area: {userProfile.city || 'Not specified'} (Pincode: {userProfile.pincode || 'Not specified'})
-              </p>
-              {myVehicles.length > 0 && (
-                <div style={{ marginTop: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(37,99,235,0.08)', padding: '0.4rem 0.8rem', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(37,99,235,0.2)' }}>
-                  <Truck className="w-4 h-4 text-blue-500" />
-                  <span style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 600 }}>
-                    Fleet: {myVehicles.length} {myVehicles.length === 1 ? 'Registered Vehicle' : 'Registered Vehicles'} ({myVehicles.map(v => v.modelName).join(', ')})
-                  </span>
-                </div>
-              )}
+        {/* ========================================================================= */}
+        {/* TAB 1: TASK FEED (Available Tasks)                                        */}
+        {/* ========================================================================= */}
+        {activeTab === 'tasks' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                Available Tasks in Your Area
+              </h2>
+              <span className="badge badge-pending">{availableTasks.length} Available</span>
             </div>
-            
-            <div style={{
-              display: 'flex', gap: '2.5rem', background: 'var(--bg-page)', padding: '1.5rem 2.5rem',
-              borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)', alignItems: 'center'
-            }}>
-              <div style={{ textAlign: 'center' }}>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Rating</span>
-                <strong style={{ color: 'var(--text-main)', fontSize: '1.8rem', display: 'block', marginTop: '0.25rem' }}>
-                  ⭐ {userProfile.rating !== undefined ? userProfile.rating.toFixed(1) : '0.0'}
-                </strong>
-              </div>
-              <div style={{ borderLeft: '1px solid var(--border-light)', height: '40px' }} />
-              <div style={{ textAlign: 'center' }}>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Experience</span>
-                <strong style={{ color: 'var(--text-main)', fontSize: '1.8rem', display: 'block', marginTop: '0.25rem' }}>
-                  {userProfile.experienceYears || 0} yrs
-                </strong>
-              </div>
-              <div style={{ borderLeft: '1px solid var(--border-light)', height: '40px' }} />
-              <div style={{ textAlign: 'center' }}>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Jobs</span>
-                <strong style={{ color: 'var(--text-main)', fontSize: '1.8rem', display: 'block', marginTop: '0.25rem' }}>
-                  {userProfile.totalJobs || 0}
-                </strong>
-              </div>
-            </div>
-          </section>
-        )}
 
-        <div className="grid-cols-3" style={{ gap: '2rem', alignItems: 'flex-start' }}>
-          {/* Left Column: Assigned Bookings & Available Tasks */}
-          <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '3rem' }}>
-            
-            {/* AVAILABLE TASKS SECTION */}
-            <div id="tasks-section" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ fontSize: '1.6rem', color: 'var(--secondary)' }}>Available Tasks (Claim Now)</h2>
-                <span className="badge badge-pending">{availableTasks.length} Available</span>
-              </div>
-
-              {availableTasks.length === 0 ? (
-                <div className="premium-card" style={{ padding: '3rem 1.5rem', textAlign: 'center', background: 'var(--bg-hover)' }}>
-                  <span style={{ fontSize: '2.5rem' }}>🔍</span>
-                  <p style={{ marginTop: '1rem', fontSize: '0.95rem', color: 'var(--text-muted)' }}>No unassigned tasks in your area right now.</p>
+            {availableTasks.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-state-icon">
+                  <CheckSquare size={20} />
                 </div>
-              ) : (
-                availableTasks.map((job) => (
-                  <div key={job.id} className="premium-card" style={{
-                    padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem',
-                    borderLeft: '4px solid var(--secondary)', background: 'var(--bg-card)'
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <h3 className="empty-state-title">No pending dispatch tasks</h3>
+                <p className="empty-state-description">
+                  There are no unassigned customer requests matching your service area right now.
+                </p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {availableTasks.map((job) => (
+                  <div key={job.id} className="panel" style={{ borderLeft: '3px solid var(--primary)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem' }}>
                       <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          {job.dropAddress && <Truck className="w-5 h-5 text-blue-500" />}
-                          <h3 style={{ color: 'var(--text-main)', fontSize: '1.3rem', margin: 0 }}>{job.serviceName}</h3>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          {job.dropAddress && <Truck size={15} color="var(--primary)" />}
+                          <h3 style={{ color: 'var(--text-main)', fontSize: '1rem', fontWeight: 600, margin: 0 }}>
+                            {job.serviceName}
+                          </h3>
                         </div>
-                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.25rem' }}>📍 {job.city} - {job.pincode}</p>
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.2rem' }}>
+                          <MapPin size={12} /> {job.city} - {job.pincode}
+                        </span>
                       </div>
+
                       <div style={{ textAlign: 'right' }}>
-                        <p style={{ color: 'var(--secondary)', fontWeight: 800, fontSize: '1.3rem' }}>₹{job.finalAmount}</p>
-                        <button onClick={() => handleClaimTask(job.id)} className="btn btn-primary btn-small" style={{ marginTop: '0.5rem' }}>
-                          Accept & Claim Job
-                        </button>
+                        <span style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '1.15rem', fontFeatureSettings: 'tnum' }}>
+                          ₹{job.finalAmount}
+                        </span>
+                        <div>
+                          <button onClick={() => handleClaimTask(job.id)} className="btn btn-primary btn-sm" style={{ marginTop: '0.25rem' }}>
+                            Claim Job
+                          </button>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Route Details if Vehicle Job */}
+                    {/* Freight specifications if vehicle job */}
                     {job.dropAddress && (
-                      <div style={{ background: 'rgba(37,99,235,0.05)', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(37,99,235,0.15)' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      <div style={{ background: 'var(--bg-subtle)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', marginTop: '0.75rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', fontSize: '0.75rem' }}>
                           <div>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--emerald)', fontWeight: 700, textTransform: 'uppercase' }}>📍 Pickup Point</span>
-                            <p style={{ margin: '0.2rem 0', fontSize: '0.85rem', color: 'var(--text-main)', fontWeight: 600 }}>{job.address}, {job.city}</p>
+                            <span style={{ color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', display: 'block' }}>Pickup Point</span>
+                            <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>{job.address}, {job.city}</span>
                           </div>
                           <div>
-                            <span style={{ fontSize: '0.75rem', color: '#F97316', fontWeight: 700, textTransform: 'uppercase' }}>🏁 Drop-off Destination</span>
-                            <p style={{ margin: '0.2rem 0', fontSize: '0.85rem', color: 'var(--text-main)', fontWeight: 600 }}>{job.dropAddress}, {job.dropCity}</p>
+                            <span style={{ color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', display: 'block' }}>Drop-off Point</span>
+                            <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>{job.dropAddress}, {job.dropCity}</span>
                           </div>
                         </div>
                         {job.packageWeightKg && (
-                          <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                            📦 Cargo Weight: {job.packageWeightKg} KG {job.distanceKm ? `• Est. Distance: ${job.distanceKm} KM` : ''}
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                    <div style={{ background: 'var(--bg-hover)', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
-                      <p style={{ color: 'var(--text-main)', fontSize: '0.9rem', fontWeight: 500 }}>⏱️ Scheduled for: {job.bookingDate} at {formatLocalTime(job.startTime)}</p>
-                      {job.notes && <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.5rem', fontStyle: 'italic' }}>"{job.notes}"</p>}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* ASSIGNED BOOKINGS SECTION */}
-            <div id="assigned-section" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ fontSize: '1.6rem', color: 'var(--primary)' }}>Assigned Customer Bookings</h2>
-                <span className="badge badge-assigned">{assignedBookings.length} Total</span>
-              </div>
-
-              {assignedBookings.length === 0 ? (
-                <div className="premium-card" style={{ padding: '4rem 1.5rem', textAlign: 'center' }}>
-                  <span style={{ fontSize: '3rem' }}>📭</span>
-                  <p style={{ marginTop: '1rem', fontSize: '1rem', color: 'var(--text-muted)' }}>No job bookings currently assigned to you.</p>
-                </div>
-              ) : (
-                assignedBookings.map((job) => (
-                  <div key={job.id} className="premium-card" style={{
-                    padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem',
-                    borderLeft: `4px solid ${
-                      job.status === 'ASSIGNED' ? '#3B82F6' : job.status === 'ACCEPTED' ? '#0F172A' : job.status === 'IN_PROGRESS' ? '#F59E0B' : '#10B981'
-                    }`
-                  }}>
-                    
-                    {/* Header */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          {job.dropAddress && <Truck className="w-5 h-5 text-blue-500" />}
-                          <h3 style={{ color: 'var(--text-main)', fontSize: '1.3rem', margin: 0 }}>{job.serviceName}</h3>
-                        </div>
-                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>ID: #{String(job.id).slice(-6)} | Placed: {new Date(job.createdAt).toLocaleDateString()}</p>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <p style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '1.3rem' }}>₹{job.finalAmount}</p>
-                        <span className={`badge ${
-                          job.status === 'ASSIGNED' ? 'badge-assigned' : job.status === 'ACCEPTED' ? 'badge-accepted' : job.status === 'IN_PROGRESS' ? 'badge-inprogress' : 'badge-completed'
-                        }`} style={{ fontSize: '0.65rem', marginTop: '0.35rem' }}>
-                          {job.status}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Details */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', background: 'var(--bg-page)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)' }}>
-                      <div>
-                        <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 600, marginBottom: '0.25rem' }}>Client Info</p>
-                        <p style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '1.05rem' }}>{job.userName}</p>
-                        <p style={{ color: 'var(--text-main)', fontSize: '0.9rem', marginTop: '0.1rem' }}>📞 {job.userPhone || 'No contact specified'}</p>
-                        <p style={{ color: 'var(--text-main)', fontSize: '0.85rem', marginTop: '0.5rem', fontWeight: 500 }}>⏱️ {job.bookingDate} at {formatLocalTime(job.startTime)}</p>
-                      </div>
-
-                      <div>
-                        <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 600, marginBottom: '0.25rem' }}>
-                          {job.dropAddress ? 'Pickup Location' : 'Service Address'}
-                        </p>
-                        <p style={{ color: 'var(--text-main)', fontSize: '0.9rem' }}>{job.address}, {job.city} - {job.pincode}</p>
-                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-                          <button
-                            type="button"
-                            onClick={() => openCustomerDirections(job)}
-                            className="btn btn-secondary btn-small"
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem' }}
-                          >
-                            📍 {job.dropAddress ? 'Nav to Pickup' : 'Navigate'}
-                          </button>
-                          {job.dropAddress && (
-                            <button
-                              type="button"
-                              onClick={() => openDropDirections(job)}
-                              className="btn btn-secondary btn-small"
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: '#F97316' }}
-                            >
-                              🏁 Nav to Drop-off
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Drop-off & Cargo specific row */}
-                    {job.dropAddress && (
-                      <div style={{ padding: '0.9rem 1.25rem', background: 'rgba(249, 115, 22, 0.06)', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(249, 115, 22, 0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
-                        <div>
-                          <span style={{ fontSize: '0.75rem', color: '#F97316', fontWeight: 700, textTransform: 'uppercase' }}>🏁 Drop Destination:</span>
-                          <p style={{ margin: '0.2rem 0', fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: 600 }}>{job.dropAddress}, {job.dropCity} ({job.dropPincode})</p>
-                          {job.packageWeightKg && (
-                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                              Cargo: {job.packageWeightKg} KG {job.packageDescription ? `(${job.packageDescription})` : ''}
-                            </span>
-                          )}
-                        </div>
-                        {job.distanceKm && (
-                          <div style={{ textAlign: 'right' }}>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Transit Distance</span>
-                            <p style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--primary)' }}>{job.distanceKm} KM</p>
+                          <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+                            Payload: <strong>{job.packageWeightKg} KG</strong> {job.distanceKm ? `• Est. Distance: ${job.distanceKm} KM` : ''}
                           </div>
                         )}
                       </div>
                     )}
 
-                    {job.notes && (
-                      <div style={{ fontSize: '0.9rem', background: 'rgba(245, 158, 11, 0.12)', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
-                        <p style={{ color: 'var(--text-main)', fontStyle: 'italic', margin: 0 }}>
-                          📝 Customer Note: "{job.notes}"
-                        </p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.75rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      <span>Scheduled: <strong>{job.bookingDate} at {formatLocalTime(job.startTime)}</strong></span>
+                      {job.notes && <span style={{ fontStyle: 'italic' }}>"{job.notes}"</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB 2: MY BOOKINGS (Assigned Tasks)                                       */}
+        {/* ========================================================================= */}
+        {activeTab === 'bookings' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                Assigned Bookings & Active Trips
+              </h2>
+              <span className="badge badge-assigned">{assignedBookings.length} Total</span>
+            </div>
+
+            {assignedBookings.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-state-icon">
+                  <Briefcase size={20} />
+                </div>
+                <h3 className="empty-state-title">No assigned bookings</h3>
+                <p className="empty-state-description">
+                  You do not have any active jobs assigned yet. Claim available jobs from the Task Feed.
+                </p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {assignedBookings.map((job) => (
+                  <div key={job.id} className="panel">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          {job.dropAddress && <Truck size={15} color="var(--primary)" />}
+                          <h3 style={{ color: 'var(--text-main)', fontSize: '1rem', fontWeight: 600, margin: 0 }}>
+                            {job.serviceName}
+                          </h3>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                            #{String(job.id).slice(-6)}
+                          </span>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.35rem', flexWrap: 'wrap' }}>
+                          <span className={`badge ${job.status === 'COMPLETED' ? 'badge-completed' : job.status === 'IN_PROGRESS' ? 'badge-inprogress' : 'badge-assigned'}`}>
+                            {job.status}
+                          </span>
+                          <span className={`badge ${job.paymentStatus === 'PAID' ? 'badge-completed' : 'badge-pending'}`}>
+                            {job.paymentStatus === 'PAID' ? 'Payment Completed' : 'Payment Pending'}
+                          </span>
+                        </div>
                       </div>
-                    )}
+
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '1.15rem', fontFeatureSettings: 'tnum' }}>
+                          ₹{job.finalAmount}
+                        </span>
+                        <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
+                          {job.paymentMethod === 'AFTER_SERVICE' ? 'Cash on Delivery' : 'Online Gateway'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Customer & Location details */}
+                    <div style={{ background: 'var(--bg-subtle)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', margin: '0.75rem 0' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <div style={{ fontSize: '0.8125rem', color: 'var(--text-main)' }}>
+                          Customer: <strong>{job.customerName || 'Customer'}</strong> • <span>{job.customerPhone || 'No Phone'}</span>
+                        </div>
+                        <button
+                          onClick={() => openCustomerDirections(job)}
+                          className="btn btn-secondary btn-sm"
+                          style={{ fontSize: '0.75rem', padding: '0.2rem 0.45rem' }}
+                        >
+                          <Navigation size={12} />
+                          <span>Get Directions</span>
+                        </button>
+                      </div>
+
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                        Address: <span style={{ color: 'var(--text-main)' }}>{job.address}, {job.city} - {job.pincode}</span>
+                      </div>
+
+                      {job.dropAddress && (
+                        <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ fontSize: '0.75rem' }}>
+                            <span style={{ color: 'var(--text-muted)' }}>Drop-off: </span>
+                            <strong style={{ color: 'var(--text-main)' }}>{job.dropAddress}, {job.dropCity}</strong>
+                          </div>
+                          <button
+                            onClick={() => openDropDirections(job)}
+                            className="btn btn-secondary btn-sm"
+                            style={{ fontSize: '0.75rem', padding: '0.15rem 0.4rem' }}
+                          >
+                            <Navigation size={12} />
+                            <span>Drop Route</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
 
                     {/* Action Bar */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-light)', paddingTop: '1.25rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Payment Method:</span>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)' }}>
-                          {job.paymentMethod === 'AFTER_SERVICE' ? (job.dropAddress ? '💵 Cash After Trip' : '💵 Cash After Service') : '💳 Online Paid'}
-                        </span>
-                        <span className={`badge ${job.paymentStatus === 'PAID' ? 'badge-completed' : 'badge-pending'}`} style={{ fontSize: '0.65rem' }}>
-                          {job.paymentStatus}
-                        </span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                        Date: <strong>{job.bookingDate} at {formatLocalTime(job.startTime)}</strong>
                       </div>
 
-                      <div style={{ display: 'flex', gap: '0.75rem' }}>
+                      <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
                         {job.status === 'ASSIGNED' && (
                           <>
-                            <button onClick={() => handleAcceptJob(job.id)} className="btn btn-primary btn-small">
+                            <button onClick={() => handleAcceptJob(job.id)} className="btn btn-primary btn-sm">
                               Accept Job
                             </button>
-                            <button onClick={() => handleRejectJob(job.id)} className="btn btn-secondary btn-small">
+                            <button onClick={() => handleRejectJob(job.id)} className="btn btn-danger btn-sm">
                               Reject
                             </button>
                           </>
                         )}
 
                         {job.status === 'ACCEPTED' && (
-                          <button onClick={() => handleStatusUpdate(job.id, 'IN_PROGRESS')} className="btn btn-primary btn-small">
-                            {job.dropAddress ? '🚀 Start Trip / Pickup Reached' : 'Start Service'}
+                          <button onClick={() => handleStatusUpdate(job.id, 'IN_PROGRESS')} className="btn btn-primary btn-sm">
+                            Start Service / Transit
                           </button>
                         )}
 
                         {job.status === 'IN_PROGRESS' && (
-                          <button onClick={() => handleStatusUpdate(job.id, 'COMPLETED')} className="btn btn-primary btn-small" style={{ background: '#10B981', borderColor: '#10B981' }}>
-                            {job.dropAddress ? '🏁 Complete Delivery & Trip' : 'Complete Service'}
+                          <button onClick={() => handleStatusUpdate(job.id, 'COMPLETED')} className="btn btn-success btn-sm">
+                            Mark as Completed
                           </button>
                         )}
 
-                        {job.status === 'COMPLETED' && job.paymentMethod === 'AFTER_SERVICE' && job.paymentStatus !== 'PAID' && (
-                          <button onClick={() => handleCollectCash(job.id)} className="btn btn-primary btn-small" style={{ background: '#10B981', borderColor: '#10B981' }}>
-                            Collect ₹{job.finalAmount} Cash
+                        {job.paymentStatus === 'PENDING' && job.paymentMethod === 'AFTER_SERVICE' && (
+                          <button onClick={() => handleCollectCash(job.id)} className="btn btn-secondary btn-sm" style={{ color: 'var(--success)' }}>
+                            <DollarSign size={13} />
+                            <span>Collect Cash</span>
                           </button>
                         )}
                       </div>
                     </div>
                   </div>
-                ))
-              )}
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB 3: FLEET MANAGER (Logistics Vehicles)                                 */}
+        {/* ========================================================================= */}
+        {activeTab === 'fleet' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                  Vehicle Fleet Management
+                </h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Register and toggle the active status of your commercial logistics vehicles.</p>
+              </div>
+              <button onClick={handleAddNewVehicle} className="btn btn-primary btn-sm">
+                <Plus size={14} />
+                <span>Add Vehicle</span>
+              </button>
             </div>
 
-          </div>
-
-          {/* Right Column: Vehicle Registration & Settings */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            
-            {/* VEHICLE FLEET MANAGEMENT (Visible for Logistics / Vehicle Transport Partners) */}
-            {isLogisticsPartner && (
-              <div id="vehicle-section" className="premium-card" style={{ padding: '1.75rem', borderLeft: '4px solid var(--primary)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Truck className="w-5 h-5 text-blue-500" />
-                    <h2 style={{ fontSize: '1.3rem', color: 'var(--text-main)', margin: 0 }}>
-                      My Transport Fleet
-                    </h2>
-                    <span className="badge badge-assigned" style={{ fontSize: '0.75rem' }}>
-                      {myVehicles.length} {myVehicles.length === 1 ? 'Vehicle' : 'Vehicles'}
-                    </span>
-                  </div>
-                  {!showVehicleForm && (
-                    <button
-                      onClick={handleAddNewVehicle}
-                      className="btn btn-primary"
-                      style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem' }}
-                    >
-                      + Add Vehicle
+            {/* Vehicle Registration / Edit Form Modal */}
+            {showVehicleForm && (
+              <div className="modal-overlay" onClick={() => setShowVehicleForm(false)}>
+                <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '460px' }}>
+                  <div className="modal-header">
+                    <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>
+                      {editingVehicleId ? 'Edit Vehicle Details' : 'Register New Vehicle'}
+                    </h3>
+                    <button onClick={() => setShowVehicleForm(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                      <X size={16} />
                     </button>
-                  )}
-                </div>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
-                  Manage multiple delivery vehicles and tempos for on-demand customer logistics and freight dispatch.
-                </p>
-
-                {/* List of Registered Fleet Vehicles */}
-                {!showVehicleForm && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1rem' }}>
-                    {myVehicles.length === 0 ? (
-                      <div style={{ textAlign: 'center', padding: '2rem 1rem', background: 'var(--bg-page)', borderRadius: 'var(--radius-md)', border: '1px dashed var(--border-light)' }}>
-                        <Truck className="w-10 h-10" style={{ margin: '0 auto 0.5rem auto', color: 'var(--text-muted)' }} />
-                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>No vehicles registered in your fleet yet.</p>
-                        <button onClick={handleAddNewVehicle} className="btn btn-primary btn-small">
-                          + Register Your First Vehicle
-                        </button>
-                      </div>
-                    ) : (
-                      myVehicles.map(veh => (
-                        <div
-                          key={veh.id}
-                          style={{
-                            padding: '1.1rem',
-                            borderRadius: 'var(--radius-md)',
-                            background: 'var(--bg-page)',
-                            border: '1px solid var(--border-light)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '0.75rem'
-                          }}
-                        >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
-                                  {veh.modelName}
-                                </h3>
-                                <span style={{
-                                  padding: '0.15rem 0.5rem',
-                                  fontSize: '0.75rem',
-                                  fontWeight: 700,
-                                  background: 'rgba(37,99,235,0.12)',
-                                  color: '#2563EB',
-                                  borderRadius: '4px',
-                                  border: '1px solid rgba(37,99,235,0.2)'
-                                }}>
-                                  {veh.registrationNumber}
-                                </span>
-                              </div>
-                              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.25rem 0 0 0' }}>
-                                {veh.displayName || veh.vehicleType} • {veh.fuelType}
-                              </p>
-                            </div>
-
-                            <button
-                              onClick={() => handleToggleVehicleAvailability(veh.id)}
-                              style={{
-                                border: 'none',
-                                cursor: 'pointer',
-                                padding: '0.3rem 0.65rem',
-                                borderRadius: '999px',
-                                fontSize: '0.75rem',
-                                fontWeight: 600,
-                                backgroundColor: veh.available ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                                color: veh.available ? '#10B981' : '#EF4444',
-                                border: `1px solid ${veh.available ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`
-                              }}
-                              title="Click to toggle availability"
-                            >
-                              ● {veh.available ? 'Online (Available)' : 'Offline (Busy)'}
-                            </button>
-                          </div>
-
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-light)', paddingTop: '0.6rem', fontSize: '0.8rem' }}>
-                            <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>
-                              Max Payload: <strong style={{ color: 'var(--text-main)' }}>{veh.capacityKg} KG</strong>
-                            </span>
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                              <button
-                                onClick={() => handleEditVehicle(veh)}
-                                style={{ background: 'transparent', border: 'none', color: '#3B82F6', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
-                              >
-                                ✏️ Edit
-                              </button>
-                              <button
-                                onClick={() => handleDeleteVehicle(veh.id)}
-                                style={{ background: 'transparent', border: 'none', color: '#EF4444', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
-                              >
-                                🗑️ Remove
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    )}
                   </div>
-                )}
 
-                {/* Add / Edit Vehicle Form */}
-                {showVehicleForm && (
-                  <form onSubmit={handleSaveVehicle} style={{
-                    display: 'flex', flexDirection: 'column', gap: '1rem',
-                    background: 'var(--bg-page)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)'
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
-                        {editingVehicleId ? '✏️ Edit Vehicle Details' : '➕ Add Vehicle to Fleet'}
-                      </h3>
-                      <button
-                        type="button"
-                        onClick={() => { setShowVehicleForm(false); setEditingVehicleId(null); }}
-                        style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.85rem' }}
-                      >
-                        ✕ Cancel
-                      </button>
-                    </div>
-
-                    <div className="form-group" style={{ marginBottom: 0 }}>
-                      <label className="form-label">Vehicle Category *</label>
-                      <select
-                        className="form-control"
-                        value={vehicleType}
-                        onChange={(e) => setVehicleType(e.target.value)}
-                      >
-                        <option value="TWO_WHEELER_ELECTRIC">Electric Bike (Courier up to 25 KG)</option>
-                        <option value="TWO_WHEELER_PETROL">Petrol Bike (Courier up to 25 KG)</option>
-                        <option value="THREE_WHEELER_ELECTRIC">Electric Rickshaw (up to 250 KG)</option>
-                        <option value="LOADING_VEHICLE">Loading Vehicle 3W (up to 500 KG)</option>
-                        <option value="MINI_TRUCK">Mini Truck - Tata Ace (up to 1000 KG)</option>
-                        <option value="TRUCK">Truck 14ft / 17ft (up to 2500 KG)</option>
-                        <option value="HEAVY_TRUCK">Heavy Commercial Truck (up to 7000 KG)</option>
+                  <form onSubmit={handleSaveVehicle}>
+                    <div className="form-group">
+                      <label className="form-label">Vehicle Category</label>
+                      <select className="form-control" value={vehicleType} onChange={(e) => setVehicleType(e.target.value)}>
+                        <option value="MINI_TRUCK">Mini Truck (e.g. Tata Ace, Bolero)</option>
+                        <option value="THREE_WHEELER_CARGO">3 Wheeler Cargo (e.g. Ape, Alfa)</option>
+                        <option value="TWO_WHEELER_COURIER">2 Wheeler Cargo / Courier</option>
+                        <option value="PICKUP_LARGE">Large Commercial Truck</option>
                       </select>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                      <div className="form-group" style={{ marginBottom: 0 }}>
-                        <label className="form-label">Fuel Type</label>
-                        <select
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label">Model Name *</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Tata Ace Gold"
                           className="form-control"
-                          value={fuelType}
-                          onChange={(e) => setFuelType(e.target.value)}
-                        >
-                          <option value="DIESEL">Diesel</option>
-                          <option value="CNG">CNG</option>
-                          <option value="PETROL">Petrol</option>
-                          <option value="ELECTRIC">Electric</option>
-                        </select>
+                          value={vehicleModel}
+                          onChange={(e) => setVehicleModel(e.target.value)}
+                          required
+                        />
                       </div>
 
-                      <div className="form-group" style={{ marginBottom: 0 }}>
-                        <label className="form-label">Capacity (KG)</label>
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label">License Plate *</label>
+                        <input
+                          type="text"
+                          placeholder="MP 09 AB 1234"
+                          className="form-control"
+                          value={registrationNumber}
+                          onChange={(e) => setRegistrationNumber(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label">Payload Capacity (KG)</label>
                         <input
                           type="number"
+                          placeholder="1000"
                           className="form-control"
                           value={vehicleCapacityKg}
                           onChange={(e) => setVehicleCapacityKg(e.target.value)}
                         />
                       </div>
+
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label">Fuel Type</label>
+                        <select className="form-control" value={fuelType} onChange={(e) => setFuelType(e.target.value)}>
+                          <option value="DIESEL">Diesel</option>
+                          <option value="CNG">CNG</option>
+                          <option value="ELECTRIC">Electric (EV)</option>
+                          <option value="PETROL">Petrol</option>
+                        </select>
+                      </div>
                     </div>
 
-                    <div className="form-group" style={{ marginBottom: 0 }}>
-                      <label className="form-label">Model Name *</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="e.g. Tata Ace Gold, Hero Electric Nyx, Piaggio Ape"
-                        value={vehicleModel}
-                        onChange={(e) => setVehicleModel(e.target.value)}
-                        required
-                      />
+                    <div className="form-group" style={{ marginTop: '0.75rem' }}>
+                      <label className="form-checkbox-label">
+                        <input
+                          type="checkbox"
+                          className="form-checkbox"
+                          checked={vehicleAvailable}
+                          onChange={(e) => setVehicleAvailable(e.target.checked)}
+                        />
+                        <span>Available for live trip dispatch</span>
+                      </label>
                     </div>
 
-                    <div className="form-group" style={{ marginBottom: 0 }}>
-                      <label className="form-label">Registration Plate / Number *</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="e.g. MP-09-TA-1234"
-                        value={registrationNumber}
-                        onChange={(e) => setRegistrationNumber(e.target.value)}
-                        required
-                      />
-                    </div>
-
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-main)', marginTop: '0.25rem' }}>
-                      <input
-                        type="checkbox"
-                        checked={vehicleAvailable}
-                        onChange={(e) => setVehicleAvailable(e.target.checked)}
-                        style={{ accentColor: 'var(--primary)', width: '1rem', height: '1rem' }}
-                      />
-                      <span>Mark vehicle as Available for trips</span>
-                    </label>
-
-                    <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
-                      <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={savingVehicle}>
-                        {savingVehicle ? 'Saving Vehicle...' : editingVehicleId ? 'Update Vehicle' : 'Save to Fleet'}
+                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.25rem' }}>
+                      <button type="submit" className="btn btn-primary btn-sm" style={{ flex: 1 }} disabled={savingVehicle}>
+                        {savingVehicle ? 'Saving...' : editingVehicleId ? 'Update Vehicle' : 'Register Vehicle'}
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => { setShowVehicleForm(false); setEditingVehicleId(null); }}
-                        className="btn btn-secondary"
-                      >
+                      <button type="button" onClick={() => setShowVehicleForm(false)} className="btn btn-secondary btn-sm" style={{ flex: 1 }}>
                         Cancel
                       </button>
                     </div>
                   </form>
-                )}
+                </div>
               </div>
             )}
 
-            {/* Availability Slots Card */}
-            <div id="schedule-section" className="premium-card" style={{ padding: '1.75rem' }}>
-              <h2 style={{ fontSize: '1.3rem', color: 'var(--primary)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                🕒 Daily Availability
-              </h2>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
-                Create recurring time slots when you are open to take customer bookings.
-              </p>
+            {myVehicles.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-state-icon">
+                  <Truck size={20} />
+                </div>
+                <h3 className="empty-state-title">No vehicles in fleet</h3>
+                <p className="empty-state-description">Add your commercial vehicle to start receiving freight and transport orders.</p>
+                <button onClick={handleAddNewVehicle} className="btn btn-primary btn-sm">Add First Vehicle</button>
+              </div>
+            ) : (
+              <div className="grid-cols-2" style={{ gap: '1rem' }}>
+                {myVehicles.map((veh) => (
+                  <div key={veh.id} className="panel" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                            <Truck size={16} color="var(--primary)" />
+                            <strong style={{ fontSize: '0.9375rem', color: 'var(--text-main)' }}>{veh.modelName}</strong>
+                          </div>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                            {veh.registrationNumber}
+                          </span>
+                        </div>
+                        <span className={`badge ${veh.available !== false ? 'badge-completed' : 'badge-cancelled'}`}>
+                          {veh.available !== false ? 'Online' : 'Offline'}
+                        </span>
+                      </div>
 
-              <form onSubmit={handleAddAvailability} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                <div>
-                  <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Date</label>
+                      <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0.5rem 0' }}>
+                        <span>Capacity: <strong style={{ color: 'var(--text-main)' }}>{veh.capacityKg || 1000} KG</strong></span>
+                        <span>Fuel: <strong style={{ color: 'var(--text-main)' }}>{veh.fuelType || 'DIESEL'}</strong></span>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)', marginTop: '0.5rem' }}>
+                      <button
+                        onClick={() => handleToggleVehicleAvailability(veh.id)}
+                        className={`btn btn-sm ${veh.available !== false ? 'btn-secondary' : 'btn-success'}`}
+                        style={{ padding: '0.2rem 0.5rem' }}
+                      >
+                        <Power size={12} />
+                        <span>{veh.available !== false ? 'Go Offline' : 'Go Online'}</span>
+                      </button>
+
+                      <div style={{ display: 'flex', gap: '0.35rem' }}>
+                        <button onClick={() => handleEditVehicle(veh)} className="btn btn-ghost btn-sm" title="Edit Vehicle">
+                          <Edit2 size={13} />
+                        </button>
+                        <button onClick={() => handleDeleteVehicle(veh.id)} className="btn btn-ghost btn-sm" style={{ color: 'var(--error)' }} title="Delete Vehicle">
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB 4: SCHEDULE & AVAILABILITY SLOTS                                      */}
+        {/* ========================================================================= */}
+        {activeTab === 'schedule' && (
+          <div className="grid-cols-2" style={{ gap: '1.5rem', alignItems: 'flex-start' }}>
+            {/* Create Slot Form */}
+            <form onSubmit={handleAddAvailability} className="panel">
+              <div className="panel-header">
+                <h2 className="panel-title">
+                  <Calendar size={16} color="var(--primary)" />
+                  <span>Add Availability Slot</span>
+                </h2>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Date</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  min={tomorrowStr}
+                  value={availDate}
+                  onChange={(e) => setAvailDate(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Start Time</label>
                   <input
-                    type="date"
+                    type="time"
                     className="form-control"
-                    min={tomorrowStr}
-                    value={availDate}
-                    onChange={(e) => setAvailDate(e.target.value)}
+                    value={availStart}
+                    onChange={(e) => setAvailStart(e.target.value)}
                     required
                   />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                  <div>
-                    <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Start Time</label>
-                    <input
-                      type="time"
-                      className="form-control"
-                      value={availStart}
-                      onChange={(e) => setAvailStart(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>End Time</label>
-                    <input
-                      type="time"
-                      className="form-control"
-                      value={availEnd}
-                      onChange={(e) => setAvailEnd(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-                <button type="submit" className="btn btn-secondary" style={{ width: '100%', marginTop: '0.25rem' }}>
-                  + Add Availability Slot
-                </button>
-              </form>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '220px', overflowY: 'auto' }}>
-                {availability.length === 0 ? (
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center', padding: '0.75rem' }}>No slots registered.</p>
-                ) : (
-                  availability.map((slot) => (
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">End Time</label>
+                  <input
+                    type="time"
+                    className="form-control"
+                    value={availEnd}
+                    onChange={(e) => setAvailEnd(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <button type="submit" className="btn btn-primary btn-sm" style={{ width: '100%' }}>
+                <Plus size={14} />
+                <span>Publish Slot</span>
+              </button>
+            </form>
+
+            {/* Existing Slots List */}
+            <div className="panel">
+              <div className="panel-header">
+                <h2 className="panel-title">
+                  <Clock size={16} color="var(--primary)" />
+                  <span>Active Scheduled Slots</span>
+                </h2>
+                <span className="badge badge-assigned">{availability.length} Slots</span>
+              </div>
+
+              {availability.length === 0 ? (
+                <div className="empty-state" style={{ padding: '1.5rem 1rem' }}>
+                  <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>No availability slots published yet.</span>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '320px', overflowY: 'auto' }}>
+                  {availability.map((slot) => (
                     <div key={slot.id} style={{
                       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                      background: 'var(--bg-page)', padding: '0.75rem', borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--border-light)', fontSize: '0.85rem'
+                      padding: '0.55rem 0.75rem', borderRadius: 'var(--radius-sm)',
+                      background: 'var(--bg-subtle)', border: '1px solid var(--border-light)', fontSize: '0.8125rem'
                     }}>
                       <div>
-                        <p style={{ color: 'var(--text-main)', fontWeight: 600, margin: 0 }}>{slot.availableDate}</p>
-                        <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', margin: 0 }}>
+                        <strong style={{ color: 'var(--text-main)' }}>{slot.availableDate}</strong>
+                        <span style={{ color: 'var(--text-muted)', marginLeft: '0.5rem' }}>
                           {formatLocalTime(slot.startTime)} - {formatLocalTime(slot.endTime)}
-                        </p>
+                        </span>
                       </div>
                       <button
                         onClick={() => handleDeleteAvailability(slot.id)}
-                        style={{ background: 'transparent', border: 'none', color: 'var(--error)', fontSize: '1rem', cursor: 'pointer' }}
-                        title="Delete Slot"
+                        className="btn btn-ghost btn-sm"
+                        style={{ color: 'var(--error)', padding: '0.2rem' }}
                       >
-                        🗑️
+                        <Trash2 size={13} />
                       </button>
                     </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {/* Categories Card */}
-            <div className="premium-card" style={{ padding: '1.75rem' }}>
-              <h2 style={{ fontSize: '1.3rem', color: 'var(--primary)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                🛠️ My Trade Categories
-              </h2>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-                Select the service domains you accept jobs for:
-              </p>
-              <form onSubmit={handleSaveCategories}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '1.25rem', maxHeight: '180px', overflowY: 'auto' }}>
-                  {availableCategories.map(cat => (
-                    <label key={cat.id} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', fontSize: '0.9rem', color: 'var(--text-main)' }}>
-                      <input
-                        type="checkbox"
-                        checked={selectedCategoryIds.includes(cat.id)}
-                        onChange={() => handleToggleCategory(cat.id)}
-                        style={{ width: '1.1rem', height: '1.1rem', accentColor: 'var(--primary)' }}
-                      />
-                      {cat.name}
-                    </label>
                   ))}
                 </div>
-                <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={savingCategories}>
-                  {savingCategories ? 'Saving...' : 'Save Categories'}
-                </button>
-              </form>
+              )}
             </div>
+          </div>
+        )}
 
-            {/* Profile Settings Card */}
-            <div className="premium-card" style={{ padding: '1.75rem' }}>
-              <h2 style={{ fontSize: '1.3rem', color: 'var(--primary)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                ⚙️ Profile Settings
-              </h2>
-              <form onSubmit={handleUpdateProfile} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Full Name *</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    required
-                  />
-                </div>
+        {/* ========================================================================= */}
+        {/* TAB 5: PROFILE & CATEGORY SETTINGS                                        */}
+        {/* ========================================================================= */}
+        {activeTab === 'profile' && (
+          <div className="grid-cols-2" style={{ gap: '1.5rem', alignItems: 'flex-start' }}>
+            {/* Profile Info Form */}
+            <form onSubmit={handleUpdateProfile} className="panel">
+              <div className="panel-header">
+                <h2 className="panel-title">
+                  <User size={16} color="var(--primary)" />
+                  <span>Partner Profile Details</span>
+                </h2>
+              </div>
 
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Phone Number</label>
+              <div className="form-group">
+                <label className="form-label">Full Name</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Phone</label>
                   <input
                     type="text"
                     className="form-control"
@@ -1066,59 +1038,94 @@ export default function ProviderDashboard() {
                   />
                 </div>
 
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Experience (Years) *</label>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Experience (Years)</label>
                   <input
                     type="number"
                     className="form-control"
-                    min="0"
                     value={editExp}
                     onChange={(e) => setEditExp(e.target.value)}
-                    required
                   />
                 </div>
+              </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">City</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={editCity}
-                      onChange={(e) => setEditCity(e.target.value)}
-                    />
-                  </div>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">Pincode</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={editPincode}
-                      onChange={(e) => setEditPincode(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Bio / Description</label>
-                  <textarea
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">City</label>
+                  <input
+                    type="text"
                     className="form-control"
-                    rows={2}
-                    value={editBio}
-                    onChange={(e) => setEditBio(e.target.value)}
-                    placeholder="Skills, commercial license, vehicles..."
-                    style={{ resize: 'none' }}
+                    value={editCity}
+                    onChange={(e) => setEditCity(e.target.value)}
                   />
                 </div>
 
-                <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }} disabled={savingProfile}>
-                  {savingProfile ? 'Saving...' : 'Save Profile Details'}
-                </button>
-              </form>
-            </div>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Pincode</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={editPincode}
+                    onChange={(e) => setEditPincode(e.target.value)}
+                  />
+                </div>
+              </div>
 
+              <div className="form-group">
+                <label className="form-label">Bio / Background</label>
+                <textarea
+                  rows="3"
+                  className="form-control"
+                  value={editBio}
+                  onChange={(e) => setEditBio(e.target.value)}
+                  style={{ resize: 'none' }}
+                />
+              </div>
+
+              <button type="submit" className="btn btn-primary btn-sm" style={{ width: '100%' }} disabled={savingProfile}>
+                {savingProfile ? 'Saving...' : 'Save Profile Changes'}
+              </button>
+            </form>
+
+            {/* Service Categories Selection */}
+            <form onSubmit={handleSaveCategories} className="panel">
+              <div className="panel-header">
+                <h2 className="panel-title">
+                  <Briefcase size={16} color="var(--primary)" />
+                  <span>Assigned Service Categories</span>
+                </h2>
+              </div>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.75rem' }}>
+                Select the service domains in which you can receive on-demand orders:
+              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', maxHeight: '280px', overflowY: 'auto', marginBottom: '1rem' }}>
+                {availableCategories.map((cat) => {
+                  const isChecked = selectedCategoryIds.includes(cat.id);
+                  return (
+                    <label key={cat.id} className="form-checkbox-label" style={{
+                      padding: '0.45rem 0.65rem', borderRadius: 'var(--radius-sm)',
+                      background: isChecked ? 'var(--primary-subtle)' : 'var(--bg-subtle)',
+                      border: '1px solid', borderColor: isChecked ? 'var(--primary)' : 'var(--border-light)'
+                    }}>
+                      <input
+                        type="checkbox"
+                        className="form-checkbox"
+                        checked={isChecked}
+                        onChange={() => handleToggleCategory(cat.id)}
+                      />
+                      <span style={{ fontSize: '0.8125rem', fontWeight: isChecked ? 600 : 400 }}>{cat.name}</span>
+                    </label>
+                  );
+                })}
+              </div>
+
+              <button type="submit" className="btn btn-primary btn-sm" style={{ width: '100%' }} disabled={savingCategories}>
+                {savingCategories ? 'Updating...' : 'Update Service Categories'}
+              </button>
+            </form>
           </div>
-        </div>
+        )}
       </main>
     </div>
   );

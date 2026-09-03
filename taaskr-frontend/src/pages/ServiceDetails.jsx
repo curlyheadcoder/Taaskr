@@ -2,7 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import LocationPicker from '../components/LocationPicker';
-import { Truck, MapPin, Package, ShieldCheck, CheckCircle2, Clock, AlertCircle, ArrowRight } from 'lucide-react';
+import { 
+  Truck, MapPin, Package, ShieldCheck, CheckCircle2, Clock, 
+  AlertCircle, ArrowRight, ChevronRight, RefreshCw, Calendar, 
+  Info, Check, Sparkles, Navigation
+} from 'lucide-react';
 
 export default function ServiceDetails() {
   const { serviceId } = useParams();
@@ -40,9 +44,9 @@ export default function ServiceDetails() {
   const [estimateResult, setEstimateResult] = useState(null);
   const [selectedVehicleOption, setSelectedVehicleOption] = useState(null);
 
-  // Static/Standard slots for home services
+  // Time slots
   const timeSlots = [
-    { label: 'Now / Immediate (Fastest Available)', value: '09:00' },
+    { label: 'Now / Immediate (Fastest Dispatch)', value: '09:00' },
     { label: 'Morning (09:00 AM - 11:00 AM)', value: '09:00' },
     { label: 'Midday (11:30 AM - 01:30 PM)', value: '11:30' },
     { label: 'Afternoon (03:00 PM - 06:00 PM)', value: '15:00' },
@@ -97,7 +101,6 @@ export default function ServiceDetails() {
       });
       setEstimateResult(estimate);
 
-      // Auto-select option matching current service name or first eligible option
       if (estimate?.options?.length > 0) {
         const matching = estimate.options.find(o => 
           currentService && (o.serviceId === currentService.id || o.displayName?.toLowerCase() === currentService.name?.toLowerCase())
@@ -154,7 +157,6 @@ export default function ServiceDetails() {
       return;
     }
 
-    // Standard Home Service Flow
     navigate('/booking-flow', {
       state: {
         serviceId: service.id,
@@ -168,88 +170,112 @@ export default function ServiceDetails() {
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '5rem 0', color: 'var(--text-secondary)' }}>
-        <div style={{
-          display: 'inline-block',
-          width: '30px',
-          height: '30px',
-          border: '2.5px solid var(--border-glass)',
-          borderTopColor: 'var(--primary)',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite'
-        }} />
-        <p style={{ marginTop: '1rem' }}>Loading service details...</p>
+      <div className="app-container" style={{ padding: '3rem 1rem' }}>
+        <div className="grid-cols-2" style={{ gap: '1.5rem' }}>
+          <div className="panel" style={{ height: '320px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="skeleton" style={{ width: '40%', height: '24px' }} />
+            <div className="skeleton" style={{ width: '80%', height: '18px' }} />
+            <div className="skeleton" style={{ width: '100%', height: '80px' }} />
+          </div>
+          <div className="panel" style={{ height: '320px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="skeleton" style={{ width: '50%', height: '24px' }} />
+            <div className="skeleton" style={{ width: '100%', height: '40px' }} />
+            <div className="skeleton" style={{ width: '100%', height: '40px' }} />
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error || !service) {
     return (
-      <div className="app-container" style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
-        <div className="glass-panel" style={{ padding: '3rem 2rem' }}>
-          <span style={{ fontSize: '3rem' }}>⚠️</span>
-          <h2 style={{ color: 'var(--text-main)', marginTop: '1rem' }}>Error Loading Service</h2>
-          <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>{error || 'Service not found.'}</p>
-          <Link to="/" className="btn btn-primary" style={{ marginTop: '1.5rem' }}>Back to Services</Link>
+      <div className="app-container" style={{ padding: '3rem 1rem' }}>
+        <div className="empty-state">
+          <div className="empty-state-icon">
+            <AlertCircle size={22} color="var(--error)" />
+          </div>
+          <h2 className="empty-state-title">Service Not Found</h2>
+          <p className="empty-state-description">{error || 'The requested service could not be loaded.'}</p>
+          <Link to="/" className="btn btn-primary btn-sm">
+            Back to Catalog
+          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="app-container animate-fade-in" style={{ paddingBottom: '4rem' }}>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <Link to="/" style={{ color: 'var(--text-muted)', fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-          ← Back to Catalog
+    <div className="app-container animate-fade-in" style={{ paddingBottom: '3rem' }}>
+      {/* Breadcrumb Navigation */}
+      <nav style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
+        <Link to="/" style={{ color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
+          Catalog
         </Link>
-      </div>
+        <ChevronRight size={13} />
+        <span>{service.category?.name || 'Services'}</span>
+        <ChevronRight size={13} />
+        <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{service.name}</span>
+      </nav>
 
       {isVehicleCategory ? (
         /* ========================================================================= */
-        /* ON-DEMAND VEHICLE TRANSPORT TRIP BUILDER & ESTIMATOR                      */
+        /* ON-DEMAND LOGISTICS & FREIGHT TRIP BUILDER                               */
         /* ========================================================================= */
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          
           {/* Header Banner */}
-          <div className="glass-panel" style={{ padding: '2rem', borderRadius: 'var(--radius-lg)', borderLeft: '4px solid var(--primary)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+          <div className="panel" style={{ borderLeft: '3px solid var(--primary)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
-              <span className="badge badge-assigned" style={{ marginBottom: '0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-                <Truck className="w-4 h-4" /> On-Demand Intra-City Vehicle Service
-              </span>
-              <h1 style={{ fontSize: '2.2rem', color: 'var(--text-main)', margin: '0.25rem 0' }}>{service.name}</h1>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-                Book a verified commercial vehicle with driver to your location. Fast intra-city pickup & delivery.
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.25rem' }}>
+                <Truck size={14} />
+                <span>On-Demand Freight & Commercial Transport</span>
+              </div>
+              <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>{service.name}</h1>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', marginTop: '0.2rem' }}>
+                Select pickup/drop points and cargo weight to calculate live freight rates with matched fleet dispatch.
               </p>
             </div>
             {estimateResult?.distanceKm && (
-              <div style={{ background: 'rgba(37,99,235,0.1)', padding: '1rem 1.5rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(37,99,235,0.2)', textAlign: 'center' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Est. Transit Distance</span>
-                <p style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--primary)', margin: 0 }}>{estimateResult.distanceKm} KM</p>
+              <div style={{ background: 'var(--bg-subtle)', padding: '0.75rem 1.25rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', textAlign: 'center' }}>
+                <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Est. Transit Distance</span>
+                <div style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--primary)', fontFeatureSettings: 'tnum' }}>
+                  {estimateResult.distanceKm} KM
+                </div>
               </div>
             )}
           </div>
 
-          <div className="grid-cols-2" style={{ gap: '2rem', alignItems: 'flex-start' }}>
-            {/* Left Column: Route & Package Specifications */}
-            <div className="glass-panel" style={{ padding: '2rem', borderRadius: 'var(--radius-lg)' }}>
-              <h3 style={{ fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <MapPin className="w-5 h-5 text-blue-500" /> Route & Package Details
-              </h3>
+          <div className="grid-cols-2" style={{ gap: '1.5rem', alignItems: 'flex-start' }}>
+            {/* Left Column: Route & Workload Inputs */}
+            <div className="panel">
+              <div className="panel-header">
+                <h3 className="panel-title">
+                  <MapPin size={16} color="var(--primary)" />
+                  <span>Route & Workload Specifications</span>
+                </h3>
+              </div>
 
-              {/* Pickup Location */}
-              <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-glass)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                  <label className="form-label" style={{ margin: 0, fontWeight: 700, color: 'var(--emerald)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                    📍 1. Pickup Location
+              {/* Pickup Address */}
+              <div style={{ marginBottom: '1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                  <label className="form-label" style={{ margin: 0 }}>
+                    Pickup Location
                   </label>
-                  <button type="button" onClick={() => setShowPickupMap(!showPickupMap)} className="btn btn-secondary" style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}>
-                    {showPickupMap ? 'Hide Map' : '🗺️ Pick on Map'}
+                  <button 
+                    type="button" 
+                    onClick={() => setShowPickupMap(!showPickupMap)} 
+                    className="btn btn-ghost btn-sm"
+                    style={{ fontSize: '0.75rem', padding: '0.15rem 0.4rem' }}
+                  >
+                    <Navigation size={12} />
+                    <span>{showPickupMap ? 'Hide Map' : 'Pick on Map'}</span>
                   </button>
                 </div>
 
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="Pickup street address / landmark"
+                  placeholder="Street address, building, or landmark"
                   value={pickupAddress}
                   onChange={(e) => setPickupAddress(e.target.value)}
                   style={{ marginBottom: '0.5rem' }}
@@ -287,21 +313,27 @@ export default function ServiceDetails() {
                 )}
               </div>
 
-              {/* Drop Location */}
-              <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-glass)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                  <label className="form-label" style={{ margin: 0, fontWeight: 700, color: '#F97316', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                    🏁 2. Drop-off Destination
+              {/* Drop-off Address */}
+              <div style={{ marginBottom: '1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                  <label className="form-label" style={{ margin: 0 }}>
+                    Drop-off Destination
                   </label>
-                  <button type="button" onClick={() => setShowDropMap(!showDropMap)} className="btn btn-secondary" style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}>
-                    {showDropMap ? 'Hide Map' : '🗺️ Pick on Map'}
+                  <button 
+                    type="button" 
+                    onClick={() => setShowDropMap(!showDropMap)} 
+                    className="btn btn-ghost btn-sm"
+                    style={{ fontSize: '0.75rem', padding: '0.15rem 0.4rem' }}
+                  >
+                    <Navigation size={12} />
+                    <span>{showDropMap ? 'Hide Map' : 'Pick on Map'}</span>
                   </button>
                 </div>
 
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="Drop-off destination address"
+                  placeholder="Destination street address or business premises"
                   value={dropAddress}
                   onChange={(e) => setDropAddress(e.target.value)}
                   style={{ marginBottom: '0.5rem' }}
@@ -339,14 +371,12 @@ export default function ServiceDetails() {
                 )}
               </div>
 
-              {/* Package Details */}
-              <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-glass)', marginBottom: '1.5rem' }}>
-                <label className="form-label" style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                  <Package className="w-4 h-4 text-blue-500" /> 3. Package & Cargo Details
-                </label>
-
-                <div style={{ marginBottom: '0.75rem' }}>
-                  <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Approx. Weight (KG)</label>
+              {/* Workload / Cargo Weight */}
+              <div style={{ marginBottom: '1.25rem' }}>
+                <div className="form-group">
+                  <label className="form-label">
+                    Estimated Cargo Weight (KG)
+                  </label>
                   <input
                     type="number"
                     min="1"
@@ -355,14 +385,17 @@ export default function ServiceDetails() {
                     value={packageWeightKg}
                     onChange={(e) => setPackageWeightKg(e.target.value)}
                   />
+                  <span className="form-hint">Vehicle options will automatically filter to match this payload requirement.</span>
                 </div>
 
-                <div>
-                  <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Cargo Description</label>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">
+                    Cargo Description (Optional)
+                  </label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="e.g. Office chairs, boxes, electronics, appliances"
+                    placeholder="e.g. Construction materials, office furniture, boxes..."
                     value={packageDescription}
                     onChange={(e) => setPackageDescription(e.target.value)}
                   />
@@ -373,22 +406,25 @@ export default function ServiceDetails() {
                 type="button"
                 onClick={() => fetchEstimates()}
                 className="btn btn-secondary"
-                style={{ width: '100%', padding: '0.85rem' }}
+                style={{ width: '100%' }}
                 disabled={estimating}
               >
-                {estimating ? 'Recalculating Fares...' : '🔄 Update Fare Calculations'}
+                <RefreshCw size={14} className={estimating ? 'animate-spin' : ''} />
+                <span>{estimating ? 'Recalculating Rates...' : 'Recalculate Route & Rates'}</span>
               </button>
             </div>
 
-            {/* Right Column: Vehicle Selection & Schedule */}
-            <div className="glass-panel" style={{ padding: '2rem', borderRadius: 'var(--radius-lg)' }}>
-              <h3 style={{ fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span>Choose Vehicle Type</span>
-                {estimating && <span style={{ fontSize: '0.8rem', color: 'var(--primary)' }}>Calculating...</span>}
-              </h3>
+            {/* Right Column: Matched Vehicle Types & Booking Action */}
+            <div className="panel">
+              <div className="panel-header">
+                <h3 className="panel-title">
+                  <Truck size={16} color="var(--primary)" />
+                  <span>Eligible Transport Vehicles</span>
+                </h3>
+              </div>
 
               {/* Vehicle Options List */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem', maxHeight: '420px', overflowY: 'auto', paddingRight: '0.25rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.25rem' }}>
                 {estimateResult?.options?.map((option) => {
                   const isSelected = selectedVehicleOption?.vehicleType === option.vehicleType;
                   const isEligible = option.isEligible;
@@ -398,52 +434,54 @@ export default function ServiceDetails() {
                       key={option.vehicleType}
                       onClick={() => isEligible && setSelectedVehicleOption(option)}
                       style={{
-                        padding: '1rem',
-                        borderRadius: 'var(--radius-md)',
-                        border: isSelected ? '2px solid var(--primary)' : '1px solid var(--border-glass)',
-                        background: isSelected ? 'rgba(37,99,235,0.08)' : isEligible ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.2)',
+                        padding: '0.875rem 1rem',
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid',
+                        borderColor: isSelected ? 'var(--primary)' : 'var(--border-light)',
+                        backgroundColor: isSelected ? 'var(--primary-subtle)' : 'var(--bg-card)',
                         cursor: isEligible ? 'pointer' : 'not-allowed',
                         opacity: isEligible ? 1 : 0.6,
-                        transition: 'all 0.2s ease',
                         display: 'flex',
                         justifyContent: 'space-between',
-                        alignItems: 'center'
+                        alignItems: 'center',
+                        transition: 'var(--transition-fast)'
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <div style={{
-                          width: '44px',
-                          height: '44px',
-                          borderRadius: 'var(--radius-md)',
-                          background: isSelected ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
+                          width: '36px',
+                          height: '36px',
+                          borderRadius: 'var(--radius-xs)',
+                          backgroundColor: isSelected ? 'var(--primary)' : 'var(--bg-subtle)',
+                          color: isSelected ? '#FFFFFF' : 'var(--text-main)',
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center',
-                          color: isSelected ? '#FFFFFF' : 'var(--text-main)'
+                          justifyContent: 'center'
                         }}>
-                          <Truck className="w-5 h-5" />
+                          <Truck size={18} />
                         </div>
+
                         <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <strong style={{ color: 'var(--text-main)', fontSize: '1rem' }}>{option.displayName}</strong>
-                            {isSelected && <CheckCircle2 className="w-4 h-4 text-blue-500" />}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                            <strong style={{ fontSize: '0.875rem', color: 'var(--text-main)' }}>{option.displayName}</strong>
+                            {isSelected && <Check size={14} color="var(--primary)" />}
                           </div>
-                          <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: '0.15rem 0' }}>
-                            Max Capacity: {option.maxCapacityKg} KG • ETA: ~{option.estimatedArrivalMinutes} min
-                          </p>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                            Max Payload: {option.maxCapacityKg} KG • ETA: ~{option.estimatedArrivalMinutes} min
+                          </span>
                           {!isEligible && (
-                            <span style={{ fontSize: '0.75rem', color: '#EF4444', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                              <AlertCircle className="w-3 h-3" /> {option.eligibilityReason}
-                            </span>
+                            <div style={{ fontSize: '0.6875rem', color: 'var(--error)', display: 'flex', alignItems: 'center', gap: '0.2rem', marginTop: '0.1rem' }}>
+                              <AlertCircle size={11} /> {option.eligibilityReason}
+                            </div>
                           )}
                         </div>
                       </div>
 
                       <div style={{ textAlign: 'right' }}>
-                        <span style={{ fontSize: '1.4rem', fontWeight: 800, color: isEligible ? 'var(--primary)' : 'var(--text-muted)' }}>
+                        <span style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', fontFeatureSettings: 'tnum' }}>
                           ₹{option.estimatedFare}
                         </span>
-                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>Estimated Fare</p>
+                        <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', display: 'block' }}>Total Fare</span>
                       </div>
                     </div>
                   );
@@ -451,13 +489,15 @@ export default function ServiceDetails() {
               </div>
 
               {/* Schedule Timing */}
-              <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-glass)', marginBottom: '1.5rem' }}>
-                <h4 style={{ fontSize: '0.9rem', color: 'var(--text-main)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <Clock className="w-4 h-4 text-blue-500" /> When do you need the vehicle?
-                </h4>
+              <div style={{ padding: '0.875rem', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', marginBottom: '1.25rem' }}>
+                <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <Calendar size={14} />
+                  <span>Scheduled Pickup Time</span>
+                </div>
+                
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
                   <div>
-                    <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Trip Date</label>
+                    <label className="form-label">Date</label>
                     <input
                       type="date"
                       className="form-control"
@@ -467,7 +507,7 @@ export default function ServiceDetails() {
                     />
                   </div>
                   <div>
-                    <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Preferred Slot</label>
+                    <label className="form-label">Time Window</label>
                     <select
                       className="form-control"
                       value={selectedTime}
@@ -485,71 +525,88 @@ export default function ServiceDetails() {
                 type="button"
                 onClick={handleProceed}
                 className="btn btn-primary"
-                style={{ width: '100%', padding: '1rem', fontSize: '1.05rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                style={{ width: '100%' }}
                 disabled={!selectedVehicleOption || !selectedVehicleOption.isEligible}
               >
-                <span>Book {selectedVehicleOption?.displayName || 'Vehicle'}</span>
-                <span>(₹{selectedVehicleOption?.estimatedFare || service.price})</span>
-                <ArrowRight className="w-5 h-5" />
+                <span>Book {selectedVehicleOption?.displayName || 'Vehicle'} (₹{selectedVehicleOption?.estimatedFare || service.price})</span>
+                <ArrowRight size={15} />
               </button>
             </div>
           </div>
         </div>
       ) : (
         /* ========================================================================= */
-        /* STANDARD HOME SERVICES FLOW                                               */
+        /* STANDARD HOME SERVICES WORKFLOW                                           */
         /* ========================================================================= */
-        <div className="grid-cols-2" style={{ gap: '2rem', alignItems: 'flex-start' }}>
-          {/* Left Side: Service Details */}
-          <div className="glass-panel" style={{ padding: '2.5rem', borderRadius: 'var(--radius-lg)' }}>
-            <span className="badge badge-assigned" style={{ marginBottom: '1rem' }}>Active Service</span>
-            <h1 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '1rem' }}>{service.name}</h1>
+        <div className="grid-cols-2" style={{ gap: '1.5rem', alignItems: 'flex-start' }}>
+          {/* Left Column: Scope & Deliverables */}
+          <div className="panel">
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.5rem' }}>
+              <Sparkles size={14} />
+              <span>Standard Service Package</span>
+            </div>
             
-            <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--border-glass)' }}>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.75rem' }}>
+              {service.name}
+            </h1>
+
+            <div style={{ display: 'flex', gap: '2rem', padding: '0.875rem 0', borderTop: '1px solid var(--border-subtle)', borderBottom: '1px solid var(--border-subtle)', marginBottom: '1.25rem' }}>
               <div>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase' }}>Service Charge</p>
-                <p style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--primary)' }}>₹{service.price}</p>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block' }}>Base Rate</span>
+                <span style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--text-main)', fontFeatureSettings: 'tnum' }}>
+                  ₹{service.price}
+                </span>
               </div>
               <div>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase' }}>Duration</p>
-                <p style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-main)' }}>{service.durationMinutes} min</p>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block' }}>Est. Duration</span>
+                <span style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--text-main)', fontFeatureSettings: 'tnum' }}>
+                  {service.durationMinutes} min
+                </span>
               </div>
             </div>
 
-            <h3 style={{ color: 'var(--text-main)', marginBottom: '0.5rem', fontSize: '1.1rem' }}>Service Description</h3>
-            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '0.95rem', marginBottom: '2rem' }}>
-              {service.description} Includes standard tools and inspection fees. Our certified technician will examine the issues, provide an expert fix, and offer tips to prevent recurrence.
+            <h3 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '0.35rem' }}>
+              Scope of Work
+            </h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', lineHeight: 1.5, marginBottom: '1.25rem' }}>
+              {service.description} Includes standard tools, diagnostics, and inspection fees. Certified professional will diagnose, perform repairs, and guarantee workmanship.
             </p>
 
-            <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem 1.25rem', borderRadius: 'var(--radius-md)', border: '1px dashed var(--border-glass)' }}>
-              <h4 style={{ color: 'var(--emerald)', fontSize: '0.9rem', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <ShieldCheck className="w-4 h-4" /> Taaskr Guarantee Included
-              </h4>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
-                We cover damages up to ₹10,000. All professionals are fully verified and approved.
+            <div style={{ background: 'var(--bg-subtle)', padding: '0.875rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
+              <div style={{ color: 'var(--success)', fontSize: '0.8125rem', fontWeight: 600, marginBottom: '0.15rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <ShieldCheck size={16} />
+                <span>Taaskr Service Guarantee</span>
+              </div>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', margin: 0 }}>
+                Up to ₹10,000 protection against accidental damages. 100% verified & approved professionals.
               </p>
             </div>
           </div>
 
-          {/* Right Side: Appointment Scheduling */}
-          <div className="glass-panel" style={{ padding: '2.5rem', borderRadius: 'var(--radius-lg)' }}>
-            <h2 style={{ fontSize: '1.5rem', color: 'var(--text-main)', marginBottom: '1.5rem' }}>Select Date & Time</h2>
+          {/* Right Column: Appointment Schedule & Confirmation */}
+          <div className="panel">
+            <div className="panel-header">
+              <h3 className="panel-title">
+                <Calendar size={16} color="var(--primary)" />
+                <span>Schedule Appointment</span>
+              </h3>
+            </div>
 
             <div className="form-group">
-              <label className="form-label">Choose Service Date</label>
+              <label className="form-label">Select Date</label>
               <input
                 type="date"
                 className="form-control"
-                min={tomorrowStr}
+                min={todayStr}
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Available Time Slots</label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.75rem', marginTop: '0.5rem' }}>
-                {timeSlots.slice(1).map((slot) => {
+            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+              <label className="form-label">Available Time Windows</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.25rem' }}>
+                {timeSlots.map((slot) => {
                   const isSelected = selectedTime === slot.value;
                   return (
                     <button
@@ -557,22 +614,24 @@ export default function ServiceDetails() {
                       type="button"
                       onClick={() => setSelectedTime(slot.value)}
                       style={{
-                        padding: '1rem',
+                        padding: '0.65rem 0.875rem',
                         textAlign: 'left',
-                        borderRadius: 'var(--radius-md)',
-                        border: isSelected ? '1px solid var(--primary)' : '1px solid var(--border-glass)',
-                        background: isSelected ? 'var(--primary-glow)' : 'rgba(255,255,255,0.02)',
-                        color: isSelected ? '#FFFFFF' : 'var(--text-main)',
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid',
+                        borderColor: isSelected ? 'var(--primary)' : 'var(--border-light)',
+                        backgroundColor: isSelected ? 'var(--primary-subtle)' : 'var(--bg-card)',
+                        color: isSelected ? 'var(--primary)' : 'var(--text-main)',
                         fontWeight: isSelected ? 600 : 400,
+                        fontSize: '0.8125rem',
                         cursor: 'pointer',
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        transition: 'all 0.2s ease'
+                        transition: 'var(--transition-fast)'
                       }}
                     >
                       <span>{slot.label}</span>
-                      {isSelected && <span style={{ color: 'var(--primary)', fontWeight: 700 }}>✓</span>}
+                      {isSelected && <Check size={14} color="var(--primary)" />}
                     </button>
                   );
                 })}
@@ -582,9 +641,10 @@ export default function ServiceDetails() {
             <button
               onClick={handleProceed}
               className="btn btn-primary"
-              style={{ width: '100%', marginTop: '2rem', padding: '1rem', fontSize: '1.05rem' }}
+              style={{ width: '100%' }}
             >
-              Continue to Booking Flow →
+              <span>Continue to Checkout</span>
+              <ArrowRight size={15} />
             </button>
           </div>
         </div>

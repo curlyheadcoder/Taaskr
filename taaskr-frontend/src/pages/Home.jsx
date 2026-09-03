@@ -4,7 +4,8 @@ import { api } from '../services/api';
 import { 
   Search, ShieldCheck, Tag, CreditCard, Star, LayoutList, 
   Sparkles, Droplets, Zap, Paintbrush, Leaf, Truck, Settings, 
-  Snowflake, Ruler, Hammer, ArrowRight, Clock, Activity, Stethoscope, Building2
+  Snowflake, Ruler, Hammer, ArrowRight, Activity, Stethoscope, Building2,
+  CheckCircle2, Clock
 } from 'lucide-react';
 
 export default function Home() {
@@ -17,7 +18,6 @@ export default function Home() {
 
   useEffect(() => {
     const checkRoleAndLoadCatalog = async () => {
-      // 1. If user is a Provider or Admin, send them directly to their dedicated dashboard
       try {
         const currentUser = await api.auth.me();
         if (currentUser?.role === 'PROVIDER') {
@@ -29,17 +29,17 @@ export default function Home() {
           return;
         }
       } catch (e) {
-        // Guest / Unauthenticated user - continue to catalog
+        // Guest user
       }
 
-      // 2. Load consumer catalog for customers/guests
       setLoading(true);
       try {
-        const cats = await api.catalog.getCategories();
-        setCategories(cats);
-        
-        const servs = await api.catalog.getServices();
-        setServices(servs);
+        const [cats, servs] = await Promise.all([
+          api.catalog.getCategories(),
+          api.catalog.getServices()
+        ]);
+        setCategories(cats.filter(c => c.active !== false));
+        setServices(servs.filter(s => s.active !== false));
       } catch (err) {
         console.error('Error loading catalog:', err);
       } finally {
@@ -50,258 +50,300 @@ export default function Home() {
   }, [navigate]);
 
   const filteredServices = services.filter(service => {
-    return selectedCategory ? service.categoryId === selectedCategory : true;
+    const matchesCategory = selectedCategory ? service.categoryId === selectedCategory : true;
+    const matchesSearch = searchQuery.trim() === '' || 
+      service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      service.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
   });
 
-  const getCategoryIcon = (categoryName) => {
-    const cat = (categoryName || '').toLowerCase();
-    if (cat.includes('clean')) return <Sparkles className="w-8 h-8" />;
-    if (cat.includes('plumb')) return <Droplets className="w-8 h-8" />;
-    if (cat.includes('electric') || cat.includes('wire')) return <Zap className="w-8 h-8" />;
-    if (cat.includes('ac ') || cat.includes('cool') || cat.includes('refrigerat')) return <Snowflake className="w-8 h-8" />;
-    if (cat.includes('ro ') || cat.includes('water')) return <Droplets className="w-8 h-8" />;
-    if (cat.includes('security') || cat.includes('guard') || cat.includes('cctv')) return <ShieldCheck className="w-8 h-8" />;
-    if (cat.includes('appliance') || cat.includes('repair')) return <Settings className="w-8 h-8" />;
-    if (cat.includes('paint')) return <Paintbrush className="w-8 h-8" />;
-    if (cat.includes('garden') || cat.includes('lawn')) return <Leaf className="w-8 h-8" />;
-    if (cat.includes('logistics') || cat.includes('mov') || cat.includes('vehicle') || cat.includes('transport') || cat.includes('truck') || cat.includes('cargo') || cat.includes('courier') || cat.includes('delivery')) return <Truck className="w-8 h-8" />;
-    if (cat.includes('carpent') || cat.includes('wood')) return <Ruler className="w-8 h-8" />;
-    if (cat.includes('diagnostic') || cat.includes('test')) return <Activity className="w-8 h-8" />;
-    if (cat.includes('health') || cat.includes('care') || cat.includes('compound')) return <Stethoscope className="w-8 h-8" />;
-    if (cat.includes('civil') || cat.includes('property') || cat.includes('mason') || cat.includes('roof')) return <Building2 className="w-8 h-8" />;
-    return <Hammer className="w-8 h-8" />;
-  };
-
   const getServiceConfig = (serviceName, categoryName) => {
-    const name = serviceName.toLowerCase();
+    const name = (serviceName || '').toLowerCase();
     const cat = (categoryName || '').toLowerCase();
     
     if (cat.includes('logistics') || cat.includes('cargo') || cat.includes('courier') || cat.includes('vehicle') || cat.includes('transport') || cat.includes('delivery') || name.includes('bike') || name.includes('truck') || name.includes('rickshaw') || name.includes('loading') || name.includes('tempo')) {
-      return { icon: <Truck className="service-icon" />, color: '#2563EB', bg: '#EFF6FF' };
+      return { icon: <Truck size={20} />, color: '#2563EB', bg: 'var(--primary-subtle)' };
     }
-    if (cat.includes('clean') || name.includes('clean')) return { icon: <Sparkles className="service-icon" />, color: '#3B82F6', bg: '#EFF6FF' };
-    if (cat.includes('plumb') || name.includes('tap') || name.includes('pipe') || name.includes('leak')) return { icon: <Droplets className="service-icon" />, color: '#06B6D4', bg: '#ECFEFF' };
-    if (cat.includes('electric') || name.includes('switch') || name.includes('fan') || name.includes('wire')) return { icon: <Zap className="service-icon" />, color: '#EAB308', bg: '#FEFCE8' };
-    if (name.includes('ac') || name.includes('refrigerator') || name.includes('cool')) return { icon: <Snowflake className="service-icon" />, color: '#0EA5E9', bg: '#F0F9FF' };
-    if (name.includes('ro ') || name.startsWith('ro') || name.includes('water')) return { icon: <Droplets className="service-icon" />, color: '#38BDF8', bg: '#F0F9FF' };
-    if (cat.includes('security') || name.includes('cctv') || name.includes('lock') || name.includes('guard')) return { icon: <ShieldCheck className="service-icon" />, color: '#A855F7', bg: '#FAF5FF' };
-    if (cat.includes('appliance') || name.includes('machine') || name.includes('repair')) return { icon: <Settings className="service-icon" />, color: '#64748B', bg: '#F8FAFC' };
-    if (cat.includes('diagnostic') || name.includes('blood') || name.includes('checkup')) return { icon: <Activity className="service-icon" />, color: '#EF4444', bg: '#FEF2F2' };
-    if (cat.includes('health') || name.includes('patient') || name.includes('compounder')) return { icon: <Stethoscope className="service-icon" />, color: '#14B8A6', bg: '#F0FDFA' };
-    if (cat.includes('civil') || name.includes('masonry') || name.includes('roof') || name.includes('floor')) return { icon: <Building2 className="service-icon" />, color: '#F97316', bg: '#FFF7ED' };
-    
-    if (name.includes('paint')) return { icon: <Paintbrush className="service-icon" />, color: '#A855F7', bg: '#FAF5FF' }; 
-    if (name.includes('garden') || name.includes('lawn')) return { icon: <Leaf className="service-icon" />, color: '#22C55E', bg: '#F0FDF4' }; 
-    if (name.includes('mov')) return { icon: <Truck className="service-icon" />, color: '#F97316', bg: '#FFF7ED' }; 
-    if (name.includes('carpent') || name.includes('wood')) return { icon: <Ruler className="service-icon" />, color: '#8B5CF6', bg: '#F5F3FF' }; 
-    return { icon: <Hammer className="service-icon" />, color: '#6366F1', bg: '#EEF2FF' };
+    if (cat.includes('clean') || name.includes('clean')) return { icon: <Sparkles size={20} />, color: '#2563EB', bg: 'var(--primary-subtle)' };
+    if (cat.includes('plumb') || name.includes('tap') || name.includes('pipe') || name.includes('leak')) return { icon: <Droplets size={20} />, color: '#0284C7', bg: 'rgba(2, 132, 199, 0.1)' };
+    if (cat.includes('electric') || name.includes('switch') || name.includes('fan') || name.includes('wire')) return { icon: <Zap size={20} />, color: '#D97706', bg: 'rgba(217, 119, 6, 0.1)' };
+    if (name.includes('ac') || name.includes('refrigerator') || name.includes('cool')) return { icon: <Snowflake size={20} />, color: '#0284C7', bg: 'rgba(2, 132, 199, 0.1)' };
+    if (name.includes('ro ') || name.startsWith('ro') || name.includes('water')) return { icon: <Droplets size={20} />, color: '#0284C7', bg: 'rgba(2, 132, 199, 0.1)' };
+    if (cat.includes('security') || name.includes('cctv') || name.includes('lock') || name.includes('guard')) return { icon: <ShieldCheck size={20} />, color: '#7C3AED', bg: 'rgba(124, 58, 237, 0.1)' };
+    if (cat.includes('appliance') || name.includes('machine') || name.includes('repair')) return { icon: <Settings size={20} />, color: '#475569', bg: 'rgba(71, 85, 105, 0.1)' };
+    if (cat.includes('diagnostic') || name.includes('blood') || name.includes('checkup')) return { icon: <Activity size={20} />, color: '#DC2626', bg: 'rgba(220, 38, 38, 0.1)' };
+    if (cat.includes('health') || name.includes('patient') || name.includes('compounder')) return { icon: <Stethoscope size={20} />, color: '#059669', bg: 'rgba(5, 150, 105, 0.1)' };
+    if (cat.includes('civil') || name.includes('masonry') || name.includes('roof') || name.includes('floor')) return { icon: <Building2 size={20} />, color: '#EA580C', bg: 'rgba(234, 88, 12, 0.1)' };
+    if (name.includes('paint')) return { icon: <Paintbrush size={20} />, color: '#7C3AED', bg: 'rgba(124, 58, 237, 0.1)' }; 
+    if (name.includes('garden') || name.includes('lawn')) return { icon: <Leaf size={20} />, color: '#059669', bg: 'rgba(5, 150, 105, 0.1)' }; 
+    if (name.includes('carpent') || name.includes('wood')) return { icon: <Ruler size={20} />, color: '#7C3AED', bg: 'rgba(124, 58, 237, 0.1)' }; 
+    return { icon: <Hammer size={20} />, color: '#475569', bg: 'rgba(71, 85, 105, 0.1)' };
   };
 
   return (
-    <div className="animate-fade-in">
-      {/* Premium Hero Section */}
+    <div className="animate-fade-in" style={{ paddingBottom: '4rem' }}>
+      {/* Hero Header */}
       <section style={{
-        position: 'relative',
-        background: `linear-gradient(to right, #0F172A 0%, #1E293B 100%)`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        padding: '8rem 2rem',
-        minHeight: '600px',
-        display: 'flex',
-        alignItems: 'center'
+        backgroundColor: 'var(--bg-card)',
+        borderBottom: '1px solid var(--border-light)',
+        padding: '3.5rem 1.5rem 3rem 1.5rem'
       }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', width: '100%' }}>
-          <div style={{ maxWidth: '650px' }}>
-            <span className="badge" style={{ background: 'var(--secondary)', color: '#fff', marginBottom: '1.5rem', fontSize: '0.85rem' }}>
-              Premium Quality Guaranteed
-            </span>
+        <div className="app-container" style={{ padding: 0 }}>
+          <div style={{ maxWidth: '720px' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--primary-subtle)', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 600, marginBottom: '1rem' }}>
+              <ShieldCheck size={14} />
+              <span>Verified On-Demand Service Platform</span>
+            </div>
+            
             <h1 style={{
-              fontSize: '4rem',
-              fontWeight: 800,
-              color: '#ffffff',
-              lineHeight: 1.1,
-              marginBottom: '1.5rem',
-              letterSpacing: '-0.02em'
+              fontSize: '2.25rem',
+              fontWeight: 700,
+              color: 'var(--text-main)',
+              lineHeight: 1.2,
+              letterSpacing: '-0.025em',
+              marginBottom: '0.75rem'
             }}>
-              Trusted Services.<br />Right at Your Door.
+              Professional Services & Logistics, Simplified.
             </h1>
+            
             <p style={{
-              fontSize: '1.25rem',
-              color: '#e2e8f0',
-              marginBottom: '2.5rem',
-              lineHeight: 1.6
+              fontSize: '1rem',
+              color: 'var(--text-muted)',
+              lineHeight: 1.5,
+              marginBottom: '1.75rem'
             }}>
-              Book verified professionals for home repairs, maintenance, and everyday services. Experience seamless booking and reliable execution.
+              Book vetted electricians, technicians, home specialists, and on-demand freight transport with upfront pricing and live tracking.
             </p>
 
-            {/* Call to Action button */}
-            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-              <a
-                href="#catalog-section"
-                className="btn btn-primary"
+            {/* Search Input Bar */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              backgroundColor: 'var(--bg-page)',
+              border: '1px solid var(--border-light)',
+              borderRadius: 'var(--radius-md)',
+              padding: '0.35rem 0.5rem 0.35rem 1rem',
+              gap: '0.75rem',
+              maxWidth: '560px',
+              boxShadow: 'var(--shadow-xs)'
+            }}>
+              <Search size={18} color="var(--text-light)" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search services (e.g. Electrician, Plumbing, Mini Truck, RO Repair)..."
                 style={{
-                  padding: '1rem 2.25rem',
-                  fontSize: '1.1rem',
-                  fontWeight: 700,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  background: '#2563EB',
                   border: 'none',
-                  boxShadow: '0 10px 25px -5px rgba(37, 99, 235, 0.5)'
+                  background: 'transparent',
+                  outline: 'none',
+                  width: '100%',
+                  fontSize: '0.875rem',
+                  color: 'var(--text-main)'
                 }}
-              >
-                Explore Services <ArrowRight size={20} />
-              </a>
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'var(--text-muted)',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    padding: '0.25rem 0.5rem'
+                  }}
+                >
+                  Clear
+                </button>
+              )}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Trust Section */}
-      <section style={{ background: 'var(--bg-card)', padding: '3rem 1.5rem', borderBottom: '1px solid var(--border-light)' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '2rem' }}>
+      {/* Trust Highlights Strip */}
+      <section style={{
+        backgroundColor: 'var(--bg-page)',
+        borderBottom: '1px solid var(--border-light)',
+        padding: '1.25rem 1.5rem'
+      }}>
+        <div className="app-container" style={{ padding: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
           {[
-            { icon: <ShieldCheck size={32} color="var(--success)" />, title: 'Verified Professionals', desc: 'Background checked & highly rated' },
-            { icon: <Tag size={32} color="var(--primary)" />, title: 'Transparent Pricing', desc: 'No hidden fees or surprise charges' },
-            { icon: <CreditCard size={32} color="var(--info)" />, title: 'Secure Booking', desc: 'Pay safely online or after service' },
-            { icon: <Star size={32} color="var(--warning)" />, title: 'Reliable Service', desc: 'Guaranteed quality execution' }
+            { icon: <ShieldCheck size={18} color="var(--primary)" />, title: 'Vetted Experts', desc: 'Background & skill verified' },
+            { icon: <Tag size={18} color="var(--primary)" />, title: 'Transparent Quotes', desc: 'Standardized rate cards' },
+            { icon: <CreditCard size={18} color="var(--primary)" />, title: 'Secure Escrow', desc: 'Pay online or cash upon service' },
+            { icon: <Clock size={18} color="var(--primary)" />, title: 'Flexible Scheduling', desc: 'Instant dispatch or scheduled slots' }
           ].map((item, idx) => (
-            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1, minWidth: '200px' }}>
-              <div style={{ background: 'var(--bg-page)', padding: '1.25rem', borderRadius: '50%' }}>{item.icon}</div>
+            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: 'var(--radius-xs)',
+                backgroundColor: 'var(--bg-card)',
+                border: '1px solid var(--border-light)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                {item.icon}
+              </div>
               <div>
-                <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.2rem' }}>{item.title}</h4>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{item.desc}</p>
+                <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-main)' }}>{item.title}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.desc}</div>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Main Services Area with Premium Background */}
-      <div id="catalog-section" className="services-section-bg">
-        <main className="app-container" style={{ paddingTop: '5rem', paddingBottom: '6rem' }}>
-          
-          {/* Section Header */}
-          <div style={{ textAlign: 'center', marginBottom: '4rem', maxWidth: '800px', margin: '0 auto 4rem' }}>
-            <h2 style={{ fontSize: '2.75rem', fontWeight: 800, marginBottom: '1.25rem', color: 'var(--primary)' }}>
-              Services That Make Life Easier
-            </h2>
-            <p style={{ fontSize: '1.15rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-              Find trusted professionals for your everyday needs — from home repairs to maintenance and more.
-            </p>
-          </div>
+      {/* Catalog & Services Grid */}
+      <main className="app-container" style={{ paddingTop: '2rem' }}>
+        
+        {/* Category Filter Pills */}
+        <div style={{ marginBottom: '1.75rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+            <button
+              onClick={() => setSelectedCategory(null)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.4rem 0.85rem',
+                borderRadius: 'var(--radius-full)',
+                fontSize: '0.8125rem',
+                fontWeight: selectedCategory === null ? 600 : 500,
+                border: '1px solid',
+                borderColor: selectedCategory === null ? 'var(--primary)' : 'var(--border-light)',
+                backgroundColor: selectedCategory === null ? 'var(--primary-subtle)' : 'var(--bg-card)',
+                color: selectedCategory === null ? 'var(--primary)' : 'var(--text-muted)',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                transition: 'var(--transition-fast)'
+              }}
+            >
+              <LayoutList size={14} />
+              <span>All Services</span>
+              <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>({services.length})</span>
+            </button>
 
-          {/* Service Categories */}
-          <div style={{ marginBottom: '4rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-              <button
-                onClick={() => setSelectedCategory(null)}
-                className="premium-card premium-card-hover"
-                style={{
-                  border: selectedCategory === null ? '2px solid var(--primary)' : '1px solid var(--border-light)',
-                  padding: '1.5rem', cursor: 'pointer', minWidth: '150px',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center'
-                }}
-              >
-                <div style={{ marginBottom: '1rem', color: selectedCategory === null ? 'var(--primary)' : 'var(--text-muted)' }}>
-                  <LayoutList size={32} />
-                </div>
-                <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>All Services</div>
-              </button>
-              {categories.map((cat) => (
+            {categories.map((cat) => {
+              const count = services.filter(s => s.categoryId === cat.id).length;
+              const isSelected = selectedCategory === cat.id;
+              return (
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
-                  className="premium-card premium-card-hover"
                   style={{
-                    border: selectedCategory === cat.id ? '2px solid var(--primary)' : '1px solid var(--border-light)',
-                    padding: '1.5rem', cursor: 'pointer', minWidth: '150px',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center'
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    padding: '0.4rem 0.85rem',
+                    borderRadius: 'var(--radius-full)',
+                    fontSize: '0.8125rem',
+                    fontWeight: isSelected ? 600 : 500,
+                    border: '1px solid',
+                    borderColor: isSelected ? 'var(--primary)' : 'var(--border-light)',
+                    backgroundColor: isSelected ? 'var(--primary-subtle)' : 'var(--bg-card)',
+                    color: isSelected ? 'var(--primary)' : 'var(--text-muted)',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    transition: 'var(--transition-fast)'
                   }}
                 >
-                  <div style={{ marginBottom: '1rem', color: selectedCategory === cat.id ? 'var(--primary)' : 'var(--text-muted)' }}>
-                    {getCategoryIcon(cat.name)}
-                  </div>
-                  <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{cat.name}</div>
+                  <span>{cat.name}</span>
+                  <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>({count})</span>
                 </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
+        </div>
 
-          {/* Dynamic Services Grid */}
-          <div style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-            <h3 style={{ fontSize: '1.5rem', color: 'var(--primary)', fontWeight: 700 }}>
-              Showing {filteredServices.length} {selectedCategory ? 'services' : 'options'}
-            </h3>
+        {/* Section Header with Count */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+          <div>
+            <h2 style={{ fontSize: '1.15rem', fontWeight: 600, color: 'var(--text-main)' }}>
+              {selectedCategory ? categories.find(c => c.id === selectedCategory)?.name : 'All Available Services'}
+            </h2>
+            <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+              Showing {filteredServices.length} {filteredServices.length === 1 ? 'service' : 'services'}
+            </p>
           </div>
+        </div>
 
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '6rem 0', color: 'var(--text-muted)' }}>
-              <div style={{
-                display: 'inline-block', width: '40px', height: '40px',
-                border: '4px solid var(--border-light)', borderTopColor: 'var(--primary)',
-                borderRadius: '50%', animation: 'spin 1s linear infinite'
-              }} />
-              <p style={{ marginTop: '1.5rem', fontWeight: 500, fontSize: '1.1rem' }}>Fetching available services...</p>
-            </div>
-          ) : filteredServices.length === 0 ? (
-            <div className="premium-card" style={{ padding: '6rem 2rem', textAlign: 'center', borderRadius: '24px' }}>
-              <div style={{ color: 'var(--text-light)', display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
-                <Search size={64} />
+        {/* Loading Skeletons */}
+        {loading ? (
+          <div className="grid-cols-4">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
+              <div key={n} className="panel" style={{ height: '200px', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div className="skeleton" style={{ width: '40px', height: '40px' }} />
+                <div className="skeleton" style={{ width: '70%', height: '18px' }} />
+                <div className="skeleton" style={{ width: '100%', height: '14px' }} />
+                <div className="skeleton" style={{ width: '40%', height: '14px', marginTop: 'auto' }} />
               </div>
-              <h3 style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}>No Services Found</h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '1.05rem' }}>
-                We couldn't find any services matching your search. Try adjusting your filters.
-              </p>
+            ))}
+          </div>
+        ) : filteredServices.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-state-icon">
+              <Search size={20} />
             </div>
-          ) : (
-            <div className="grid-cols-4">
-              {filteredServices.map((service) => {
-                const cat = categories.find(c => c.id === service.categoryId);
-                const config = getServiceConfig(service.name, cat?.name);
-                return (
-                  <div
-                    key={service.id}
-                    className="service-card"
-                    onClick={() => navigate(`/services/${service.id}`)}
-                  >
-                    <div className="icon-squircle" style={{ backgroundColor: config.bg, color: config.color }}>
-                      {config.icon}
-                    </div>
+            <h3 className="empty-state-title">No services found</h3>
+            <p className="empty-state-description">
+              We couldn't find any services matching your filter criteria. Try searching with a different term or reset filters.
+            </p>
+            <button
+              onClick={() => { setSelectedCategory(null); setSearchQuery(''); }}
+              className="btn btn-secondary btn-sm"
+            >
+              Reset Filters
+            </button>
+          </div>
+        ) : (
+          <div className="grid-cols-4">
+            {filteredServices.map((service) => {
+              const cat = categories.find(c => c.id === service.categoryId);
+              const config = getServiceConfig(service.name, cat?.name);
+              const priceUnit = service.pricingType === 'HOURLY' ? '/ hr' : service.pricingType === 'PER_KM' ? '/ km' : '';
 
-                    <h3 className="service-card-title">{service.name}</h3>
-                    <p className="service-card-desc">
-                      {service.description.length > 80 
-                        ? service.description.substring(0, 80) + '...' 
-                        : service.description}
-                    </p>
-
-                    <div className="service-card-footer">
-                      <div>
-                        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>
-                          Starting from
-                        </div>
-                        <div className="service-price">
-                          ₹{service.price}
-                        </div>
-                      </div>
-                      
-                      <button className="service-cta" style={{ color: config.color }} onClick={(e) => {
-                         e.stopPropagation();
-                         navigate(`/services/${service.id}`);
-                      }}>
-                        View Service <ArrowRight size={16} />
-                      </button>
-                    </div>
+              return (
+                <div
+                  key={service.id}
+                  className="service-card"
+                  onClick={() => navigate(`/services/${service.id}`)}
+                >
+                  <div className="icon-squircle" style={{ backgroundColor: config.bg, color: config.color }}>
+                    {config.icon}
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </main>
-      </div>
+
+                  <h3 className="service-card-title">{service.name}</h3>
+                  <p className="service-card-desc">
+                    {service.description.length > 90 
+                      ? service.description.substring(0, 90) + '...' 
+                      : service.description}
+                  </p>
+
+                  <div className="service-card-footer">
+                    <div>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block' }}>
+                        Base rate
+                      </span>
+                      <span className="service-price">
+                        ₹{service.price} {priceUnit}
+                      </span>
+                    </div>
+                    
+                    <span className="service-cta">
+                      Book <ArrowRight size={14} />
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </main>
     </div>
   );
 }
-

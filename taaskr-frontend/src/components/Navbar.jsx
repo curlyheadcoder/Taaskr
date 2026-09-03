@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../services/api';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, Briefcase, ShieldCheck, Calendar, Grid, LogOut, User } from 'lucide-react';
 
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [user, setUser] = useState(null);
-
   const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
 
   useEffect(() => {
@@ -20,7 +19,6 @@ export default function Navbar() {
     }
   }, [isDark]);
 
-  // Poll or watch for authentication changes by listening to storage events & route changes
   const checkUser = async () => {
     try {
       const profile = await api.auth.me();
@@ -53,151 +51,202 @@ export default function Navbar() {
   };
 
   return (
-    <header className="premium-card" style={{
+    <header style={{
       position: 'sticky',
       top: 0,
       zIndex: 50,
-      borderRadius: '0',
-      borderTop: 'none',
-      borderLeft: 'none',
-      borderRight: 'none',
-      padding: '1rem 2rem',
+      backgroundColor: 'var(--bg-card)',
+      borderBottom: '1px solid var(--border-light)',
+      padding: '0.65rem 1.5rem',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
+      height: '56px'
     }}>
-      {/* Brand Logo - Routes to role home */}
-      <Link 
-        to={user?.role === 'ADMIN' ? '/admin' : user?.role === 'PROVIDER' ? '/provider' : '/'} 
-        style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}
-      >
-        <img
-          src="/taaskr-logo.png"
-          alt="Taaskr logo"
-          width="36"
-          height="36"
-          style={{ display: 'block', objectFit: 'contain' }}
-        />
-        <span style={{
-          fontFamily: 'var(--font-body)',
-          fontSize: '1.5rem',
-          fontWeight: 800,
-          color: isDark ? '#60A5FA' : '#2563EB',
-          letterSpacing: '-0.03em'
-        }}>Taaskr</span>
-      </Link>
+      {/* Brand Logo & Context */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+        <Link 
+          to={user?.role === 'ADMIN' ? '/admin' : user?.role === 'PROVIDER' ? '/provider' : '/'} 
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+        >
+          <img
+            src="/taaskr-logo.png"
+            alt="Taaskr"
+            width="28"
+            height="28"
+            style={{ display: 'block', objectFit: 'contain' }}
+          />
+          <span style={{
+            fontFamily: 'var(--font-body)',
+            fontSize: '1.25rem',
+            fontWeight: 700,
+            color: 'var(--text-main)',
+            letterSpacing: '-0.03em'
+          }}>Taaskr</span>
+        </Link>
 
-      {/* Navigation Links based on role */}
-      <nav style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-        {(!user || user.role === 'USER') && (
-          <>
-            <Link to="/" style={{
-              color: location.pathname === '/' ? 'var(--secondary)' : 'var(--text-muted)',
-              fontWeight: 600,
-              transition: 'var(--transition-fast)'
-            }}>Browse Services</Link>
-            {user && (
-              <Link to="/bookings" style={{
-                color: location.pathname === '/bookings' ? 'var(--secondary)' : 'var(--text-muted)',
+        {/* Workspace Navigation Links */}
+        <nav style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+          {(!user || user.role === 'USER') && (
+            <>
+              <Link 
+                to="/" 
+                style={{
+                  padding: '0.4rem 0.65rem',
+                  borderRadius: 'var(--radius-sm)',
+                  fontSize: '0.8125rem',
+                  fontWeight: location.pathname === '/' ? 600 : 500,
+                  color: location.pathname === '/' ? 'var(--primary)' : 'var(--text-muted)',
+                  backgroundColor: location.pathname === '/' ? 'var(--primary-subtle)' : 'transparent',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  transition: 'var(--transition-fast)'
+                }}
+              >
+                <Grid size={15} />
+                <span>Services</span>
+              </Link>
+              {user && (
+                <Link 
+                  to="/bookings" 
+                  style={{
+                    padding: '0.4rem 0.65rem',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: '0.8125rem',
+                    fontWeight: location.pathname === '/bookings' ? 600 : 500,
+                    color: location.pathname === '/bookings' ? 'var(--primary)' : 'var(--text-muted)',
+                    backgroundColor: location.pathname === '/bookings' ? 'var(--primary-subtle)' : 'transparent',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    transition: 'var(--transition-fast)'
+                  }}
+                >
+                  <Calendar size={15} />
+                  <span>My Bookings</span>
+                </Link>
+              )}
+            </>
+          )}
+
+          {user && user.role === 'PROVIDER' && (
+            <Link 
+              to="/provider" 
+              style={{
+                padding: '0.35rem 0.75rem',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '0.8125rem',
                 fontWeight: 600,
-                transition: 'var(--transition-fast)'
-              }}>My Bookings</Link>
-            )}
-          </>
-        )}
+                color: 'var(--primary)',
+                backgroundColor: 'var(--primary-subtle)',
+                border: '1px solid var(--border-light)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem'
+              }}
+            >
+              <Briefcase size={15} />
+              <span>Partner Console</span>
+            </Link>
+          )}
 
-        {user && user.role === 'PROVIDER' && (
-          <Link to="/provider" style={{
-            color: isDark ? '#60A5FA' : '#1D4ED8',
-            fontWeight: 700,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.4rem',
-            padding: '0.4rem 0.85rem',
-            borderRadius: 'var(--radius-sm)',
-            background: isDark ? 'rgba(59, 130, 246, 0.12)' : '#EFF6FF',
-            border: isDark ? '1px solid rgba(59, 130, 246, 0.25)' : '1px solid #BFDBFE'
-          }}>
-            💼 Provider Partner Portal
-          </Link>
-        )}
+          {user && user.role === 'ADMIN' && (
+            <Link 
+              to="/admin" 
+              style={{
+                padding: '0.35rem 0.75rem',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '0.8125rem',
+                fontWeight: 600,
+                color: 'var(--text-main)',
+                backgroundColor: 'var(--bg-subtle)',
+                border: '1px solid var(--border-light)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem'
+              }}
+            >
+              <ShieldCheck size={15} />
+              <span>Admin Center</span>
+            </Link>
+          )}
+        </nav>
+      </div>
 
-        {user && user.role === 'ADMIN' && (
-          <Link to="/admin" style={{
-            color: 'var(--primary)',
-            fontWeight: 700,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.4rem',
-            padding: '0.4rem 0.85rem',
-            borderRadius: 'var(--radius-sm)',
-            background: isDark ? 'rgba(255, 255, 255, 0.08)' : '#F4F4F5',
-            border: isDark ? '1px solid #3F3F46' : '1px solid #E4E4E7'
-          }}>
-            🛡️ Admin Center
-          </Link>
-        )}
-      </nav>
-
-      {/* User Actions */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      {/* User Actions & Theme Toggle */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <button 
           onClick={() => setIsDark(!isDark)} 
           style={{ 
-            background: 'var(--bg-hover)', 
+            background: 'transparent', 
             border: '1px solid var(--border-light)', 
-            borderRadius: '9999px',
+            borderRadius: 'var(--radius-sm)',
             cursor: 'pointer', 
-            padding: '0.4rem',
+            padding: '0.35rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            color: 'var(--text-muted)',
             transition: 'var(--transition-fast)'
           }}
-          title="Toggle Theme"
+          title={isDark ? "Switch to Light theme" : "Switch to Dark theme"}
         >
-          {isDark ? <Sun size={18} color="var(--secondary)" /> : <Moon size={18} color="var(--primary)" />}
+          {isDark ? <Sun size={15} /> : <Moon size={15} />}
         </button>
+
         {user ? (
-          <>
-            <div style={{ textAlign: 'right', display: 'block' }}>
-              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)' }}>
-                {user.name}
-              </div>
-              <span style={{
-                fontSize: '0.68rem',
-                fontWeight: 700,
-                padding: '0.15rem 0.5rem',
-                borderRadius: 'var(--radius-full)',
-                marginTop: '0.15rem',
-                display: 'inline-block',
-                textTransform: 'uppercase',
-                background: user.role === 'ADMIN'
-                  ? (isDark ? '#27272A' : '#18181B')
-                  : (isDark ? 'rgba(59, 130, 246, 0.15)' : '#EFF6FF'),
-                color: user.role === 'ADMIN'
-                  ? (isDark ? '#FAFAFA' : '#FFFFFF')
-                  : (isDark ? '#60A5FA' : '#1D4ED8'),
-                border: user.role === 'ADMIN'
-                  ? (isDark ? '1px solid #3F3F46' : '1px solid #27272A')
-                  : (isDark ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid #BFDBFE')
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: 'var(--radius-xs)',
+                backgroundColor: 'var(--primary-subtle)',
+                color: 'var(--primary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 600,
+                fontSize: '0.75rem'
               }}>
-                {user.role}
-              </span>
+                {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-main)', lineHeight: 1.1 }}>
+                  {user.name}
+                </span>
+                <span style={{
+                  fontSize: '0.65rem',
+                  fontWeight: 500,
+                  color: 'var(--text-muted)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.03em'
+                }}>
+                  {user.role}
+                </span>
+              </div>
             </div>
-            <button onClick={handleLogout} className="btn btn-secondary btn-small">
-              Logout
+
+            <button 
+              onClick={handleLogout} 
+              className="btn btn-secondary btn-sm"
+              title="Sign out of account"
+              style={{ padding: '0.3rem 0.55rem' }}
+            >
+              <LogOut size={13} />
+              <span>Logout</span>
             </button>
-          </>
+          </div>
         ) : (
-          <>
-            <Link to="/login" className="btn btn-secondary btn-small" style={{ border: 'none', background: 'transparent' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Link to="/login" className="btn btn-ghost btn-sm">
               Sign In
             </Link>
-            <Link to="/register" className="btn btn-primary btn-small">
-              Sign Up
+            <Link to="/register" className="btn btn-primary btn-sm">
+              Get Started
             </Link>
-          </>
+          </div>
         )}
       </div>
     </header>
