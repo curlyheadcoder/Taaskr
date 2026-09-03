@@ -390,10 +390,10 @@ export default function BookingFlow() {
           )}
 
           <div className="form-group">
-            <label className="form-label">Special Instructions / Cargo Notes (Optional)</label>
+            <label className="form-label">Special Instructions (Optional)</label>
             <textarea
               rows="2"
-              placeholder={isVehicle ? "e.g. Call sender before reaching, fragile items inside" : "e.g. Please call before arriving"}
+              placeholder="e.g. Landmark, access notes, or specific requirements..."
               className="form-control"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
