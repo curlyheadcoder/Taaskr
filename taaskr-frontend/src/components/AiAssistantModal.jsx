@@ -57,7 +57,7 @@ export default function AiAssistantModal() {
       {/* Floating Action Button */}
       <button
         onClick={() => setIsOpen(true)}
-        aria-label="Open taasky Assistant"
+        aria-label="Open Taasky Assistant"
         style={{
           position: 'fixed',
           bottom: '1.75rem',
@@ -79,7 +79,7 @@ export default function AiAssistantModal() {
         }}
       >
         <Sparkles size={16} />
-        <span>taasky</span>
+        <span>Taasky</span>
       </button>
 
       {/* Assistant Modal */}
@@ -108,10 +108,10 @@ export default function AiAssistantModal() {
                 </div>
                 <div>
                   <h2 style={{ fontSize: '1.05rem', color: 'var(--text-main)', margin: 0, fontWeight: 700 }}>
-                    taasky
+                    Taasky
                   </h2>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', margin: '0.1rem 0 0' }}>
-                    Describe your problem and taasky will find the right service for you
+                    Describe your problem and Taasky will find the right service for you
                   </p>
                 </div>
               </div>
@@ -180,11 +180,11 @@ export default function AiAssistantModal() {
                 disabled={loading || !query.trim()}
               >
                 {loading ? (
-                  <span>taasky is analyzing...</span>
+                  <span>Taasky is analyzing...</span>
                 ) : (
                   <>
                     <Sparkles size={14} />
-                    <span>Ask taasky</span>
+                    <span>Ask Taasky</span>
                   </>
                 )}
               </button>

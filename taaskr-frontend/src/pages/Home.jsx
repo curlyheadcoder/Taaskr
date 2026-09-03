@@ -1,16 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { 
   Search, ShieldCheck, Tag, CreditCard, Star, LayoutList, 
   Sparkles, Droplets, Zap, Paintbrush, Leaf, Truck, Settings, 
-  Snowflake, Ruler, Hammer, ArrowRight, Activity, Stethoscope, Building2,
-  CheckCircle2, Clock, ChevronLeft, ChevronRight, Zap as Flash, Box, Wrench
+  Snowflake, Ruler, Hammer, ArrowRight, Activity, Stethoscope, Building2
 } from 'lucide-react';
 
 export default function Home() {
   const navigate = useNavigate();
-  const categoryScrollRef = useRef(null);
   const [categories, setCategories] = useState([]);
   const [services, setServices] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -58,11 +56,23 @@ export default function Home() {
     return matchesCategory && matchesSearch;
   });
 
-  const scrollCategories = (direction) => {
-    if (categoryScrollRef.current) {
-      const scrollAmount = direction === 'left' ? -260 : 260;
-      categoryScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    }
+  const getCategoryIcon = (categoryName) => {
+    const cat = (categoryName || '').toLowerCase();
+    if (cat.includes('clean')) return <Sparkles size={28} />;
+    if (cat.includes('plumb')) return <Droplets size={28} />;
+    if (cat.includes('electric') || cat.includes('wire')) return <Zap size={28} />;
+    if (cat.includes('ac ') || cat.includes('cool') || cat.includes('refrigerat')) return <Snowflake size={28} />;
+    if (cat.includes('ro ') || cat.includes('water')) return <Droplets size={28} />;
+    if (cat.includes('security') || cat.includes('guard') || cat.includes('cctv')) return <ShieldCheck size={28} />;
+    if (cat.includes('appliance') || cat.includes('repair')) return <Settings size={28} />;
+    if (cat.includes('paint')) return <Paintbrush size={28} />;
+    if (cat.includes('garden') || cat.includes('lawn')) return <Leaf size={28} />;
+    if (cat.includes('logistics') || cat.includes('mov') || cat.includes('vehicle') || cat.includes('transport') || cat.includes('truck') || cat.includes('cargo') || cat.includes('courier') || cat.includes('delivery')) return <Truck size={28} />;
+    if (cat.includes('carpent') || cat.includes('wood')) return <Ruler size={28} />;
+    if (cat.includes('diagnostic') || cat.includes('test')) return <Activity size={28} />;
+    if (cat.includes('health') || cat.includes('care') || cat.includes('compound')) return <Stethoscope size={28} />;
+    if (cat.includes('civil') || cat.includes('property') || cat.includes('mason') || cat.includes('roof')) return <Building2 size={28} />;
+    return <Hammer size={28} />;
   };
 
   const getServiceConfig = (serviceName, categoryName) => {
@@ -70,354 +80,213 @@ export default function Home() {
     const cat = (categoryName || '').toLowerCase();
     
     if (cat.includes('logistics') || cat.includes('cargo') || cat.includes('courier') || cat.includes('vehicle') || cat.includes('transport') || cat.includes('delivery') || name.includes('bike') || name.includes('truck') || name.includes('rickshaw') || name.includes('loading') || name.includes('tempo')) {
-      return { icon: <Truck size={20} />, color: '#2563EB', bg: 'var(--primary-subtle)' };
+      return { icon: <Truck size={20} />, color: '#2563EB', bg: '#EFF6FF' };
     }
-    if (cat.includes('clean') || name.includes('clean')) return { icon: <Sparkles size={20} />, color: '#2563EB', bg: 'var(--primary-subtle)' };
-    if (cat.includes('plumb') || name.includes('tap') || name.includes('pipe') || name.includes('leak')) return { icon: <Droplets size={20} />, color: '#0284C7', bg: 'rgba(2, 132, 199, 0.1)' };
-    if (cat.includes('electric') || name.includes('switch') || name.includes('fan') || name.includes('wire')) return { icon: <Zap size={20} />, color: '#D97706', bg: 'rgba(217, 119, 6, 0.1)' };
-    if (name.includes('ac') || name.includes('refrigerator') || name.includes('cool')) return { icon: <Snowflake size={20} />, color: '#0284C7', bg: 'rgba(2, 132, 199, 0.1)' };
-    if (name.includes('ro ') || name.startsWith('ro') || name.includes('water')) return { icon: <Droplets size={20} />, color: '#0284C7', bg: 'rgba(2, 132, 199, 0.1)' };
-    if (cat.includes('security') || name.includes('cctv') || name.includes('lock') || name.includes('guard')) return { icon: <ShieldCheck size={20} />, color: '#7C3AED', bg: 'rgba(124, 58, 237, 0.1)' };
-    if (cat.includes('appliance') || name.includes('machine') || name.includes('repair')) return { icon: <Settings size={20} />, color: '#475569', bg: 'rgba(71, 85, 105, 0.1)' };
-    if (cat.includes('diagnostic') || name.includes('blood') || name.includes('checkup')) return { icon: <Activity size={20} />, color: '#DC2626', bg: 'rgba(220, 38, 38, 0.1)' };
-    if (cat.includes('health') || name.includes('patient') || name.includes('compounder')) return { icon: <Stethoscope size={20} />, color: '#059669', bg: 'rgba(5, 150, 105, 0.1)' };
-    if (cat.includes('civil') || name.includes('masonry') || name.includes('roof') || name.includes('floor')) return { icon: <Building2 size={20} />, color: '#EA580C', bg: 'rgba(234, 88, 12, 0.1)' };
-    if (name.includes('paint')) return { icon: <Paintbrush size={20} />, color: '#7C3AED', bg: 'rgba(124, 58, 237, 0.1)' }; 
-    if (name.includes('garden') || name.includes('lawn')) return { icon: <Leaf size={20} />, color: '#059669', bg: 'rgba(5, 150, 105, 0.1)' }; 
-    if (name.includes('carpent') || name.includes('wood')) return { icon: <Ruler size={20} />, color: '#7C3AED', bg: 'rgba(124, 58, 237, 0.1)' }; 
-    return { icon: <Hammer size={20} />, color: '#475569', bg: 'rgba(71, 85, 105, 0.1)' };
+    if (cat.includes('clean') || name.includes('clean')) return { icon: <Sparkles size={20} />, color: '#3B82F6', bg: '#EFF6FF' };
+    if (cat.includes('plumb') || name.includes('tap') || name.includes('pipe') || name.includes('leak')) return { icon: <Droplets size={20} />, color: '#06B6D4', bg: '#ECFEFF' };
+    if (cat.includes('electric') || name.includes('switch') || name.includes('fan') || name.includes('wire')) return { icon: <Zap size={20} />, color: '#EAB308', bg: '#FEFCE8' };
+    if (name.includes('ac') || name.includes('refrigerator') || name.includes('cool')) return { icon: <Snowflake size={20} />, color: '#0EA5E9', bg: '#F0F9FF' };
+    if (name.includes('ro ') || name.startsWith('ro') || name.includes('water')) return { icon: <Droplets size={20} />, color: '#38BDF8', bg: '#F0F9FF' };
+    if (cat.includes('security') || name.includes('cctv') || name.includes('lock') || name.includes('guard')) return { icon: <ShieldCheck size={20} />, color: '#A855F7', bg: '#FAF5FF' };
+    if (cat.includes('appliance') || name.includes('machine') || name.includes('repair')) return { icon: <Settings size={20} />, color: '#64748B', bg: '#F8FAFC' };
+    if (cat.includes('diagnostic') || name.includes('blood') || name.includes('checkup')) return { icon: <Activity size={20} />, color: '#EF4444', bg: '#FEF2F2' };
+    if (cat.includes('health') || name.includes('patient') || name.includes('compounder')) return { icon: <Stethoscope size={20} />, color: '#14B8A6', bg: '#F0FDFA' };
+    if (cat.includes('civil') || name.includes('masonry') || name.includes('roof') || name.includes('floor')) return { icon: <Building2 size={20} />, color: '#F97316', bg: '#FFF7ED' };
+    if (name.includes('paint')) return { icon: <Paintbrush size={20} />, color: '#A855F7', bg: '#FAF5FF' }; 
+    if (name.includes('garden') || name.includes('lawn')) return { icon: <Leaf size={20} />, color: '#22C55E', bg: '#F0FDF4' }; 
+    if (name.includes('mov')) return { icon: <Truck size={20} />, color: '#F97316', bg: '#FFF7ED' }; 
+    if (name.includes('carpent') || name.includes('wood')) return { icon: <Ruler size={20} />, color: '#8B5CF6', bg: '#F5F3FF' }; 
+    return { icon: <Hammer size={20} />, color: '#6366F1', bg: '#EEF2FF' };
   };
 
   return (
-    <div className="animate-fade-in" style={{ paddingBottom: '4rem' }}>
-      {/* Hero Section */}
+    <div className="animate-fade-in">
+      {/* Premium Hero Section */}
       <section style={{
-        backgroundColor: 'var(--bg-card)',
-        borderBottom: '1px solid var(--border-light)',
-        padding: '3rem 1.5rem 2.5rem 1.5rem'
+        position: 'relative',
+        background: `linear-gradient(to right, #0F172A 0%, #1E293B 100%)`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        padding: '5rem 2rem',
+        minHeight: '420px',
+        display: 'flex',
+        alignItems: 'center'
       }}>
-        <div className="app-container" style={{ padding: 0 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 0.8fr)', gap: '2.5rem', alignItems: 'center' }}>
-            
-            {/* Left Side: Headline & Search */}
-            <div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--primary-subtle)', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.875rem' }}>
-                <ShieldCheck size={14} />
-                <span>Verified On-Demand Platform</span>
-              </div>
-              
-              <h1 style={{
-                fontSize: '2.25rem',
-                fontWeight: 700,
-                color: 'var(--text-main)',
-                lineHeight: 1.2,
-                letterSpacing: '-0.025em',
-                marginBottom: '0.75rem'
-              }}>
-                Professional Services & Logistics, Simplified.
-              </h1>
-              
-              <p style={{
-                fontSize: '0.9375rem',
-                color: 'var(--text-muted)',
-                lineHeight: 1.5,
-                marginBottom: '1.5rem'
-              }}>
-                Book vetted electricians, technicians, home specialists, and on-demand freight transport with upfront pricing and live tracking.
-              </p>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', width: '100%' }}>
+          <div style={{ maxWidth: '650px' }}>
+            <span className="badge" style={{ background: 'var(--primary)', color: '#fff', marginBottom: '1.25rem', fontSize: '0.8rem', padding: '0.3rem 0.75rem' }}>
+              Premium Quality Guaranteed
+            </span>
+            <h1 style={{
+              fontSize: '3rem',
+              fontWeight: 800,
+              color: '#ffffff',
+              lineHeight: 1.15,
+              marginBottom: '1rem',
+              letterSpacing: '-0.02em'
+            }}>
+              Trusted Services.<br />Right at Your Door.
+            </h1>
+            <p style={{
+              fontSize: '1.1rem',
+              color: '#cbd5e1',
+              marginBottom: '2rem',
+              lineHeight: 1.6
+            }}>
+              Book verified professionals for home repairs, maintenance, and everyday freight services. Experience seamless booking and reliable execution.
+            </p>
 
-              {/* Search Input Bar */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                backgroundColor: 'var(--bg-page)',
-                border: '1px solid var(--border-light)',
-                borderRadius: 'var(--radius-md)',
-                padding: '0.35rem 0.5rem 0.35rem 1rem',
-                gap: '0.75rem',
-                maxWidth: '520px',
-                boxShadow: 'var(--shadow-xs)',
-                marginBottom: '1rem'
-              }}>
-                <Search size={18} color="var(--text-light)" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search services (e.g. Electrician, Mini Truck, AC Repair)..."
+            {/* Search Bar */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              backgroundColor: '#FFFFFF',
+              borderRadius: 'var(--radius-md)',
+              padding: '0.4rem 0.5rem 0.4rem 1rem',
+              gap: '0.75rem',
+              maxWidth: '520px',
+              boxShadow: '0 10px 25px -5px rgba(0,0,0,0.3)'
+            }}>
+              <Search size={18} color="#64748B" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search services (e.g. Electrician, Mini Truck, AC Repair)..."
+                style={{
+                  border: 'none',
+                  background: 'transparent',
+                  outline: 'none',
+                  width: '100%',
+                  fontSize: '0.875rem',
+                  color: '#0F172A'
+                }}
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
                   style={{
-                    border: 'none',
                     background: 'transparent',
-                    outline: 'none',
-                    width: '100%',
-                    fontSize: '0.875rem',
-                    color: 'var(--text-main)'
+                    border: 'none',
+                    color: '#64748B',
+                    cursor: 'pointer',
+                    fontSize: '0.75rem',
+                    padding: '0.2rem 0.4rem'
                   }}
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      color: 'var(--text-muted)',
-                      cursor: 'pointer',
-                      fontSize: '0.75rem',
-                      padding: '0.2rem 0.4rem'
-                    }}
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-
-              {/* Quick Search Chips */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                <span>Popular:</span>
-                {['Electrician', 'Mini Truck', 'AC Repair', 'Plumbing', 'Cleaning'].map((term) => (
-                  <button
-                    key={term}
-                    onClick={() => setSearchQuery(term)}
-                    style={{
-                      background: 'transparent',
-                      border: '1px solid var(--border-light)',
-                      borderRadius: 'var(--radius-full)',
-                      padding: '0.15rem 0.5rem',
-                      fontSize: '0.75rem',
-                      color: 'var(--text-muted)',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {term}
-                  </button>
-                ))}
-              </div>
+                >
+                  Clear
+                </button>
+              )}
             </div>
-
-            {/* Right Side: Instant Dispatch & Live Highlights Widget */}
-            <div className="panel" style={{ background: 'var(--bg-subtle)', padding: '1.25rem', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.875rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-light)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600, fontSize: '0.8125rem', color: 'var(--text-main)' }}>
-                  <Flash size={15} color="#D97706" />
-                  <span>Express Dispatch Available</span>
-                </div>
-                <span className="badge badge-completed" style={{ fontSize: '0.6875rem' }}>
-                  Avg ETA &lt; 15 mins
-                </span>
-              </div>
-
-              {/* Express Service Shortcuts */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {[
-                  { title: 'Emergency Electrician', desc: 'Short circuit, switch & wiring fix', price: '₹199', icon: <Zap size={14} color="#D97706" />, query: 'Electric' },
-                  { title: 'Intra-City Mini Truck Freight', desc: 'Commercial transport & furniture moving', price: '₹350', icon: <Truck size={14} color="var(--primary)" />, query: 'Truck' },
-                  { title: 'AC Servicing & Repair', desc: 'Gas refill, cleaning & compressor repair', price: '₹499', icon: <Snowflake size={14} color="#0284C7" />, query: 'AC' },
-                  { title: 'Plumbing & Water Leak Fix', desc: 'Tap, pipe, drain & bathroom repair', price: '₹199', icon: <Droplets size={14} color="#0284C7" />, query: 'Plumb' }
-                ].map((item, idx) => (
-                  <div
-                    key={idx}
-                    onClick={() => {
-                      const matched = services.find(s => s.name.toLowerCase().includes(item.query.toLowerCase()));
-                      if (matched) {
-                        navigate(`/services/${matched.id}`);
-                      } else {
-                        setSearchQuery(item.query);
-                      }
-                    }}
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '0.55rem 0.75rem',
-                      borderRadius: 'var(--radius-sm)',
-                      background: 'var(--bg-card)',
-                      border: '1px solid var(--border-light)',
-                      cursor: 'pointer',
-                      transition: 'var(--transition-fast)'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
-                    onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border-light)'}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <div style={{
-                        width: '28px',
-                        height: '28px',
-                        borderRadius: 'var(--radius-xs)',
-                        backgroundColor: 'var(--bg-subtle)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}>
-                        {item.icon}
-                      </div>
-                      <div>
-                        <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-main)', lineHeight: 1.1 }}>{item.title}</div>
-                        <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>{item.desc}</span>
-                      </div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-main)', fontFeatureSettings: 'tnum' }}>{item.price}</span>
-                      <span style={{ fontSize: '0.65rem', color: 'var(--primary)', display: 'block', fontWeight: 600 }}>Book &rarr;</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
           </div>
         </div>
       </section>
 
       {/* Trust Highlights Strip */}
-      <section style={{
-        backgroundColor: 'var(--bg-page)',
-        borderBottom: '1px solid var(--border-light)',
-        padding: '1.25rem 1.5rem'
-      }}>
-        <div className="app-container" style={{ padding: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+      <section style={{ background: 'var(--bg-card)', padding: '2rem 1.5rem', borderBottom: '1px solid var(--border-light)' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.5rem' }}>
           {[
-            { icon: <ShieldCheck size={18} color="var(--primary)" />, title: 'Vetted Experts', desc: 'Background & skill verified' },
-            { icon: <Tag size={18} color="var(--primary)" />, title: 'Transparent Quotes', desc: 'Standardized rate cards' },
-            { icon: <CreditCard size={18} color="var(--primary)" />, title: 'Secure Escrow', desc: 'Pay online or cash upon service' },
-            { icon: <Clock size={18} color="var(--primary)" />, title: 'Flexible Scheduling', desc: 'Instant dispatch or scheduled slots' }
+            { icon: <ShieldCheck size={24} color="var(--success)" />, title: 'Verified Professionals', desc: 'Background checked & highly rated' },
+            { icon: <Tag size={24} color="var(--primary)" />, title: 'Transparent Pricing', desc: 'No hidden fees or surprise charges' },
+            { icon: <CreditCard size={24} color="#0284C7" />, title: 'Secure Booking', desc: 'Pay safely online or after service' },
+            { icon: <Star size={24} color="#D97706" />, title: 'Reliable Service', desc: 'Guaranteed quality execution' }
           ].map((item, idx) => (
-            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <div style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: 'var(--radius-xs)',
-                backgroundColor: 'var(--bg-card)',
-                border: '1px solid var(--border-light)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0
-              }}>
-                {item.icon}
-              </div>
+            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flex: 1, minWidth: '220px' }}>
+              <div style={{ background: 'var(--bg-subtle)', padding: '0.85rem', borderRadius: 'var(--radius-sm)' }}>{item.icon}</div>
               <div>
-                <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-main)' }}>{item.title}</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.desc}</div>
+                <h4 style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.15rem' }}>{item.title}</h4>
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: 0 }}>{item.desc}</p>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Catalog & Services Grid */}
-      <main className="app-container" style={{ paddingTop: '2rem' }}>
+      {/* Main Services Area with Category Tiles */}
+      <main className="app-container" style={{ paddingTop: '3.5rem', paddingBottom: '5rem' }}>
         
-        {/* Category Filter Horizontal Bar with Clean Controls */}
-        <div style={{ marginBottom: '1.75rem', position: 'relative' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            
-            <button
-              onClick={() => scrollCategories('left')}
-              className="btn btn-secondary btn-sm"
-              style={{ padding: '0.35rem 0.5rem', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-              title="Scroll categories left"
-            >
-              <ChevronLeft size={14} />
-            </button>
+        {/* Section Header */}
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem', maxWidth: '750px', margin: '0 auto 2.5rem auto' }}>
+          <h2 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--text-main)' }}>
+            Services That Make Life Easier
+          </h2>
+          <p style={{ fontSize: '0.9375rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+            Find trusted professionals for your everyday needs — from home repairs to maintenance and transport.
+          </p>
+        </div>
 
-            <div 
-              ref={categoryScrollRef}
-              className="no-scrollbar"
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.5rem', 
-                overflowX: 'auto', 
-                scrollBehavior: 'smooth',
-                padding: '0.2rem 0'
+        {/* Service Categories Tiles */}
+        <div style={{ marginBottom: '3rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className="panel"
+              style={{
+                border: selectedCategory === null ? '2px solid var(--primary)' : '1px solid var(--border-light)',
+                backgroundColor: selectedCategory === null ? 'var(--primary-subtle)' : 'var(--bg-card)',
+                padding: '1.25rem 1rem',
+                cursor: 'pointer',
+                minWidth: '130px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '0.65rem',
+                transition: 'var(--transition-fast)'
               }}
             >
-              <button
-                onClick={() => setSelectedCategory(null)}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  padding: '0.4rem 0.85rem',
-                  borderRadius: 'var(--radius-full)',
-                  fontSize: '0.8125rem',
-                  fontWeight: selectedCategory === null ? 600 : 500,
-                  border: '1px solid',
-                  borderColor: selectedCategory === null ? 'var(--primary)' : 'var(--border-light)',
-                  backgroundColor: selectedCategory === null ? 'var(--primary-subtle)' : 'var(--bg-card)',
-                  color: selectedCategory === null ? 'var(--primary)' : 'var(--text-muted)',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                  transition: 'var(--transition-fast)'
-                }}
-              >
-                <LayoutList size={14} />
-                <span>All Services</span>
-                <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>({services.length})</span>
-              </button>
-
-              {categories.map((cat) => {
-                const count = services.filter(s => s.categoryId === cat.id).length;
-                const isSelected = selectedCategory === cat.id;
-                return (
-                  <button
-                    key={cat.id}
-                    onClick={() => setSelectedCategory(cat.id)}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.4rem',
-                      padding: '0.4rem 0.85rem',
-                      borderRadius: 'var(--radius-full)',
-                      fontSize: '0.8125rem',
-                      fontWeight: isSelected ? 600 : 500,
-                      border: '1px solid',
-                      borderColor: isSelected ? 'var(--primary)' : 'var(--border-light)',
-                      backgroundColor: isSelected ? 'var(--primary-subtle)' : 'var(--bg-card)',
-                      color: isSelected ? 'var(--primary)' : 'var(--text-muted)',
-                      cursor: 'pointer',
-                      whiteSpace: 'nowrap',
-                      flexShrink: 0,
-                      transition: 'var(--transition-fast)'
-                    }}
-                  >
-                    <span>{cat.name}</span>
-                    <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>({count})</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <button
-              onClick={() => scrollCategories('right')}
-              className="btn btn-secondary btn-sm"
-              style={{ padding: '0.35rem 0.5rem', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-              title="Scroll categories right"
-            >
-              <ChevronRight size={14} />
+              <div style={{ color: selectedCategory === null ? 'var(--primary)' : 'var(--text-muted)' }}>
+                <LayoutList size={28} />
+              </div>
+              <div style={{ fontWeight: 600, fontSize: '0.875rem', color: selectedCategory === null ? 'var(--primary)' : 'var(--text-main)' }}>
+                All Services
+              </div>
             </button>
+
+            {categories.map((cat) => {
+              const isSelected = selectedCategory === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className="panel"
+                  style={{
+                    border: isSelected ? '2px solid var(--primary)' : '1px solid var(--border-light)',
+                    backgroundColor: isSelected ? 'var(--primary-subtle)' : 'var(--bg-card)',
+                    padding: '1.25rem 1rem',
+                    cursor: 'pointer',
+                    minWidth: '130px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '0.65rem',
+                    transition: 'var(--transition-fast)'
+                  }}
+                >
+                  <div style={{ color: isSelected ? 'var(--primary)' : 'var(--text-muted)' }}>
+                    {getCategoryIcon(cat.name)}
+                  </div>
+                  <div style={{ fontWeight: 600, fontSize: '0.875rem', color: isSelected ? 'var(--primary)' : 'var(--text-main)' }}>
+                    {cat.name}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Section Header with Count */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <div>
-            <h2 style={{ fontSize: '1.15rem', fontWeight: 600, color: 'var(--text-main)' }}>
-              {selectedCategory ? categories.find(c => c.id === selectedCategory)?.name : 'All Available Services'}
-            </h2>
-            <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-              Showing {filteredServices.length} {filteredServices.length === 1 ? 'service' : 'services'}
-            </p>
-          </div>
+        {/* Dynamic Services Grid Header */}
+        <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', fontWeight: 700 }}>
+            Showing {filteredServices.length} {selectedCategory ? 'services' : 'options'}
+          </h3>
         </div>
 
-        {/* Loading Skeletons */}
+        {/* Services Grid */}
         {loading ? (
           <div className="grid-cols-4">
             {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
-              <div key={n} className="panel" style={{ height: '200px', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <div className="skeleton" style={{ width: '40px', height: '40px' }} />
+              <div key={n} className="panel" style={{ height: '220px', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div className="skeleton" style={{ width: '44px', height: '44px' }} />
                 <div className="skeleton" style={{ width: '70%', height: '18px' }} />
                 <div className="skeleton" style={{ width: '100%', height: '14px' }} />
                 <div className="skeleton" style={{ width: '40%', height: '14px', marginTop: 'auto' }} />
@@ -427,11 +296,11 @@ export default function Home() {
         ) : filteredServices.length === 0 ? (
           <div className="empty-state">
             <div className="empty-state-icon">
-              <Search size={20} />
+              <Search size={22} />
             </div>
-            <h3 className="empty-state-title">No services found</h3>
+            <h3 className="empty-state-title">No Services Found</h3>
             <p className="empty-state-description">
-              We couldn't find any services matching your filter criteria. Try searching with a different term or reset filters.
+              We couldn't find any services matching your search. Try adjusting your filters.
             </p>
             <button
               onClick={() => { setSelectedCategory(null); setSearchQuery(''); }}
@@ -459,24 +328,27 @@ export default function Home() {
 
                   <h3 className="service-card-title">{service.name}</h3>
                   <p className="service-card-desc">
-                    {service.description.length > 90 
-                      ? service.description.substring(0, 90) + '...' 
+                    {service.description.length > 85 
+                      ? service.description.substring(0, 85) + '...' 
                       : service.description}
                   </p>
 
                   <div className="service-card-footer">
                     <div>
                       <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block' }}>
-                        Base rate
+                        Starting from
                       </span>
                       <span className="service-price">
                         ₹{service.price} {priceUnit}
                       </span>
                     </div>
                     
-                    <span className="service-cta">
-                      Book <ArrowRight size={14} />
-                    </span>
+                    <button className="service-cta" style={{ color: config.color }} onClick={(e) => {
+                       e.stopPropagation();
+                       navigate(`/services/${service.id}`);
+                    }}>
+                      <span>View</span> <ArrowRight size={14} />
+                    </button>
                   </div>
                 </div>
               );
