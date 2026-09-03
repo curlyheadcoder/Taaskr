@@ -253,7 +253,7 @@ export default function BookingFlow() {
           
           <h1 style={{ color: 'var(--text-main)', fontSize: '2.2rem', marginBottom: '0.5rem' }}>Booking Confirmed!</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '1rem', marginBottom: '2rem' }}>
-            Your booking request has been placed successfully. {newBooking.status === 'PENDING' ? 'We are matching you with a verified driver shortly.' : 'A driver partner has been assigned.'}
+            Your booking request has been placed successfully. {newBooking.status === 'PENDING' ? (isVehicle ? 'We are matching you with a verified driver shortly.' : 'We are matching you with a verified service expert shortly.') : (isVehicle ? 'A driver partner has been assigned.' : 'A service professional has been assigned.')}
           </p>
 
           <div style={{
@@ -288,7 +288,7 @@ export default function BookingFlow() {
               )}
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Assigned Partner:</span>
-                <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{newBooking.providerName || 'Assigning Nearby Driver...'}</span>
+                <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{newBooking.providerName || (isVehicle ? 'Assigning Nearby Driver...' : 'Assigning Service Expert...')}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Scheduled Date:</span>
@@ -435,8 +435,10 @@ export default function BookingFlow() {
                   textAlign: 'left'
                 }}
               >
-                <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>💵 Cash After Trip</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>Pay driver directly after completion</div>
+                <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>💵 {isVehicle ? 'Cash After Trip' : 'Cash After Service'}</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                  {isVehicle ? 'Pay driver directly after completion' : 'Pay service expert after job completion'}
+                </div>
               </button>
             </div>
           </div>
@@ -475,12 +477,12 @@ export default function BookingFlow() {
                 <span style={{ color: 'var(--text-muted)' }}>Time Slot:</span>
                 <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{formatLocalTime(startTime)}</span>
               </div>
-              {isVehicle && (
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: 'var(--text-muted)' }}>Dispatch Mode:</span>
-                  <span style={{ color: 'var(--emerald)', fontWeight: 600 }}>⚡ Nearby Live Driver Matching</span>
-                </div>
-              )}
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Dispatch Mode:</span>
+                <span style={{ color: 'var(--emerald)', fontWeight: 600 }}>
+                  {isVehicle ? '⚡ Nearby Live Driver Matching' : '⚡ Verified Local Pro Matching'}
+                </span>
+              </div>
             </div>
 
             <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '1.25rem' }}>

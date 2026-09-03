@@ -374,7 +374,7 @@ export default function CustomerDashboard() {
               )}
 
               {selectedBooking.providerId ? (
-                <div style={{ background: '#F8FAFC', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)', marginTop: '0.5rem' }}>
+                <div style={{ background: 'var(--bg-page)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)', marginTop: '0.5rem' }}>
                   <h4 style={{ color: 'var(--primary)', fontSize: '0.9rem', marginBottom: '0.25rem' }}>
                     {selectedBooking.dropAddress ? 'Assigned Driver & Vehicle' : 'Assigned Provider Details'}
                   </h4>
@@ -386,9 +386,15 @@ export default function CustomerDashboard() {
                   )}
                 </div>
               ) : (
-                <div style={{ background: '#FEF3C7', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid #FDE68A', marginTop: '0.5rem' }}>
-                  <h4 style={{ color: '#D97706', fontSize: '0.9rem', marginBottom: '0.25rem' }}>Awaiting Driver Assignment</h4>
-                  <p style={{ color: '#92400E', fontSize: '0.85rem' }}>Matching with a nearby verified driver in your city.</p>
+                <div style={{ background: 'rgba(245, 158, 11, 0.12)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(245, 158, 11, 0.3)', marginTop: '0.5rem' }}>
+                  <h4 style={{ color: '#D97706', fontSize: '0.9rem', marginBottom: '0.25rem' }}>
+                    {selectedBooking.dropAddress ? 'Awaiting Driver Assignment' : 'Awaiting Service Provider Assignment'}
+                  </h4>
+                  <p style={{ color: 'var(--text-main)', fontSize: '0.85rem' }}>
+                    {selectedBooking.dropAddress
+                      ? 'Matching with a nearby verified driver in your city.'
+                      : 'Matching with a nearby verified service expert in your city.'}
+                  </p>
                 </div>
               )}
 
