@@ -19,11 +19,17 @@ public class EmailServiceImpl implements EmailService {
     @Autowired(required = false)
     private JavaMailSender mailSender;
 
-    @Value("${spring.mail.username:noreply@taaskr.com}")
+    @Value("${app.email.from:${spring.mail.username:noreply@taaskr.com}}")
     private String fromEmail;
 
-    @Value("${app.email.simulation-mode:true}")
-    private boolean simulationMode;
+    @Value("${spring.mail.username:}")
+    private String mailUsername;
+
+    @Value("${spring.mail.password:}")
+    private String mailPassword;
+
+    @Value("${app.email.simulation-mode:auto}")
+    private String simulationMode;
 
     @Override
     @Async
@@ -119,19 +125,28 @@ public class EmailServiceImpl implements EmailService {
         log.info("Payload Summary: {}", summary);
         log.info("===============================================");
 
-        if (mailSender != null && !simulationMode) {
+        boolean hasSmtpConfig = mailSender != null 
+                && mailUsername != null && !mailUsername.isBlank() 
+                && mailPassword != null && !mailPassword.isBlank();
+
+        boolean shouldSendReal = hasSmtpConfig && !"true".equalsIgnoreCase(simulationMode);
+
+        if (shouldSendReal) {
             try {
                 MimeMessage message = mailSender.createMimeMessage();
                 MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-                helper.setFrom(fromEmail);
+                String sender = (fromEmail != null && !fromEmail.isBlank()) ? fromEmail : mailUsername;
+                helper.setFrom(sender, "Taaskr");
                 helper.setTo(toEmail);
                 helper.setSubject(subject);
                 helper.setText(htmlContent, true);
                 mailSender.send(message);
                 log.info("Email successfully sent via SMTP to: {}", toEmail);
             } catch (Exception e) {
-                log.warn("SMTP mail delivery failed (falling back to simulated log delivery): {}", e.getMessage());
+                log.warn("SMTP mail delivery failed (falling back to console delivery): {}", e.getMessage());
             }
+        } else {
+            log.info("[SIMULATION / LOCAL MODE] Real SMTP credentials not configured. OTP displayed in logs and response for instant testing.");
         }
     }
 }
