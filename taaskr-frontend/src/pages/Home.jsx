@@ -61,17 +61,17 @@ export default function Home() {
     if (cat.includes('clean')) return <Sparkles size={28} />;
     if (cat.includes('plumb')) return <Droplets size={28} />;
     if (cat.includes('electric') || cat.includes('wire')) return <Zap size={28} />;
-    if (cat.includes('ac ') || cat.includes('cool') || cat.includes('refrigerat')) return <Snowflake size={28} />;
-    if (cat.includes('ro ') || cat.includes('water')) return <Droplets size={28} />;
-    if (cat.includes('security') || cat.includes('guard') || cat.includes('cctv')) return <ShieldCheck size={28} />;
+    if (/\bac\b/.test(cat) || cat.includes('cool') || cat.includes('refrigerat')) return <Snowflake size={28} />;
+    if (/\bro\b/.test(cat) || cat.includes('water purifier')) return <Droplets size={28} />;
+    if (cat.includes('security') || cat.includes('guard') || cat.includes('cctv') || cat.includes('lock')) return <ShieldCheck size={28} />;
     if (cat.includes('appliance') || cat.includes('repair')) return <Settings size={28} />;
     if (cat.includes('paint')) return <Paintbrush size={28} />;
     if (cat.includes('garden') || cat.includes('lawn')) return <Leaf size={28} />;
-    if (cat.includes('logistics') || cat.includes('mov') || cat.includes('vehicle') || cat.includes('transport') || cat.includes('truck') || cat.includes('cargo') || cat.includes('courier') || cat.includes('delivery')) return <Truck size={28} />;
+    if (cat.includes('logistics') || cat.includes('mov') || cat.includes('vehicle') || cat.includes('transport') || cat.includes('truck') || cat.includes('cargo') || cat.includes('courier') || cat.includes('freight')) return <Truck size={28} />;
     if (cat.includes('carpent') || cat.includes('wood')) return <Ruler size={28} />;
-    if (cat.includes('diagnostic') || cat.includes('test')) return <Activity size={28} />;
-    if (cat.includes('health') || cat.includes('care') || cat.includes('compound')) return <Stethoscope size={28} />;
-    if (cat.includes('civil') || cat.includes('property') || cat.includes('mason') || cat.includes('roof')) return <Building2 size={28} />;
+    if (cat.includes('diagnostic') || cat.includes('test') || cat.includes('blood')) return <Activity size={28} />;
+    if (cat.includes('health') || cat.includes('care') || cat.includes('compound') || cat.includes('doctor')) return <Stethoscope size={28} />;
+    if (cat.includes('civil') || cat.includes('property') || cat.includes('mason') || cat.includes('roof') || cat.includes('floor')) return <Building2 size={28} />;
     return <Hammer size={28} />;
   };
 
@@ -79,24 +79,74 @@ export default function Home() {
     const name = (serviceName || '').toLowerCase();
     const cat = (categoryName || '').toLowerCase();
     
-    if (cat.includes('logistics') || cat.includes('cargo') || cat.includes('courier') || cat.includes('vehicle') || cat.includes('transport') || cat.includes('delivery') || name.includes('bike') || name.includes('truck') || name.includes('rickshaw') || name.includes('loading') || name.includes('tempo')) {
-      return { icon: <Truck size={20} />, color: '#2563EB', bg: '#EFF6FF' };
+    // 1. Civil & Property Maintenance (Roof, Waterproofing, Masonry, Flooring, Tiles)
+    if (cat.includes('civil') || cat.includes('property') || name.includes('roof') || name.includes('terrace') || name.includes('mason') || name.includes('waterproof') || name.includes('tile') || name.includes('floor')) {
+      if (name.includes('waterproof')) {
+        return { icon: <Droplets size={24} />, color: '#06B6D4', bg: 'rgba(6, 182, 212, 0.15)' };
+      }
+      return { icon: <Building2 size={24} />, color: '#F97316', bg: 'rgba(249, 115, 22, 0.15)' };
     }
-    if (cat.includes('clean') || name.includes('clean')) return { icon: <Sparkles size={20} />, color: '#3B82F6', bg: '#EFF6FF' };
-    if (cat.includes('plumb') || name.includes('tap') || name.includes('pipe') || name.includes('leak')) return { icon: <Droplets size={20} />, color: '#06B6D4', bg: '#ECFEFF' };
-    if (cat.includes('electric') || name.includes('switch') || name.includes('fan') || name.includes('wire')) return { icon: <Zap size={20} />, color: '#EAB308', bg: '#FEFCE8' };
-    if (name.includes('ac') || name.includes('refrigerator') || name.includes('cool')) return { icon: <Snowflake size={20} />, color: '#0EA5E9', bg: '#F0F9FF' };
-    if (name.includes('ro ') || name.startsWith('ro') || name.includes('water')) return { icon: <Droplets size={20} />, color: '#38BDF8', bg: '#F0F9FF' };
-    if (cat.includes('security') || name.includes('cctv') || name.includes('lock') || name.includes('guard')) return { icon: <ShieldCheck size={20} />, color: '#A855F7', bg: '#FAF5FF' };
-    if (cat.includes('appliance') || name.includes('machine') || name.includes('repair')) return { icon: <Settings size={20} />, color: '#64748B', bg: '#F8FAFC' };
-    if (cat.includes('diagnostic') || name.includes('blood') || name.includes('checkup')) return { icon: <Activity size={20} />, color: '#EF4444', bg: '#FEF2F2' };
-    if (cat.includes('health') || name.includes('patient') || name.includes('compounder')) return { icon: <Stethoscope size={20} />, color: '#14B8A6', bg: '#F0FDFA' };
-    if (cat.includes('civil') || name.includes('masonry') || name.includes('roof') || name.includes('floor')) return { icon: <Building2 size={20} />, color: '#F97316', bg: '#FFF7ED' };
-    if (name.includes('paint')) return { icon: <Paintbrush size={20} />, color: '#A855F7', bg: '#FAF5FF' }; 
-    if (name.includes('garden') || name.includes('lawn')) return { icon: <Leaf size={20} />, color: '#22C55E', bg: '#F0FDF4' }; 
-    if (name.includes('mov')) return { icon: <Truck size={20} />, color: '#F97316', bg: '#FFF7ED' }; 
-    if (name.includes('carpent') || name.includes('wood')) return { icon: <Ruler size={20} />, color: '#8B5CF6', bg: '#F5F3FF' }; 
-    return { icon: <Hammer size={20} />, color: '#6366F1', bg: '#EEF2FF' };
+
+    // 2. Security & Smart Living (Security Guard, Video Doorbell, Smart Lock, CCTV)
+    if (cat.includes('security') || name.includes('security') || name.includes('doorbell') || name.includes('lock') || name.includes('cctv') || name.includes('guard')) {
+      return { icon: <ShieldCheck size={24} />, color: '#A855F7', bg: 'rgba(168, 85, 247, 0.15)' };
+    }
+
+    // 3. Electrical (Switch Board, Wiring, Fan, MCB, Inverter)
+    if (cat.includes('electric') || name.includes('switch') || name.includes('wire') || name.includes('fan') || name.includes('fuse') || name.includes('spark') || name.includes('board')) {
+      return { icon: <Zap size={24} />, color: '#EAB308', bg: 'rgba(234, 179, 8, 0.18)' };
+    }
+
+    // 4. Plumbing & Water Works (Tap, Leakage, Pipe, Drain, Flush)
+    if (cat.includes('plumb') || name.includes('tap') || name.includes('pipe') || name.includes('leak') || name.includes('drain') || name.includes('sink') || name.includes('toilet')) {
+      return { icon: <Droplets size={24} />, color: '#06B6D4', bg: 'rgba(6, 182, 212, 0.15)' };
+    }
+
+    // 5. AC, Cooling & Refrigeration
+    if (/\bac\b/.test(name) || name.includes('air condition') || name.includes('refrigerat') || name.includes('cooler') || (cat.includes('ac') && !cat.includes('civil'))) {
+      return { icon: <Snowflake size={24} />, color: '#0EA5E9', bg: 'rgba(14, 165, 233, 0.15)' };
+    }
+
+    // 6. Water Purifier & RO
+    if (/\bro\b/.test(name) || name.includes('water purifier') || name.includes('purifier') || name.includes('aquaguard')) {
+      return { icon: <Droplets size={24} />, color: '#38BDF8', bg: 'rgba(56, 189, 248, 0.15)' };
+    }
+
+    // 7. Cleaning & Housekeeping (Deep Cleaning, Bathroom, Kitchen, Sofa)
+    if (cat.includes('clean') || name.includes('clean') || name.includes('dust') || name.includes('mop')) {
+      return { icon: <Sparkles size={24} />, color: '#3B82F6', bg: 'rgba(59, 130, 246, 0.15)' };
+    }
+
+    // 8. Logistics, Freight & Moving (Mini Truck, Bike Courier, Shifting, Tempo)
+    if (cat.includes('logistics') || cat.includes('cargo') || cat.includes('courier') || cat.includes('freight') || cat.includes('transport') || cat.includes('moving') || cat.includes('vehicle') || name.includes('truck') || name.includes('bike') || name.includes('courier') || name.includes('shifting') || name.includes('tempo') || name.includes('loading') || name.includes('parcel')) {
+      return { icon: <Truck size={24} />, color: '#2563EB', bg: 'rgba(37, 99, 235, 0.15)' };
+    }
+
+    // 9. Diagnostics & Health (Blood Test, Doctor, Health Checkup, Pathology)
+    if (cat.includes('diagnostic') || name.includes('blood') || name.includes('test') || name.includes('checkup') || name.includes('pathology')) {
+      return { icon: <Activity size={24} />, color: '#EF4444', bg: 'rgba(239, 68, 68, 0.15)' };
+    }
+    if (cat.includes('health') || name.includes('patient') || name.includes('doctor') || name.includes('nurse') || name.includes('compounder')) {
+      return { icon: <Stethoscope size={24} />, color: '#10B981', bg: 'rgba(16, 185, 129, 0.15)' };
+    }
+
+    // 10. Appliances (Washing Machine, Microwave, TV, Chimney)
+    if (cat.includes('appliance') || name.includes('machine') || name.includes('microwave') || name.includes('geyser') || name.includes('chimney') || name.includes('tv')) {
+      return { icon: <Settings size={24} />, color: '#64748B', bg: 'rgba(100, 116, 139, 0.15)' };
+    }
+
+    // 11. Painting, Carpentry & Gardening
+    if (name.includes('paint') || cat.includes('paint')) {
+      return { icon: <Paintbrush size={24} />, color: '#EC4899', bg: 'rgba(236, 72, 153, 0.15)' }; 
+    }
+    if (name.includes('garden') || name.includes('lawn') || cat.includes('garden')) {
+      return { icon: <Leaf size={24} />, color: '#22C55E', bg: 'rgba(34, 197, 94, 0.15)' }; 
+    }
+    if (name.includes('carpent') || name.includes('wood') || cat.includes('carpent')) {
+      return { icon: <Ruler size={24} />, color: '#8B5CF6', bg: 'rgba(139, 92, 246, 0.15)' }; 
+    }
+
+    return { icon: <Hammer size={24} />, color: '#6366F1', bg: 'rgba(99, 102, 241, 0.15)' };
   };
 
   return (
@@ -215,24 +265,12 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Service Categories Tiles */}
+        {/* Service Categories Dynamic Tiles */}
         <div style={{ marginBottom: '3rem' }}>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
             <button
               onClick={() => setSelectedCategory(null)}
-              className="panel"
-              style={{
-                border: selectedCategory === null ? '2px solid var(--primary)' : '1px solid var(--border-light)',
-                backgroundColor: selectedCategory === null ? 'var(--primary-subtle)' : 'var(--bg-card)',
-                padding: '1.25rem 1rem',
-                cursor: 'pointer',
-                minWidth: '130px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '0.65rem',
-                transition: 'var(--transition-fast)'
-              }}
+              className={`category-tile ${selectedCategory === null ? 'active' : ''}`}
             >
               <div style={{ color: selectedCategory === null ? 'var(--primary)' : 'var(--text-muted)' }}>
                 <LayoutList size={28} />
@@ -248,19 +286,7 @@ export default function Home() {
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
-                  className="panel"
-                  style={{
-                    border: isSelected ? '2px solid var(--primary)' : '1px solid var(--border-light)',
-                    backgroundColor: isSelected ? 'var(--primary-subtle)' : 'var(--bg-card)',
-                    padding: '1.25rem 1rem',
-                    cursor: 'pointer',
-                    minWidth: '130px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '0.65rem',
-                    transition: 'var(--transition-fast)'
-                  }}
+                  className={`category-tile ${isSelected ? 'active' : ''}`}
                 >
                   <div style={{ color: isSelected ? 'var(--primary)' : 'var(--text-muted)' }}>
                     {getCategoryIcon(cat.name)}
@@ -281,7 +307,7 @@ export default function Home() {
           </h3>
         </div>
 
-        {/* Services Grid */}
+        {/* Services Grid with Dynamic Hover */}
         {loading ? (
           <div className="grid-cols-4">
             {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
@@ -335,9 +361,9 @@ export default function Home() {
 
                   <div className="service-card-footer">
                     <div>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>
                         Starting from
-                      </span>
+                      </div>
                       <span className="service-price">
                         ₹{service.price} {priceUnit}
                       </span>
