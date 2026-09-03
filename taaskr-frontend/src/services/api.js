@@ -234,6 +234,13 @@ export const api = {
       });
     },
 
+    updateStatus: async (bookingId, status) => {
+      return makeRequest(`/api/provider/bookings/${bookingId}/status`, {
+        method: 'PUT',
+        body: JSON.stringify({ status })
+      });
+    },
+
     markAfterServicePaymentReceived: async (bookingId) => {
       return makeRequest(`/api/provider/bookings/${bookingId}/payment-received`, {
         method: 'PUT'
