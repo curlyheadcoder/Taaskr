@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { formatLocalTime } from '../utils/time';
 import AnalyticsDashboardTab from '../components/admin/AnalyticsDashboardTab';
+import SystemObservabilityTab from '../components/admin/SystemObservabilityTab';
 
 export default function AdminDashboard() {
   const [categories, setCategories] = useState([]);
@@ -11,7 +12,7 @@ export default function AdminDashboard() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Tabs: 'analytics', 'catalog', 'providers', 'bookings'
+  // Tabs: 'analytics', 'observability', 'catalog', 'providers', 'bookings'
   const [activeTab, setActiveTab] = useState('analytics');
 
   // Category CRUD states
@@ -195,7 +196,13 @@ export default function AdminDashboard() {
             onClick={() => setActiveTab('analytics')}
             className={`sidebar-item ${activeTab === 'analytics' ? 'active' : ''}`}
           >
-            <span style={{ fontSize: '1.25rem' }}>📊</span> Analytics & Observability
+            <span style={{ fontSize: '1.25rem' }}>📊</span> Dashboard Analytics
+          </button>
+          <button 
+            onClick={() => setActiveTab('observability')}
+            className={`sidebar-item ${activeTab === 'observability' ? 'active' : ''}`}
+          >
+            <span style={{ fontSize: '1.25rem' }}>⚡</span> Live Observability
           </button>
           <button 
             onClick={() => setActiveTab('catalog')}
@@ -227,9 +234,14 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Tab: Analytics & Observability */}
+        {/* Tab: Dashboard Analytics */}
         {activeTab === 'analytics' && (
           <AnalyticsDashboardTab />
+        )}
+
+        {/* Tab: Live System Observability */}
+        {activeTab === 'observability' && (
+          <SystemObservabilityTab />
         )}
 
       {/* Tab: Catalog Manager */}
