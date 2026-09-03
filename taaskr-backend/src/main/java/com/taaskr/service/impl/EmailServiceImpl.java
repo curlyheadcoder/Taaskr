@@ -21,23 +21,57 @@ public class EmailServiceImpl implements EmailService {
     @Autowired(required = false)
     private JavaMailSender mailSender;
 
-    @Value("${spring.mail.host:smtp.gmail.com}")
+    @Value("${spring.mail.host:${MAIL_HOST:${SPRING_MAIL_HOST:smtp.gmail.com}}}")
     private String mailHost;
 
-    @Value("${spring.mail.port:587}")
+    @Value("${spring.mail.port:${MAIL_PORT:${SPRING_MAIL_PORT:587}}}")
     private int mailPort;
 
-    @Value("${app.email.from:${spring.mail.username:noreply@taaskr.com}}")
+    @Value("${app.email.from:${MAIL_FROM:${SPRING_MAIL_FROM:${spring.mail.username:${MAIL_USERNAME:}}}}}")
     private String fromEmail;
 
-    @Value("${spring.mail.username:}")
+    @Value("${spring.mail.username:${MAIL_USERNAME:${SPRING_MAIL_USERNAME:}}}")
     private String mailUsername;
 
-    @Value("${spring.mail.password:}")
+    @Value("${spring.mail.password:${MAIL_PASSWORD:${SPRING_MAIL_PASSWORD:}}}")
     private String mailPassword;
 
-    @Value("${app.email.simulation-mode:auto}")
+    @Value("${app.email.simulation-mode:${EMAIL_SIMULATION_MODE:auto}}")
     private String simulationMode;
+
+    private String resolveUsername() {
+        if (mailUsername != null && !mailUsername.trim().isBlank()) return mailUsername.trim();
+        String env1 = System.getenv("MAIL_USERNAME");
+        if (env1 != null && !env1.trim().isBlank()) return env1.trim();
+        String env2 = System.getenv("SPRING_MAIL_USERNAME");
+        if (env2 != null && !env2.trim().isBlank()) return env2.trim();
+        return "";
+    }
+
+    private String resolvePassword() {
+        if (mailPassword != null && !mailPassword.trim().isBlank()) return mailPassword.trim();
+        String env1 = System.getenv("MAIL_PASSWORD");
+        if (env1 != null && !env1.trim().isBlank()) return env1.trim();
+        String env2 = System.getenv("SPRING_MAIL_PASSWORD");
+        if (env2 != null && !env2.trim().isBlank()) return env2.trim();
+        return "";
+    }
+
+    private String resolveHost() {
+        if (mailHost != null && !mailHost.trim().isBlank()) return mailHost.trim();
+        String env = System.getenv("MAIL_HOST");
+        if (env != null && !env.trim().isBlank()) return env.trim();
+        return "smtp.gmail.com";
+    }
+
+    private int resolvePort() {
+        if (mailPort > 0) return mailPort;
+        try {
+            String p = System.getenv("MAIL_PORT");
+            if (p != null && !p.trim().isBlank()) return Integer.parseInt(p.trim());
+        } catch (Exception ignored) {}
+        return 587;
+    }
 
     @Override
     @Async
@@ -127,26 +161,29 @@ public class EmailServiceImpl implements EmailService {
     }
 
     private void sendHtmlEmail(String toEmail, String subject, String htmlContent, String summary) {
+        String user = resolveUsername();
+        String pass = resolvePassword();
+        String host = resolveHost();
+        int port = resolvePort();
+        boolean hasCredentials = !user.isBlank() && !pass.isBlank();
+        boolean isExplicitSimulation = "true".equalsIgnoreCase(simulationMode);
+
         log.info("========== [TAASKR EMAIL DISPATCHER] ==========");
         log.info("To: {}", toEmail);
         log.info("Subject: {}", subject);
         log.info("Payload Summary: {}", summary);
+        log.info("SMTP Host: {}:{} | Authenticated User: {} | Real Delivery: {}", 
+                host, port, user.isBlank() ? "NONE" : user, (hasCredentials && !isExplicitSimulation));
         log.info("===============================================");
-
-        String user = mailUsername != null ? mailUsername.trim() : "";
-        String pass = mailPassword != null ? mailPassword.trim() : "";
-        boolean hasCredentials = !user.isBlank() && !pass.isBlank();
-        boolean isExplicitSimulation = "true".equalsIgnoreCase(simulationMode);
 
         if (hasCredentials && !isExplicitSimulation) {
             try {
                 JavaMailSenderImpl impl = new JavaMailSenderImpl();
-                String host = (mailHost != null && !mailHost.isBlank()) ? mailHost.trim() : "smtp.gmail.com";
-                int port = mailPort > 0 ? mailPort : 587;
                 impl.setHost(host);
                 impl.setPort(port);
                 impl.setUsername(user);
                 impl.setPassword(pass);
+                impl.setDefaultEncoding("UTF-8");
 
                 Properties props = impl.getJavaMailProperties();
                 props.put("mail.transport.protocol", "smtp");
@@ -154,16 +191,16 @@ public class EmailServiceImpl implements EmailService {
                 props.put("mail.smtp.starttls.enable", "true");
                 props.put("mail.smtp.starttls.required", "true");
                 props.put("mail.smtp.ssl.protocols", "TLSv1.2");
-                props.put("mail.smtp.ssl.trust", host);
-                props.put("mail.smtp.connectiontimeout", "8000");
-                props.put("mail.smtp.timeout", "8000");
-                props.put("mail.smtp.writetimeout", "8000");
+                props.put("mail.smtp.ssl.trust", "*");
+                props.put("mail.smtp.connectiontimeout", "10000");
+                props.put("mail.smtp.timeout", "10000");
+                props.put("mail.smtp.writetimeout", "10000");
 
                 MimeMessage message = impl.createMimeMessage();
                 org.springframework.mail.javamail.MimeMessageHelper helper = 
                         new org.springframework.mail.javamail.MimeMessageHelper(message, true, "UTF-8");
 
-                // When using Gmail SMTP, the From address must be the authenticated Gmail account
+                // Sender is always the authenticated user for Gmail
                 String senderAddress = (host.contains("gmail") || fromEmail == null || fromEmail.isBlank() || fromEmail.contains("noreply@taaskr.com")) 
                         ? user 
                         : fromEmail.trim();
@@ -174,12 +211,12 @@ public class EmailServiceImpl implements EmailService {
                 helper.setText(htmlContent, true);
 
                 impl.send(message);
-                log.info("Email successfully dispatched via SMTP to: {} from: {}", toEmail, senderAddress);
+                log.info("SUCCESS: Email dispatched via SMTP to: {} from: {}", toEmail, senderAddress);
             } catch (Exception e) {
-                log.error("SMTP mail delivery failed to {}: {}", toEmail, e.getMessage(), e);
+                log.error("ERROR: SMTP mail delivery failed to {}: {}", toEmail, e.getMessage(), e);
             }
         } else {
-            log.info("[SIMULATION / CONSOLE MODE] SMTP credentials missing or simulation mode enabled. Email payload logged to console.");
+            log.info("[SIMULATION / CONSOLE MODE] Real SMTP credentials missing or simulation mode enabled. Email payload logged to console.");
         }
     }
 }
