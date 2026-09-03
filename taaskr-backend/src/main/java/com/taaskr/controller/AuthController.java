@@ -1,6 +1,7 @@
 package com.taaskr.controller;
 
 import com.taaskr.dto.auth.*;
+import com.taaskr.service.AuthService;
 import com.taaskr.service.EmailService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
