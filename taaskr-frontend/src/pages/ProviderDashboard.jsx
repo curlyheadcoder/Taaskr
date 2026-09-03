@@ -602,7 +602,7 @@ export default function ProviderDashboard() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Payment Method:</span>
                         <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)' }}>
-                          {job.paymentMethod === 'AFTER_SERVICE' ? '💵 Cash After Trip' : '💳 Online Paid'}
+                          {job.paymentMethod === 'AFTER_SERVICE' ? (job.dropAddress ? '💵 Cash After Trip' : '💵 Cash After Service') : '💳 Online Paid'}
                         </span>
                         <span className={`badge ${job.paymentStatus === 'PAID' ? 'badge-completed' : 'badge-pending'}`} style={{ fontSize: '0.65rem' }}>
                           {job.paymentStatus}
@@ -613,7 +613,7 @@ export default function ProviderDashboard() {
                         {job.status === 'ASSIGNED' && (
                           <>
                             <button onClick={() => handleAcceptJob(job.id)} className="btn btn-primary btn-small">
-                              Accept Trip / Job
+                              Accept Job
                             </button>
                             <button onClick={() => handleRejectJob(job.id)} className="btn btn-secondary btn-small">
                               Reject
