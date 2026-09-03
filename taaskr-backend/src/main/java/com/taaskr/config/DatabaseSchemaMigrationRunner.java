@@ -22,42 +22,95 @@ public class DatabaseSchemaMigrationRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        dropUniqueConstraintOnVehiclesProviderId();
+        migrateVehiclesProviderIdConstraint();
     }
 
-    private void dropUniqueConstraintOnVehiclesProviderId() {
+    private void migrateVehiclesProviderIdConstraint() {
         try {
-            // 1. MySQL: Search and drop any unique index on vehicles.provider_id
-            List<String> uniqueIndexes = jdbcTemplate.query(
-                    "SELECT DISTINCT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS " +
-                    "WHERE TABLE_SCHEMA = DATABASE() " +
-                    "  AND LOWER(TABLE_NAME) = 'vehicles' " +
-                    "  AND LOWER(COLUMN_NAME) = 'provider_id' " +
-                    "  AND NON_UNIQUE = 0 " +
-                    "  AND INDEX_NAME != 'PRIMARY'",
-                    (rs, rowNum) -> rs.getString("INDEX_NAME")
-            );
+            log.info("[DB Migration] Starting migration for vehicles table to remove unique constraint on provider_id...");
 
-            for (String indexName : uniqueIndexes) {
-                try {
-                    log.info("Dropping legacy unique index '{}' from vehicles table to support multi-vehicle fleets...", indexName);
-                    jdbcTemplate.execute("ALTER TABLE vehicles DROP INDEX `" + indexName + "`");
-                    log.info("Successfully dropped unique index '{}' from vehicles table.", indexName);
-                } catch (Exception e) {
-                    log.warn("Could not drop index {}: {}", indexName, e.getMessage());
-                }
-            }
-
-            // 2. Explicit fallback for known constraint name UKhm3a8569alewmamv6xw78o19q
+            // Step 1: Add a non-unique regular index on provider_id (if not already present)
             try {
-                jdbcTemplate.execute("ALTER TABLE vehicles DROP INDEX `UKhm3a8569alewmamv6xw78o19q`");
-                log.info("Explicitly dropped constraint UKhm3a8569alewmamv6xw78o19q on vehicles.");
-            } catch (Exception ignored) {
-                // Already dropped or does not exist
+                jdbcTemplate.execute("ALTER TABLE vehicles ADD INDEX idx_vehicles_provider_id (provider_id)");
+                log.info("[DB Migration] Added non-unique index 'idx_vehicles_provider_id' on vehicles(provider_id).");
+            } catch (Exception e) {
+                log.debug("[DB Migration] Non-unique index may already exist: {}", e.getMessage());
             }
+
+            // Step 2: Drop any foreign keys on provider_id temporarily if MySQL prevents dropping the unique index
+            try {
+                List<String> foreignKeys = jdbcTemplate.query(
+                        "SELECT DISTINCT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE " +
+                        "WHERE TABLE_SCHEMA = DATABASE() " +
+                        "  AND LOWER(TABLE_NAME) = 'vehicles' " +
+                        "  AND LOWER(COLUMN_NAME) = 'provider_id' " +
+                        "  AND REFERENCED_TABLE_NAME IS NOT NULL",
+                        (rs, rowNum) -> rs.getString("CONSTRAINT_NAME")
+                );
+
+                for (String fk : foreignKeys) {
+                    try {
+                        log.info("[DB Migration] Temporarily dropping foreign key '{}'...", fk);
+                        jdbcTemplate.execute("ALTER TABLE vehicles DROP FOREIGN KEY `" + fk + "`");
+                    } catch (Exception ex) {
+                        log.warn("[DB Migration] Could not drop foreign key {}: {}", fk, ex.getMessage());
+                    }
+                }
+            } catch (Exception e) {
+                log.debug("[DB Migration] Error querying foreign keys: {}", e.getMessage());
+            }
+
+            // Step 3: Find and drop all UNIQUE indexes on provider_id
+            try {
+                List<String> uniqueIndexes = jdbcTemplate.query(
+                        "SELECT DISTINCT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS " +
+                        "WHERE TABLE_SCHEMA = DATABASE() " +
+                        "  AND LOWER(TABLE_NAME) = 'vehicles' " +
+                        "  AND LOWER(COLUMN_NAME) = 'provider_id' " +
+                        "  AND NON_UNIQUE = 0 " +
+                        "  AND INDEX_NAME != 'PRIMARY'",
+                        (rs, rowNum) -> rs.getString("INDEX_NAME")
+                );
+
+                for (String indexName : uniqueIndexes) {
+                    try {
+                        log.info("[DB Migration] Dropping unique index '{}' from vehicles table...", indexName);
+                        jdbcTemplate.execute("ALTER TABLE vehicles DROP INDEX `" + indexName + "`");
+                        log.info("[DB Migration] Successfully dropped unique index '{}'.", indexName);
+                    } catch (Exception ex) {
+                        log.warn("[DB Migration] Could not drop unique index {}: {}", indexName, ex.getMessage());
+                    }
+                }
+            } catch (Exception e) {
+                log.debug("[DB Migration] Error querying unique indexes: {}", e.getMessage());
+            }
+
+            // Step 4: Explicit fallback for known constraint names
+            String[] knownConstraints = {"UKhm3a8569alewmamv6xw78o19q", "UK_vehicles_provider", "vehicles_provider_id_unique"};
+            for (String constraint : knownConstraints) {
+                try {
+                    jdbcTemplate.execute("ALTER TABLE vehicles DROP INDEX `" + constraint + "`");
+                    log.info("[DB Migration] Explicitly dropped constraint '{}'.", constraint);
+                } catch (Exception ignored) {}
+                try {
+                    jdbcTemplate.execute("ALTER TABLE vehicles DROP CONSTRAINT `" + constraint + "`");
+                    log.info("[DB Migration] Explicitly dropped constraint definition '{}'.", constraint);
+                } catch (Exception ignored) {}
+            }
+
+            // Step 5: Re-add the Foreign Key constraint pointing to provider_profiles(id)
+            try {
+                jdbcTemplate.execute("ALTER TABLE vehicles ADD CONSTRAINT fk_vehicles_provider_profile " +
+                        "FOREIGN KEY (provider_id) REFERENCES provider_profiles(id)");
+                log.info("[DB Migration] Re-added foreign key constraint 'fk_vehicles_provider_profile'.");
+            } catch (Exception e) {
+                log.debug("[DB Migration] Foreign key already exists or added by JPA: {}", e.getMessage());
+            }
+
+            log.info("[DB Migration] Completed vehicles table migration. Providers can now have multiple vehicles.");
 
         } catch (Exception e) {
-            log.debug("Schema migration notice (expected on H2 or non-MySQL databases): {}", e.getMessage());
+            log.warn("[DB Migration] Schema migration notice: {}", e.getMessage());
         }
     }
 }
