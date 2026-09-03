@@ -105,7 +105,12 @@ export default function Login() {
           </div>
 
           <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-            <label className="form-label">Password</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+              <label className="form-label" style={{ margin: 0 }}>Password</label>
+              <Link to="/forgot-password" style={{ fontSize: '0.78rem', color: 'var(--primary)', fontWeight: 500 }}>
+                Forgot password?
+              </Link>
+            </div>
             <input
               type="password"
               placeholder="••••••••"
@@ -129,9 +134,15 @@ export default function Login() {
           </button>
         </form>
 
-        <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.8125rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem' }}>
-          <span style={{ color: 'var(--text-muted)' }}>Don't have an account? </span>
-          <Link to="/register" style={{ color: 'var(--primary)', fontWeight: 600 }}>Create an account</Link>
+        <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.8125rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div>
+            <span style={{ color: 'var(--text-muted)' }}>Don't have an account? </span>
+            <Link to="/register" style={{ color: 'var(--primary)', fontWeight: 600 }}>Create an account</Link>
+          </div>
+          <div>
+            <span style={{ color: 'var(--text-muted)' }}>Need to activate your account? </span>
+            <Link to="/verify-email" style={{ color: 'var(--text-main)', textDecoration: 'underline' }}>Verify email</Link>
+          </div>
         </div>
       </div>
     </div>

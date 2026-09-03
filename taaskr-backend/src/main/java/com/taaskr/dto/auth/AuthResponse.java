@@ -9,16 +9,22 @@ public class AuthResponse {
     private String name;
     private String email;
     private Role role;
+    private Boolean emailVerified;
 
     public AuthResponse() {
     }
 
     public AuthResponse(String token, Long userId, String name, String email, Role role) {
+        this(token, userId, name, email, role, false);
+    }
+
+    public AuthResponse(String token, Long userId, String name, String email, Role role, Boolean emailVerified) {
         this.token = token;
         this.userId = userId;
         this.name = name;
         this.email = email;
         this.role = role;
+        this.emailVerified = emailVerified;
     }
 
     public String getToken() {
@@ -41,6 +47,10 @@ public class AuthResponse {
         return role;
     }
 
+    public Boolean getEmailVerified() {
+        return emailVerified;
+    }
+
     public void setToken(String token) {
         this.token = token;
     }
@@ -59,5 +69,9 @@ public class AuthResponse {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public void setEmailVerified(Boolean emailVerified) {
+        this.emailVerified = emailVerified;
     }
 }

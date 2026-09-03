@@ -1,9 +1,6 @@
 package com.taaskr.service.impl;
 
-import com.taaskr.dto.auth.AuthResponse;
-import com.taaskr.dto.auth.LoginRequest;
-import com.taaskr.dto.auth.MeResponse;
-import com.taaskr.dto.auth.RegisterRequest;
+import com.taaskr.dto.auth.*;
 import com.taaskr.entity.ProviderCategory;
 import com.taaskr.entity.ProviderProfile;
 import com.taaskr.entity.User;
@@ -16,12 +13,16 @@ import com.taaskr.repository.ServiceCategoryRepository;
 import com.taaskr.repository.UserRepository;
 import com.taaskr.security.JwtService;
 import com.taaskr.service.AuthService;
+import com.taaskr.service.EmailService;
 import jakarta.transaction.Transactional;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -33,6 +34,8 @@ public class AuthServiceImpl implements AuthService {
     private final ProviderProfileRepository providerProfileRepository;
     private final ProviderCategoryRepository providerCategoryRepository;
     private final ServiceCategoryRepository serviceCategoryRepository;
+    private final EmailService emailService;
+    private final SecureRandom secureRandom = new SecureRandom();
 
     public AuthServiceImpl(UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
@@ -40,7 +43,8 @@ public class AuthServiceImpl implements AuthService {
                            JwtService jwtService,
                            ProviderProfileRepository providerProfileRepository,
                            ProviderCategoryRepository providerCategoryRepository,
-                           ServiceCategoryRepository serviceCategoryRepository) {
+                           ServiceCategoryRepository serviceCategoryRepository,
+                           EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -48,6 +52,12 @@ public class AuthServiceImpl implements AuthService {
         this.providerProfileRepository = providerProfileRepository;
         this.providerCategoryRepository = providerCategoryRepository;
         this.serviceCategoryRepository = serviceCategoryRepository;
+        this.emailService = emailService;
+    }
+
+    private String generateOtp() {
+        int code = 100000 + secureRandom.nextInt(900000);
+        return String.valueOf(code);
     }
 
     @Override
@@ -67,6 +77,9 @@ public class AuthServiceImpl implements AuthService {
             throw new BadRequestException("Admin registration is not allowed");
         }
 
+        String otp = generateOtp();
+        LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(15);
+
         User user = new User();
         user.setName(request.getName().trim());
         user.setEmail(email);
@@ -76,8 +89,19 @@ public class AuthServiceImpl implements AuthService {
         user.setCity(request.getCity());
         user.setPincode(request.getPincode());
         user.setEnabled(true);
+        user.setEmailVerified(false);
+        user.setVerificationOtp(otp);
+        user.setVerificationOtpExpiresAt(expiresAt);
 
         User savedUser = userRepository.save(user);
+
+        // Send verification email
+        try {
+            emailService.sendVerificationOtp(savedUser.getEmail(), savedUser.getName(), otp);
+        } catch (Exception e) {
+            // Log & don't fail registration
+        }
+
         /***
          * Create a provider profile for newly registered providers.
          * New Providers must be approved by admin before they can receive bookings
@@ -122,7 +146,8 @@ public class AuthServiceImpl implements AuthService {
                 savedUser.getId(),
                 savedUser.getName(),
                 savedUser.getEmail(),
-                savedUser.getRole()
+                savedUser.getRole(),
+                Boolean.TRUE.equals(savedUser.getEmailVerified())
         );
     }
 
@@ -150,7 +175,8 @@ public class AuthServiceImpl implements AuthService {
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                user.getRole()
+                user.getRole(),
+                Boolean.TRUE.equals(user.getEmailVerified())
         );
     }
 
@@ -167,7 +193,120 @@ public class AuthServiceImpl implements AuthService {
                 user.getPhone(),
                 user.getCity(),
                 user.getPincode(),
-                user.getEnabled()
+                user.getEnabled(),
+                Boolean.TRUE.equals(user.getEmailVerified())
         );
+    }
+
+    @Override
+    @Transactional
+    public AuthMessageResponse sendVerificationOtp(String email) {
+        String normalizedEmail = email.trim().toLowerCase();
+        User user = userRepository.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + normalizedEmail));
+
+        if (Boolean.TRUE.equals(user.getEmailVerified())) {
+            return new AuthMessageResponse(true, "Email is already verified", normalizedEmail);
+        }
+
+        String otp = generateOtp();
+        user.setVerificationOtp(otp);
+        user.setVerificationOtpExpiresAt(LocalDateTime.now().plusMinutes(15));
+        userRepository.save(user);
+
+        emailService.sendVerificationOtp(user.getEmail(), user.getName(), otp);
+
+        return new AuthMessageResponse(true, "Verification code sent to " + normalizedEmail, normalizedEmail);
+    }
+
+    @Override
+    @Transactional
+    public AuthMessageResponse verifyEmail(VerifyEmailRequest request) {
+        String email = request.getEmail().trim().toLowerCase();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+
+        if (Boolean.TRUE.equals(user.getEmailVerified())) {
+            return new AuthMessageResponse(true, "Email is already verified", email);
+        }
+
+        if (user.getVerificationOtp() == null || user.getVerificationOtpExpiresAt() == null) {
+            throw new BadRequestException("No verification request found. Please request a new verification code.");
+        }
+
+        if (LocalDateTime.now().isAfter(user.getVerificationOtpExpiresAt())) {
+            throw new BadRequestException("Verification code has expired. Please request a new code.");
+        }
+
+        if (!user.getVerificationOtp().trim().equals(request.getOtp().trim())) {
+            throw new BadRequestException("Invalid verification code. Please check and try again.");
+        }
+
+        user.setEmailVerified(true);
+        user.setVerificationOtp(null);
+        user.setVerificationOtpExpiresAt(null);
+        userRepository.save(user);
+
+        try {
+            emailService.sendWelcomeEmail(user.getEmail(), user.getName());
+        } catch (Exception e) {
+            // Ignore email notification failure
+        }
+
+        return new AuthMessageResponse(true, "Email verified successfully!", email);
+    }
+
+    @Override
+    @Transactional
+    public AuthMessageResponse forgotPassword(ForgotPasswordRequest request) {
+        String email = request.getEmail().trim().toLowerCase();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("No account found with email: " + email));
+
+        String otp = generateOtp();
+        user.setResetPasswordOtp(otp);
+        user.setResetPasswordOtpExpiresAt(LocalDateTime.now().plusMinutes(15));
+        userRepository.save(user);
+
+        emailService.sendPasswordResetOtp(user.getEmail(), user.getName(), otp);
+
+        return new AuthMessageResponse(true, "Password reset OTP sent to " + email, email);
+    }
+
+    @Override
+    @Transactional
+    public AuthMessageResponse resetPassword(ResetPasswordRequest request) {
+        String email = request.getEmail().trim().toLowerCase();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("No account found with email: " + email));
+
+        if (user.getResetPasswordOtp() == null || user.getResetPasswordOtpExpiresAt() == null) {
+            throw new BadRequestException("No password reset requested or code already used. Please request a new reset code.");
+        }
+
+        if (LocalDateTime.now().isAfter(user.getResetPasswordOtpExpiresAt())) {
+            throw new BadRequestException("Password reset code has expired. Please request a new code.");
+        }
+
+        if (!user.getResetPasswordOtp().trim().equals(request.getOtp().trim())) {
+            throw new BadRequestException("Invalid password reset code. Please check and try again.");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setResetPasswordOtp(null);
+        user.setResetPasswordOtpExpiresAt(null);
+        userRepository.save(user);
+
+        return new AuthMessageResponse(true, "Password reset successfully! You can now sign in with your new password.", email);
+    }
+
+    @Override
+    @Transactional
+    public AuthMessageResponse resendOtp(SendOtpRequest request) {
+        if ("RESET_PASSWORD".equalsIgnoreCase(request.getType())) {
+            return forgotPassword(new ForgotPasswordRequest(request.getEmail()));
+        } else {
+            return sendVerificationOtp(request.getEmail());
+        }
     }
 }

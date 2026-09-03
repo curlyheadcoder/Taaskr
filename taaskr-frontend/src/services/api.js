@@ -82,6 +82,41 @@ export const api = {
       return makeRequest('/api/auth/me');
     },
 
+    sendVerificationOtp: async (email) => {
+      return makeRequest('/api/auth/send-verification-otp', {
+        method: 'POST',
+        body: JSON.stringify({ email })
+      });
+    },
+
+    verifyEmail: async (email, otp) => {
+      return makeRequest('/api/auth/verify-email', {
+        method: 'POST',
+        body: JSON.stringify({ email, otp })
+      });
+    },
+
+    forgotPassword: async (email) => {
+      return makeRequest('/api/auth/forgot-password', {
+        method: 'POST',
+        body: JSON.stringify({ email })
+      });
+    },
+
+    resetPassword: async (email, otp, newPassword) => {
+      return makeRequest('/api/auth/reset-password', {
+        method: 'POST',
+        body: JSON.stringify({ email, otp, newPassword })
+      });
+    },
+
+    resendOtp: async (email, type) => {
+      return makeRequest('/api/auth/resend-otp', {
+        method: 'POST',
+        body: JSON.stringify({ email, type })
+      });
+    },
+
     logout: () => {
       localStorage.removeItem('taaskr_token');
       localStorage.removeItem('taaskr_current_user');

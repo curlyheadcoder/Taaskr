@@ -73,6 +73,7 @@ public class DataSeeder {
             user.setCity(city);
             user.setPincode(pincode);
             user.setEnabled(true);
+            user.setEmailVerified(true);
             return userRepository.save(user);
         });
     }

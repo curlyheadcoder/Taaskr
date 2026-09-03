@@ -53,10 +53,10 @@ export default function Register() {
 
       const res = await api.auth.register(payload);
       if (res.role === 'PROVIDER') {
-        alert('Registration successful! Your partner profile has been registered and is pending approval.');
-        navigate('/provider');
+        alert('Registration successful! Please verify your email with the 6-digit OTP code.');
+        navigate(`/verify-email?email=${encodeURIComponent(payload.email)}`);
       } else {
-        navigate('/');
+        navigate(`/verify-email?email=${encodeURIComponent(payload.email)}`);
       }
     } catch (err) {
       setError(err.message || 'Registration failed. Please try again.');

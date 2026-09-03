@@ -213,9 +213,32 @@ export default function Navbar() {
                 {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-main)', lineHeight: 1.1 }}>
-                  {user.name}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-main)', lineHeight: 1.1 }}>
+                    {user.name}
+                  </span>
+                  {user.emailVerified ? (
+                    <span title="Email Verified" style={{ display: 'inline-flex', alignItems: 'center', color: '#10B981' }}>
+                      <ShieldCheck size={12} />
+                    </span>
+                  ) : (
+                    <Link
+                      to={`/verify-email?email=${encodeURIComponent(user.email || '')}`}
+                      title="Email Unverified - Click to Verify"
+                      style={{
+                        fontSize: '0.62rem',
+                        background: '#FEF3C7',
+                        color: '#D97706',
+                        padding: '0.05rem 0.3rem',
+                        borderRadius: '4px',
+                        fontWeight: 600,
+                        textDecoration: 'none'
+                      }}
+                    >
+                      Verify
+                    </Link>
+                  )}
+                </div>
                 <span style={{
                   fontSize: '0.65rem',
                   fontWeight: 500,

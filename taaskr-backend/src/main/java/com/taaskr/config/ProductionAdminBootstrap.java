@@ -47,6 +47,7 @@ public class ProductionAdminBootstrap {
             admin.setCity(city);
             admin.setPincode(pincode);
             admin.setEnabled(true);
+            admin.setEmailVerified(true);
             userRepository.save(admin);
         };
     }

@@ -8,6 +8,8 @@ import AiAssistantModal from './components/AiAssistantModal';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import VerifyEmail from './pages/VerifyEmail';
 import ServiceDetails from './pages/ServiceDetails';
 import BookingFlow from './pages/BookingFlow';
 import CustomerDashboard from './pages/CustomerDashboard';
@@ -27,6 +29,8 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/services/:serviceId" element={<ServiceDetails />} />
 
             {/* Protected Customer Routes */}

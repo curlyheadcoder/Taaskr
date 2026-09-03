@@ -149,84 +149,351 @@ export default function Home() {
     return { icon: <Hammer size={24} />, color: '#6366F1', bg: 'rgba(99, 102, 241, 0.15)' };
   };
 
+  const [searchFocused, setSearchFocused] = useState(false);
+
+  // Trending search chips
+  const trendingSearches = [
+    { label: 'Electrician', icon: '⚡' },
+    { label: 'AC Repair', icon: '❄️' },
+    { label: 'Mini Truck', icon: '🚚' },
+    { label: 'Plumbing', icon: '🚰' },
+    { label: 'Deep Cleaning', icon: '✨' },
+    { label: 'Diagnostics', icon: '🩺' }
+  ];
+
   return (
     <div className="animate-fade-in">
-      {/* Premium Hero Section */}
+      {/* Dynamic Production-Grade Hero Section */}
       <section style={{
         position: 'relative',
-        background: `linear-gradient(to right, #0F172A 0%, #1E293B 100%)`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        padding: '5rem 2rem',
-        minHeight: '420px',
+        background: 'radial-gradient(ellipse at 30% 20%, #1e1b4b 0%, #0f172a 50%, #020617 100%)',
+        overflow: 'hidden',
+        padding: '5rem 2rem 5.5rem 2rem',
+        minHeight: '480px',
         display: 'flex',
-        alignItems: 'center'
+        alignItems: 'center',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
       }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', width: '100%' }}>
-          <div style={{ maxWidth: '650px' }}>
-            <span className="badge" style={{ background: 'var(--primary)', color: '#fff', marginBottom: '1.25rem', fontSize: '0.8rem', padding: '0.3rem 0.75rem' }}>
-              Premium Quality Guaranteed
-            </span>
+        {/* Dynamic Glowing Ambient Orbs */}
+        <div className="hero-orb-1" style={{
+          position: 'absolute',
+          top: '-10%',
+          left: '15%',
+          width: '420px',
+          height: '420px',
+          background: 'radial-gradient(circle, rgba(56, 189, 248, 0.25) 0%, rgba(37, 99, 235, 0.08) 50%, transparent 70%)',
+          borderRadius: '50%',
+          filter: 'blur(50px)',
+          pointerEvents: 'none',
+          zIndex: 1
+        }} />
+        
+        <div className="hero-orb-2" style={{
+          position: 'absolute',
+          bottom: '-15%',
+          right: '10%',
+          width: '480px',
+          height: '480px',
+          background: 'radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, rgba(99, 102, 241, 0.06) 50%, transparent 70%)',
+          borderRadius: '50%',
+          filter: 'blur(60px)',
+          pointerEvents: 'none',
+          zIndex: 1
+        }} />
+
+        <div className="hero-orb-3" style={{
+          position: 'absolute',
+          top: '20%',
+          right: '35%',
+          width: '320px',
+          height: '320px',
+          background: 'radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, transparent 70%)',
+          borderRadius: '50%',
+          filter: 'blur(45px)',
+          pointerEvents: 'none',
+          zIndex: 1
+        }} />
+
+        {/* Blueprint Grid Overlay */}
+        <div className="hero-grid-pattern" style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          pointerEvents: 'none',
+          zIndex: 2
+        }} />
+
+        {/* Hero Content Container */}
+        <div style={{ maxWidth: '1280px', margin: '0 auto', width: '100%', position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '3rem' }}>
+          
+          {/* Left Column: Headline & Search */}
+          <div style={{ flex: '1 1 540px', maxWidth: '640px' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(59, 130, 246, 0.15)', border: '1px solid rgba(59, 130, 246, 0.3)', borderRadius: '9999px', padding: '0.35rem 0.9rem', marginBottom: '1.25rem', backdropFilter: 'blur(8px)' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#38BDF8', display: 'inline-block', boxShadow: '0 0 10px #38BDF8' }} />
+              <span style={{ color: '#93C5FD', fontSize: '0.8rem', fontWeight: 600, letterSpacing: '0.02em' }}>
+                Verified On-Demand Service Network
+              </span>
+            </div>
+
             <h1 style={{
-              fontSize: '3rem',
+              fontSize: 'clamp(2.3rem, 4vw, 3.4rem)',
               fontWeight: 800,
               color: '#ffffff',
-              lineHeight: 1.15,
-              marginBottom: '1rem',
-              letterSpacing: '-0.02em'
+              lineHeight: 1.12,
+              marginBottom: '1.15rem',
+              letterSpacing: '-0.03em'
             }}>
-              Trusted Services.<br />Right at Your Door.
+              Trusted Services.<br />
+              <span style={{
+                background: 'linear-gradient(135deg, #60A5FA 0%, #A78BFA 50%, #38BDF8 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
+                Right at Your Door.
+              </span>
             </h1>
+
             <p style={{
-              fontSize: '1.1rem',
-              color: '#cbd5e1',
+              fontSize: '1.08rem',
+              color: '#94A3B8',
               marginBottom: '2rem',
-              lineHeight: 1.6
+              lineHeight: 1.6,
+              maxWidth: '520px'
             }}>
-              Book verified professionals for home repairs, maintenance, and everyday freight services. Experience seamless booking and reliable execution.
+              Book top-rated verified professionals for home repairs, electrical, AC servicing, and freight logistics in under 60 seconds.
             </p>
 
-            {/* Search Bar */}
+            {/* Upgraded Command-Center Search Bar */}
+            <div style={{ position: 'relative', maxWidth: '540px' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                backgroundColor: '#FFFFFF',
+                borderRadius: '12px',
+                padding: '0.45rem 0.6rem 0.45rem 1rem',
+                gap: '0.75rem',
+                boxShadow: searchFocused
+                  ? '0 0 0 3px rgba(96, 165, 250, 0.5), 0 20px 25px -5px rgba(0, 0, 0, 0.5)'
+                  : '0 12px 28px -5px rgba(0,0,0,0.4)',
+                transition: 'all 0.2s ease',
+                border: '1px solid rgba(255, 255, 255, 0.2)'
+              }}>
+                <Search size={20} color="#64748B" style={{ flexShrink: 0 }} />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search services (e.g. Electrician, Mini Truck, AC Repair)..."
+                  style={{
+                    border: 'none',
+                    background: 'transparent',
+                    outline: 'none',
+                    width: '100%',
+                    fontSize: '0.9375rem',
+                    color: '#0F172A',
+                    fontWeight: 500
+                  }}
+                />
+                {searchQuery ? (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    style={{
+                      background: 'rgba(100, 116, 139, 0.12)',
+                      border: 'none',
+                      borderRadius: '6px',
+                      color: '#475569',
+                      cursor: 'pointer',
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      padding: '0.3rem 0.6rem',
+                      flexShrink: 0
+                    }}
+                  >
+                    Clear
+                  </button>
+                ) : (
+                  <button
+                    className="btn btn-primary btn-sm"
+                    style={{ padding: '0.45rem 0.9rem', fontSize: '0.8rem', borderRadius: '8px', flexShrink: 0 }}
+                  >
+                    Search
+                  </button>
+                )}
+              </div>
+
+              {/* Autocomplete Suggestions Dropdown */}
+              {searchFocused && searchQuery.trim().length > 0 && (
+                <div style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 8px)',
+                  left: 0,
+                  right: 0,
+                  backgroundColor: '#FFFFFF',
+                  borderRadius: '12px',
+                  boxShadow: '0 20px 30px -8px rgba(0, 0, 0, 0.35)',
+                  border: '1px solid #E2E8F0',
+                  maxHeight: '320px',
+                  overflowY: 'auto',
+                  zIndex: 50,
+                  padding: '0.5rem'
+                }}>
+                  {filteredServices.length === 0 ? (
+                    <div style={{ padding: '1rem', textAlign: 'center', color: '#64748B', fontSize: '0.875rem' }}>
+                      No services found for "{searchQuery}"
+                    </div>
+                  ) : (
+                    <div>
+                      <div style={{ padding: '0.4rem 0.75rem', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94A3B8' }}>
+                        Matching Services ({filteredServices.length})
+                      </div>
+                      {filteredServices.slice(0, 6).map((service) => {
+                        const cat = categories.find(c => c.id === service.categoryId);
+                        const cfg = getServiceConfig(service.name, cat?.name);
+                        return (
+                          <div
+                            key={service.id}
+                            className="search-dropdown-card"
+                            onMouseDown={() => navigate(`/services/${service.id}`)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: '0.6rem 0.75rem',
+                              borderRadius: '8px',
+                              cursor: 'pointer',
+                              gap: '0.75rem'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                              <div style={{
+                                width: '32px',
+                                height: '32px',
+                                borderRadius: '8px',
+                                backgroundColor: cfg.bg,
+                                color: cfg.color,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0
+                              }}>
+                                {React.cloneElement(cfg.icon, { size: 16 })}
+                              </div>
+                              <div>
+                                <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#0F172A' }}>
+                                  {service.name}
+                                </div>
+                                <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
+                                  {cat?.name || 'General Service'}
+                                </div>
+                              </div>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary)' }}>
+                                ₹{service.price}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Quick Trending Filter Pills */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+                <span style={{ color: '#94A3B8', fontSize: '0.78rem', fontWeight: 500, marginRight: '0.2rem' }}>
+                  Popular:
+                </span>
+                {trendingSearches.map((chip, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSearchQuery(chip.label);
+                      const matchedCat = categories.find(c => c.name.toLowerCase().includes(chip.label.toLowerCase()));
+                      if (matchedCat) setSelectedCategory(matchedCat.id);
+                    }}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      color: '#E2E8F0',
+                      borderRadius: '9999px',
+                      padding: '0.25rem 0.65rem',
+                      fontSize: '0.75rem',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.3rem',
+                      transition: 'all 0.15s ease',
+                      backdropFilter: 'blur(4px)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.18)';
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+                    }}
+                  >
+                    <span>{chip.icon}</span>
+                    <span>{chip.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Dynamic Glassmorphic Stats Grid */}
+          <div style={{ flex: '1 1 360px', maxWidth: '440px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{
+              background: 'rgba(15, 23, 42, 0.65)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              backdropFilter: 'blur(16px)',
+              borderRadius: '16px',
+              padding: '1.4rem',
+              boxShadow: '0 20px 35px -10px rgba(0, 0, 0, 0.4)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                  <Zap size={22} />
+                </div>
+                <div>
+                  <h3 style={{ color: '#fff', fontSize: '1rem', fontWeight: 700, margin: 0 }}>Instant Dispatch</h3>
+                  <p style={{ color: '#94A3B8', fontSize: '0.78rem', margin: '2px 0 0 0' }}>Average 45 mins arrival time</p>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div style={{ background: 'rgba(255, 255, 255, 0.04)', borderRadius: '10px', padding: '0.85rem', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                  <div style={{ color: '#38BDF8', fontSize: '1.35rem', fontWeight: 800 }}>5,000+</div>
+                  <div style={{ color: '#94A3B8', fontSize: '0.72rem' }}>Verified Partners</div>
+                </div>
+                <div style={{ background: 'rgba(255, 255, 255, 0.04)', borderRadius: '10px', padding: '0.85rem', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                  <div style={{ color: '#FBBF24', fontSize: '1.35rem', fontWeight: 800 }}>4.9 ★</div>
+                  <div style={{ color: '#94A3B8', fontSize: '0.72rem' }}>Service Rating</div>
+                </div>
+              </div>
+            </div>
+
+            <div style={{
+              background: 'rgba(15, 23, 42, 0.45)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(12px)',
+              borderRadius: '12px',
+              padding: '0.85rem 1.15rem',
               display: 'flex',
               alignItems: 'center',
-              backgroundColor: '#FFFFFF',
-              borderRadius: 'var(--radius-md)',
-              padding: '0.4rem 0.5rem 0.4rem 1rem',
-              gap: '0.75rem',
-              maxWidth: '520px',
-              boxShadow: '0 10px 25px -5px rgba(0,0,0,0.3)'
+              gap: '0.75rem'
             }}>
-              <Search size={18} color="#64748B" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search services (e.g. Electrician, Mini Truck, AC Repair)..."
-                style={{
-                  border: 'none',
-                  background: 'transparent',
-                  outline: 'none',
-                  width: '100%',
-                  fontSize: '0.875rem',
-                  color: '#0F172A'
-                }}
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: '#64748B',
-                    cursor: 'pointer',
-                    fontSize: '0.75rem',
-                    padding: '0.2rem 0.4rem'
-                  }}
-                >
-                  Clear
-                </button>
-              )}
+              <ShieldCheck size={20} color="#10B981" style={{ flexShrink: 0 }} />
+              <span style={{ color: '#CBD5E1', fontSize: '0.8125rem' }}>
+                <strong>Taaskr Shield:</strong> 100% background checked & insured work.
+              </span>
             </div>
           </div>
         </div>

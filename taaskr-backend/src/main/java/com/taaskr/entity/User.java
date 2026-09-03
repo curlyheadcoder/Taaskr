@@ -33,6 +33,19 @@ public class User {
     @Column(nullable = false)
     private Boolean enabled = true;
 
+    @Column(nullable = false)
+    private Boolean emailVerified = false;
+
+    @Column(length = 10)
+    private String verificationOtp;
+
+    private LocalDateTime verificationOtpExpiresAt;
+
+    @Column(length = 10)
+    private String resetPasswordOtp;
+
+    private LocalDateTime resetPasswordOtpExpiresAt;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -46,6 +59,9 @@ public class User {
         this.updatedAt = now;
         if (this.enabled == null) {
             this.enabled = true;
+        }
+        if (this.emailVerified == null) {
+            this.emailVerified = false;
         }
     }
 
@@ -140,5 +156,45 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Boolean getEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(Boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
+
+    public String getVerificationOtp() {
+        return verificationOtp;
+    }
+
+    public void setVerificationOtp(String verificationOtp) {
+        this.verificationOtp = verificationOtp;
+    }
+
+    public LocalDateTime getVerificationOtpExpiresAt() {
+        return verificationOtpExpiresAt;
+    }
+
+    public void setVerificationOtpExpiresAt(LocalDateTime verificationOtpExpiresAt) {
+        this.verificationOtpExpiresAt = verificationOtpExpiresAt;
+    }
+
+    public String getResetPasswordOtp() {
+        return resetPasswordOtp;
+    }
+
+    public void setResetPasswordOtp(String resetPasswordOtp) {
+        this.resetPasswordOtp = resetPasswordOtp;
+    }
+
+    public LocalDateTime getResetPasswordOtpExpiresAt() {
+        return resetPasswordOtpExpiresAt;
+    }
+
+    public void setResetPasswordOtpExpiresAt(LocalDateTime resetPasswordOtpExpiresAt) {
+        this.resetPasswordOtpExpiresAt = resetPasswordOtpExpiresAt;
     }
 }
