@@ -262,7 +262,7 @@ public class DataSeeder {
     }
 
     private void seedDriverVehicle(VehicleRepository vehicleRepository, ProviderProfile provider, VehicleType type, FuelType fuel, String model, String plate, BigDecimal capacity, BigDecimal lat, BigDecimal lng) {
-        if (vehicleRepository.findByProviderId(provider.getId()).isEmpty()) {
+        if (vehicleRepository.findByRegistrationNumber(plate).isEmpty()) {
             Vehicle vehicle = new Vehicle();
             vehicle.setProvider(provider);
             vehicle.setVehicleType(type);

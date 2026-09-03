@@ -374,10 +374,26 @@ export const api = {
       return makeRequest('/api/vehicle/my-vehicle');
     },
 
+    getMyVehicles: async () => {
+      return makeRequest('/api/vehicle/my-vehicles');
+    },
+
     registerVehicle: async (vehicleData) => {
       return makeRequest('/api/vehicle/register', {
         method: 'POST',
         body: JSON.stringify(vehicleData)
+      });
+    },
+
+    deleteVehicle: async (id) => {
+      return makeRequest(`/api/vehicle/${id}`, {
+        method: 'DELETE'
+      });
+    },
+
+    toggleVehicleAvailability: async (id) => {
+      return makeRequest(`/api/vehicle/${id}/toggle-availability`, {
+        method: 'PATCH'
       });
     },
 

@@ -11,6 +11,8 @@ import java.math.BigDecimal;
 
 public class CreateVehicleRequest {
 
+    private Long id;
+
     @NotNull(message = "Vehicle type is required")
     private VehicleType vehicleType;
 
@@ -73,6 +75,14 @@ public class CreateVehicleRequest {
 
     public void setCapacityKg(BigDecimal capacityKg) {
         this.capacityKg = capacityKg;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Boolean getAvailable() {

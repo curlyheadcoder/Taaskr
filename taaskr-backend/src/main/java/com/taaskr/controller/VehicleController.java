@@ -50,6 +50,29 @@ public class VehicleController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/my-vehicles")
+    @PreAuthorize("hasRole('PROVIDER')")
+    @Transactional
+    public ResponseEntity<List<VehicleResponse>> getMyVehicles(Authentication authentication) {
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (user.getRole() != Role.PROVIDER) {
+            throw new BadRequestException("User is not a provider");
+        }
+
+        ProviderProfile provider = providerProfileRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Provider profile not found"));
+
+        List<Vehicle> vehicles = vehicleRepository.findAllByProviderId(provider.getId());
+        List<VehicleResponse> responses = vehicles.stream()
+                .map(v -> mapVehicle(v, user.getName()))
+                .toList();
+
+        return ResponseEntity.ok(responses);
+    }
+
     @GetMapping("/my-vehicle")
     @PreAuthorize("hasRole('PROVIDER')")
     @Transactional
@@ -65,10 +88,12 @@ public class VehicleController {
         ProviderProfile provider = providerProfileRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Provider profile not found"));
 
-        Vehicle vehicle = vehicleRepository.findByProviderId(provider.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No vehicle registered for this provider"));
+        List<Vehicle> vehicles = vehicleRepository.findAllByProviderId(provider.getId());
+        if (vehicles.isEmpty()) {
+            throw new ResourceNotFoundException("No vehicle registered for this provider");
+        }
 
-        return ResponseEntity.ok(mapVehicle(vehicle, user.getName()));
+        return ResponseEntity.ok(mapVehicle(vehicles.get(0), user.getName()));
     }
 
     @PostMapping("/register")
@@ -87,8 +112,13 @@ public class VehicleController {
         ProviderProfile provider = providerProfileRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Provider profile not found"));
 
-        Vehicle vehicle = vehicleRepository.findByProviderId(provider.getId())
-                .orElseGet(Vehicle::new);
+        Vehicle vehicle;
+        if (request.getId() != null) {
+            vehicle = vehicleRepository.findByIdAndProviderId(request.getId(), provider.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found or does not belong to provider"));
+        } else {
+            vehicle = new Vehicle();
+        }
 
         String regPlate = request.getRegistrationNumber().trim().toUpperCase();
         var existingWithPlate = vehicleRepository.findByRegistrationNumber(regPlate);
@@ -112,6 +142,43 @@ public class VehicleController {
             vehicle.setCurrentLongitude(request.getCurrentLongitude());
         }
 
+        Vehicle saved = vehicleRepository.save(vehicle);
+        return ResponseEntity.ok(mapVehicle(saved, user.getName()));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('PROVIDER')")
+    @Transactional
+    public ResponseEntity<Void> deleteVehicle(Authentication authentication, @PathVariable Long id) {
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        ProviderProfile provider = providerProfileRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Provider profile not found"));
+
+        Vehicle vehicle = vehicleRepository.findByIdAndProviderId(id, provider.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found"));
+
+        vehicleRepository.delete(vehicle);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/toggle-availability")
+    @PreAuthorize("hasRole('PROVIDER')")
+    @Transactional
+    public ResponseEntity<VehicleResponse> toggleVehicleAvailability(Authentication authentication, @PathVariable Long id) {
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        ProviderProfile provider = providerProfileRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Provider profile not found"));
+
+        Vehicle vehicle = vehicleRepository.findByIdAndProviderId(id, provider.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found"));
+
+        vehicle.setAvailable(!Boolean.TRUE.equals(vehicle.getAvailable()));
         Vehicle saved = vehicleRepository.save(vehicle);
         return ResponseEntity.ok(mapVehicle(saved, user.getName()));
     }

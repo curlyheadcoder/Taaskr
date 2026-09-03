@@ -60,8 +60,12 @@ export default function ServiceDetails() {
         const catName = (res.category?.name || res.categoryName || '').toLowerCase();
         const srvName = (res.name || '').toLowerCase();
         const isVehicle = catName.includes('vehicle') || catName.includes('transport') || 
+                          catName.includes('logistics') || catName.includes('cargo') || 
+                          catName.includes('courier') || catName.includes('delivery') ||
                           srvName.includes('truck') || srvName.includes('bike') || 
-                          srvName.includes('rickshaw') || srvName.includes('loading');
+                          srvName.includes('rickshaw') || srvName.includes('loading') ||
+                          srvName.includes('moving') || srvName.includes('material') ||
+                          srvName.includes('tempo') || srvName.includes('goods');
         setIsVehicleCategory(isVehicle);
 
         if (isVehicle) {

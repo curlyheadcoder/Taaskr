@@ -27,7 +27,9 @@ export default function ProviderDashboard() {
   const [savingProfile, setSavingProfile] = useState(false);
 
   // Vehicle Management state
-  const [myVehicle, setMyVehicle] = useState(null);
+  const [myVehicles, setMyVehicles] = useState([]);
+  const [editingVehicleId, setEditingVehicleId] = useState(null);
+  const [showVehicleForm, setShowVehicleForm] = useState(false);
   const [vehicleType, setVehicleType] = useState('MINI_TRUCK');
   const [fuelType, setFuelType] = useState('DIESEL');
   const [vehicleModel, setVehicleModel] = useState('');
@@ -83,20 +85,19 @@ export default function ProviderDashboard() {
       const allCats = await api.catalog.getCategories();
       setAvailableCategories(allCats.filter(c => c.active));
 
-      // 7. Load vehicle profile if any
+      // 7. Load vehicle fleet
       try {
-        const vehicle = await api.vehicle.getMyVehicle();
-        if (vehicle) {
-          setMyVehicle(vehicle);
-          setVehicleType(vehicle.vehicleType || 'MINI_TRUCK');
-          setFuelType(vehicle.fuelType || 'DIESEL');
-          setVehicleModel(vehicle.modelName || '');
-          setRegistrationNumber(vehicle.registrationNumber || '');
-          setVehicleCapacityKg(vehicle.capacityKg || '1000');
-          setVehicleAvailable(vehicle.available !== false);
+        const vehicles = await api.vehicle.getMyVehicles();
+        if (Array.isArray(vehicles)) {
+          setMyVehicles(vehicles);
         }
       } catch (e) {
-        // No vehicle registered yet
+        try {
+          const single = await api.vehicle.getMyVehicle();
+          if (single) setMyVehicles([single]);
+        } catch (err2) {
+          setMyVehicles([]);
+        }
       }
 
     } catch (err) {
@@ -230,6 +231,49 @@ export default function ProviderDashboard() {
     }
   };
 
+  const handleAddNewVehicle = () => {
+    setEditingVehicleId(null);
+    setVehicleType('MINI_TRUCK');
+    setFuelType('DIESEL');
+    setVehicleModel('');
+    setRegistrationNumber('');
+    setVehicleCapacityKg('1000');
+    setVehicleAvailable(true);
+    setShowVehicleForm(true);
+  };
+
+  const handleEditVehicle = (veh) => {
+    setEditingVehicleId(veh.id);
+    setVehicleType(veh.vehicleType || 'MINI_TRUCK');
+    setFuelType(veh.fuelType || 'DIESEL');
+    setVehicleModel(veh.modelName || '');
+    setRegistrationNumber(veh.registrationNumber || '');
+    setVehicleCapacityKg(String(veh.capacityKg || '1000'));
+    setVehicleAvailable(veh.available !== false);
+    setShowVehicleForm(true);
+  };
+
+  const handleToggleVehicleAvailability = async (vehicleId) => {
+    try {
+      const updated = await api.vehicle.toggleVehicleAvailability(vehicleId);
+      setMyVehicles(prev => prev.map(v => v.id === vehicleId ? updated : v));
+      showNotification(`Vehicle availability set to ${updated.available ? 'Online' : 'Offline'}.`);
+    } catch (err) {
+      showNotification(`Failed to toggle vehicle status: ${err.message}`, 'error');
+    }
+  };
+
+  const handleDeleteVehicle = async (vehicleId) => {
+    if (!window.confirm('Are you sure you want to remove this vehicle from your fleet?')) return;
+    try {
+      await api.vehicle.deleteVehicle(vehicleId);
+      setMyVehicles(prev => prev.filter(v => v.id !== vehicleId));
+      showNotification('Vehicle removed successfully.');
+    } catch (err) {
+      showNotification(`Failed to delete vehicle: ${err.message}`, 'error');
+    }
+  };
+
   const handleSaveVehicle = async (e) => {
     e.preventDefault();
     if (!registrationNumber || !vehicleModel) {
@@ -239,6 +283,7 @@ export default function ProviderDashboard() {
     setSavingVehicle(true);
     try {
       const saved = await api.vehicle.registerVehicle({
+        id: editingVehicleId,
         vehicleType,
         fuelType,
         modelName: vehicleModel,
@@ -246,8 +291,15 @@ export default function ProviderDashboard() {
         capacityKg: parseFloat(vehicleCapacityKg) || 1000,
         available: vehicleAvailable
       });
-      setMyVehicle(saved);
-      showNotification('🚚 Vehicle details registered successfully!');
+      if (editingVehicleId) {
+        setMyVehicles(prev => prev.map(v => v.id === editingVehicleId ? saved : v));
+        showNotification('Vehicle details updated successfully!');
+      } else {
+        setMyVehicles(prev => [...prev, saved]);
+        showNotification('🚚 New vehicle registered to your fleet!');
+      }
+      setShowVehicleForm(false);
+      setEditingVehicleId(null);
     } catch (err) {
       showNotification(`Vehicle registration failed: ${err.message}`, 'error');
     } finally {
@@ -650,105 +702,235 @@ export default function ProviderDashboard() {
           {/* Right Column: Vehicle Registration & Settings */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             
-            {/* VEHICLE PROFILE CARD (Only visible for Logistics / Vehicle Transport Partners) */}
+            {/* VEHICLE FLEET MANAGEMENT (Visible for Logistics / Vehicle Transport Partners) */}
             {isLogisticsPartner && (
               <div id="vehicle-section" className="premium-card" style={{ padding: '1.75rem', borderLeft: '4px solid var(--primary)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                  <h2 style={{ fontSize: '1.3rem', color: 'var(--primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <Truck className="w-5 h-5" /> My Transport Vehicle
-                  </h2>
-                  {myVehicle && (
-                    <span className="badge badge-completed" style={{ fontSize: '0.7rem' }}>
-                      {myVehicle.available ? 'Online & Available' : 'Offline'}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Truck className="w-5 h-5 text-blue-500" />
+                    <h2 style={{ fontSize: '1.3rem', color: 'var(--text-main)', margin: 0 }}>
+                      My Transport Fleet
+                    </h2>
+                    <span className="badge badge-assigned" style={{ fontSize: '0.75rem' }}>
+                      {myVehicles.length} {myVehicles.length === 1 ? 'Vehicle' : 'Vehicles'}
                     </span>
+                  </div>
+                  {!showVehicleForm && (
+                    <button
+                      onClick={handleAddNewVehicle}
+                      className="btn btn-primary"
+                      style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem' }}
+                    >
+                      + Add Vehicle
+                    </button>
                   )}
                 </div>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
-                  Register your vehicle to receive on-demand intra-city delivery and transport trips.
+                  Manage multiple delivery vehicles and tempos for on-demand customer logistics and freight dispatch.
                 </p>
 
-                <form onSubmit={handleSaveVehicle} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">Vehicle Category *</label>
-                    <select
-                      className="form-control"
-                      value={vehicleType}
-                      onChange={(e) => setVehicleType(e.target.value)}
-                    >
-                      <option value="TWO_WHEELER_ELECTRIC">Electric Bike (Courier up to 25 KG)</option>
-                      <option value="TWO_WHEELER_PETROL">Petrol Bike (Courier up to 25 KG)</option>
-                      <option value="THREE_WHEELER_ELECTRIC">Electric Rickshaw (up to 250 KG)</option>
-                      <option value="LOADING_VEHICLE">Loading Vehicle 3W (up to 500 KG)</option>
-                      <option value="MINI_TRUCK">Mini Truck - Tata Ace (up to 1000 KG)</option>
-                      <option value="TRUCK">Truck 14ft / 17ft (up to 2500 KG)</option>
-                      <option value="HEAVY_TRUCK">Heavy Commercial Truck (up to 7000 KG)</option>
-                    </select>
-                  </div>
+                {/* List of Registered Fleet Vehicles */}
+                {!showVehicleForm && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1rem' }}>
+                    {myVehicles.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: '2rem 1rem', background: 'var(--bg-page)', borderRadius: 'var(--radius-md)', border: '1px dashed var(--border-light)' }}>
+                        <Truck className="w-10 h-10" style={{ margin: '0 auto 0.5rem auto', color: 'var(--text-muted)' }} />
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>No vehicles registered in your fleet yet.</p>
+                        <button onClick={handleAddNewVehicle} className="btn btn-primary btn-small">
+                          + Register Your First Vehicle
+                        </button>
+                      </div>
+                    ) : (
+                      myVehicles.map(veh => (
+                        <div
+                          key={veh.id}
+                          style={{
+                            padding: '1.1rem',
+                            borderRadius: 'var(--radius-md)',
+                            background: 'var(--bg-page)',
+                            border: '1px solid var(--border-light)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.75rem'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+                                  {veh.modelName}
+                                </h3>
+                                <span style={{
+                                  padding: '0.15rem 0.5rem',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 700,
+                                  background: 'rgba(37,99,235,0.12)',
+                                  color: '#2563EB',
+                                  borderRadius: '4px',
+                                  border: '1px solid rgba(37,99,235,0.2)'
+                                }}>
+                                  {veh.registrationNumber}
+                                </span>
+                              </div>
+                              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.25rem 0 0 0' }}>
+                                {veh.displayName || veh.vehicleType} • {veh.fuelType}
+                              </p>
+                            </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                            <button
+                              onClick={() => handleToggleVehicleAvailability(veh.id)}
+                              style={{
+                                border: 'none',
+                                cursor: 'pointer',
+                                padding: '0.3rem 0.65rem',
+                                borderRadius: '999px',
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                backgroundColor: veh.available ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                                color: veh.available ? '#10B981' : '#EF4444',
+                                border: `1px solid ${veh.available ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`
+                              }}
+                              title="Click to toggle availability"
+                            >
+                              ● {veh.available ? 'Online (Available)' : 'Offline (Busy)'}
+                            </button>
+                          </div>
+
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-light)', paddingTop: '0.6rem', fontSize: '0.8rem' }}>
+                            <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>
+                              Max Payload: <strong style={{ color: 'var(--text-main)' }}>{veh.capacityKg} KG</strong>
+                            </span>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                              <button
+                                onClick={() => handleEditVehicle(veh)}
+                                style={{ background: 'transparent', border: 'none', color: '#3B82F6', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
+                              >
+                                ✏️ Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteVehicle(veh.id)}
+                                style={{ background: 'transparent', border: 'none', color: '#EF4444', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
+                              >
+                                🗑️ Remove
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+
+                {/* Add / Edit Vehicle Form */}
+                {showVehicleForm && (
+                  <form onSubmit={handleSaveVehicle} style={{
+                    display: 'flex', flexDirection: 'column', gap: '1rem',
+                    background: 'var(--bg-page)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+                        {editingVehicleId ? '✏️ Edit Vehicle Details' : '➕ Add Vehicle to Fleet'}
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={() => { setShowVehicleForm(false); setEditingVehicleId(null); }}
+                        style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.85rem' }}
+                      >
+                        ✕ Cancel
+                      </button>
+                    </div>
+
                     <div className="form-group" style={{ marginBottom: 0 }}>
-                      <label className="form-label">Fuel Type</label>
+                      <label className="form-label">Vehicle Category *</label>
                       <select
                         className="form-control"
-                        value={fuelType}
-                        onChange={(e) => setFuelType(e.target.value)}
+                        value={vehicleType}
+                        onChange={(e) => setVehicleType(e.target.value)}
                       >
-                        <option value="DIESEL">Diesel</option>
-                        <option value="CNG">CNG</option>
-                        <option value="PETROL">Petrol</option>
-                        <option value="ELECTRIC">Electric</option>
+                        <option value="TWO_WHEELER_ELECTRIC">Electric Bike (Courier up to 25 KG)</option>
+                        <option value="TWO_WHEELER_PETROL">Petrol Bike (Courier up to 25 KG)</option>
+                        <option value="THREE_WHEELER_ELECTRIC">Electric Rickshaw (up to 250 KG)</option>
+                        <option value="LOADING_VEHICLE">Loading Vehicle 3W (up to 500 KG)</option>
+                        <option value="MINI_TRUCK">Mini Truck - Tata Ace (up to 1000 KG)</option>
+                        <option value="TRUCK">Truck 14ft / 17ft (up to 2500 KG)</option>
+                        <option value="HEAVY_TRUCK">Heavy Commercial Truck (up to 7000 KG)</option>
                       </select>
                     </div>
 
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Fuel Type</label>
+                        <select
+                          className="form-control"
+                          value={fuelType}
+                          onChange={(e) => setFuelType(e.target.value)}
+                        >
+                          <option value="DIESEL">Diesel</option>
+                          <option value="CNG">CNG</option>
+                          <option value="PETROL">Petrol</option>
+                          <option value="ELECTRIC">Electric</option>
+                        </select>
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Capacity (KG)</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          value={vehicleCapacityKg}
+                          onChange={(e) => setVehicleCapacityKg(e.target.value)}
+                        />
+                      </div>
+                    </div>
+
                     <div className="form-group" style={{ marginBottom: 0 }}>
-                      <label className="form-label">Capacity (KG)</label>
+                      <label className="form-label">Model Name *</label>
                       <input
-                        type="number"
+                        type="text"
                         className="form-control"
-                        value={vehicleCapacityKg}
-                        onChange={(e) => setVehicleCapacityKg(e.target.value)}
+                        placeholder="e.g. Tata Ace Gold, Hero Electric Nyx, Piaggio Ape"
+                        value={vehicleModel}
+                        onChange={(e) => setVehicleModel(e.target.value)}
+                        required
                       />
                     </div>
-                  </div>
 
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">Model Name *</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="e.g. Tata Ace Gold, Hero Electric Nyx, Piaggio Ape"
-                      value={vehicleModel}
-                      onChange={(e) => setVehicleModel(e.target.value)}
-                      required
-                    />
-                  </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label">Registration Plate / Number *</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="e.g. MP-09-TA-1234"
+                        value={registrationNumber}
+                        onChange={(e) => setRegistrationNumber(e.target.value)}
+                        required
+                      />
+                    </div>
 
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">Registration Plate / Number *</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="e.g. MP-09-TA-1234"
-                      value={registrationNumber}
-                      onChange={(e) => setRegistrationNumber(e.target.value)}
-                      required
-                    />
-                  </div>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-main)', marginTop: '0.25rem' }}>
+                      <input
+                        type="checkbox"
+                        checked={vehicleAvailable}
+                        onChange={(e) => setVehicleAvailable(e.target.checked)}
+                        style={{ accentColor: 'var(--primary)', width: '1rem', height: '1rem' }}
+                      />
+                      <span>Mark vehicle as Available for trips</span>
+                    </label>
 
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-main)', marginTop: '0.25rem' }}>
-                    <input
-                      type="checkbox"
-                      checked={vehicleAvailable}
-                      onChange={(e) => setVehicleAvailable(e.target.checked)}
-                      style={{ accentColor: 'var(--primary)', width: '1rem', height: '1rem' }}
-                    />
-                    <span>Mark vehicle as Available for trips today</span>
-                  </label>
-
-                  <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }} disabled={savingVehicle}>
-                    {savingVehicle ? 'Saving Vehicle...' : myVehicle ? 'Update Vehicle Info' : 'Register My Vehicle'}
-                  </button>
-                </form>
+                    <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                      <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={savingVehicle}>
+                        {savingVehicle ? 'Saving Vehicle...' : editingVehicleId ? 'Update Vehicle' : 'Save to Fleet'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setShowVehicleForm(false); setEditingVehicleId(null); }}
+                        className="btn btn-secondary"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
             )}
 
