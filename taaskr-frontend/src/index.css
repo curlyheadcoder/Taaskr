@@ -160,13 +160,30 @@ body.theme-provider.dark {
   --primary-subtle: rgba(59, 130, 246, 0.15);
 }
 
-body.theme-admin.dark {
-  --bg-page: #0F172A;
-  --bg-card: #1E293B;
-  --bg-subtle: #1E293B;
-  --bg-hover: #334155;
-  --border-light: #334155;
-  --border-hover: #475569;
+/* Admin Theme - Obsidian Black Mission Control Console */
+body.theme-admin, body.theme-admin.dark {
+  --bg-page: #09090B;
+  --bg-card: #121215;
+  --bg-subtle: #18181B;
+  --bg-hover: #27272A;
+  --bg-active: #3F3F46;
+
+  --text-main: #FAFAFA;
+  --text-muted: #A1A1AA;
+  --text-light: #71717A;
+  --text-inverse: #09090B;
+
+  --border-subtle: #18181B;
+  --border-light: #27272A;
+  --border-strong: #3F3F46;
+  --border-hover: #52525B;
+
+  --primary: #3B82F6;
+  --primary-hover: #60A5FA;
+  --primary-subtle: rgba(59, 130, 246, 0.15);
+
+  --secondary: #FAFAFA;
+  --secondary-hover: #E4E4E7;
 }
 
 /* ==========================================================================
