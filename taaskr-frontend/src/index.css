@@ -160,8 +160,33 @@ body.theme-provider.dark {
   --primary-subtle: rgba(59, 130, 246, 0.15);
 }
 
-/* Admin Theme - Obsidian Black Mission Control Console */
-body.theme-admin, body.theme-admin.dark {
+/* Admin Theme - Crisp Enterprise Zinc Light Mode */
+body.theme-admin {
+  --primary: #09090B;
+  --primary-hover: #18181B;
+  --primary-subtle: #F4F4F5;
+  --secondary: #71717A;
+  --secondary-hover: #52525B;
+
+  --bg-page: #F4F4F5;
+  --bg-card: #FFFFFF;
+  --bg-subtle: #FAFAFA;
+  --bg-hover: #E4E4E7;
+  --bg-active: #D4D4D8;
+
+  --text-main: #09090B;
+  --text-muted: #71717A;
+  --text-light: #A1A1AA;
+  --text-inverse: #FAFAFA;
+
+  --border-subtle: #F4F4F5;
+  --border-light: #E4E4E7;
+  --border-strong: #D4D4D8;
+  --border-hover: #A1A1AA;
+}
+
+/* Admin Theme - Obsidian Black Dark Mode */
+body.theme-admin.dark {
   --bg-page: #09090B;
   --bg-card: #121215;
   --bg-subtle: #18181B;
