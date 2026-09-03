@@ -341,8 +341,8 @@ export default function ProviderDashboard() {
   const isLogisticsPartner = selectedCategoryIds.some(catId => {
     const cat = availableCategories.find(c => c.id === catId);
     const name = (cat?.name || '').toLowerCase();
-    return name.includes('vehicle') || name.includes('transport') || name.includes('logistic');
-  }) || Boolean(myVehicle?.id);
+    return name.includes('vehicle') || name.includes('transport') || name.includes('logistic') || name.includes('cargo');
+  }) || (myVehicles && myVehicles.length > 0);
 
   return (
     <div className="enterprise-layout animate-fade-in" style={{ paddingBottom: '4rem' }}>
@@ -437,11 +437,11 @@ export default function ProviderDashboard() {
               <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>
                 📍 Service Area: {userProfile.city || 'Not specified'} (Pincode: {userProfile.pincode || 'Not specified'})
               </p>
-              {myVehicle && (
+              {myVehicles.length > 0 && (
                 <div style={{ marginTop: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(37,99,235,0.08)', padding: '0.4rem 0.8rem', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(37,99,235,0.2)' }}>
                   <Truck className="w-4 h-4 text-blue-500" />
                   <span style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 600 }}>
-                    Vehicle: {myVehicle.modelName} ({myVehicle.registrationNumber}) • {myVehicle.capacityKg} KG Max
+                    Fleet: {myVehicles.length} {myVehicles.length === 1 ? 'Registered Vehicle' : 'Registered Vehicles'} ({myVehicles.map(v => v.modelName).join(', ')})
                   </span>
                 </div>
               )}
