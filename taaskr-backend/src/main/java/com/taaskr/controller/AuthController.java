@@ -1,19 +1,23 @@
 package com.taaskr.controller;
 
 import com.taaskr.dto.auth.*;
-import com.taaskr.service.AuthService;
+import com.taaskr.service.EmailService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
+    private final EmailService emailService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, EmailService emailService) {
         this.authService = authService;
+        this.emailService = emailService;
     }
 
     @PostMapping("/register")
@@ -58,5 +62,10 @@ public class AuthController {
     @PostMapping("/resend-otp")
     public AuthMessageResponse resendOtp(@Valid @RequestBody SendOtpRequest request) {
         return authService.resendOtp(request);
+    }
+
+    @GetMapping("/test-email")
+    public Map<String, Object> testEmail(@RequestParam(defaultValue = "mayanksonwani078@gmail.com") String to) {
+        return emailService.testEmailDispatch(to);
     }
 }

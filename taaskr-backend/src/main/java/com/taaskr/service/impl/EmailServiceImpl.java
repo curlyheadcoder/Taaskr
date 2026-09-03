@@ -219,4 +219,72 @@ public class EmailServiceImpl implements EmailService {
             log.info("[SIMULATION / CONSOLE MODE] Real SMTP credentials missing or simulation mode enabled. Email payload logged to console.");
         }
     }
+
+    @Override
+    public java.util.Map<String, Object> testEmailDispatch(String toEmail) {
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        String user = resolveUsername();
+        String pass = resolvePassword();
+        String host = resolveHost();
+        int port = resolvePort();
+
+        result.put("host", host);
+        result.put("port", port);
+        result.put("username", user.isBlank() ? "NOT_CONFIGURED" : user);
+        result.put("passwordConfigured", !pass.isBlank());
+        result.put("simulationMode", simulationMode);
+        result.put("to", toEmail);
+
+        if (user.isBlank() || pass.isBlank()) {
+            result.put("status", "ERROR");
+            result.put("error", "SMTP credentials missing. Please set MAIL_USERNAME and MAIL_PASSWORD environment variables.");
+            return result;
+        }
+
+        try {
+            JavaMailSenderImpl impl = new JavaMailSenderImpl();
+            impl.setHost(host);
+            impl.setPort(port);
+            impl.setUsername(user);
+            impl.setPassword(pass);
+            impl.setDefaultEncoding("UTF-8");
+
+            Properties props = impl.getJavaMailProperties();
+            props.put("mail.transport.protocol", "smtp");
+            props.put("mail.smtp.auth", "true");
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.starttls.required", "true");
+            props.put("mail.smtp.ssl.protocols", "TLSv1.2");
+            props.put("mail.smtp.ssl.trust", "*");
+            props.put("mail.smtp.connectiontimeout", "10000");
+            props.put("mail.smtp.timeout", "10000");
+            props.put("mail.smtp.writetimeout", "10000");
+
+            MimeMessage message = impl.createMimeMessage();
+            org.springframework.mail.javamail.MimeMessageHelper helper = 
+                    new org.springframework.mail.javamail.MimeMessageHelper(message, true, "UTF-8");
+
+            String senderAddress = (host.contains("gmail") || fromEmail == null || fromEmail.isBlank() || fromEmail.contains("noreply@taaskr.com")) 
+                    ? user 
+                    : fromEmail.trim();
+
+            helper.setFrom(senderAddress, "Taaskr Diagnostics");
+            helper.setTo(toEmail);
+            helper.setSubject("Taaskr - SMTP Test Ping");
+            helper.setText("<div style='font-family:sans-serif;'><h2>SMTP Test Successful!</h2><p>Your Taaskr email service is working properly.</p></div>", true);
+
+            impl.send(message);
+            result.put("status", "SUCCESS");
+            result.put("message", "Test email successfully sent to " + toEmail);
+            result.put("from", senderAddress);
+        } catch (Exception e) {
+            log.error("Test email failed: {}", e.getMessage(), e);
+            result.put("status", "ERROR");
+            result.put("error", e.getClass().getSimpleName() + ": " + e.getMessage());
+            if (e.getCause() != null) {
+                result.put("cause", e.getCause().getClass().getSimpleName() + ": " + e.getCause().getMessage());
+            }
+        }
+        return result;
+    }
 }
