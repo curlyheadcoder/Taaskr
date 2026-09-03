@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { 
   Search, ShieldCheck, Tag, CreditCard, Star, LayoutList, 
   Sparkles, Droplets, Zap, Paintbrush, Leaf, Truck, Settings, 
   Snowflake, Ruler, Hammer, ArrowRight, Activity, Stethoscope, Building2,
-  CheckCircle2, Clock
+  CheckCircle2, Clock, ChevronLeft, ChevronRight, Zap as Flash, Box, Wrench
 } from 'lucide-react';
 
 export default function Home() {
   const navigate = useNavigate();
+  const categoryScrollRef = useRef(null);
   const [categories, setCategories] = useState([]);
   const [services, setServices] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -57,6 +58,13 @@ export default function Home() {
     return matchesCategory && matchesSearch;
   });
 
+  const scrollCategories = (direction) => {
+    if (categoryScrollRef.current) {
+      const scrollAmount = direction === 'left' ? -260 : 260;
+      categoryScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
   const getServiceConfig = (serviceName, categoryName) => {
     const name = (serviceName || '').toLowerCase();
     const cat = (categoryName || '').toLowerCase();
@@ -82,82 +90,180 @@ export default function Home() {
 
   return (
     <div className="animate-fade-in" style={{ paddingBottom: '4rem' }}>
-      {/* Hero Header */}
+      {/* Hero Section */}
       <section style={{
         backgroundColor: 'var(--bg-card)',
         borderBottom: '1px solid var(--border-light)',
-        padding: '3.5rem 1.5rem 3rem 1.5rem'
+        padding: '3rem 1.5rem 2.5rem 1.5rem'
       }}>
         <div className="app-container" style={{ padding: 0 }}>
-          <div style={{ maxWidth: '720px' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--primary-subtle)', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 600, marginBottom: '1rem' }}>
-              <ShieldCheck size={14} />
-              <span>Verified On-Demand Service Platform</span>
-            </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 0.8fr)', gap: '2.5rem', alignItems: 'center' }}>
             
-            <h1 style={{
-              fontSize: '2.25rem',
-              fontWeight: 700,
-              color: 'var(--text-main)',
-              lineHeight: 1.2,
-              letterSpacing: '-0.025em',
-              marginBottom: '0.75rem'
-            }}>
-              Professional Services & Logistics, Simplified.
-            </h1>
-            
-            <p style={{
-              fontSize: '1rem',
-              color: 'var(--text-muted)',
-              lineHeight: 1.5,
-              marginBottom: '1.75rem'
-            }}>
-              Book vetted electricians, technicians, home specialists, and on-demand freight transport with upfront pricing and live tracking.
-            </p>
+            {/* Left Side: Headline & Search */}
+            <div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--primary-subtle)', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.875rem' }}>
+                <ShieldCheck size={14} />
+                <span>Verified On-Demand Platform</span>
+              </div>
+              
+              <h1 style={{
+                fontSize: '2.25rem',
+                fontWeight: 700,
+                color: 'var(--text-main)',
+                lineHeight: 1.2,
+                letterSpacing: '-0.025em',
+                marginBottom: '0.75rem'
+              }}>
+                Professional Services & Logistics, Simplified.
+              </h1>
+              
+              <p style={{
+                fontSize: '0.9375rem',
+                color: 'var(--text-muted)',
+                lineHeight: 1.5,
+                marginBottom: '1.5rem'
+              }}>
+                Book vetted electricians, technicians, home specialists, and on-demand freight transport with upfront pricing and live tracking.
+              </p>
 
-            {/* Search Input Bar */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              backgroundColor: 'var(--bg-page)',
-              border: '1px solid var(--border-light)',
-              borderRadius: 'var(--radius-md)',
-              padding: '0.35rem 0.5rem 0.35rem 1rem',
-              gap: '0.75rem',
-              maxWidth: '560px',
-              boxShadow: 'var(--shadow-xs)'
-            }}>
-              <Search size={18} color="var(--text-light)" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search services (e.g. Electrician, Plumbing, Mini Truck, RO Repair)..."
-                style={{
-                  border: 'none',
-                  background: 'transparent',
-                  outline: 'none',
-                  width: '100%',
-                  fontSize: '0.875rem',
-                  color: 'var(--text-main)'
-                }}
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
+              {/* Search Input Bar */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                backgroundColor: 'var(--bg-page)',
+                border: '1px solid var(--border-light)',
+                borderRadius: 'var(--radius-md)',
+                padding: '0.35rem 0.5rem 0.35rem 1rem',
+                gap: '0.75rem',
+                maxWidth: '520px',
+                boxShadow: 'var(--shadow-xs)',
+                marginBottom: '1rem'
+              }}>
+                <Search size={18} color="var(--text-light)" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search services (e.g. Electrician, Mini Truck, AC Repair)..."
                   style={{
-                    background: 'transparent',
                     border: 'none',
-                    color: 'var(--text-muted)',
-                    cursor: 'pointer',
-                    fontSize: '0.8rem',
-                    padding: '0.25rem 0.5rem'
+                    background: 'transparent',
+                    outline: 'none',
+                    width: '100%',
+                    fontSize: '0.875rem',
+                    color: 'var(--text-main)'
                   }}
-                >
-                  Clear
-                </button>
-              )}
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'var(--text-muted)',
+                      cursor: 'pointer',
+                      fontSize: '0.75rem',
+                      padding: '0.2rem 0.4rem'
+                    }}
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              {/* Quick Search Chips */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                <span>Popular:</span>
+                {['Electrician', 'Mini Truck', 'AC Repair', 'Plumbing', 'Cleaning'].map((term) => (
+                  <button
+                    key={term}
+                    onClick={() => setSearchQuery(term)}
+                    style={{
+                      background: 'transparent',
+                      border: '1px solid var(--border-light)',
+                      borderRadius: 'var(--radius-full)',
+                      padding: '0.15rem 0.5rem',
+                      fontSize: '0.75rem',
+                      color: 'var(--text-muted)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {term}
+                  </button>
+                ))}
+              </div>
             </div>
+
+            {/* Right Side: Instant Dispatch & Live Highlights Widget */}
+            <div className="panel" style={{ background: 'var(--bg-subtle)', padding: '1.25rem', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.875rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-light)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600, fontSize: '0.8125rem', color: 'var(--text-main)' }}>
+                  <Flash size={15} color="#D97706" />
+                  <span>Express Dispatch Available</span>
+                </div>
+                <span className="badge badge-completed" style={{ fontSize: '0.6875rem' }}>
+                  Avg ETA &lt; 15 mins
+                </span>
+              </div>
+
+              {/* Express Service Shortcuts */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {[
+                  { title: 'Emergency Electrician', desc: 'Short circuit, switch & wiring fix', price: '₹199', icon: <Zap size={14} color="#D97706" />, query: 'Electric' },
+                  { title: 'Intra-City Mini Truck Freight', desc: 'Commercial transport & furniture moving', price: '₹350', icon: <Truck size={14} color="var(--primary)" />, query: 'Truck' },
+                  { title: 'AC Servicing & Repair', desc: 'Gas refill, cleaning & compressor repair', price: '₹499', icon: <Snowflake size={14} color="#0284C7" />, query: 'AC' },
+                  { title: 'Plumbing & Water Leak Fix', desc: 'Tap, pipe, drain & bathroom repair', price: '₹199', icon: <Droplets size={14} color="#0284C7" />, query: 'Plumb' }
+                ].map((item, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => {
+                      const matched = services.find(s => s.name.toLowerCase().includes(item.query.toLowerCase()));
+                      if (matched) {
+                        navigate(`/services/${matched.id}`);
+                      } else {
+                        setSearchQuery(item.query);
+                      }
+                    }}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '0.55rem 0.75rem',
+                      borderRadius: 'var(--radius-sm)',
+                      background: 'var(--bg-card)',
+                      border: '1px solid var(--border-light)',
+                      cursor: 'pointer',
+                      transition: 'var(--transition-fast)'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
+                    onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border-light)'}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <div style={{
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: 'var(--radius-xs)',
+                        backgroundColor: 'var(--bg-subtle)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        {item.icon}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-main)', lineHeight: 1.1 }}>{item.title}</div>
+                        <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>{item.desc}</span>
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-main)', fontFeatureSettings: 'tnum' }}>{item.price}</span>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--primary)', display: 'block', fontWeight: 600 }}>Book &rarr;</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
@@ -201,62 +307,96 @@ export default function Home() {
       {/* Catalog & Services Grid */}
       <main className="app-container" style={{ paddingTop: '2rem' }}>
         
-        {/* Category Filter Pills */}
-        <div style={{ marginBottom: '1.75rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+        {/* Category Filter Horizontal Bar with Clean Controls */}
+        <div style={{ marginBottom: '1.75rem', position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            
             <button
-              onClick={() => setSelectedCategory(null)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                padding: '0.4rem 0.85rem',
-                borderRadius: 'var(--radius-full)',
-                fontSize: '0.8125rem',
-                fontWeight: selectedCategory === null ? 600 : 500,
-                border: '1px solid',
-                borderColor: selectedCategory === null ? 'var(--primary)' : 'var(--border-light)',
-                backgroundColor: selectedCategory === null ? 'var(--primary-subtle)' : 'var(--bg-card)',
-                color: selectedCategory === null ? 'var(--primary)' : 'var(--text-muted)',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                transition: 'var(--transition-fast)'
-              }}
+              onClick={() => scrollCategories('left')}
+              className="btn btn-secondary btn-sm"
+              style={{ padding: '0.35rem 0.5rem', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              title="Scroll categories left"
             >
-              <LayoutList size={14} />
-              <span>All Services</span>
-              <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>({services.length})</span>
+              <ChevronLeft size={14} />
             </button>
 
-            {categories.map((cat) => {
-              const count = services.filter(s => s.categoryId === cat.id).length;
-              const isSelected = selectedCategory === cat.id;
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                    padding: '0.4rem 0.85rem',
-                    borderRadius: 'var(--radius-full)',
-                    fontSize: '0.8125rem',
-                    fontWeight: isSelected ? 600 : 500,
-                    border: '1px solid',
-                    borderColor: isSelected ? 'var(--primary)' : 'var(--border-light)',
-                    backgroundColor: isSelected ? 'var(--primary-subtle)' : 'var(--bg-card)',
-                    color: isSelected ? 'var(--primary)' : 'var(--text-muted)',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    transition: 'var(--transition-fast)'
-                  }}
-                >
-                  <span>{cat.name}</span>
-                  <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>({count})</span>
-                </button>
-              );
-            })}
+            <div 
+              ref={categoryScrollRef}
+              className="no-scrollbar"
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem', 
+                overflowX: 'auto', 
+                scrollBehavior: 'smooth',
+                padding: '0.2rem 0'
+              }}
+            >
+              <button
+                onClick={() => setSelectedCategory(null)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  padding: '0.4rem 0.85rem',
+                  borderRadius: 'var(--radius-full)',
+                  fontSize: '0.8125rem',
+                  fontWeight: selectedCategory === null ? 600 : 500,
+                  border: '1px solid',
+                  borderColor: selectedCategory === null ? 'var(--primary)' : 'var(--border-light)',
+                  backgroundColor: selectedCategory === null ? 'var(--primary-subtle)' : 'var(--bg-card)',
+                  color: selectedCategory === null ? 'var(--primary)' : 'var(--text-muted)',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                  transition: 'var(--transition-fast)'
+                }}
+              >
+                <LayoutList size={14} />
+                <span>All Services</span>
+                <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>({services.length})</span>
+              </button>
+
+              {categories.map((cat) => {
+                const count = services.filter(s => s.categoryId === cat.id).length;
+                const isSelected = selectedCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      padding: '0.4rem 0.85rem',
+                      borderRadius: 'var(--radius-full)',
+                      fontSize: '0.8125rem',
+                      fontWeight: isSelected ? 600 : 500,
+                      border: '1px solid',
+                      borderColor: isSelected ? 'var(--primary)' : 'var(--border-light)',
+                      backgroundColor: isSelected ? 'var(--primary-subtle)' : 'var(--bg-card)',
+                      color: isSelected ? 'var(--primary)' : 'var(--text-muted)',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0,
+                      transition: 'var(--transition-fast)'
+                    }}
+                  >
+                    <span>{cat.name}</span>
+                    <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>({count})</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => scrollCategories('right')}
+              className="btn btn-secondary btn-sm"
+              style={{ padding: '0.35rem 0.5rem', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              title="Scroll categories right"
+            >
+              <ChevronRight size={14} />
+            </button>
           </div>
         </div>
 

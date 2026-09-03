@@ -57,7 +57,7 @@ export default function AiAssistantModal() {
       {/* Floating Action Button */}
       <button
         onClick={() => setIsOpen(true)}
-        aria-label="Open Smart Diagnosis Assistant"
+        aria-label="Open taasky Assistant"
         style={{
           position: 'fixed',
           bottom: '1.75rem',
@@ -79,7 +79,7 @@ export default function AiAssistantModal() {
         }}
       >
         <Sparkles size={16} />
-        <span>Taasky Copilot</span>
+        <span>taasky</span>
       </button>
 
       {/* Assistant Modal */}
@@ -108,10 +108,10 @@ export default function AiAssistantModal() {
                 </div>
                 <div>
                   <h2 style={{ fontSize: '1.05rem', color: 'var(--text-main)', margin: 0, fontWeight: 700 }}>
-                    Taasky Problem Diagnostic
+                    taasky
                   </h2>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', margin: '0.1rem 0 0' }}>
-                    Describe your issue and get instant catalog recommendations
+                    Describe your problem and taasky will find the right service for you
                   </p>
                 </div>
               </div>
@@ -165,7 +165,7 @@ export default function AiAssistantModal() {
                 <textarea
                   className="form-control"
                   rows={3}
-                  placeholder="e.g. AC is running but not cooling, kitchen pipe leaking water, need urgent electrician..."
+                  placeholder="e.g. I want to send my parcel across the city, AC not cooling, sink leaking..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   style={{ resize: 'none' }}
@@ -180,11 +180,11 @@ export default function AiAssistantModal() {
                 disabled={loading || !query.trim()}
               >
                 {loading ? (
-                  <span>Analyzing problem context...</span>
+                  <span>taasky is analyzing...</span>
                 ) : (
                   <>
                     <Sparkles size={14} />
-                    <span>Diagnose & Recommend Service</span>
+                    <span>Ask taasky</span>
                   </>
                 )}
               </button>

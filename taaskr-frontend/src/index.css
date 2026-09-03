@@ -781,14 +781,20 @@ button, input, select, textarea {
 
 .modal-overlay {
   position: fixed;
-  inset: 0;
-  background-color: rgba(15, 23, 42, 0.5);
-  backdrop-filter: blur(2px);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  padding: 1rem;
+  z-index: 9999;
+  padding: 1.5rem;
+  margin: 0;
 }
 
 .modal-content {
@@ -802,6 +808,7 @@ button, input, select, textarea {
   box-shadow: var(--shadow-xl);
   max-height: 90vh;
   overflow-y: auto;
+  margin: auto;
 }
 
 .modal-header {
@@ -863,10 +870,20 @@ button, input, select, textarea {
   100% { opacity: 0.6; }
 }
 
+/* Scrollbar hiding utility */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Animation utilities */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .animate-fade-in {
