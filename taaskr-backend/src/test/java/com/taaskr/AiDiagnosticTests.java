@@ -158,4 +158,43 @@ public class AiDiagnosticTests {
         assertEquals(courierService.getId(), res.getServiceId(), "Should pick Electric Bike (Courier) for parcel queries");
         assertEquals("On-Demand Vehicle", res.getCategoryName());
     }
+
+    @Test
+    void testChatParcelQueryReturnsRealVehicleServices() {
+        ServiceCategory vehicleCat = new ServiceCategory();
+        vehicleCat.setName("On-Demand Vehicle");
+        vehicleCat.setDescription("Vehicle Transport");
+        vehicleCat.setActive(true);
+        vehicleCat = serviceCategoryRepository.save(vehicleCat);
+
+        Service courier = new Service();
+        courier.setName("Electric Bike (Courier)");
+        courier.setCategory(vehicleCat);
+        courier.setPrice(BigDecimal.valueOf(99));
+        courier.setDurationMinutes(30);
+        courier.setActive(true);
+        serviceRepository.save(courier);
+
+        com.taaskr.dto.ai.AiChatRequest chatReq = new com.taaskr.dto.ai.AiChatRequest("I want to send my parcel across the city");
+        com.taaskr.dto.ai.AiChatResponse chatRes = aiDiagnosticService.chat(null, chatReq);
+
+        assertNotNull(chatRes);
+        assertNotNull(chatRes.getServices());
+        assertFalse(chatRes.getServices().isEmpty(), "Should return real matching vehicle services");
+        assertEquals("Electric Bike (Courier)", chatRes.getServices().get(0).getName());
+        assertTrue(chatRes.getReply().contains("Electric Bike") || chatRes.getReply().contains("parcel") || chatRes.getReply().contains("Vehicle"), 
+                "Reply should reference actual logistics service, not construction materials");
+    }
+
+    @Test
+    void testChatUnsupportedServiceQuery() {
+        com.taaskr.dto.ai.AiChatRequest chatReq = new com.taaskr.dto.ai.AiChatRequest("Can you repair my space rocket or supersonic jet engine?");
+        com.taaskr.dto.ai.AiChatResponse chatRes = aiDiagnosticService.chat(null, chatReq);
+
+        assertNotNull(chatRes);
+        assertEquals("UNSUPPORTED", chatRes.getIntent());
+        assertTrue(chatRes.getReply().toLowerCase().contains("do not offer") || chatRes.getReply().toLowerCase().contains("don't currently offer"), 
+                "Should honestly state service is unsupported");
+    }
 }
+

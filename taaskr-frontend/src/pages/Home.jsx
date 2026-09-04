@@ -15,6 +15,22 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [currentLocation, setCurrentLocation] = useState(() => {
+    try {
+      const saved = localStorage.getItem('taaskr_location');
+      return saved ? JSON.parse(saved) : { city: 'Indore', pincode: '452001' };
+    } catch (e) {
+      return { city: 'Indore', pincode: '452001' };
+    }
+  });
+
+  useEffect(() => {
+    const handleLocChange = (e) => {
+      if (e.detail) setCurrentLocation(e.detail);
+    };
+    window.addEventListener('taaskr_location_change', handleLocChange);
+    return () => window.removeEventListener('taaskr_location_change', handleLocChange);
+  }, []);
 
   // Pagination state for services catalog grid
   const [servicesPage, setServicesPage] = useState(1);
@@ -565,8 +581,11 @@ export default function Home() {
           <h2 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.4rem', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
             Explore Verified Services
           </h2>
-          <p style={{ fontSize: '0.925rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-            Select a service category or filter by name to instantly dispatch top-rated professionals.
+          <p style={{ fontSize: '0.925rem', color: 'var(--text-muted)', lineHeight: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <span>Select a service category or filter by name to instantly dispatch top-rated professionals in</span>
+            <span style={{ color: 'var(--primary)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+              📍 {currentLocation.city} {currentLocation.pincode ? `(${currentLocation.pincode})` : ''}
+            </span>
           </p>
         </div>
 

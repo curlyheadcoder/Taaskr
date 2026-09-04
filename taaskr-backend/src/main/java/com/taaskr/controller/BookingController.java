@@ -45,6 +45,14 @@ public class BookingController {
         return bookingService.rateBooking(authentication.getName(), bookingId, request);
     }
 
+    @PostMapping("/{bookingId}/cancel")
+    public BookingResponse cancelBooking(@PathVariable Long bookingId,
+                                         @RequestBody(required = false) java.util.Map<String, String> body,
+                                         Authentication authentication) {
+        String reason = body != null ? body.get("reason") : null;
+        return bookingService.cancelMyBooking(authentication.getName(), bookingId, reason);
+    }
+
     @GetMapping("/available-providers")
     public List<AvailableProviderResponse> getAvailableProviders(
             @RequestParam Long serviceId,

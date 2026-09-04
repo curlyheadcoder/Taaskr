@@ -190,6 +190,13 @@ export const api = {
         method: 'POST',
         body: JSON.stringify(ratingData)
       });
+    },
+
+    cancel: async (bookingId, cancellationReason = '') => {
+      return makeRequest(`/api/bookings/${bookingId}/cancel`, {
+        method: 'POST',
+        body: JSON.stringify({ cancellationReason })
+      });
     }
   },
 
@@ -404,6 +411,14 @@ export const api = {
       return makeRequest('/api/ai/diagnose', {
         method: 'POST',
         body: JSON.stringify({ query })
+      });
+    },
+
+    chat: async (chatPayload) => {
+      const payload = typeof chatPayload === 'string' ? { message: chatPayload } : chatPayload;
+      return makeRequest('/api/ai/chat', {
+        method: 'POST',
+        body: JSON.stringify(payload)
       });
     }
   },

@@ -307,6 +307,38 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional
+    public BookingResponse cancelMyBooking(String userEmail, Long bookingId, String reason) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Booking booking = bookingRepository.findByIdAndUserId(bookingId, user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+
+        if (booking.getStatus() == BookingStatus.COMPLETED || booking.getStatus() == BookingStatus.CANCELLED) {
+            throw new BadRequestException("Booking cannot be cancelled in its current state: " + booking.getStatus());
+        }
+
+        BookingStatus previousStatus = booking.getStatus();
+        booking.setStatus(BookingStatus.CANCELLED);
+        if (reason != null && !reason.isBlank()) {
+            booking.setNotes(booking.getNotes() != null ? booking.getNotes() + " [Cancelled: " + reason + "]" : "[Cancelled: " + reason + "]");
+        }
+
+        bookingRepository.save(booking);
+
+        Long providerId = booking.getProvider() != null ? booking.getProvider().getId() : null;
+        eventPublisher.publishEvent(new com.taaskr.event.BookingStatusChangedEvent(
+                booking.getId(),
+                previousStatus,
+                BookingStatus.CANCELLED,
+                providerId
+        ));
+
+        return mapBooking(booking);
+    }
+
+    @Override
     public List<AvailableProviderResponse> getAvailableProviders(Long serviceId, String city, String pincode, LocalDate date, LocalTime startTime) {
         com.taaskr.entity.Service service = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
