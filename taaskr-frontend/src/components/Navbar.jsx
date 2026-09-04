@@ -509,27 +509,27 @@ export default function Navbar() {
         </nav>
       </div>
 
-      {/* Center Section: Production-Grade Global Service Search (User / Guest Only) */}
+      {/* Center Section: Compact Global Service Search (User / Guest Only) */}
       {isCustomerView ? (
-        <div ref={searchContainerRef} style={{ position: 'relative', flex: '1 1 360px', maxWidth: '480px' }}>
+        <div ref={searchContainerRef} style={{ position: 'relative', flex: '0 1 240px', maxWidth: '260px' }}>
           <div style={{
             position: 'relative',
             display: 'flex',
             alignItems: 'center',
             backgroundColor: searchOpen ? 'var(--bg-card)' : 'var(--bg-subtle)',
-            borderRadius: '10px',
+            borderRadius: '8px',
             border: searchOpen ? '1px solid var(--primary)' : '1px solid var(--border-light)',
-            boxShadow: searchOpen ? '0 0 0 3px var(--primary-subtle)' : 'var(--shadow-xs)',
+            boxShadow: searchOpen ? '0 0 0 2px var(--primary-subtle)' : 'none',
             transition: 'var(--transition-fast)'
           }}>
             <Search 
-              size={15} 
-              style={{ position: 'absolute', left: '0.85rem', color: searchOpen ? 'var(--primary)' : 'var(--text-muted)', pointerEvents: 'none' }} 
+              size={13} 
+              style={{ position: 'absolute', left: '0.65rem', color: searchOpen ? 'var(--primary)' : 'var(--text-muted)', pointerEvents: 'none' }} 
             />
             <input
               ref={searchInputRef}
               type="text"
-              placeholder="Search services (e.g. Electric bike, AC repair, Plumbing)..."
+              placeholder="Search services..."
               value={searchQuery}
               onFocus={() => setSearchOpen(true)}
               onChange={(e) => {
@@ -541,9 +541,9 @@ export default function Navbar() {
               }}
               style={{
                 width: '100%',
-                padding: '0.5rem 3.5rem 0.5rem 2.4rem',
-                fontSize: '0.85rem',
-                borderRadius: '10px',
+                padding: '0.35rem 1.75rem 0.35rem 1.9rem',
+                fontSize: '0.8125rem',
+                borderRadius: '8px',
                 border: 'none',
                 backgroundColor: 'transparent',
                 color: 'var(--text-main)',
@@ -551,43 +551,28 @@ export default function Navbar() {
               }}
             />
 
-            {/* Right Action: Clear or Shortcut Tag */}
-            <div style={{ position: 'absolute', right: '0.65rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              {searchQuery ? (
-                <button
-                  onClick={() => {
-                    setSearchQuery('');
-                    setSearchResults([]);
-                  }}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--text-muted)',
-                    cursor: 'pointer',
-                    padding: 3,
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}
-                >
-                  <X size={14} />
-                </button>
-              ) : (
-                <kbd style={{
-                  fontSize: '0.68rem',
-                  fontWeight: 600,
-                  padding: '0.15rem 0.4rem',
-                  borderRadius: '5px',
-                  backgroundColor: 'var(--bg-hover)',
+            {/* Clear Button */}
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setSearchResults([]);
+                }}
+                style={{
+                  position: 'absolute',
+                  right: '0.45rem',
+                  background: 'none',
+                  border: 'none',
                   color: 'var(--text-muted)',
-                  border: '1px solid var(--border-light)',
-                  fontFamily: 'inherit',
-                  letterSpacing: '0.02em',
-                  pointerEvents: 'none'
-                }}>
-                  Ctrl K
-                </kbd>
-              )}
-            </div>
+                  cursor: 'pointer',
+                  padding: 2,
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+              >
+                <X size={13} />
+              </button>
+            )}
           </div>
 
           {/* Search Results Dropdown */}
