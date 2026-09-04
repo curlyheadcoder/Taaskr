@@ -65,20 +65,20 @@ export default function AiAssistantModal() {
           zIndex: 90,
           display: 'flex',
           alignItems: 'center',
-          gap: '0.45rem',
-          padding: '0.6rem 1.15rem',
+          gap: '0.5rem',
+          padding: '0.65rem 1.2rem',
           backgroundColor: 'var(--primary)',
           color: '#ffffff',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
           borderRadius: 'var(--radius-full)',
-          boxShadow: 'var(--shadow-lg)',
+          boxShadow: '0 8px 24px rgba(22, 168, 255, 0.35)',
           cursor: 'pointer',
-          fontWeight: 600,
+          fontWeight: 700,
           fontSize: '0.875rem',
           transition: 'var(--transition-fast)'
         }}
       >
-        <Sparkles size={16} />
+        <Bot size={18} strokeWidth={2.3} />
         <span>Taasky</span>
       </button>
 

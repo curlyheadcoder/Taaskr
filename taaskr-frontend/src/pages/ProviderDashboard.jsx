@@ -624,54 +624,56 @@ export default function ProviderDashboard() {
               </div>
             ) : (
               <div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1rem' }}>
                   {availableTasks.slice((tasksPage - 1) * itemsPerPage, tasksPage * itemsPerPage).map((job) => (
-                    <div key={job.id} className="panel" style={{ borderLeft: '3px solid var(--primary)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem' }}>
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                            {job.dropAddress && <Truck size={15} color="var(--primary)" />}
-                            <h3 style={{ color: 'var(--text-main)', fontSize: '1rem', fontWeight: 600, margin: 0 }}>
-                              {job.serviceName}
-                            </h3>
-                          </div>
-                          <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.2rem' }}>
-                            <MapPin size={12} /> {job.city} - {job.pincode}
-                          </span>
-                        </div>
-
-                        <div style={{ textAlign: 'right' }}>
-                          <span style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '1.15rem', fontFeatureSettings: 'tnum' }}>
-                            ₹{job.finalAmount}
-                          </span>
+                    <div key={job.id} className="panel" style={{ borderLeft: '3px solid var(--primary)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.5rem' }}>
                           <div>
-                            <button onClick={() => handleClaimTask(job.id)} className="btn btn-primary btn-sm" style={{ marginTop: '0.25rem' }}>
-                              Claim Job
-                            </button>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                              {job.dropAddress && <Truck size={15} color="var(--primary)" />}
+                              <h3 style={{ color: 'var(--text-main)', fontSize: '0.975rem', fontWeight: 600, margin: 0 }}>
+                                {job.serviceName}
+                              </h3>
+                            </div>
+                            <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.2rem' }}>
+                              <MapPin size={12} /> {job.city} - {job.pincode}
+                            </span>
                           </div>
-                        </div>
-                      </div>
 
-                      {/* Freight specifications if vehicle job */}
-                      {job.dropAddress && (
-                        <div style={{ background: 'var(--bg-subtle)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', marginTop: '0.75rem' }}>
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', fontSize: '0.75rem' }}>
+                          <div style={{ textAlign: 'right' }}>
+                            <span style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '1.15rem', fontFeatureSettings: 'tnum' }}>
+                              ₹{job.finalAmount}
+                            </span>
                             <div>
-                              <span style={{ color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', display: 'block' }}>Pickup Point</span>
-                              <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>{job.address}, {job.city}</span>
-                            </div>
-                            <div>
-                              <span style={{ color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', display: 'block' }}>Drop-off Point</span>
-                              <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>{job.dropAddress}, {job.dropCity}</span>
+                              <button onClick={() => handleClaimTask(job.id)} className="btn btn-primary btn-sm" style={{ marginTop: '0.25rem' }}>
+                                Claim Job
+                              </button>
                             </div>
                           </div>
-                          {job.packageWeightKg && (
-                            <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
-                              Payload: <strong>{job.packageWeightKg} KG</strong> {job.distanceKm ? `• Est. Distance: ${job.distanceKm} KM` : ''}
-                            </div>
-                          )}
                         </div>
-                      )}
+
+                        {/* Freight specifications if vehicle job */}
+                        {job.dropAddress && (
+                          <div style={{ background: 'var(--bg-subtle)', padding: '0.65rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', margin: '0.5rem 0' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.75rem' }}>
+                              <div>
+                                <span style={{ color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', display: 'block', fontSize: '0.6875rem' }}>Pickup Point</span>
+                                <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>{job.address}, {job.city}</span>
+                              </div>
+                              <div>
+                                <span style={{ color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', display: 'block', fontSize: '0.6875rem' }}>Drop-off Point</span>
+                                <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>{job.dropAddress}, {job.dropCity}</span>
+                              </div>
+                            </div>
+                            {job.packageWeightKg && (
+                              <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+                                Payload: <strong>{job.packageWeightKg} KG</strong> {job.distanceKm ? `• Est. Distance: ${job.distanceKm} KM` : ''}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
 
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.75rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                         <span>Scheduled: <strong>{job.bookingDate} at {formatLocalTime(job.startTime)}</strong></span>
@@ -715,114 +717,118 @@ export default function ProviderDashboard() {
               </div>
             ) : (
               <div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1rem' }}>
                   {assignedBookings.slice((bookingsPage - 1) * itemsPerPage, bookingsPage * itemsPerPage).map((job) => (
-                    <div key={job.id} className="panel">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem' }}>
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                            {job.dropAddress && <Truck size={15} color="var(--primary)" />}
-                            <h3 style={{ color: 'var(--text-main)', fontSize: '1rem', fontWeight: 600, margin: 0 }}>
-                              {job.serviceName}
-                            </h3>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                              #{String(job.id).slice(-6)}
+                    <div key={job.id} className="panel" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                              {job.dropAddress && <Truck size={15} color="var(--primary)" />}
+                              <h3 style={{ color: 'var(--text-main)', fontSize: '0.975rem', fontWeight: 600, margin: 0 }}>
+                                {job.serviceName}
+                              </h3>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                                #{String(job.id).slice(-6)}
+                              </span>
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.35rem', flexWrap: 'wrap' }}>
+                              <span className={`badge ${job.status === 'COMPLETED' ? 'badge-completed' : job.status === 'IN_PROGRESS' ? 'badge-inprogress' : 'badge-assigned'}`}>
+                                {job.status}
+                              </span>
+                              <span className={`badge ${job.paymentStatus === 'PAID' ? 'badge-completed' : 'badge-pending'}`}>
+                                {job.paymentStatus === 'PAID' ? 'Payment Completed' : 'Payment Pending'}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div style={{ textAlign: 'right' }}>
+                            <span style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '1.15rem', fontFeatureSettings: 'tnum' }}>
+                              ₹{job.finalAmount}
                             </span>
-                          </div>
-
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.35rem', flexWrap: 'wrap' }}>
-                            <span className={`badge ${job.status === 'COMPLETED' ? 'badge-completed' : job.status === 'IN_PROGRESS' ? 'badge-inprogress' : 'badge-assigned'}`}>
-                              {job.status}
-                            </span>
-                            <span className={`badge ${job.paymentStatus === 'PAID' ? 'badge-completed' : 'badge-pending'}`}>
-                              {job.paymentStatus === 'PAID' ? 'Payment Completed' : 'Payment Pending'}
-                            </span>
+                            <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
+                              {job.paymentMethod === 'AFTER_SERVICE' ? 'Cash on Delivery' : 'Online Gateway'}
+                            </div>
                           </div>
                         </div>
 
-                        <div style={{ textAlign: 'right' }}>
-                          <span style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '1.15rem', fontFeatureSettings: 'tnum' }}>
-                            ₹{job.finalAmount}
-                          </span>
-                          <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
-                            {job.paymentMethod === 'AFTER_SERVICE' ? 'Cash on Delivery' : 'Online Gateway'}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Customer & Location details */}
-                      <div style={{ background: 'var(--bg-subtle)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', margin: '0.75rem 0' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                          <div style={{ fontSize: '0.8125rem', color: 'var(--text-main)' }}>
-                            Customer: <strong>{job.customerName || 'Customer'}</strong> • <span>{job.customerPhone || 'No Phone'}</span>
-                          </div>
-                          <button
-                            onClick={() => openCustomerDirections(job)}
-                            className="btn btn-secondary btn-sm"
-                            style={{ fontSize: '0.75rem', padding: '0.2rem 0.45rem' }}
-                          >
-                            <Navigation size={12} />
-                            <span>Get Directions</span>
-                          </button>
-                        </div>
-
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                          Address: <span style={{ color: 'var(--text-main)' }}>{job.address}, {job.city} - {job.pincode}</span>
-                        </div>
-
-                        {job.dropAddress && (
-                          <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ fontSize: '0.75rem' }}>
-                              <span style={{ color: 'var(--text-muted)' }}>Drop-off: </span>
-                              <strong style={{ color: 'var(--text-main)' }}>{job.dropAddress}, {job.dropCity}</strong>
+                        {/* Customer & Location details */}
+                        <div style={{ background: 'var(--bg-subtle)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', margin: '0.75rem 0' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                            <div style={{ fontSize: '0.8125rem', color: 'var(--text-main)' }}>
+                              Customer: <strong>{job.customerName || 'Customer'}</strong> • <span>{job.customerPhone || 'No Phone'}</span>
                             </div>
                             <button
-                              onClick={() => openDropDirections(job)}
+                              onClick={() => openCustomerDirections(job)}
                               className="btn btn-secondary btn-sm"
-                              style={{ fontSize: '0.75rem', padding: '0.15rem 0.4rem' }}
+                              style={{ fontSize: '0.75rem', padding: '0.2rem 0.45rem' }}
                             >
                               <Navigation size={12} />
-                              <span>Drop Route</span>
+                              <span>Get Directions</span>
                             </button>
                           </div>
-                        )}
+
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                            Address: <span style={{ color: 'var(--text-main)' }}>{job.address}, {job.city} - {job.pincode}</span>
+                          </div>
+
+                          {job.dropAddress && (
+                            <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div style={{ fontSize: '0.75rem' }}>
+                                <span style={{ color: 'var(--text-muted)' }}>Drop-off: </span>
+                                <strong style={{ color: 'var(--text-main)' }}>{job.dropAddress}, {job.dropCity}</strong>
+                              </div>
+                              <button
+                                onClick={() => openDropDirections(job)}
+                                className="btn btn-secondary btn-sm"
+                                style={{ fontSize: '0.75rem', padding: '0.15rem 0.4rem' }}
+                              >
+                                <Navigation size={12} />
+                                <span>Drop Route</span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                       {/* Action Bar */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)' }}>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                          Date: <strong>{job.bookingDate} at {formatLocalTime(job.startTime)}</strong>
-                        </div>
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)' }}>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                            Date: <strong>{job.bookingDate} at {formatLocalTime(job.startTime)}</strong>
+                          </div>
 
-                        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-                          {job.status === 'ASSIGNED' && (
-                            <>
-                              <button onClick={() => handleAcceptJob(job.id)} className="btn btn-primary btn-sm">
-                                Accept Job
+                          <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                            {job.status === 'ASSIGNED' && (
+                              <>
+                                <button onClick={() => handleAcceptJob(job.id)} className="btn btn-primary btn-sm">
+                                  Accept Job
+                                </button>
+                                <button onClick={() => handleRejectJob(job.id)} className="btn btn-danger btn-sm">
+                                  Reject
+                                </button>
+                              </>
+                            )}
+
+                            {job.status === 'ACCEPTED' && (
+                              <button onClick={() => handleStatusUpdate(job.id, 'IN_PROGRESS')} className="btn btn-primary btn-sm">
+                                Start Service / Transit
                               </button>
-                              <button onClick={() => handleRejectJob(job.id)} className="btn btn-danger btn-sm">
-                                Reject
+                            )}
+
+                            {job.status === 'IN_PROGRESS' && (
+                              <button onClick={() => handleStatusUpdate(job.id, 'COMPLETED')} className="btn btn-success btn-sm">
+                                Mark as Completed
                               </button>
-                            </>
-                          )}
+                            )}
 
-                          {job.status === 'ACCEPTED' && (
-                            <button onClick={() => handleStatusUpdate(job.id, 'IN_PROGRESS')} className="btn btn-primary btn-sm">
-                              Start Service / Transit
-                            </button>
-                          )}
-
-                          {job.status === 'IN_PROGRESS' && (
-                            <button onClick={() => handleStatusUpdate(job.id, 'COMPLETED')} className="btn btn-success btn-sm">
-                              Mark as Completed
-                            </button>
-                          )}
-
-                          {job.paymentStatus === 'PENDING' && job.paymentMethod === 'AFTER_SERVICE' && (
-                            <button onClick={() => handleCollectCash(job)} className="btn btn-secondary btn-sm" style={{ color: 'var(--success)' }}>
-                              Collect Cash
-                            </button>
-                          )}
+                            {job.paymentStatus === 'PENDING' && job.paymentMethod === 'AFTER_SERVICE' && (
+                              <button onClick={() => handleCollectCash(job)} className="btn btn-secondary btn-sm" style={{ color: 'var(--success)' }}>
+                                Collect Cash
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>

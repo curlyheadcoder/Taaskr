@@ -174,8 +174,32 @@ export default function Navbar() {
         </nav>
       </div>
 
-      {/* User Actions */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      {/* Right Controls: Theme Toggle & User Profile */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+        {/* Subtle Dark/Light Mode Toggle */}
+        <button
+          onClick={() => setIsDark(!isDark)}
+          className="btn btn-ghost btn-sm"
+          title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          aria-label="Toggle Dark / Light Theme"
+          style={{
+            padding: '0.4rem',
+            width: '32px',
+            height: '32px',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--text-secondary)',
+            border: '1px solid var(--border-light)',
+            backgroundColor: 'var(--bg-card)',
+            cursor: 'pointer',
+            transition: 'var(--transition-fast)'
+          }}
+        >
+          {isDark ? <Sun size={15} color="#F59E0B" /> : <Moon size={15} color="#6366F1" />}
+        </button>
+
         {user ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>

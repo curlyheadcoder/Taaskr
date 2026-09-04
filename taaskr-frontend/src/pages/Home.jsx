@@ -3,10 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import Pagination from '../components/Pagination';
 import { 
-  Search, ShieldCheck, Zap, CreditCard, LayoutList, 
-  Sparkles, Droplets, Paintbrush, Leaf, Truck, Settings, 
-  Snowflake, Ruler, ArrowRight, Activity, Stethoscope, Building2,
-  CheckCircle2, Clock
+  Search, ShieldCheck, Tag, CreditCard, Star, LayoutList, 
+  Sparkles, Droplets, Zap, Paintbrush, Leaf, Truck, Settings, 
+  Snowflake, Ruler, Hammer, ArrowRight, Activity, Stethoscope, Building2
 } from 'lucide-react';
 
 export default function Home() {
@@ -59,7 +58,7 @@ export default function Home() {
     checkRoleAndLoadCatalog();
   }, [navigate]);
 
-  // Search matcher across service name, description, category name
+  // Comprehensive multi-token search matcher across service name, description, category name, and keywords
   const doesServiceMatch = (service, query) => {
     if (!query || !query.trim()) return true;
     const qTokens = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
@@ -72,219 +71,778 @@ export default function Home() {
     return qTokens.every(token => fullText.includes(token));
   };
 
+  // Dropdown searches globally across all services
+  const searchDropdownResults = searchQuery.trim() === ''
+    ? []
+    : services.filter(service => doesServiceMatch(service, searchQuery));
+
   const filteredServices = services.filter(service => {
     const matchesCategory = selectedCategory ? service.categoryId === selectedCategory : true;
     const matchesSearch = searchQuery.trim() === '' || doesServiceMatch(service, searchQuery);
     return matchesCategory && matchesSearch;
   });
 
-  const getCategoryIcon = (categoryName) => {
+  const getCategoryTheme = (categoryName) => {
     const cat = (categoryName || '').toLowerCase();
-    if (cat.includes('clean')) return <Sparkles size={18} />;
-    if (cat.includes('plumb')) return <Droplets size={18} />;
-    if (cat.includes('electric') || cat.includes('wire')) return <Zap size={18} />;
-    if (/\bac\b/.test(cat) || cat.includes('cool') || cat.includes('refrigerat')) return <Snowflake size={18} />;
-    if (cat.includes('security') || cat.includes('guard') || cat.includes('cctv') || cat.includes('lock')) return <ShieldCheck size={18} />;
-    if (cat.includes('appliance') || cat.includes('repair')) return <Settings size={18} />;
-    if (cat.includes('paint')) return <Paintbrush size={18} />;
-    if (cat.includes('garden') || cat.includes('lawn')) return <Leaf size={18} />;
-    if (cat.includes('logistics') || cat.includes('mov') || cat.includes('vehicle') || cat.includes('transport') || cat.includes('truck') || cat.includes('cargo') || cat.includes('courier') || cat.includes('freight')) return <Truck size={18} />;
-    if (cat.includes('carpent') || cat.includes('wood')) return <Ruler size={18} />;
-    if (cat.includes('diagnostic') || cat.includes('test') || cat.includes('blood')) return <Activity size={18} />;
-    if (cat.includes('health') || cat.includes('care') || cat.includes('doctor')) return <Stethoscope size={18} />;
-    if (cat.includes('civil') || cat.includes('property') || cat.includes('mason') || cat.includes('roof') || cat.includes('floor')) return <Building2 size={18} />;
-    return <LayoutList size={18} />;
+    
+    // 1. Electrical & Power: Radiant Electric Amber -> Flame Orange
+    if (cat.includes('electric') || cat.includes('wire') || cat.includes('switch') || cat.includes('power')) {
+      return {
+        icon: <Zap size={24} strokeWidth={2.4} />,
+        primary: '#F59E0B',
+        secondary: '#EF4444',
+        accentBg: 'linear-gradient(135deg, #F59E0B 0%, #EA580C 100%)',
+        hoverBg: 'radial-gradient(ellipse at top, rgba(245, 158, 11, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
+        activeBg: 'linear-gradient(160deg, rgba(245, 158, 11, 0.28) 0%, rgba(234, 88, 12, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        glow: 'rgba(245, 158, 11, 0.55)',
+        border: '#F59E0B',
+        badgeBg: 'rgba(245, 158, 11, 0.2)',
+        badgeColor: '#FDE047'
+      };
+    }
+
+    // 2. Plumbing & Water Works: Oceanic Cyan -> Azure Deep Blue
+    if (cat.includes('plumb') || cat.includes('water') || cat.includes('pipe') || cat.includes('drain')) {
+      return {
+        icon: <Droplets size={24} strokeWidth={2.4} />,
+        primary: '#06B6D4',
+        secondary: '#2563EB',
+        accentBg: 'linear-gradient(135deg, #06B6D4 0%, #0284C7 100%)',
+        hoverBg: 'radial-gradient(ellipse at top, rgba(6, 182, 212, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
+        activeBg: 'linear-gradient(160deg, rgba(6, 182, 212, 0.28) 0%, rgba(37, 99, 235, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        glow: 'rgba(6, 182, 212, 0.55)',
+        border: '#06B6D4',
+        badgeBg: 'rgba(6, 182, 212, 0.2)',
+        badgeColor: '#67E8F9'
+      };
+    }
+
+    // 3. Cleaning & Housekeeping: Spring Emerald -> Sparkling Aqua
+    if (cat.includes('clean')) {
+      return {
+        icon: <Sparkles size={24} strokeWidth={2.4} />,
+        primary: '#10B981',
+        secondary: '#06B6D4',
+        accentBg: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+        hoverBg: 'radial-gradient(ellipse at top, rgba(16, 185, 129, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
+        activeBg: 'linear-gradient(160deg, rgba(16, 185, 129, 0.28) 0%, rgba(6, 182, 212, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        glow: 'rgba(16, 185, 129, 0.55)',
+        border: '#10B981',
+        badgeBg: 'rgba(16, 185, 129, 0.2)',
+        badgeColor: '#6EE7B7'
+      };
+    }
+
+    // 4. Diagnostic & Health Labs: Pulse Crimson -> Neon Rose
+    if (cat.includes('diagnostic') || cat.includes('patholog') || cat.includes('blood') || cat.includes('test')) {
+      return {
+        icon: <Activity size={24} strokeWidth={2.4} />,
+        primary: '#F43F5E',
+        secondary: '#E11D48',
+        accentBg: 'linear-gradient(135deg, #F43F5E 0%, #BE123C 100%)',
+        hoverBg: 'radial-gradient(ellipse at top, rgba(244, 63, 94, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
+        activeBg: 'linear-gradient(160deg, rgba(244, 63, 94, 0.28) 0%, rgba(190, 18, 60, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        glow: 'rgba(244, 63, 94, 0.55)',
+        border: '#F43F5E',
+        badgeBg: 'rgba(244, 63, 94, 0.2)',
+        badgeColor: '#FDA4AF'
+      };
+    }
+
+    // 5. Healthcare Services: Medical Jade -> Mint Teal
+    if (cat.includes('health') || cat.includes('care') || cat.includes('doctor') || cat.includes('nurse')) {
+      return {
+        icon: <Stethoscope size={24} strokeWidth={2.4} />,
+        primary: '#14B8A6',
+        secondary: '#059669',
+        accentBg: 'linear-gradient(135deg, #14B8A6 0%, #0D9488 100%)',
+        hoverBg: 'radial-gradient(ellipse at top, rgba(20, 184, 166, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
+        activeBg: 'linear-gradient(160deg, rgba(20, 184, 166, 0.28) 0%, rgba(13, 148, 136, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        glow: 'rgba(20, 184, 166, 0.55)',
+        border: '#14B8A6',
+        badgeBg: 'rgba(20, 184, 166, 0.2)',
+        badgeColor: '#5EEAD4'
+      };
+    }
+
+    // 6. Logistics & Freight: Royal Cargo Cobalt -> Electric Indigo
+    if (cat.includes('logistics') || cat.includes('mov') || cat.includes('vehicle') || cat.includes('transport') || cat.includes('truck') || cat.includes('cargo') || cat.includes('courier') || cat.includes('freight')) {
+      return {
+        icon: <Truck size={24} strokeWidth={2.4} />,
+        primary: '#3B82F6',
+        secondary: '#6366F1',
+        accentBg: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+        hoverBg: 'radial-gradient(ellipse at top, rgba(59, 130, 246, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
+        activeBg: 'linear-gradient(160deg, rgba(59, 130, 246, 0.28) 0%, rgba(99, 102, 241, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        glow: 'rgba(59, 130, 246, 0.55)',
+        border: '#3B82F6',
+        badgeBg: 'rgba(59, 130, 246, 0.2)',
+        badgeColor: '#93C5FD'
+      };
+    }
+
+    // 7. Security Services: Cyber Violet -> Radiant Purple
+    if (cat.includes('security') || cat.includes('guard') || cat.includes('cctv') || cat.includes('lock')) {
+      return {
+        icon: <ShieldCheck size={24} strokeWidth={2.4} />,
+        primary: '#8B5CF6',
+        secondary: '#C026D3',
+        accentBg: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)',
+        hoverBg: 'radial-gradient(ellipse at top, rgba(139, 92, 246, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
+        activeBg: 'linear-gradient(160deg, rgba(139, 92, 246, 0.28) 0%, rgba(192, 38, 211, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        glow: 'rgba(139, 92, 246, 0.55)',
+        border: '#8B5CF6',
+        badgeBg: 'rgba(139, 92, 246, 0.2)',
+        badgeColor: '#C4B5FD'
+      };
+    }
+
+    // 8. Civil & Property Maintenance: Sunset Terracotta -> Warm Amber
+    if (cat.includes('civil') || cat.includes('property') || cat.includes('mason') || cat.includes('roof') || cat.includes('floor')) {
+      return {
+        icon: <Building2 size={24} strokeWidth={2.4} />,
+        primary: '#EA580C',
+        secondary: '#F59E0B',
+        accentBg: 'linear-gradient(135deg, #EA580C 0%, #C2410C 100%)',
+        hoverBg: 'radial-gradient(ellipse at top, rgba(234, 88, 12, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
+        activeBg: 'linear-gradient(160deg, rgba(234, 88, 12, 0.28) 0%, rgba(245, 158, 11, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        glow: 'rgba(234, 88, 12, 0.55)',
+        border: '#EA580C',
+        badgeBg: 'rgba(234, 88, 12, 0.2)',
+        badgeColor: '#FDBA74'
+      };
+    }
+
+    // 9. Appliances & Hardware: Metallic Sky Blue -> Royal Indigo
+    if (cat.includes('appliance') || cat.includes('repair') || cat.includes('machine')) {
+      return {
+        icon: <Settings size={24} strokeWidth={2.4} />,
+        primary: '#0EA5E9',
+        secondary: '#6366F1',
+        accentBg: 'linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%)',
+        hoverBg: 'radial-gradient(ellipse at top, rgba(14, 165, 233, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
+        activeBg: 'linear-gradient(160deg, rgba(14, 165, 233, 0.28) 0%, rgba(99, 102, 241, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        glow: 'rgba(14, 165, 233, 0.55)',
+        border: '#0EA5E9',
+        badgeBg: 'rgba(14, 165, 233, 0.2)',
+        badgeColor: '#7DD3FC'
+      };
+    }
+
+    // 10. AC & Cooling: Arctic Sky Frost -> Deep Blue
+    if (/\bac\b/.test(cat) || cat.includes('cool') || cat.includes('refrigerat')) {
+      return {
+        icon: <Snowflake size={24} strokeWidth={2.4} />,
+        primary: '#38BDF8',
+        secondary: '#0284C7',
+        accentBg: 'linear-gradient(135deg, #38BDF8 0%, #0284C7 100%)',
+        hoverBg: 'radial-gradient(ellipse at top, rgba(56, 189, 248, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
+        activeBg: 'linear-gradient(160deg, rgba(56, 189, 248, 0.28) 0%, rgba(2, 132, 199, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        glow: 'rgba(56, 189, 248, 0.55)',
+        border: '#38BDF8',
+        badgeBg: 'rgba(56, 189, 248, 0.2)',
+        badgeColor: '#BAE6FD'
+      };
+    }
+
+    // 11. Painting & Walls: Vivid Magenta -> Rose Pink
+    if (cat.includes('paint')) {
+      return {
+        icon: <Paintbrush size={24} strokeWidth={2.4} />,
+        primary: '#EC4899',
+        secondary: '#F43F5E',
+        accentBg: 'linear-gradient(135deg, #EC4899 0%, #BE185D 100%)',
+        hoverBg: 'radial-gradient(ellipse at top, rgba(236, 72, 153, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
+        activeBg: 'linear-gradient(160deg, rgba(236, 72, 153, 0.28) 0%, rgba(244, 63, 94, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        glow: 'rgba(236, 72, 153, 0.55)',
+        border: '#EC4899',
+        badgeBg: 'rgba(236, 72, 153, 0.2)',
+        badgeColor: '#F472B6'
+      };
+    }
+
+    // 12. Carpentry & Wood: Wood Bronze -> Deep Caramel
+    if (cat.includes('carpent') || cat.includes('wood')) {
+      return {
+        icon: <Ruler size={24} strokeWidth={2.4} />,
+        primary: '#D97706',
+        secondary: '#B45309',
+        accentBg: 'linear-gradient(135deg, #D97706 0%, #92400E 100%)',
+        hoverBg: 'radial-gradient(ellipse at top, rgba(217, 119, 6, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
+        activeBg: 'linear-gradient(160deg, rgba(217, 119, 6, 0.28) 0%, rgba(180, 83, 9, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        glow: 'rgba(217, 119, 6, 0.55)',
+        border: '#D97706',
+        badgeBg: 'rgba(217, 119, 6, 0.2)',
+        badgeColor: '#FCD34D'
+      };
+    }
+
+    // 13. Gardening & Lawn: Vibrant Lime -> Forest Green
+    if (cat.includes('garden') || cat.includes('lawn')) {
+      return {
+        icon: <Leaf size={24} strokeWidth={2.4} />,
+        primary: '#84CC16',
+        secondary: '#16A34A',
+        accentBg: 'linear-gradient(135deg, #84CC16 0%, #4D7C0F 100%)',
+        hoverBg: 'radial-gradient(ellipse at top, rgba(132, 204, 22, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
+        activeBg: 'linear-gradient(160deg, rgba(132, 204, 22, 0.28) 0%, rgba(22, 163, 74, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        glow: 'rgba(132, 204, 22, 0.55)',
+        border: '#84CC16',
+        badgeBg: 'rgba(132, 204, 22, 0.2)',
+        badgeColor: '#BEF264'
+      };
+    }
+
+    // Default: All Services (Vibrant Electric Indigo -> Sky Blue)
+    return {
+      icon: <LayoutList size={24} strokeWidth={2.4} />,
+      primary: '#6366F1',
+      secondary: '#38BDF8',
+      accentBg: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
+      hoverBg: 'radial-gradient(ellipse at top, rgba(99, 102, 241, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
+      activeBg: 'linear-gradient(160deg, rgba(99, 102, 241, 0.28) 0%, rgba(56, 189, 248, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+      glow: 'rgba(99, 102, 241, 0.55)',
+      border: '#6366F1',
+      badgeBg: 'rgba(99, 102, 241, 0.2)',
+      badgeColor: '#C7D2FE'
+    };
   };
 
-  const getServiceIcon = (serviceName, categoryName) => {
+  const getServiceConfig = (serviceName, categoryName) => {
     const name = (serviceName || '').toLowerCase();
     const cat = (categoryName || '').toLowerCase();
     
-    if (cat.includes('civil') || cat.includes('property') || name.includes('roof') || name.includes('mason') || name.includes('tile') || name.includes('floor')) return <Building2 size={22} />;
-    if (cat.includes('security') || name.includes('security') || name.includes('lock') || name.includes('cctv') || name.includes('guard')) return <ShieldCheck size={22} />;
-    if (cat.includes('electric') || name.includes('switch') || name.includes('wire') || name.includes('fan') || name.includes('board')) return <Zap size={22} />;
-    if (cat.includes('plumb') || name.includes('tap') || name.includes('pipe') || name.includes('leak') || name.includes('drain')) return <Droplets size={22} />;
-    if (/\bac\b/.test(name) || name.includes('air condition') || name.includes('refrigerat') || name.includes('cooler')) return <Snowflake size={22} />;
-    if (cat.includes('clean') || name.includes('clean') || name.includes('dust') || name.includes('mop')) return <Sparkles size={22} />;
-    if (cat.includes('logistics') || cat.includes('truck') || cat.includes('courier') || cat.includes('freight') || name.includes('truck') || name.includes('shifting')) return <Truck size={22} />;
-    if (cat.includes('diagnostic') || name.includes('blood') || name.includes('test') || name.includes('pathology')) return <Activity size={22} />;
-    if (cat.includes('health') || name.includes('doctor') || name.includes('nurse')) return <Stethoscope size={22} />;
-    if (cat.includes('appliance') || name.includes('machine') || name.includes('microwave') || name.includes('tv')) return <Settings size={22} />;
-    if (name.includes('paint') || cat.includes('paint')) return <Paintbrush size={22} />;
-    if (name.includes('carpent') || name.includes('wood') || cat.includes('carpent')) return <Ruler size={22} />;
-    if (name.includes('garden') || cat.includes('garden')) return <Leaf size={22} />;
-    
-    return <Settings size={22} />;
+    // 1. Civil & Property Maintenance (Roof, Waterproofing, Masonry, Flooring, Tiles)
+    if (cat.includes('civil') || cat.includes('property') || name.includes('roof') || name.includes('terrace') || name.includes('mason') || name.includes('waterproof') || name.includes('tile') || name.includes('floor')) {
+      if (name.includes('waterproof')) {
+        return { icon: <Droplets size={24} />, color: '#06B6D4', bg: 'rgba(6, 182, 212, 0.15)' };
+      }
+      return { icon: <Building2 size={24} />, color: '#F97316', bg: 'rgba(249, 115, 22, 0.15)' };
+    }
+
+    // 2. Security & Smart Living (Security Guard, Video Doorbell, Smart Lock, CCTV)
+    if (cat.includes('security') || name.includes('security') || name.includes('doorbell') || name.includes('lock') || name.includes('cctv') || name.includes('guard')) {
+      return { icon: <ShieldCheck size={24} />, color: '#A855F7', bg: 'rgba(168, 85, 247, 0.15)' };
+    }
+
+    // 3. Electrical (Switch Board, Wiring, Fan, MCB, Inverter)
+    if (cat.includes('electric') || name.includes('switch') || name.includes('wire') || name.includes('fan') || name.includes('fuse') || name.includes('spark') || name.includes('board')) {
+      return { icon: <Zap size={24} />, color: '#EAB308', bg: 'rgba(234, 179, 8, 0.18)' };
+    }
+
+    // 4. Plumbing & Water Works (Tap, Leakage, Pipe, Drain, Flush)
+    if (cat.includes('plumb') || name.includes('tap') || name.includes('pipe') || name.includes('leak') || name.includes('drain') || name.includes('sink') || name.includes('toilet')) {
+      return { icon: <Droplets size={24} />, color: '#06B6D4', bg: 'rgba(6, 182, 212, 0.15)' };
+    }
+
+    // 5. AC, Cooling & Refrigeration
+    if (/\bac\b/.test(name) || name.includes('air condition') || name.includes('refrigerat') || name.includes('cooler') || (cat.includes('ac') && !cat.includes('civil'))) {
+      return { icon: <Snowflake size={24} />, color: '#0EA5E9', bg: 'rgba(14, 165, 233, 0.15)' };
+    }
+
+    // 6. Water Purifier & RO
+    if (/\bro\b/.test(name) || name.includes('water purifier') || name.includes('purifier') || name.includes('aquaguard')) {
+      return { icon: <Droplets size={24} />, color: '#38BDF8', bg: 'rgba(56, 189, 248, 0.15)' };
+    }
+
+    // 7. Cleaning & Housekeeping (Deep Cleaning, Bathroom, Kitchen, Sofa)
+    if (cat.includes('clean') || name.includes('clean') || name.includes('dust') || name.includes('mop')) {
+      return { icon: <Sparkles size={24} />, color: '#3B82F6', bg: 'rgba(59, 130, 246, 0.15)' };
+    }
+
+    // 8. Logistics, Freight & Moving (Mini Truck, Bike Courier, Shifting, Tempo)
+    if (cat.includes('logistics') || cat.includes('cargo') || cat.includes('courier') || cat.includes('freight') || cat.includes('transport') || cat.includes('moving') || cat.includes('vehicle') || name.includes('truck') || name.includes('bike') || name.includes('courier') || name.includes('shifting') || name.includes('tempo') || name.includes('loading') || name.includes('parcel')) {
+      return { icon: <Truck size={24} />, color: '#2563EB', bg: 'rgba(37, 99, 235, 0.15)' };
+    }
+
+    // 9. Diagnostics & Health (Blood Test, Doctor, Health Checkup, Pathology)
+    if (cat.includes('diagnostic') || name.includes('blood') || name.includes('test') || name.includes('checkup') || name.includes('pathology')) {
+      return { icon: <Activity size={24} />, color: '#EF4444', bg: 'rgba(239, 68, 68, 0.15)' };
+    }
+    if (cat.includes('health') || name.includes('patient') || name.includes('doctor') || name.includes('nurse') || name.includes('compounder')) {
+      return { icon: <Stethoscope size={24} />, color: '#10B981', bg: 'rgba(168, 185, 129, 0.15)' };
+    }
+
+    // 10. Appliances (Washing Machine, Microwave, TV, Chimney)
+    if (cat.includes('appliance') || name.includes('machine') || name.includes('microwave') || name.includes('geyser') || name.includes('chimney') || name.includes('tv')) {
+      return { icon: <Settings size={24} />, color: '#64748B', bg: 'rgba(100, 116, 139, 0.15)' };
+    }
+
+    // 11. Painting, Carpentry & Gardening
+    if (name.includes('paint') || cat.includes('paint')) {
+      return { icon: <Paintbrush size={24} />, color: '#EC4899', bg: 'rgba(236, 72, 153, 0.15)' }; 
+    }
+    if (name.includes('garden') || name.includes('lawn') || cat.includes('garden')) {
+      return { icon: <Leaf size={24} />, color: '#22C55E', bg: 'rgba(34, 197, 94, 0.15)' }; 
+    }
+    if (name.includes('carpent') || name.includes('wood') || cat.includes('carpent')) {
+      return { icon: <Ruler size={24} />, color: '#8B5CF6', bg: 'rgba(139, 92, 246, 0.15)' }; 
+    }
+
+    return { icon: <Hammer size={24} />, color: '#6366F1', bg: 'rgba(99, 102, 241, 0.15)' };
   };
 
   return (
-    <div className="animate-fade-in" style={{ backgroundColor: 'var(--bg-page)', minHeight: '100vh' }}>
-      
-      {/* Premium Hero Section */}
+    <div className="animate-fade-in">
+      {/* Dynamic Y-Combinator Style Hero Section */}
       <section style={{
-        backgroundColor: 'var(--bg-header)',
-        borderBottom: '1px solid var(--border-light)',
-        padding: '3.75rem 1.5rem 3.5rem 1.5rem',
-        position: 'relative'
+        position: 'relative',
+        background: 'radial-gradient(ellipse at 30% 15%, #1e1b4b 0%, #0f172a 45%, #020617 100%)',
+        overflow: 'hidden',
+        padding: '5.5rem 2rem 6rem 2rem',
+        minHeight: '520px',
+        display: 'flex',
+        alignItems: 'center',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
       }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
+        {/* Glowing Ambient Orbs */}
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 1 }}>
+          <div className="hero-orb-1" style={{
+            position: 'absolute', top: '-10%', left: '15%', width: '450px', height: '450px',
+            background: 'radial-gradient(circle, rgba(56, 189, 248, 0.22) 0%, rgba(37, 99, 235, 0.06) 50%, transparent 70%)',
+            borderRadius: '50%', filter: 'blur(50px)'
+          }} />
+          <div className="hero-orb-2" style={{
+            position: 'absolute', bottom: '-15%', right: '10%', width: '500px', height: '500px',
+            background: 'radial-gradient(circle, rgba(168, 85, 247, 0.18) 0%, rgba(99, 102, 241, 0.05) 50%, transparent 70%)',
+            borderRadius: '50%', filter: 'blur(60px)'
+          }} />
+          <div className="hero-grid-pattern" style={{ position: 'absolute', inset: 0 }} />
+        </div>
+
+        {/* Hero Content Container */}
+        <div style={{ maxWidth: '1280px', margin: '0 auto', width: '100%', position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '3.5rem' }}>
           
-          {/* Trust Badge */}
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.45rem',
-            backgroundColor: 'var(--icon-container)',
-            border: '1px solid var(--border-light)',
-            borderRadius: '9999px',
-            padding: '0.3rem 0.85rem',
-            marginBottom: '1.25rem'
-          }}>
-            <ShieldCheck size={14} color="var(--secondary-accent)" />
-            <span style={{ color: 'var(--secondary-accent)', fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.02em' }}>
-              Verified Professionals • Upfront Pricing
-            </span>
-          </div>
+          {/* Left Column: YC-Style Typography & Primary CTAs */}
+          <div style={{ flex: '1 1 540px', maxWidth: '640px' }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.55rem',
+              background: 'rgba(59, 130, 246, 0.12)',
+              border: '1px solid rgba(59, 130, 246, 0.28)',
+              borderRadius: '9999px',
+              padding: '0.35rem 0.95rem',
+              marginBottom: '1.35rem',
+              backdropFilter: 'blur(10px)'
+            }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block', boxShadow: '0 0 10px #10B981' }} />
+              <span style={{ color: '#93C5FD', fontSize: '0.8125rem', fontWeight: 600, letterSpacing: '0.02em' }}>
+                Instant Dispatch Network • 99.4% On-Time SLA
+              </span>
+            </div>
 
-          {/* Main Headline */}
-          <h1 style={{
-            fontSize: 'clamp(2.2rem, 4.5vw, 3.2rem)',
-            fontWeight: 700,
-            color: 'var(--text-main)',
-            lineHeight: 1.15,
-            marginBottom: '1rem',
-            letterSpacing: '-0.03em'
-          }}>
-            Reliable home services, <span style={{ color: 'var(--primary)' }}>on demand.</span>
-          </h1>
+            <h1 style={{
+              fontSize: 'clamp(2.5rem, 4.5vw, 3.8rem)',
+              fontWeight: 800,
+              color: '#ffffff',
+              lineHeight: 1.1,
+              marginBottom: '1.25rem',
+              letterSpacing: '-0.035em'
+            }}>
+              On-Demand Services.<br />
+              <span style={{
+                background: 'linear-gradient(135deg, #60A5FA 0%, #A78BFA 50%, #38BDF8 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
+                Engineered for Speed.
+              </span>
+            </h1>
 
-          {/* Subtitle */}
-          <p style={{
-            fontSize: '1.05rem',
-            color: 'var(--text-muted)',
-            lineHeight: 1.55,
-            maxWidth: '580px',
-            margin: '0 auto 2rem auto'
-          }}>
-            Book certified electricians, plumbers, appliance technicians, and home experts with instant dispatch and guaranteed quality.
-          </p>
+            <p style={{
+              fontSize: '1.1rem',
+              color: '#94A3B8',
+              marginBottom: '2.25rem',
+              lineHeight: 1.6,
+              maxWidth: '520px'
+            }}>
+              The modern platform for verified home repairs, electrical, HVAC cooling, and freight logistics. Upfront pricing, vetted specialists, dispatched to your doorstep in under 60 seconds.
+            </p>
 
-          {/* Central Search Bar */}
-          <div style={{
-            maxWidth: '580px',
-            margin: '0 auto',
-            position: 'relative'
-          }}>
+            {/* High-Converting CTA Button Group */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '2.5rem' }}>
+              <button
+                onClick={() => {
+                  const elem = document.getElementById('services-catalog');
+                  if (elem) elem.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="btn btn-primary"
+                style={{
+                  padding: '0.85rem 1.6rem',
+                  fontSize: '0.95rem',
+                  fontWeight: 700,
+                  borderRadius: '10px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  boxShadow: '0 0 25px rgba(59, 130, 246, 0.45)',
+                  cursor: 'pointer'
+                }}
+              >
+                <span>Explore Services</span>
+                <ArrowRight size={17} />
+              </button>
+
+              <button
+                onClick={() => navigate('/register?role=PROVIDER')}
+                className="btn btn-secondary"
+                style={{
+                  padding: '0.85rem 1.5rem',
+                  fontSize: '0.95rem',
+                  fontWeight: 600,
+                  borderRadius: '10px',
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  color: '#F1F5F9',
+                  backdropFilter: 'blur(8px)',
+                  cursor: 'pointer'
+                }}
+              >
+                Join as Partner
+              </button>
+            </div>
+
+            {/* Trust Highlights Strip */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              backgroundColor: 'var(--bg-page)',
-              borderRadius: '12px',
-              padding: '0.55rem 0.85rem 0.55rem 1.1rem',
-              gap: '0.75rem',
-              border: '1px solid var(--border-light)',
-              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.35)',
-              transition: 'var(--transition-fast)'
+              gap: '1.75rem',
+              flexWrap: 'wrap',
+              borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+              paddingTop: '1.25rem'
             }}>
-              <Search size={19} color="var(--text-muted)" style={{ flexShrink: 0 }} />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="What service do you need today?"
-                style={{
-                  border: 'none',
-                  background: 'transparent',
-                  outline: 'none',
-                  width: '100%',
-                  fontSize: '0.92rem',
-                  color: 'var(--text-main)',
-                  fontWeight: 500
-                }}
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="btn btn-ghost btn-sm"
-                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', color: 'var(--text-muted)' }}
-                >
-                  Clear
-                </button>
-              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#CBD5E1', fontSize: '0.8125rem' }}>
+                <ShieldCheck size={16} color="#10B981" />
+                <span>100% Background Checked</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#CBD5E1', fontSize: '0.8125rem' }}>
+                <Zap size={16} color="#EAB308" />
+                <span>&lt;45 min Avg Dispatch</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#CBD5E1', fontSize: '0.8125rem' }}>
+                <CreditCard size={16} color="#38BDF8" />
+                <span>Cash After Service</span>
+              </div>
             </div>
           </div>
 
-          {/* Trust Value Highlights */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '1.75rem',
-            flexWrap: 'wrap',
-            marginTop: '2rem',
-            color: 'var(--text-secondary)',
-            fontSize: '0.8125rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <CheckCircle2 size={15} color="var(--success)" />
-              <span>Background Checked</span>
+          {/* Right Column: YC-Style Live Operations Dashboard Widget */}
+          <div style={{ flex: '1 1 380px', maxWidth: '460px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{
+              background: 'rgba(15, 23, 42, 0.7)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: '18px',
+              padding: '1.5rem',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+            }}>
+              {/* Telemetry Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', paddingBottom: '0.85rem', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block', boxShadow: '0 0 8px #10B981' }} />
+                  <span style={{ color: '#F8FAFC', fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                    Live Telemetry
+                  </span>
+                </div>
+                <span style={{ fontSize: '0.72rem', color: '#94A3B8', fontFamily: 'monospace', background: 'rgba(255, 255, 255, 0.06)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                  v2.4 ACTIVE
+                </span>
+              </div>
+
+              {/* Real-time stats row */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+                <div style={{ background: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', padding: '0.9rem', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                  <div style={{ color: '#38BDF8', fontSize: '1.4rem', fontWeight: 800 }}>5,000+</div>
+                  <div style={{ color: '#94A3B8', fontSize: '0.75rem', fontWeight: 500 }}>Verified Partners</div>
+                </div>
+                <div style={{ background: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', padding: '0.9rem', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                  <div style={{ color: '#FBBF24', fontSize: '1.4rem', fontWeight: 800 }}>4.92 ★</div>
+                  <div style={{ color: '#94A3B8', fontSize: '0.75rem', fontWeight: 500 }}>Customer Rating</div>
+                </div>
+              </div>
+
+              {/* Live Dispatch Feed Mockup */}
+              <div style={{ background: 'rgba(0, 0, 0, 0.3)', borderRadius: '12px', padding: '0.85rem', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: '#64748B', fontWeight: 700, marginBottom: '0.5rem', letterSpacing: '0.05em' }}>
+                  Recent Live Dispatches
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.78rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#E2E8F0' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <span style={{ color: '#38BDF8' }}>❄️</span> AC Jet Servicing
+                    </span>
+                    <span style={{ color: '#10B981', fontSize: '0.7rem', fontWeight: 600 }}>Matched (2m ago)</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#E2E8F0' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <span style={{ color: '#F59E0B' }}>🚚</span> Mini Truck (1 Ton)
+                    </span>
+                    <span style={{ color: '#38BDF8', fontSize: '0.7rem', fontWeight: 600 }}>In Transit (5m ago)</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#E2E8F0' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <span style={{ color: '#EAB308' }}>⚡</span> Circuit Board Repair
+                    </span>
+                    <span style={{ color: '#A855F7', fontSize: '0.7rem', fontWeight: 600 }}>Completed</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <Clock size={15} color="var(--secondary-accent)" />
-              <span>Fast Doorstep Dispatch</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <CreditCard size={15} color="var(--primary)" />
-              <span>Pay After Completion</span>
+
+            {/* Shield Insurance Guarantee Pill */}
+            <div style={{
+              background: 'rgba(15, 23, 42, 0.5)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(12px)',
+              borderRadius: '14px',
+              padding: '0.85rem 1.15rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem'
+            }}>
+              <ShieldCheck size={20} color="#10B981" style={{ flexShrink: 0 }} />
+              <span style={{ color: '#CBD5E1', fontSize: '0.8125rem' }}>
+                <strong>Taaskr Shield:</strong> ₹50,000 damage protection guarantee on every job.
+              </span>
             </div>
           </div>
-
         </div>
       </section>
 
-      {/* Main Services Area with Category Horizontal Nav & Grid */}
-      <main id="services-catalog" className="app-container" style={{ paddingTop: '2.5rem', paddingBottom: '4rem' }}>
+      {/* Main Services Area with Category Tiles & Integrated Search */}
+      <main id="services-catalog" className="app-container" style={{ paddingTop: '4rem', paddingBottom: '5rem' }}>
         
-        {/* Horizontal Category Navigation */}
-        <div style={{ marginBottom: '2rem' }}>
-          <div className="category-nav-scroll">
-            <button
-              onClick={() => setSelectedCategory(null)}
-              className={`category-btn ${selectedCategory === null ? 'active' : ''}`}
-            >
-              <LayoutList size={16} />
-              <span>All Services</span>
-            </button>
+        {/* Section Header */}
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem', maxWidth: '750px', margin: '0 auto 2.5rem auto' }}>
+          <h2 style={{ fontSize: '2.25rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+            Explore Verified Services
+          </h2>
+          <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+            Select a service category or filter by name to instantly dispatch top-rated professionals.
+          </p>
+        </div>
 
+        {/* Integrated Clean Search & Filter Control Bar */}
+        <div style={{ maxWidth: '640px', margin: '0 auto 2.5rem auto' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: 'var(--bg-card)',
+            borderRadius: '12px',
+            padding: '0.45rem 0.6rem 0.45rem 1rem',
+            gap: '0.75rem',
+            boxShadow: '0 4px 20px -2px rgba(0, 0, 0, 0.1)',
+            border: '1px solid var(--border-light)'
+          }}>
+            <Search size={18} color="var(--text-muted)" style={{ flexShrink: 0 }} />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by service name, category, or keyword..."
+              style={{
+                border: 'none',
+                background: 'transparent',
+                outline: 'none',
+                width: '100%',
+                fontSize: '0.9rem',
+                color: 'var(--text-main)',
+                fontWeight: 500
+              }}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="btn btn-ghost btn-sm"
+                style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', color: 'var(--text-muted)' }}
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Service Categories Dynamic Tiles */}
+        <div style={{ marginBottom: '3.5rem' }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'stretch',
+            gap: '0.9rem',
+            flexWrap: 'wrap',
+            maxWidth: '1280px',
+            margin: '0 auto'
+          }}>
+            {/* All Services Tile */}
+            {(() => {
+              const isSelected = selectedCategory === null;
+              const theme = getCategoryTheme('all');
+              return (
+                <button
+                  key="all"
+                  onClick={() => setSelectedCategory(null)}
+                  className={`category-tile ${isSelected ? 'active' : ''}`}
+                  style={{
+                    borderColor: isSelected ? theme.border : 'rgba(255, 255, 255, 0.08)',
+                    background: isSelected ? theme.activeBg : undefined,
+                    boxShadow: isSelected 
+                      ? `0 0 32px ${theme.glow}, 0 12px 24px -4px rgba(0, 0, 0, 0.6)` 
+                      : undefined,
+                    transform: isSelected ? 'translateY(-6px) scale(1.02)' : undefined,
+                    minWidth: '135px',
+                    flex: '0 1 auto'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.borderColor = theme.border;
+                      e.currentTarget.style.background = theme.hoverBg;
+                      e.currentTarget.style.boxShadow = `0 18px 36px -8px ${theme.glow}, 0 0 16px ${theme.glow}`;
+                      e.currentTarget.style.transform = 'translateY(-8px) scale(1.035)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                      e.currentTarget.style.background = 'linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(15, 23, 42, 0.7) 100%)';
+                      e.currentTarget.style.boxShadow = 'none';
+                      e.currentTarget.style.transform = 'none';
+                    }
+                  }}
+                >
+                  <div
+                    className="cat-icon-badge"
+                    style={{
+                      background: theme.accentBg,
+                      boxShadow: isSelected ? `0 0 20px ${theme.glow}` : '0 4px 14px rgba(0, 0, 0, 0.3)'
+                    }}
+                  >
+                    {theme.icon}
+                  </div>
+                  <div style={{
+                    fontWeight: 700,
+                    fontSize: '0.875rem',
+                    color: isSelected ? '#FFFFFF' : '#E2E8F0',
+                    textAlign: 'center',
+                    lineHeight: 1.25,
+                    letterSpacing: '-0.01em'
+                  }}>
+                    All Services
+                  </div>
+                  <div
+                    className="cat-count-badge"
+                    style={{
+                      background: isSelected ? theme.primary : theme.badgeBg,
+                      color: isSelected ? '#0F172A' : theme.badgeColor
+                    }}
+                  >
+                    {services.length} options
+                  </div>
+                  {isSelected && (
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '6px',
+                      width: '24px',
+                      height: '3px',
+                      borderRadius: '3px',
+                      backgroundColor: theme.primary,
+                      boxShadow: `0 0 10px ${theme.primary}`
+                    }} />
+                  )}
+                </button>
+              );
+            })()}
+
+            {/* Dynamic Domain-Matched Category Tiles */}
             {categories.map((cat) => {
               const isSelected = selectedCategory === cat.id;
+              const theme = getCategoryTheme(cat.name);
+              const catServiceCount = services.filter(s => s.categoryId === cat.id).length;
               return (
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`category-btn ${isSelected ? 'active' : ''}`}
+                  className={`category-tile ${isSelected ? 'active' : ''}`}
+                  style={{
+                    borderColor: isSelected ? theme.border : 'rgba(255, 255, 255, 0.08)',
+                    background: isSelected ? theme.activeBg : undefined,
+                    boxShadow: isSelected 
+                      ? `0 0 32px ${theme.glow}, 0 12px 24px -4px rgba(0, 0, 0, 0.6)` 
+                      : undefined,
+                    transform: isSelected ? 'translateY(-6px) scale(1.02)' : undefined,
+                    minWidth: '135px',
+                    flex: '0 1 auto'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.borderColor = theme.border;
+                      e.currentTarget.style.background = theme.hoverBg;
+                      e.currentTarget.style.boxShadow = `0 18px 36px -8px ${theme.glow}, 0 0 16px ${theme.glow}`;
+                      e.currentTarget.style.transform = 'translateY(-8px) scale(1.035)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                      e.currentTarget.style.background = 'linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(15, 23, 42, 0.7) 100%)';
+                      e.currentTarget.style.boxShadow = 'none';
+                      e.currentTarget.style.transform = 'none';
+                    }
+                  }}
                 >
-                  {getCategoryIcon(cat.name)}
-                  <span>{cat.name}</span>
+                  <div
+                    className="cat-icon-badge"
+                    style={{
+                      background: theme.accentBg,
+                      boxShadow: isSelected ? `0 0 20px ${theme.glow}` : '0 4px 14px rgba(0, 0, 0, 0.3)'
+                    }}
+                  >
+                    {theme.icon}
+                  </div>
+                  <div style={{
+                    fontWeight: 700,
+                    fontSize: '0.875rem',
+                    color: isSelected ? '#FFFFFF' : '#E2E8F0',
+                    textAlign: 'center',
+                    lineHeight: 1.25,
+                    letterSpacing: '-0.01em'
+                  }}>
+                    {cat.name}
+                  </div>
+                  <div
+                    className="cat-count-badge"
+                    style={{
+                      background: isSelected ? theme.primary : theme.badgeBg,
+                      color: isSelected ? '#0F172A' : theme.badgeColor
+                    }}
+                  >
+                    {catServiceCount} {catServiceCount === 1 ? 'service' : 'services'}
+                  </div>
+                  {isSelected && (
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '6px',
+                      width: '24px',
+                      height: '3px',
+                      borderRadius: '3px',
+                      backgroundColor: theme.primary,
+                      boxShadow: `0 0 10px ${theme.primary}`
+                    }} />
+                  )}
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* Catalog Section Header */}
-        <div style={{ marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontSize: '1.15rem', color: 'var(--text-main)', fontWeight: 600 }}>
-            {selectedCategory 
-              ? `${categories.find(c => c.id === selectedCategory)?.name || 'Category'} Services` 
-              : 'All Available Services'}
-          </h2>
-          <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-            Showing {filteredServices.length} {filteredServices.length === 1 ? 'service' : 'services'}
-          </span>
+        {/* Dynamic Services Grid Header */}
+        <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', fontWeight: 700 }}>
+            Showing {filteredServices.length} {selectedCategory ? 'services' : 'options'}
+          </h3>
         </div>
 
-        {/* Services Grid */}
+        {/* Services Grid with Dynamic Hover */}
         {loading ? (
           <div className="grid-cols-4">
             {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
@@ -303,7 +861,7 @@ export default function Home() {
             </div>
             <h3 className="empty-state-title">No Services Found</h3>
             <p className="empty-state-description">
-              We couldn't find any services matching your search query. Try adjusting your filters or search for another keyword.
+              We couldn't find any services matching your search. Try adjusting your filters.
             </p>
             <button
               onClick={() => { setSelectedCategory(null); setSearchQuery(''); }}
@@ -317,7 +875,7 @@ export default function Home() {
             <div className="grid-cols-4">
               {filteredServices.slice((servicesPage - 1) * servicesPerPage, servicesPage * servicesPerPage).map((service) => {
                 const cat = categories.find(c => c.id === service.categoryId);
-                const icon = getServiceIcon(service.name, cat?.name);
+                const config = getServiceConfig(service.name, cat?.name);
                 const priceUnit = service.pricingType === 'HOURLY' ? '/ hr' : service.pricingType === 'PER_KM' ? '/ km' : '';
 
                 return (
@@ -326,49 +884,44 @@ export default function Home() {
                     className="service-card"
                     onClick={() => navigate(`/services/${service.id}`)}
                   >
-                    {/* Consistent Icon Container */}
-                    <div className="service-icon-box">
-                      {icon}
+                    <div className="icon-squircle" style={{ backgroundColor: config.bg, color: config.color }}>
+                      {config.icon}
                     </div>
 
-                    {/* Service Name */}
                     <h3 className="service-card-title">{service.name}</h3>
-
-                    {/* Short Description */}
                     <p className="service-card-desc">
-                      {service.description}
+                      {service.description.length > 85 
+                        ? service.description.substring(0, 85) + '...' 
+                        : service.description}
                     </p>
 
-                    {/* Bottom Pricing & CTA */}
                     <div className="service-card-footer">
                       <div>
-                        <div className="service-price-label">
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>
                           Starting from
                         </div>
-                        <div className="service-price-value">
-                          ₹{service.price} <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-muted)' }}>{priceUnit}</span>
-                        </div>
+                        <span className="service-price">
+                          ₹{service.price} {priceUnit}
+                        </span>
                       </div>
                       
-                      <div className="service-card-cta">
-                        <span>View</span>
-                        <ArrowRight size={14} />
-                      </div>
+                      <button className="service-cta" style={{ color: config.color }} onClick={(e) => {
+                         e.stopPropagation();
+                         navigate(`/services/${service.id}`);
+                      }}>
+                        <span>View</span> <ArrowRight size={14} />
+                      </button>
                     </div>
                   </div>
                 );
               })}
             </div>
-
-            {/* Pagination Controls */}
-            <div style={{ marginTop: '2rem' }}>
-              <Pagination
-                currentPage={servicesPage}
-                totalItems={filteredServices.length}
-                itemsPerPage={servicesPerPage}
-                onPageChange={setServicesPage}
-              />
-            </div>
+            <Pagination
+              currentPage={servicesPage}
+              totalItems={filteredServices.length}
+              itemsPerPage={servicesPerPage}
+              onPageChange={setServicesPage}
+            />
           </div>
         )}
       </main>
