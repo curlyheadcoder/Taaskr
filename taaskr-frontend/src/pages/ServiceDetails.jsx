@@ -172,6 +172,24 @@ export default function ServiceDetails() {
       return;
     }
 
+    const freshIst = getISTDateTime();
+    let finalStartTime = selectedTime;
+
+    // If booking for today, make sure startTime is not in the past; if it is or was marked immediate, compute fresh dispatch time
+    if (selectedDate === freshIst.dateStr) {
+      const isImmediate = availableSlots.find(s => s.value === selectedTime)?.isImmediate;
+      const [h, m] = (selectedTime || '00:00').split(':').map(Number);
+      const selectedMins = (h || 0) * 60 + (m || 0);
+
+      if (isImmediate || selectedMins <= freshIst.currentMinutes) {
+        // Dispatch in 10-15 minutes
+        const dispatchMins = Math.min(freshIst.currentMinutes + 10, 23 * 60 + 55);
+        const disHour = Math.floor(dispatchMins / 60);
+        const disMin = dispatchMins % 60;
+        finalStartTime = `${String(disHour).padStart(2, '0')}:${String(disMin).padStart(2, '0')}`;
+      }
+    }
+
     if (isVehicleCategory) {
       if (!pickupAddress || !dropAddress) {
         alert('Please provide both Pickup Address and Drop-off Address');
@@ -188,7 +206,7 @@ export default function ServiceDetails() {
           serviceName: selectedVehicleOption.displayName || service.name,
           price: selectedVehicleOption.estimatedFare || service.price,
           bookingDate: selectedDate,
-          startTime: selectedTime,
+          startTime: finalStartTime,
           isVehicle: true,
           pickupAddress,
           pickupCity,
@@ -215,7 +233,7 @@ export default function ServiceDetails() {
         serviceName: service.name,
         price: service.price,
         bookingDate: selectedDate,
-        startTime: selectedTime
+        startTime: finalStartTime
       }
     });
   };

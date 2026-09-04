@@ -79,8 +79,18 @@ public class BookingServiceImpl implements BookingService {
             throw new BadRequestException("Selected service is not active");
         }
 
-        if (request.getBookingDate().isBefore(LocalDate.now())) {
+        java.time.ZoneId istZone = java.time.ZoneId.of("Asia/Kolkata");
+        java.time.ZonedDateTime nowIST = java.time.ZonedDateTime.now(istZone);
+        LocalDate todayIST = nowIST.toLocalDate();
+        LocalTime nowTimeIST = nowIST.toLocalTime();
+
+        if (request.getBookingDate().isBefore(todayIST)) {
             throw new BadRequestException("Booking date cannot be in the past");
+        }
+
+        // Check that time is not in the past for today (allow a 2-minute buffer for network latency)
+        if (request.getBookingDate().isEqual(todayIST) && request.getStartTime().isBefore(nowTimeIST.minusMinutes(2))) {
+            throw new BadRequestException("Booking time cannot be in the past (" + request.getStartTime() + " is earlier than current IST time " + nowTimeIST.withSecond(0).withNano(0) + "). Please choose an immediate dispatch or upcoming time window.");
         }
 
         if ((request.getLatitude() == null) != (request.getLongitude() == null)) {

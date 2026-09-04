@@ -107,11 +107,32 @@ export default function BookingFlow() {
 
     setLoading(true);
     try {
+      // Ensure startTime is not in the past if booking for today
+      let safeStartTime = startTime;
+      const istDateFormatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' });
+      const todayIST = istDateFormatter.format(new Date());
+
+      if (bookingDate === todayIST) {
+        const istTimeFormatter = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: false });
+        const [currH, currM] = istTimeFormatter.format(new Date()).split(':').map(Number);
+        const currMins = currH * 60 + currM;
+
+        const [startH, startM] = (startTime || '00:00').split(':').map(Number);
+        const startMins = (startH || 0) * 60 + (startM || 0);
+
+        if (startMins <= currMins) {
+          const dispatchMins = Math.min(currMins + 5, 23 * 60 + 55);
+          const disH = Math.floor(dispatchMins / 60);
+          const disM = dispatchMins % 60;
+          safeStartTime = `${String(disH).padStart(2, '0')}:${String(disM).padStart(2, '0')}`;
+        }
+      }
+
       const payload = {
         serviceId: Number(serviceId),
         providerId: selectedProviderId ? Number(selectedProviderId) : null,
         bookingDate,
-        startTime,
+        startTime: safeStartTime,
         paymentMethod: paymentMethod === 'after_service' ? 'AFTER_SERVICE' : 'ONLINE',
         address,
         city,
