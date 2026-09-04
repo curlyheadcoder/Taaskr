@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { Link } from 'react-router-dom';
 import { formatLocalTime } from '../utils/time';
+import { sortBookingsByStatusPriority } from '../utils/sorting';
 import confetti from 'canvas-confetti';
 import Pagination from '../components/Pagination';
 import PaymentRestrictionModal from '../components/PaymentRestrictionModal';
@@ -51,7 +52,7 @@ export default function CustomerDashboard() {
     try {
       const res = await api.bookings.getMyBookings();
       if (Array.isArray(res)) {
-        setBookings(res.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)));
+        setBookings(sortBookingsByStatusPriority(res));
       } else {
         setBookings([]);
       }

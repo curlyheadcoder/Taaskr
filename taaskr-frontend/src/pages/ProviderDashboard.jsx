@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { formatLocalTime } from '../utils/time';
+import { sortBookingsByStatusPriority } from '../utils/sorting';
 import Pagination from '../components/Pagination';
 import PaymentRestrictionModal from '../components/PaymentRestrictionModal';
 import { 
@@ -89,7 +90,7 @@ export default function ProviderDashboard() {
       setAvailability(slots || []);
 
       const bookingsList = await api.provider.getBookings();
-      setAssignedBookings((bookingsList || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+      setAssignedBookings(sortBookingsByStatusPriority(bookingsList || []));
 
       const tasksList = await api.provider.getAvailableTasks();
       setAvailableTasks((tasksList || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));

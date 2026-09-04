@@ -120,8 +120,24 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
         ProviderProfile provider = getProviderByEmail(providerEmail);
         return bookingRepository.findByProviderIdOrderByCreatedAtDesc(provider.getId())
                 .stream()
+                .sorted((b1, b2) -> {
+                    int p1 = getStatusPriority(b1.getStatus());
+                    int p2 = getStatusPriority(b2.getStatus());
+                    if (p1 != p2) return Integer.compare(p1, p2);
+                    return b2.getCreatedAt().compareTo(b1.getCreatedAt());
+                })
                 .map(this::mapBooking)
                 .toList();
+    }
+
+    private int getStatusPriority(BookingStatus status) {
+        if (status == null) return 2;
+        return switch (status) {
+            case IN_PROGRESS -> 1;
+            case PENDING, ASSIGNED, ACCEPTED -> 2;
+            case COMPLETED -> 3;
+            case CANCELLED, REJECTED -> 4;
+        };
     }
 
     @Override

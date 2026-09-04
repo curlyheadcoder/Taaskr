@@ -444,19 +444,27 @@ body:not(.dark) input[type="datetime-local"] {
 }
 
 /* Ensure Webkit calendar and clock icons are crystal clear in dark mode */
+body.dark input[type="date"]::-webkit-calendar-picker-indicator,
+body.dark input[type="time"]::-webkit-calendar-picker-indicator,
+body.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator,
 .dark input[type="date"]::-webkit-calendar-picker-indicator,
 .dark input[type="time"]::-webkit-calendar-picker-indicator,
 .dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-  filter: invert(1) brightness(1.25) !important;
+  filter: brightness(1.8) drop-shadow(0 0 1px rgba(56, 189, 248, 0.8)) !important;
   cursor: pointer;
-  opacity: 0.85;
-  transition: opacity 0.15s ease;
+  opacity: 1 !important;
+  display: block !important;
+  transition: transform 0.15s ease, filter 0.15s ease;
 }
 
+body.dark input[type="date"]::-webkit-calendar-picker-indicator:hover,
+body.dark input[type="time"]::-webkit-calendar-picker-indicator:hover,
+body.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
 .dark input[type="date"]::-webkit-calendar-picker-indicator:hover,
 .dark input[type="time"]::-webkit-calendar-picker-indicator:hover,
 .dark input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
-  opacity: 1;
+  filter: brightness(2.2) drop-shadow(0 0 3px rgba(56, 189, 248, 1)) !important;
+  transform: scale(1.1);
 }
 
 .form-control:hover {

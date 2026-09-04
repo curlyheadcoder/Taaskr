@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { formatLocalTime } from '../utils/time';
+import { sortBookingsByStatusPriority } from '../utils/sorting';
 import AnalyticsDashboardTab from '../components/admin/AnalyticsDashboardTab';
 import SystemObservabilityTab from '../components/admin/SystemObservabilityTab';
 import Pagination from '../components/Pagination';
@@ -56,7 +57,7 @@ export default function AdminDashboard() {
       setServices(servs || []);
       setUsers(usersList || []);
       setProviders(providersList || []);
-      setBookings((bookingsList || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+      setBookings(sortBookingsByStatusPriority(bookingsList || []));
     } catch (err) {
       console.error('Failed to load admin console data:', err);
     } finally {
