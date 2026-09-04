@@ -534,16 +534,8 @@ export default function Home() {
         </div>
 
         {/* Service Categories Dynamic Tiles */}
-        <div style={{ marginBottom: '3rem' }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'stretch',
-            gap: '0.9rem',
-            flexWrap: 'wrap',
-            maxWidth: '1280px',
-            margin: '0 auto'
-          }}>
+        <div style={{ marginBottom: '2.75rem' }}>
+          <div className="category-tiles-grid">
             {/* All Services Tile */}
             {(() => {
               const isSelected = selectedCategory === null;
@@ -554,16 +546,16 @@ export default function Home() {
                   onClick={() => setSelectedCategory(null)}
                   className={`category-tile ${isSelected ? 'active' : ''}`}
                   style={{
-                    borderColor: isSelected ? theme.primary : undefined,
-                    minWidth: '135px',
-                    flex: '0 1 auto'
+                    '--tile-color': theme.primary,
+                    '--tile-glow': theme.glow,
+                    '--tile-accent': theme.accentBg
                   }}
                 >
                   <div
                     className="cat-icon-badge"
                     style={{
                       background: theme.accentBg,
-                      boxShadow: isSelected ? `0 0 16px ${theme.glow}` : '0 4px 12px rgba(0, 0, 0, 0.15)'
+                      boxShadow: isSelected ? `0 0 16px ${theme.glow}` : '0 4px 12px rgba(0, 0, 0, 0.12)'
                     }}
                   >
                     {theme.icon}
@@ -575,15 +567,7 @@ export default function Home() {
                     {services.length} options
                   </div>
                   {isSelected && (
-                    <div style={{
-                      position: 'absolute',
-                      bottom: '6px',
-                      width: '24px',
-                      height: '3px',
-                      borderRadius: '3px',
-                      backgroundColor: theme.primary,
-                      boxShadow: `0 0 10px ${theme.primary}`
-                    }} />
+                    <div className="cat-active-indicator" style={{ backgroundColor: theme.primary, boxShadow: `0 0 10px ${theme.primary}` }} />
                   )}
                 </button>
               );
@@ -600,16 +584,16 @@ export default function Home() {
                   onClick={() => setSelectedCategory(cat.id)}
                   className={`category-tile ${isSelected ? 'active' : ''}`}
                   style={{
-                    borderColor: isSelected ? theme.primary : undefined,
-                    minWidth: '135px',
-                    flex: '0 1 auto'
+                    '--tile-color': theme.primary,
+                    '--tile-glow': theme.glow,
+                    '--tile-accent': theme.accentBg
                   }}
                 >
                   <div
                     className="cat-icon-badge"
                     style={{
                       background: theme.accentBg,
-                      boxShadow: isSelected ? `0 0 16px ${theme.glow}` : '0 4px 12px rgba(0, 0, 0, 0.15)'
+                      boxShadow: isSelected ? `0 0 16px ${theme.glow}` : '0 4px 12px rgba(0, 0, 0, 0.12)'
                     }}
                   >
                     {theme.icon}
@@ -621,15 +605,7 @@ export default function Home() {
                     {catServiceCount} {catServiceCount === 1 ? 'service' : 'services'}
                   </div>
                   {isSelected && (
-                    <div style={{
-                      position: 'absolute',
-                      bottom: '6px',
-                      width: '24px',
-                      height: '3px',
-                      borderRadius: '3px',
-                      backgroundColor: theme.primary,
-                      boxShadow: `0 0 10px ${theme.primary}`
-                    }} />
+                    <div className="cat-active-indicator" style={{ backgroundColor: theme.primary, boxShadow: `0 0 10px ${theme.primary}` }} />
                   )}
                 </button>
               );
@@ -684,13 +660,27 @@ export default function Home() {
                   <div
                     key={service.id}
                     className="service-card"
+                    style={{
+                      '--service-color': config.color,
+                      '--service-glow': `${config.color}35`,
+                      '--service-bg': config.bg
+                    }}
                     onClick={() => navigate(`/services/${service.id}`)}
                   >
                     <div className="icon-squircle" style={{ backgroundColor: config.bg, color: config.color }}>
                       {config.icon}
                     </div>
 
-                    <h3 className="service-card-title">{service.name}</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
+                      <h3 className="service-card-title">{service.name}</h3>
+                    </div>
+
+                    {cat && (
+                      <span className="service-category-tag" style={{ color: config.color, backgroundColor: config.bg }}>
+                        {cat.name}
+                      </span>
+                    )}
+
                     <p className="service-card-desc">
                       {service.description.length > 85 
                         ? service.description.substring(0, 85) + '...' 
@@ -699,7 +689,7 @@ export default function Home() {
 
                     <div className="service-card-footer">
                       <div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>
                           Starting from
                         </div>
                         <span className="service-price">
@@ -707,11 +697,11 @@ export default function Home() {
                         </span>
                       </div>
                       
-                      <button className="service-cta" style={{ color: config.color }} onClick={(e) => {
+                      <button className="service-cta" onClick={(e) => {
                          e.stopPropagation();
                          navigate(`/services/${service.id}`);
                       }}>
-                        <span>View</span> <ArrowRight size={14} />
+                        <span>Book</span> <ArrowRight size={13} />
                       </button>
                     </div>
                   </div>
