@@ -42,21 +42,7 @@ export default function Home() {
   }, [selectedCategory, searchQuery]);
 
   useEffect(() => {
-    const checkRoleAndLoadCatalog = async () => {
-      try {
-        const currentUser = await api.auth.me();
-        if (currentUser?.role === 'PROVIDER') {
-          navigate('/provider', { replace: true });
-          return;
-        }
-        if (currentUser?.role === 'ADMIN') {
-          navigate('/admin', { replace: true });
-          return;
-        }
-      } catch (e) {
-        // Guest user
-      }
-
+    const loadCatalog = async () => {
       setLoading(true);
       try {
         const [cats, servs] = await Promise.all([
@@ -71,8 +57,8 @@ export default function Home() {
         setLoading(false);
       }
     };
-    checkRoleAndLoadCatalog();
-  }, [navigate]);
+    loadCatalog();
+  }, []);
 
   // Comprehensive multi-token search matcher across service name, description, category name, and keywords
   const doesServiceMatch = (service, query) => {

@@ -235,7 +235,7 @@ export default function Navbar() {
       {/* Left Section: Brand Logo & Navigation Links */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexShrink: 0 }}>
         <Link 
-          to={user?.role === 'ADMIN' ? '/admin' : user?.role === 'PROVIDER' ? '/provider' : '/'} 
+          to="/" 
           style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', textDecoration: 'none' }}
         >
           <img
