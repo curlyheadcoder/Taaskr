@@ -750,28 +750,65 @@ button, input, select, textarea {
    ========================================================================== */
 
 .category-tile {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  padding: 1.25rem 1rem;
+  position: relative;
+  border-radius: 18px;
+  padding: 1.35rem 0.95rem 1.25rem 0.95rem;
   cursor: pointer;
-  min-width: 130px;
+  min-width: 135px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.65rem;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.2s ease, background-color 0.2s ease;
+  gap: 0.75rem;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(15, 23, 42, 0.7) 100%);
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  overflow: hidden;
 }
 
-.category-tile:hover {
-  transform: translateY(-5px);
-  border-color: var(--primary);
-  box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.25);
+.category-tile::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20%;
+  right: 20%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
 }
 
-.category-tile.active {
-  border: 2px solid var(--primary);
-  background-color: var(--primary-subtle);
+.category-tile:hover::before {
+  opacity: 1;
+  left: 10%;
+  right: 10%;
+}
+
+.cat-icon-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.category-tile:hover .cat-icon-badge {
+  transform: translateY(-3px) scale(1.12);
+}
+
+.cat-count-badge {
+  font-size: 0.72rem;
+  padding: 0.22rem 0.65rem;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+  font-weight: 700;
+  transition: all 0.25s ease;
 }
 
 .service-card {
