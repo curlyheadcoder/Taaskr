@@ -410,12 +410,13 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
             if (!results.isEmpty()) return results;
         }
 
-        // AC domain with intent disambiguation
-        if (hasWord(lower, "ac", "air condition", "cooling", "warm air", "hvac")) {
+        // 1. AC & Cooling domain with intent disambiguation
+        if (hasWord(lower, "ac", "air condition", "air conditioner", "cooling", "warm air", "hvac", "split ac", "window ac")) {
             List<Service> acServices = new ArrayList<>();
             for (Service s : services) {
                 String n = s.getName().toLowerCase();
-                if (n.contains("ac") || n.contains("air condition")) {
+                // Ensure whole-word 'ac' or 'air condition' so words like 'machine' are NOT matched
+                if (hasWord(n, "ac", "hvac") || n.contains("air condition") || n.contains("air conditioner") || (hasWord(n, "cooling") && !n.contains("machine"))) {
                     acServices.add(s);
                 }
             }
@@ -434,7 +435,7 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
                         return Boolean.compare(bMatch, aMatch);
                     });
                 } else {
-                    // Default repair priority for "not working", "warm air", "repair", "broken", "issue"
+                    // Default repair priority for "not working", "warm air", "repair", "broken", "issue", "cooling"
                     acServices.sort((a, b) -> {
                         boolean aMatch = a.getName().toLowerCase().contains("repair");
                         boolean bMatch = b.getName().toLowerCase().contains("repair");
@@ -445,49 +446,84 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
             }
         }
 
-        // Plumbing domain
-        if (hasWord(lower, "plumb", "plumber", "pipe", "leak", "tap", "sink", "faucet", "drain", "toilet", "flush")) {
+        // 2. Washing Machine & Laundry Appliances
+        if (hasWord(lower, "washing machine", "washer", "dryer", "laundry", "spin", "drum")) {
             for (Service s : services) {
                 String n = s.getName().toLowerCase();
-                String c = s.getCategory().getName().toLowerCase();
-                if (c.contains("plumb") || n.contains("pipe") || n.contains("tap") || n.contains("leak") || n.contains("sink")) {
+                if (n.contains("washing machine") || n.contains("dryer")) {
                     results.add(s);
                 }
             }
             if (!results.isEmpty()) return results;
         }
 
-        // Electric domain
-        if (hasWord(lower, "electr", "electrician", "spark", "wire", "switch", "switchboard", "fuse", "fan", "short circuit")) {
+        // 3. Refrigerator / Fridge
+        if (hasWord(lower, "refrigerator", "fridge", "freezer", "ice maker")) {
             for (Service s : services) {
                 String n = s.getName().toLowerCase();
-                String c = s.getCategory().getName().toLowerCase();
-                if (c.contains("elect") || n.contains("switch") || n.contains("fan") || n.contains("wire")) {
+                if (n.contains("refrigerator") || n.contains("fridge")) {
                     results.add(s);
                 }
             }
             if (!results.isEmpty()) return results;
         }
 
-        // Cleaning domain
-        if (hasWord(lower, "clean", "cleaning", "maid", "mop", "housekeeping", "dust")) {
+        // 4. Plumbing domain
+        if (hasWord(lower, "plumb", "plumber", "pipe", "leak", "tap", "sink", "faucet", "drain", "toilet", "flush", "water tank", "seepage")) {
             for (Service s : services) {
                 String n = s.getName().toLowerCase();
                 String c = s.getCategory().getName().toLowerCase();
-                if (c.contains("clean") || n.contains("clean")) results.add(s);
+                if (c.contains("plumb") || hasWord(n, "pipe", "tap", "leak", "sink", "drain", "toilet", "plumbing", "faucet")) {
+                    results.add(s);
+                }
             }
             if (!results.isEmpty()) return results;
         }
 
-        // Token matching across all services
+        // 5. Electric domain
+        if (hasWord(lower, "electr", "electrician", "spark", "wire", "switch", "switchboard", "fuse", "fan", "short circuit", "mcb", "inverter")) {
+            for (Service s : services) {
+                String n = s.getName().toLowerCase();
+                String c = s.getCategory().getName().toLowerCase();
+                if (c.contains("elect") || hasWord(n, "switch", "switchboard", "fan", "wire", "wiring", "spark", "circuit", "fuse", "mcb", "electrician")) {
+                    results.add(s);
+                }
+            }
+            if (!results.isEmpty()) return results;
+        }
+
+        // 6. Cleaning domain
+        if (hasWord(lower, "clean", "cleaning", "maid", "mop", "housekeeping", "dust", "sofa cleaning", "bathroom cleaning")) {
+            for (Service s : services) {
+                String n = s.getName().toLowerCase();
+                String c = s.getCategory().getName().toLowerCase();
+                if (c.contains("clean") || n.contains("clean")) {
+                    results.add(s);
+                }
+            }
+            if (!results.isEmpty()) return results;
+        }
+
+        // 7. Security / Smart Lock / CCTV
+        if (hasWord(lower, "security", "guard", "cctv", "camera", "doorbell", "smart lock", "lock")) {
+            for (Service s : services) {
+                String n = s.getName().toLowerCase();
+                String c = s.getCategory().getName().toLowerCase();
+                if (c.contains("security") || hasWord(n, "security", "cctv", "camera", "lock", "guard", "doorbell")) {
+                    results.add(s);
+                }
+            }
+            if (!results.isEmpty()) return results;
+        }
+
+        // 8. General token matching across services
         for (Service s : services) {
             String nameLower = s.getName().toLowerCase();
             String catLower = s.getCategory().getName().toLowerCase();
-            String descLower = s.getDescription() != null ? s.getDescription().toLowerCase() : "";
 
             for (String word : lower.split("[\\s,.]+")) {
-                if (word.length() < 3) continue;
-                if (nameLower.contains(word) || catLower.contains(word) || descLower.contains(word)) {
+                if (word.length() < 4) continue;
+                if (hasWord(nameLower, word) || hasWord(catLower, word)) {
                     if (!results.contains(s)) results.add(s);
                 }
             }

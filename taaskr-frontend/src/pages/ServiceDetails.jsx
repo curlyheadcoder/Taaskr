@@ -15,43 +15,95 @@ export default function ServiceDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Date and Time picker states
-  const todayStr = new Date().toISOString().split('T')[0];
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const tomorrowStr = tomorrow.toISOString().split('T')[0];
+  // IST Date and Time helpers
+  const getISTDateTime = () => {
+    const now = new Date();
+    const istDateFormatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Kolkata',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+    const dateStr = istDateFormatter.format(now); // "YYYY-MM-DD"
 
-  const [selectedDate, setSelectedDate] = useState(todayStr);
-  const [selectedTime, setSelectedTime] = useState('09:00');
+    const istTimeFormatter = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Kolkata',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+    const timeStr = istTimeFormatter.format(now); // "HH:mm"
+    const [hStr, mStr] = timeStr.split(':');
+    const hour = parseInt(hStr, 10);
+    const min = parseInt(mStr, 10);
 
-  // Vehicle Transport Specific State
-  const [isVehicleCategory, setIsVehicleCategory] = useState(false);
-  const [pickupAddress, setPickupAddress] = useState('');
-  const [pickupCity, setPickupCity] = useState('Indore');
-  const [pickupPincode, setPickupPincode] = useState('452001');
-  const [pickupCoords, setPickupCoords] = useState({ latitude: 22.7196, longitude: 75.8577 });
-  const [showPickupMap, setShowPickupMap] = useState(false);
+    const tomorrowDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const tomorrowStr = istDateFormatter.format(tomorrowDate);
 
-  const [dropAddress, setDropAddress] = useState('');
-  const [dropCity, setDropCity] = useState('Indore');
-  const [dropPincode, setDropPincode] = useState('452010');
-  const [dropCoords, setDropCoords] = useState({ latitude: 22.7533, longitude: 75.8937 });
-  const [showDropMap, setShowDropMap] = useState(false);
+    return { dateStr, tomorrowStr, hour, min, currentMinutes: hour * 60 + min };
+  };
 
-  const [packageWeightKg, setPackageWeightKg] = useState('15');
-  const [packageDescription, setPackageDescription] = useState('');
-  const [estimating, setEstimating] = useState(false);
-  const [estimateResult, setEstimateResult] = useState(null);
-  const [selectedVehicleOption, setSelectedVehicleOption] = useState(null);
+  const ist = getISTDateTime();
+  const todayStr = ist.dateStr;
+  const tomorrowStr = ist.tomorrowStr;
 
-  // Time slots
-  const timeSlots = [
-    { label: 'Now / Immediate (Fastest Dispatch)', value: '09:00' },
-    { label: 'Morning (09:00 AM - 11:00 AM)', value: '09:00' },
-    { label: 'Midday (11:30 AM - 01:30 PM)', value: '11:30' },
-    { label: 'Afternoon (03:00 PM - 06:00 PM)', value: '15:00' },
-    { label: 'Evening (06:30 PM - 08:30 PM)', value: '18:30' }
-  ];
+  // Default to tomorrow if past operating hours today (> 20:30 IST)
+  const defaultDate = ist.currentMinutes > 20 * 60 + 30 ? tomorrowStr : todayStr;
+  const [selectedDate, setSelectedDate] = useState(defaultDate);
+
+  // Compute available time slots based on selectedDate and IST current time
+  const getAvailableSlots = (date) => {
+    const isToday = date === todayStr;
+    const currentMins = ist.currentMinutes;
+
+    const standardSlots = [
+      { id: 'slot_morning', label: 'Morning (09:00 AM - 11:00 AM)', value: '09:00', cutoffMinutes: 10 * 60 + 30 },
+      { id: 'slot_midday', label: 'Midday (11:30 AM - 01:30 PM)', value: '11:30', cutoffMinutes: 13 * 60 },
+      { id: 'slot_afternoon', label: 'Afternoon (03:00 PM - 06:00 PM)', value: '15:00', cutoffMinutes: 17 * 60 + 30 },
+      { id: 'slot_evening', label: 'Evening (06:30 PM - 08:30 PM)', value: '18:30', cutoffMinutes: 20 * 60 }
+    ];
+
+    if (!isToday) {
+      return standardSlots;
+    }
+
+    const available = [];
+    // If within operating hours today (8:00 AM to 8:30 PM IST), offer Immediate dispatch
+    if (currentMins >= 8 * 60 && currentMins <= 20 * 60 + 30) {
+      // Calculate immediate dispatch time ~20 mins from now rounded to next 5 min
+      const dispatchMins = Math.min(currentMins + 20, 21 * 60);
+      const disHour = Math.floor(dispatchMins / 60);
+      const disMin = Math.ceil((dispatchMins % 60) / 5) * 5;
+      const formattedImmediateTime = `${String(disHour).padStart(2, '0')}:${String(disMin === 60 ? 55 : disMin).padStart(2, '0')}`;
+
+      available.push({
+        id: 'slot_immediate',
+        label: 'Now / Immediate (Fastest Dispatch ~20-30 min)',
+        value: formattedImmediateTime,
+        isImmediate: true
+      });
+    }
+
+    // Add upcoming standard slots whose cutoff has not passed
+    standardSlots.forEach(slot => {
+      if (slot.cutoffMinutes > currentMins) {
+        available.push(slot);
+      }
+    });
+
+    return available;
+  };
+
+  const availableSlots = getAvailableSlots(selectedDate);
+  const [selectedTime, setSelectedTime] = useState(availableSlots[0]?.value || '09:00');
+
+  // Keep selectedTime synchronized if selectedDate changes or current selection becomes unavailable
+  useEffect(() => {
+    const slots = getAvailableSlots(selectedDate);
+    if (slots.length > 0 && !slots.some(s => s.value === selectedTime)) {
+      setSelectedTime(slots[0].value);
+    }
+  }, [selectedDate]);
 
   useEffect(() => {
     const fetchService = async () => {
@@ -513,9 +565,13 @@ export default function ServiceDetails() {
                       value={selectedTime}
                       onChange={(e) => setSelectedTime(e.target.value)}
                     >
-                      {timeSlots.map(slot => (
-                        <option key={slot.label} value={slot.value}>{slot.label}</option>
-                      ))}
+                      {availableSlots.length === 0 ? (
+                        <option value="">No slots left today</option>
+                      ) : (
+                        availableSlots.map(slot => (
+                          <option key={slot.id} value={slot.value}>{slot.label}</option>
+                        ))
+                      )}
                     </select>
                   </div>
                 </div>
@@ -526,7 +582,7 @@ export default function ServiceDetails() {
                 onClick={handleProceed}
                 className="btn btn-primary"
                 style={{ width: '100%' }}
-                disabled={!selectedVehicleOption || !selectedVehicleOption.isEligible}
+                disabled={!selectedVehicleOption || !selectedVehicleOption.isEligible || availableSlots.length === 0}
               >
                 <span>Book {selectedVehicleOption?.displayName || 'Vehicle'} (₹{selectedVehicleOption?.estimatedFare || service.price})</span>
                 <ArrowRight size={15} />
@@ -593,7 +649,7 @@ export default function ServiceDetails() {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Select Date</label>
+              <label className="form-label">Select Date (IST)</label>
               <input
                 type="date"
                 className="form-control"
@@ -605,43 +661,50 @@ export default function ServiceDetails() {
 
             <div className="form-group" style={{ marginBottom: '1.5rem' }}>
               <label className="form-label">Available Time Windows</label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.25rem' }}>
-                {timeSlots.map((slot) => {
-                  const isSelected = selectedTime === slot.value;
-                  return (
-                    <button
-                      key={slot.label}
-                      type="button"
-                      onClick={() => setSelectedTime(slot.value)}
-                      style={{
-                        padding: '0.65rem 0.875rem',
-                        textAlign: 'left',
-                        borderRadius: 'var(--radius-sm)',
-                        border: '1px solid',
-                        borderColor: isSelected ? 'var(--primary)' : 'var(--border-light)',
-                        backgroundColor: isSelected ? 'var(--primary-subtle)' : 'var(--bg-card)',
-                        color: isSelected ? 'var(--primary)' : 'var(--text-main)',
-                        fontWeight: isSelected ? 600 : 400,
-                        fontSize: '0.8125rem',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        transition: 'var(--transition-fast)'
-                      }}
-                    >
-                      <span>{slot.label}</span>
-                      {isSelected && <Check size={14} color="var(--primary)" />}
-                    </button>
-                  );
-                })}
-              </div>
+              {availableSlots.length === 0 ? (
+                <div style={{ padding: '0.875rem', borderRadius: 'var(--radius-sm)', background: 'var(--bg-subtle)', border: '1px solid var(--border-light)', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                  All time windows for today are closed. Please select tomorrow or a future date to book.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.25rem' }}>
+                  {availableSlots.map((slot) => {
+                    const isSelected = selectedTime === slot.value;
+                    return (
+                      <button
+                        key={slot.id}
+                        type="button"
+                        onClick={() => setSelectedTime(slot.value)}
+                        style={{
+                          padding: '0.65rem 0.875rem',
+                          textAlign: 'left',
+                          borderRadius: 'var(--radius-sm)',
+                          border: '1px solid',
+                          borderColor: isSelected ? 'var(--primary)' : 'var(--border-light)',
+                          backgroundColor: isSelected ? 'var(--primary-subtle)' : 'var(--bg-card)',
+                          color: isSelected ? 'var(--primary)' : 'var(--text-main)',
+                          fontWeight: isSelected ? 600 : 400,
+                          fontSize: '0.8125rem',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          transition: 'var(--transition-fast)'
+                        }}
+                      >
+                        <span>{slot.label}</span>
+                        {isSelected && <Check size={14} color="var(--primary)" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             <button
               onClick={handleProceed}
               className="btn btn-primary"
               style={{ width: '100%' }}
+              disabled={availableSlots.length === 0}
             >
               <span>Continue to Checkout</span>
               <ArrowRight size={15} />
