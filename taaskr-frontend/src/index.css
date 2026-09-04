@@ -424,6 +424,41 @@ button, input, select, textarea {
   transition: var(--transition-fast);
 }
 
+.dark .form-control,
+.dark .form-input,
+.dark .form-select,
+.dark input[type="date"],
+.dark input[type="time"],
+.dark input[type="datetime-local"] {
+  color-scheme: dark;
+  color: #F8FAFC !important;
+  background-color: var(--bg-card) !important;
+  border-color: var(--border-light);
+}
+
+body:not(.dark) input[type="date"],
+body:not(.dark) input[type="time"],
+body:not(.dark) input[type="datetime-local"] {
+  color-scheme: light;
+  color: #0F172A !important;
+}
+
+/* Ensure Webkit calendar and clock icons are crystal clear in dark mode */
+.dark input[type="date"]::-webkit-calendar-picker-indicator,
+.dark input[type="time"]::-webkit-calendar-picker-indicator,
+.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.25) !important;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.15s ease;
+}
+
+.dark input[type="date"]::-webkit-calendar-picker-indicator:hover,
+.dark input[type="time"]::-webkit-calendar-picker-indicator:hover,
+.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
 .form-control:hover {
   border-color: var(--border-hover);
 }

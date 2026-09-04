@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../services/api';
 import { 
   Sun, Moon, Briefcase, ShieldCheck, Calendar, Grid, LogOut, 
-  MapPin, Search, ChevronDown, Sparkles, Navigation, X, Check, ArrowRight
+  MapPin, Search, ChevronDown, Sparkles, Navigation, X, Check, ArrowRight, Command
 } from 'lucide-react';
 
 const POPULAR_LOCATIONS = [
@@ -43,8 +43,8 @@ export default function Navbar() {
   const [allServices, setAllServices] = useState([]);
   const [categories, setCategories] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
   const searchContainerRef = useRef(null);
+  const searchInputRef = useRef(null);
 
   useEffect(() => {
     if (isDark) {
@@ -55,6 +55,19 @@ export default function Navbar() {
       localStorage.setItem('theme', 'light');
     }
   }, [isDark]);
+
+  // Keyboard shortcut (Ctrl+K / Cmd+K / /) to focus search
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Load catalog for search autocomplete
   useEffect(() => {
@@ -203,6 +216,8 @@ export default function Navbar() {
     window.dispatchEvent(new CustomEvent('open_taasky_with_prompt', { detail: { prompt: promptText } }));
   };
 
+  const isCustomerView = !user || user.role === 'USER';
+
   return (
     <header style={{
       position: 'sticky',
@@ -239,169 +254,171 @@ export default function Navbar() {
           }}>Taaskr</span>
         </Link>
 
-        {/* Global Location Selector Button & Popover */}
-        <div ref={locationDropdownRef} style={{ position: 'relative' }}>
-          <button
-            onClick={() => setLocationOpen(!locationOpen)}
-            className="btn btn-ghost btn-sm"
-            title="Change service location"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              padding: '0.35rem 0.65rem',
-              borderRadius: '8px',
-              border: '1px solid var(--border-light)',
-              backgroundColor: locationOpen ? 'var(--icon-container)' : 'var(--bg-card)',
-              color: 'var(--text-main)',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              transition: 'var(--transition-fast)'
-            }}
-          >
-            <MapPin size={14} color="var(--primary)" />
-            <span style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {currentLocation.city} {currentLocation.pincode ? `• ${currentLocation.pincode}` : ''}
-            </span>
-            <ChevronDown size={13} style={{ opacity: 0.7, transform: locationOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
-          </button>
+        {/* Location Selector (User / Guest Only) */}
+        {isCustomerView && (
+          <div ref={locationDropdownRef} style={{ position: 'relative' }}>
+            <button
+              onClick={() => setLocationOpen(!locationOpen)}
+              className="btn btn-ghost btn-sm"
+              title="Change service location"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.35rem 0.65rem',
+                borderRadius: '8px',
+                border: '1px solid var(--border-light)',
+                backgroundColor: locationOpen ? 'var(--icon-container)' : 'var(--bg-card)',
+                color: 'var(--text-main)',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'var(--transition-fast)'
+              }}
+            >
+              <MapPin size={14} color="var(--primary)" />
+              <span style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {currentLocation.city} {currentLocation.pincode ? `• ${currentLocation.pincode}` : ''}
+              </span>
+              <ChevronDown size={13} style={{ opacity: 0.7, transform: locationOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+            </button>
 
-          {/* Location Dropdown Modal */}
-          {locationOpen && (
-            <div style={{
-              position: 'absolute',
-              top: 'calc(100% + 8px)',
-              left: 0,
-              width: '300px',
-              backgroundColor: 'var(--bg-card)',
-              border: '1px solid var(--border-light)',
-              borderRadius: '12px',
-              boxShadow: 'var(--shadow-lg)',
-              padding: '0.85rem',
-              zIndex: 100,
-              animation: 'fadeIn 0.15s ease'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  Select Service City
-                </span>
-                <button 
-                  onClick={() => setLocationOpen(false)}
-                  style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 2 }}
-                >
-                  <X size={14} />
-                </button>
-              </div>
-
-              {/* GPS Auto Detect */}
-              <button
-                type="button"
-                onClick={handleDetectLocation}
-                disabled={locDetecting}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.45rem',
-                  padding: '0.5rem',
-                  marginBottom: '0.75rem',
-                  borderRadius: '8px',
-                  border: '1px dashed var(--primary)',
-                  backgroundColor: 'var(--primary-subtle)',
-                  color: 'var(--primary)',
-                  fontWeight: 600,
-                  fontSize: '0.8rem',
-                  cursor: 'pointer'
-                }}
-              >
-                <Navigation size={14} className={locDetecting ? 'animate-spin' : ''} />
-                <span>{locDetecting ? 'Detecting Location...' : 'Use Current GPS Location'}</span>
-              </button>
-
-              {/* Popular Cities List */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', maxHeight: '180px', overflowY: 'auto', marginBottom: '0.75rem' }}>
-                {POPULAR_LOCATIONS.map((loc) => {
-                  const isSelected = currentLocation.city.toLowerCase() === loc.city.toLowerCase();
-                  return (
-                    <button
-                      key={loc.city}
-                      onClick={() => handleSelectLocation(loc)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '0.45rem 0.6rem',
-                        borderRadius: '6px',
-                        border: 'none',
-                        background: isSelected ? 'var(--icon-container)' : 'transparent',
-                        color: isSelected ? 'var(--secondary-accent)' : 'var(--text-main)',
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        fontSize: '0.8rem',
-                        transition: 'background 0.15s'
-                      }}
-                    >
-                      <div>
-                        <div style={{ fontWeight: 600 }}>{loc.city} <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>({loc.pincode})</span></div>
-                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{loc.area}</div>
-                      </div>
-                      {isSelected && <Check size={14} color="var(--primary)" />}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Custom Input */}
-              <form onSubmit={handleApplyCustomLocation} style={{ borderTop: '1px solid var(--border-light)', paddingTop: '0.65rem' }}>
-                <div style={{ display: 'flex', gap: '0.4rem' }}>
-                  <input
-                    type="text"
-                    placeholder="Other City"
-                    value={customCity}
-                    onChange={(e) => setCustomCity(e.target.value)}
-                    style={{
-                      flex: 2,
-                      padding: '0.4rem 0.6rem',
-                      fontSize: '0.78rem',
-                      borderRadius: '6px',
-                      border: '1px solid var(--border-light)',
-                      backgroundColor: 'var(--bg-subtle)',
-                      color: 'var(--text-main)'
-                    }}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Pincode"
-                    value={customPincode}
-                    onChange={(e) => setCustomPincode(e.target.value)}
-                    style={{
-                      flex: 1,
-                      padding: '0.4rem 0.5rem',
-                      fontSize: '0.78rem',
-                      borderRadius: '6px',
-                      border: '1px solid var(--border-light)',
-                      backgroundColor: 'var(--bg-subtle)',
-                      color: 'var(--text-main)'
-                    }}
-                  />
-                  <button
-                    type="submit"
-                    className="btn btn-primary btn-sm"
-                    style={{ padding: '0.4rem 0.6rem', fontSize: '0.78rem' }}
+            {/* Location Dropdown Modal */}
+            {locationOpen && (
+              <div style={{
+                position: 'absolute',
+                top: 'calc(100% + 8px)',
+                left: 0,
+                width: '300px',
+                backgroundColor: 'var(--bg-card)',
+                border: '1px solid var(--border-light)',
+                borderRadius: '12px',
+                boxShadow: 'var(--shadow-lg)',
+                padding: '0.85rem',
+                zIndex: 100,
+                animation: 'fadeIn 0.15s ease'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Select Service City
+                  </span>
+                  <button 
+                    onClick={() => setLocationOpen(false)}
+                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 2 }}
                   >
-                    Set
+                    <X size={14} />
                   </button>
                 </div>
-              </form>
-            </div>
-          )}
-        </div>
+
+                {/* GPS Auto Detect */}
+                <button
+                  type="button"
+                  onClick={handleDetectLocation}
+                  disabled={locDetecting}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.45rem',
+                    padding: '0.5rem',
+                    marginBottom: '0.75rem',
+                    borderRadius: '8px',
+                    border: '1px dashed var(--primary)',
+                    backgroundColor: 'var(--primary-subtle)',
+                    color: 'var(--primary)',
+                    fontWeight: 600,
+                    fontSize: '0.8rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Navigation size={14} className={locDetecting ? 'animate-spin' : ''} />
+                  <span>{locDetecting ? 'Detecting Location...' : 'Use Current GPS Location'}</span>
+                </button>
+
+                {/* Popular Cities List */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', maxHeight: '180px', overflowY: 'auto', marginBottom: '0.75rem' }}>
+                  {POPULAR_LOCATIONS.map((loc) => {
+                    const isSelected = currentLocation.city.toLowerCase() === loc.city.toLowerCase();
+                    return (
+                      <button
+                        key={loc.city}
+                        onClick={() => handleSelectLocation(loc)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '0.45rem 0.6rem',
+                          borderRadius: '6px',
+                          border: 'none',
+                          background: isSelected ? 'var(--icon-container)' : 'transparent',
+                          color: isSelected ? 'var(--secondary-accent)' : 'var(--text-main)',
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          fontSize: '0.8rem',
+                          transition: 'background 0.15s'
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 600 }}>{loc.city} <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>({loc.pincode})</span></div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{loc.area}</div>
+                        </div>
+                        {isSelected && <Check size={14} color="var(--primary)" />}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Custom Input */}
+                <form onSubmit={handleApplyCustomLocation} style={{ borderTop: '1px solid var(--border-light)', paddingTop: '0.65rem' }}>
+                  <div style={{ display: 'flex', gap: '0.4rem' }}>
+                    <input
+                      type="text"
+                      placeholder="Other City"
+                      value={customCity}
+                      onChange={(e) => setCustomCity(e.target.value)}
+                      style={{
+                        flex: 2,
+                        padding: '0.4rem 0.6rem',
+                        fontSize: '0.78rem',
+                        borderRadius: '6px',
+                        border: '1px solid var(--border-light)',
+                        backgroundColor: 'var(--bg-subtle)',
+                        color: 'var(--text-main)'
+                      }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Pincode"
+                      value={customPincode}
+                      onChange={(e) => setCustomPincode(e.target.value)}
+                      style={{
+                        flex: 1,
+                        padding: '0.4rem 0.5rem',
+                        fontSize: '0.78rem',
+                        borderRadius: '6px',
+                        border: '1px solid var(--border-light)',
+                        backgroundColor: 'var(--bg-subtle)',
+                        color: 'var(--text-main)'
+                      }}
+                    />
+                    <button
+                      type="submit"
+                      className="btn btn-primary btn-sm"
+                      style={{ padding: '0.4rem 0.6rem', fontSize: '0.78rem' }}
+                    >
+                      Set
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Workspace Navigation Links */}
         <nav style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
-          {(!user || user.role === 'USER') && (
+          {isCustomerView && (
             <>
               <Link 
                 to="/" 
@@ -492,178 +509,213 @@ export default function Navbar() {
         </nav>
       </div>
 
-      {/* Center Section: Global Service Search */}
-      <div ref={searchContainerRef} style={{ position: 'relative', flex: '1 1 340px', maxWidth: '460px' }}>
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-          <Search 
-            size={15} 
-            style={{ position: 'absolute', left: '0.75rem', color: 'var(--text-muted)', pointerEvents: 'none' }} 
-          />
-          <input
-            type="text"
-            placeholder="Search services (e.g. Electric bike, AC repair, Plumbing)..."
-            value={searchQuery}
-            onFocus={() => setSearchOpen(true)}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setSearchOpen(true);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') setSearchOpen(false);
-            }}
-            style={{
-              width: '100%',
-              padding: '0.45rem 2.2rem 0.45rem 2.25rem',
-              fontSize: '0.825rem',
-              borderRadius: '8px',
-              border: '1px solid var(--border-light)',
-              backgroundColor: 'var(--bg-subtle)',
-              color: 'var(--text-main)',
-              outline: 'none',
-              transition: 'border-color 0.15s, box-shadow 0.15s'
-            }}
-          />
-          {searchQuery && (
-            <button
-              onClick={() => {
-                setSearchQuery('');
-                setSearchResults([]);
+      {/* Center Section: Production-Grade Global Service Search (User / Guest Only) */}
+      {isCustomerView ? (
+        <div ref={searchContainerRef} style={{ position: 'relative', flex: '1 1 360px', maxWidth: '480px' }}>
+          <div style={{
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: searchOpen ? 'var(--bg-card)' : 'var(--bg-subtle)',
+            borderRadius: '10px',
+            border: searchOpen ? '1px solid var(--primary)' : '1px solid var(--border-light)',
+            boxShadow: searchOpen ? '0 0 0 3px var(--primary-subtle)' : 'var(--shadow-xs)',
+            transition: 'var(--transition-fast)'
+          }}>
+            <Search 
+              size={15} 
+              style={{ position: 'absolute', left: '0.85rem', color: searchOpen ? 'var(--primary)' : 'var(--text-muted)', pointerEvents: 'none' }} 
+            />
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Search services (e.g. Electric bike, AC repair, Plumbing)..."
+              value={searchQuery}
+              onFocus={() => setSearchOpen(true)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setSearchOpen(true);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') setSearchOpen(false);
               }}
               style={{
-                position: 'absolute',
-                right: '0.65rem',
-                background: 'none',
+                width: '100%',
+                padding: '0.5rem 3.5rem 0.5rem 2.4rem',
+                fontSize: '0.85rem',
+                borderRadius: '10px',
                 border: 'none',
-                color: 'var(--text-muted)',
-                cursor: 'pointer',
-                padding: 2
+                backgroundColor: 'transparent',
+                color: 'var(--text-main)',
+                outline: 'none'
               }}
-            >
-              <X size={14} />
-            </button>
-          )}
-        </div>
+            />
 
-        {/* Search Results Dropdown */}
-        {searchOpen && searchQuery.trim().length > 0 && (
-          <div style={{
-            position: 'absolute',
-            top: 'calc(100% + 6px)',
-            left: 0,
-            right: 0,
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border-light)',
-            borderRadius: '12px',
-            boxShadow: 'var(--shadow-xl)',
-            padding: '0.65rem',
-            zIndex: 100,
-            maxHeight: '380px',
-            overflowY: 'auto',
-            animation: 'fadeIn 0.15s ease'
-          }}>
-            {searchResults.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', padding: '0.2rem 0.4rem' }}>
-                  Available Services ({searchResults.length})
-                </span>
-                {searchResults.map((srv) => {
-                  const cat = categories.find(c => c.id === srv.categoryId);
-                  return (
-                    <button
-                      key={srv.id}
-                      onClick={() => {
-                        setSearchOpen(false);
-                        navigate(`/services/${srv.id}`);
-                      }}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '0.55rem 0.75rem',
-                        borderRadius: '8px',
-                        border: '1px solid transparent',
-                        backgroundColor: 'var(--bg-subtle)',
-                        color: 'var(--text-main)',
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        transition: 'var(--transition-fast)'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = 'var(--primary)';
-                        e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = 'transparent';
-                        e.currentTarget.style.backgroundColor = 'var(--bg-subtle)';
-                      }}
-                    >
-                      <div style={{ flex: 1, minWidth: 0, paddingRight: '0.75rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.15rem' }}>
-                          <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{srv.name}</span>
-                          {cat && (
-                            <span style={{
-                              fontSize: '0.68rem',
-                              padding: '0.1rem 0.4rem',
-                              borderRadius: '4px',
-                              backgroundColor: 'var(--icon-container)',
-                              color: 'var(--secondary-accent)',
-                              fontWeight: 600
-                            }}>
-                              {cat.name}
-                            </span>
-                          )}
-                        </div>
-                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {srv.description}
-                        </div>
-                      </div>
-                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                        <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--primary)' }}>
-                          ₹{srv.basePrice || srv.price}
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            ) : (
-              <div style={{ padding: '0.85rem 0.5rem', textAlign: 'center' }}>
-                <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', margin: '0 0 0.5rem' }}>
-                  No exact services found matching "{searchQuery}"
-                </p>
-              </div>
-            )}
-
-            {/* Smart Taasky Recommendation Trigger */}
-            <div style={{ borderTop: '1px solid var(--border-light)', marginTop: '0.5rem', paddingTop: '0.5rem' }}>
-              <button
-                type="button"
-                onClick={() => handleTriggerTaaskyWithPrompt(searchQuery)}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '0.5rem 0.75rem',
-                  borderRadius: '8px',
-                  border: '1px solid var(--primary)',
-                  backgroundColor: 'var(--primary-subtle)',
-                  color: 'var(--primary)',
+            {/* Right Action: Clear or Shortcut Tag */}
+            <div style={{ position: 'absolute', right: '0.65rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              {searchQuery ? (
+                <button
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSearchResults([]);
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-muted)',
+                    cursor: 'pointer',
+                    padding: 3,
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                >
+                  <X size={14} />
+                </button>
+              ) : (
+                <kbd style={{
+                  fontSize: '0.68rem',
                   fontWeight: 600,
-                  fontSize: '0.8rem',
-                  cursor: 'pointer'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <Sparkles size={14} />
-                  <span>Ask Taasky AI: "{searchQuery}"</span>
-                </div>
-                <ArrowRight size={14} />
-              </button>
+                  padding: '0.15rem 0.4rem',
+                  borderRadius: '5px',
+                  backgroundColor: 'var(--bg-hover)',
+                  color: 'var(--text-muted)',
+                  border: '1px solid var(--border-light)',
+                  fontFamily: 'inherit',
+                  letterSpacing: '0.02em',
+                  pointerEvents: 'none'
+                }}>
+                  Ctrl K
+                </kbd>
+              )}
             </div>
           </div>
-        )}
-      </div>
+
+          {/* Search Results Dropdown */}
+          {searchOpen && searchQuery.trim().length > 0 && (
+            <div style={{
+              position: 'absolute',
+              top: 'calc(100% + 6px)',
+              left: 0,
+              right: 0,
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border-light)',
+              borderRadius: '12px',
+              boxShadow: 'var(--shadow-xl)',
+              padding: '0.65rem',
+              zIndex: 100,
+              maxHeight: '380px',
+              overflowY: 'auto',
+              animation: 'fadeIn 0.15s ease'
+            }}>
+              {searchResults.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.2rem 0.4rem' }}>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                      Available Services ({searchResults.length})
+                    </span>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Press ↵ to select</span>
+                  </div>
+                  {searchResults.map((srv) => {
+                    const cat = categories.find(c => c.id === srv.categoryId);
+                    return (
+                      <button
+                        key={srv.id}
+                        onClick={() => {
+                          setSearchOpen(false);
+                          navigate(`/services/${srv.id}`);
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '0.6rem 0.75rem',
+                          borderRadius: '8px',
+                          border: '1px solid transparent',
+                          backgroundColor: 'var(--bg-subtle)',
+                          color: 'var(--text-main)',
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          transition: 'var(--transition-fast)'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.borderColor = 'var(--primary)';
+                          e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.borderColor = 'transparent';
+                          e.currentTarget.style.backgroundColor = 'var(--bg-subtle)';
+                        }}
+                      >
+                        <div style={{ flex: 1, minWidth: 0, paddingRight: '0.75rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.15rem' }}>
+                            <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{srv.name}</span>
+                            {cat && (
+                              <span style={{
+                                fontSize: '0.68rem',
+                                padding: '0.1rem 0.4rem',
+                                borderRadius: '4px',
+                                backgroundColor: 'var(--icon-container)',
+                                color: 'var(--secondary-accent)',
+                                fontWeight: 600
+                              }}>
+                                {cat.name}
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {srv.description}
+                          </div>
+                        </div>
+                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                          <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--primary)' }}>
+                            ₹{srv.basePrice || srv.price}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div style={{ padding: '0.85rem 0.5rem', textAlign: 'center' }}>
+                  <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', margin: '0 0 0.5rem' }}>
+                    No exact services found matching "{searchQuery}"
+                  </p>
+                </div>
+              )}
+
+              {/* Smart Taasky Recommendation Trigger */}
+              <div style={{ borderTop: '1px solid var(--border-light)', marginTop: '0.5rem', paddingTop: '0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => handleTriggerTaaskyWithPrompt(searchQuery)}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.5rem 0.75rem',
+                    borderRadius: '8px',
+                    border: '1px solid var(--primary)',
+                    backgroundColor: 'var(--primary-subtle)',
+                    color: 'var(--primary)',
+                    fontWeight: 600,
+                    fontSize: '0.8rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <Sparkles size={14} />
+                    <span>Ask Taasky AI: "{searchQuery}"</span>
+                  </div>
+                  <ArrowRight size={14} />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div style={{ flex: 1 }} />
+      )}
 
       {/* Right Controls: Theme Toggle & User Profile */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexShrink: 0 }}>
@@ -784,4 +836,3 @@ export default function Navbar() {
     </header>
   );
 }
-

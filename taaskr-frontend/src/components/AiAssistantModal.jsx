@@ -2,9 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { 
-  Bot, X, ArrowRight, AlertTriangle, Sparkles, Truck, 
-  Package, Snowflake, Droplets, Zap, CheckCircle2, Send,
-  Calendar, Clock, Trash2, User, RefreshCw, ChevronRight, ShieldAlert, Check
+  Bot, X, ArrowRight, Sparkles, Send,
+  Calendar, Clock, Trash2, User, RefreshCw, ShieldAlert
 } from 'lucide-react';
 import { useUserRole } from '../hooks/useUserRole';
 
@@ -100,14 +99,14 @@ export default function AiAssistantModal() {
       const botMsg = {
         id: (Date.now() + 1).toString(),
         sender: 'taasky',
-        text: res.message || 'Here is what I found for you:',
+        text: res.message || res.reply || 'Here is what I found for you:',
         intent: res.intent,
         urgency: res.urgency,
         safetyNotice: res.safetyNotice,
-        recommendedServices: res.recommendedServices || [],
-        userBookings: res.userBookings || [],
+        recommendedServices: res.recommendedServices || res.services || [],
+        userBookings: res.userBookings || res.bookings || [],
         availableSlots: res.availableSlots || [],
-        suggestedPrompts: res.suggestedPrompts || []
+        suggestedPrompts: res.suggestedPrompts || res.quickReplies || []
       };
 
       setMessages(prev => [...prev, botMsg]);
@@ -165,7 +164,7 @@ export default function AiAssistantModal() {
       {/* Floating Taasky Action Button */}
       <button
         onClick={() => setIsOpen(true)}
-        aria-label="Open Taasky AI Assistant"
+        aria-label="Open Taasky Assistant"
         style={{
           position: 'fixed',
           bottom: '1.75rem',
@@ -193,7 +192,7 @@ export default function AiAssistantModal() {
         }}
       >
         <Bot size={18} strokeWidth={2.3} />
-        <span>Ask Taasky</span>
+        <span>Taasky</span>
       </button>
 
       {/* Full Conversational Modal */}
@@ -658,4 +657,3 @@ export default function AiAssistantModal() {
     </>
   );
 }
-

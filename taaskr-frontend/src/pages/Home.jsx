@@ -418,156 +418,74 @@ export default function Home() {
         </div>
 
         {/* Hero Content Container */}
-        <div style={{ maxWidth: '1280px', margin: '0 auto', width: '100%', position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '3.5rem' }}>
+        <div style={{ maxWidth: '960px', margin: '0 auto', width: '100%', position: 'relative', zIndex: 10, textAlign: 'center', padding: '1rem 0' }}>
           
-          {/* Left Column: Typography & Primary CTAs */}
-          <div style={{ flex: '1 1 540px', maxWidth: '640px' }}>
-            <div className="hero-pill-tag">
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--success)', display: 'inline-block', boxShadow: '0 0 10px var(--success)' }} />
-              <span>
-                Verified Service Marketplace • Real-Time Dispatch
-              </span>
-            </div>
-
-            <h1 className="hero-title">
-              On-Demand Services.<br />
-              <span style={{
-                background: 'linear-gradient(135deg, #0284C7 0%, #6366F1 50%, #38BDF8 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent'
-              }}>
-                Engineered for Speed.
-              </span>
-            </h1>
-
-            <p className="hero-desc">
-              Book verified electricians, plumbers, cleaners, and moving specialists in minutes. Upfront pricing, vetted partners, and instant scheduling at your doorstep.
-            </p>
-
-            {/* CTA Button Group */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '2.5rem' }}>
-              <button
-                onClick={() => {
-                  const elem = document.getElementById('services-catalog');
-                  if (elem) elem.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="btn btn-primary btn-lg"
-              >
-                <span>Explore Services</span>
-                <ArrowRight size={17} />
-              </button>
-
-              <button
-                onClick={() => navigate('/register?role=PROVIDER')}
-                className="btn btn-secondary btn-lg"
-              >
-                Join as Partner
-              </button>
-            </div>
-
-            {/* Trust Highlights Strip */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1.75rem',
-              flexWrap: 'wrap',
-              borderTop: '1px solid var(--border-light)',
-              paddingTop: '1.25rem'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
-                <ShieldCheck size={16} color="var(--success)" />
-                <span>100% Background Checked</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
-                <Zap size={16} color="var(--warning)" />
-                <span>Fast Doorstep Dispatch</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
-                <CreditCard size={16} color="var(--primary)" />
-                <span>Pay After Completion</span>
-              </div>
-            </div>
+          <div className="hero-pill-tag" style={{ margin: '0 auto 1.5rem auto' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--success)', display: 'inline-block', boxShadow: '0 0 10px var(--success)' }} />
+            <span>
+              Verified Service Marketplace • Real-Time Dispatch
+            </span>
           </div>
 
-          {/* Right Column: Real Live Platform Status Widget */}
-          <div style={{ flex: '1 1 380px', maxWidth: '460px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div className="telemetry-card">
-              {/* Telemetry Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', paddingBottom: '0.85rem', borderBottom: '1px solid var(--border-light)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--success)', display: 'inline-block', boxShadow: '0 0 8px var(--success)' }} />
-                  <span style={{ color: 'var(--text-main)', fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                    Live Platform Status
-                  </span>
-                </div>
-                <span style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: 600, background: 'var(--primary-subtle)', padding: '0.2rem 0.55rem', borderRadius: '4px' }}>
-                  ONLINE
-                </span>
-              </div>
-
-              {/* Real-time stats row from live catalog data */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
-                <div className="telemetry-stat-box">
-                  <div style={{ color: 'var(--primary)', fontSize: '1.4rem', fontWeight: 800, fontFeatureSettings: 'tnum' }}>
-                    {loading ? '...' : services.length}
-                  </div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 500 }}>
-                    Active Services
-                  </div>
-                </div>
-                <div className="telemetry-stat-box">
-                  <div style={{ color: 'var(--warning)', fontSize: '1.4rem', fontWeight: 800, fontFeatureSettings: 'tnum' }}>
-                    {loading ? '...' : categories.length}
-                  </div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 500 }}>
-                    Service Domains
-                  </div>
-                </div>
-              </div>
-
-              {/* Real Catalog Dispatch Feed */}
-              <div className="telemetry-feed-box">
-                <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '0.5rem', letterSpacing: '0.05em' }}>
-                  Featured On-Demand Catalog
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', fontSize: '0.8rem' }}>
-                  {services.slice(0, 3).map((serviceItem) => {
-                    const cat = categories.find(c => c.id === serviceItem.categoryId);
-                    const config = getServiceConfig(serviceItem.name, cat?.name);
-                    return (
-                      <div
-                        key={serviceItem.id}
-                        onClick={() => navigate(`/services/${serviceItem.id}`)}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text-main)', cursor: 'pointer' }}
-                      >
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: 600, fontSize: '0.8125rem' }}>
-                          <span style={{ color: config.color }}>●</span> {serviceItem.name}
-                        </span>
-                        <span style={{ color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 700 }}>
-                          ₹{serviceItem.price}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {/* Shield Guarantee Pill */}
-            <div style={{
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-light)',
-              borderRadius: '14px',
-              padding: '0.85rem 1.15rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-              boxShadow: 'var(--shadow-xs)'
+          <h1 className="hero-title" style={{ maxWidth: '800px', margin: '0 auto 1.25rem auto' }}>
+            On-Demand Services.<br />
+            <span style={{
+              background: 'linear-gradient(135deg, #0284C7 0%, #6366F1 50%, #38BDF8 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
             }}>
-              <ShieldCheck size={20} color="var(--success)" style={{ flexShrink: 0 }} />
-              <span style={{ color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
-                <strong style={{ color: 'var(--text-main)' }}>Taaskr Guarantee:</strong> 100% verified specialists & transparent pricing.
-              </span>
+              Engineered for Speed.
+            </span>
+          </h1>
+
+          <p className="hero-desc" style={{ maxWidth: '680px', margin: '0 auto 2.25rem auto' }}>
+            Book verified electricians, plumbers, cleaners, and courier specialists in minutes. Upfront pricing, vetted partners, and instant doorstep scheduling.
+          </p>
+
+          {/* CTA Button Group */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '2.5rem' }}>
+            <button
+              onClick={() => {
+                const elem = document.getElementById('services-catalog');
+                if (elem) elem.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="btn btn-primary btn-lg"
+            >
+              <span>Explore Services</span>
+              <ArrowRight size={17} />
+            </button>
+
+            <button
+              onClick={() => navigate('/register?role=PROVIDER')}
+              className="btn btn-secondary btn-lg"
+            >
+              Join as Partner
+            </button>
+          </div>
+
+          {/* Trust Highlights Strip */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '2.5rem',
+            flexWrap: 'wrap',
+            borderTop: '1px solid var(--border-light)',
+            paddingTop: '1.5rem',
+            maxWidth: '750px',
+            margin: '0 auto'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+              <ShieldCheck size={16} color="var(--success)" />
+              <span>100% Background Checked</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+              <Zap size={16} color="var(--warning)" />
+              <span>Fast Doorstep Dispatch</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+              <CreditCard size={16} color="var(--primary)" />
+              <span>Pay After Completion</span>
             </div>
           </div>
         </div>
