@@ -394,26 +394,56 @@ export default function VerifyEmail() {
             <form onSubmit={handleVerifyEmail}>
               <div className="form-group" style={{ marginBottom: '1.25rem' }}>
                 <label className="form-label">Email Address</label>
-                <div style={{ position: 'relative' }}>
-                  <Mail size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-                  <input
-                    type="email"
-                    placeholder="name@example.com"
-                    className="form-control"
-                    style={{ paddingLeft: '38px' }}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={loading}
-                    required
-                  />
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <div style={{ position: 'relative', flex: 1 }}>
+                    <Mail size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                    <input
+                      type="email"
+                      placeholder="name@example.com"
+                      className="form-control"
+                      style={{ paddingLeft: '38px' }}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={loading}
+                      required
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleResendEmailOtp}
+                    disabled={emailResendCooldown > 0 || loading || !email.trim()}
+                    className="btn btn-secondary"
+                    style={{ whiteSpace: 'nowrap', padding: '0 0.85rem', fontSize: '0.8rem' }}
+                  >
+                    {emailResendCooldown > 0 ? `${emailResendCooldown}s` : 'Send Code'}
+                  </button>
                 </div>
               </div>
 
               <div className="form-group" style={{ marginBottom: '1.25rem' }}>
-                <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span>6-Digit Email OTP</span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Valid for 15 mins</span>
-                </label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                  <label className="form-label" style={{ margin: 0 }}>6-Digit Email OTP</label>
+                  <button
+                    type="button"
+                    onClick={handleResendEmailOtp}
+                    disabled={emailResendCooldown > 0 || loading || !email.trim()}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: emailResendCooldown > 0 ? 'var(--text-muted)' : 'var(--primary)',
+                      cursor: emailResendCooldown > 0 ? 'default' : 'pointer',
+                      fontSize: '0.78rem',
+                      fontWeight: 600,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.3rem',
+                      padding: 0
+                    }}
+                  >
+                    <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
+                    <span>{emailResendCooldown > 0 ? `Resend in ${emailResendCooldown}s` : 'Resend Code'}</span>
+                  </button>
+                </div>
                 <input
                   type="text"
                   placeholder="123456"
@@ -436,35 +466,12 @@ export default function VerifyEmail() {
               <button 
                 type="submit" 
                 className="btn btn-primary" 
-                style={{ width: '100%', padding: '0.75rem', marginBottom: '1rem' }} 
-                disabled={loading}
+                style={{ width: '100%', padding: '0.75rem', marginBottom: '0.5rem' }} 
+                disabled={loading || emailOtp.length < 6}
               >
                 <span>{loading ? 'Verifying...' : 'Verify Email'}</span>
                 <ArrowRight size={15} />
               </button>
-
-              <div style={{ textAlign: 'center', fontSize: '0.8rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Didn't receive the code? </span>
-                <button
-                  type="button"
-                  onClick={handleResendEmailOtp}
-                  disabled={emailResendCooldown > 0 || loading || !email}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: emailResendCooldown > 0 ? 'var(--text-muted)' : 'var(--primary)',
-                    cursor: emailResendCooldown > 0 ? 'default' : 'pointer',
-                    fontWeight: 600,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.3rem',
-                    padding: 0
-                  }}
-                >
-                  <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
-                  <span>{emailResendCooldown > 0 ? `Resend in ${emailResendCooldown}s` : 'Send / Resend Code'}</span>
-                </button>
-              </div>
             </form>
           ) : (
             <div style={{ textAlign: 'center' }}>
@@ -530,16 +537,35 @@ export default function VerifyEmail() {
                     className="btn btn-secondary"
                     style={{ whiteSpace: 'nowrap', padding: '0 0.85rem', fontSize: '0.8rem' }}
                   >
-                    {phoneResendCooldown > 0 ? `${phoneResendCooldown}s` : (phoneOtpSent ? 'Resend' : 'Send Code')}
+                    {phoneResendCooldown > 0 ? `${phoneResendCooldown}s` : 'Send Code'}
                   </button>
                 </div>
               </div>
 
               <div className="form-group" style={{ marginBottom: '1.25rem' }}>
-                <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span>6-Digit Mobile OTP</span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Valid for 15 mins</span>
-                </label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                  <label className="form-label" style={{ margin: 0 }}>6-Digit Mobile OTP</label>
+                  <button
+                    type="button"
+                    onClick={handleSendPhoneOtp}
+                    disabled={phoneResendCooldown > 0 || loading || !phone.trim()}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: phoneResendCooldown > 0 ? 'var(--text-muted)' : 'var(--primary)',
+                      cursor: phoneResendCooldown > 0 ? 'default' : 'pointer',
+                      fontSize: '0.78rem',
+                      fontWeight: 600,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.3rem',
+                      padding: 0
+                    }}
+                  >
+                    <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
+                    <span>{phoneResendCooldown > 0 ? `Resend in ${phoneResendCooldown}s` : 'Resend Code'}</span>
+                  </button>
+                </div>
                 <input
                   type="text"
                   placeholder="123456"
@@ -562,35 +588,12 @@ export default function VerifyEmail() {
               <button 
                 type="submit" 
                 className="btn btn-primary" 
-                style={{ width: '100%', padding: '0.75rem', marginBottom: '1rem' }} 
-                disabled={loading}
+                style={{ width: '100%', padding: '0.75rem', marginBottom: '0.5rem' }} 
+                disabled={loading || phoneOtp.length < 6}
               >
                 <span>{loading ? 'Verifying Phone...' : 'Verify Phone Number'}</span>
                 <ArrowRight size={15} />
               </button>
-
-              <div style={{ textAlign: 'center', fontSize: '0.8rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Didn't receive SMS? </span>
-                <button
-                  type="button"
-                  onClick={handleSendPhoneOtp}
-                  disabled={phoneResendCooldown > 0 || loading || !phone.trim()}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: phoneResendCooldown > 0 ? 'var(--text-muted)' : 'var(--primary)',
-                    cursor: phoneResendCooldown > 0 ? 'default' : 'pointer',
-                    fontWeight: 600,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.3rem',
-                    padding: 0
-                  }}
-                >
-                  <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
-                  <span>{phoneResendCooldown > 0 ? `Resend in ${phoneResendCooldown}s` : 'Resend Code'}</span>
-                </button>
-              </div>
             </form>
           ) : (
             <div style={{ textAlign: 'center' }}>
@@ -603,7 +606,7 @@ export default function VerifyEmail() {
                 fontSize: '0.85rem',
                 fontWeight: 500
               }}>
-                ✓ Phone number ({phone}) is verified!
+                ✓ Phone ({phone}) is verified!
               </div>
 
               {!emailVerified ? (
@@ -612,7 +615,7 @@ export default function VerifyEmail() {
                   className="btn btn-primary" 
                   style={{ width: '100%', padding: '0.75rem', marginBottom: '0.75rem' }}
                 >
-                  <span>Verify Email Address Next</span>
+                  <span>Verify Email Next</span>
                   <ArrowRight size={15} />
                 </button>
               ) : (
