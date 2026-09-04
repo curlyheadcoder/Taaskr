@@ -43,6 +43,15 @@ public class AuthController {
         return authService.me(authentication.getName());
     }
 
+    @PutMapping("/profile")
+    public MeResponse updateProfile(@Valid @RequestBody UpdateUserProfileRequest request, Authentication authentication) {
+        if (authentication == null) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.UNAUTHORIZED, "User not authenticated");
+        }
+        return authService.updateProfile(authentication.getName(), request);
+    }
+
     @PostMapping("/send-verification-otp")
     public AuthMessageResponse sendVerificationOtp(@Valid @RequestBody ForgotPasswordRequest request) {
         return authService.sendVerificationOtp(request.getEmail());

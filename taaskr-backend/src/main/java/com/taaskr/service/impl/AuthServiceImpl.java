@@ -415,4 +415,59 @@ public class AuthServiceImpl implements AuthService {
             return sendVerificationOtp(request.getEmail());
         }
     }
+
+    @Override
+    @Transactional
+    public MeResponse updateProfile(String email, UpdateUserProfileRequest request) {
+        User user = userRepository.findByEmail(email.trim().toLowerCase())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (request.getName() != null && !request.getName().isBlank()) {
+            user.setName(request.getName().trim());
+        }
+
+        if (request.getCity() != null) {
+            user.setCity(request.getCity().trim());
+        }
+
+        if (request.getPincode() != null) {
+            user.setPincode(request.getPincode().trim());
+        }
+
+        if (request.getPhone() != null && !request.getPhone().isBlank()) {
+            String newPhone = request.getPhone().trim();
+            if (!newPhone.equalsIgnoreCase(user.getPhone())) {
+                boolean phoneExists = userRepository.existsByPhone(newPhone);
+                if (phoneExists) {
+                    throw new BadRequestException("Phone number is already associated with another account");
+                }
+                user.setPhone(newPhone);
+                user.setPhoneVerified(false);
+            }
+        }
+
+        User savedUser = userRepository.save(user);
+
+        // If user is a provider, also keep their ProviderProfile sync'd with city and pincode
+        if (savedUser.getRole() == Role.PROVIDER) {
+            providerProfileRepository.findByUserId(savedUser.getId()).ifPresent(p -> {
+                if (savedUser.getCity() != null) p.setCity(savedUser.getCity());
+                if (savedUser.getPincode() != null) p.setPincode(savedUser.getPincode());
+                providerProfileRepository.save(p);
+            });
+        }
+
+        return new MeResponse(
+                savedUser.getId(),
+                savedUser.getName(),
+                savedUser.getEmail(),
+                savedUser.getRole(),
+                savedUser.getPhone(),
+                savedUser.getCity(),
+                savedUser.getPincode(),
+                savedUser.getEnabled(),
+                Boolean.TRUE.equals(savedUser.getEmailVerified()),
+                Boolean.TRUE.equals(savedUser.getPhoneVerified())
+        );
+    }
 }

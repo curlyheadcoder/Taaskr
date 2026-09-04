@@ -51,6 +51,14 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute allowedRoles={['USER', 'PROVIDER', 'ADMIN']}>
+                  <CustomerDashboard initialTab="profile" />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Protected Provider Dashboard */}
             <Route

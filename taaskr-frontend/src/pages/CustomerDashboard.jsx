@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { formatLocalTime } from '../utils/time';
 import { sortBookingsByStatusPriority } from '../utils/sorting';
 import confetti from 'canvas-confetti';
@@ -9,7 +9,8 @@ import PaymentRestrictionModal from '../components/PaymentRestrictionModal';
 import { 
   Calendar, Clock, CreditCard, Star, Truck, MapPin, User, 
   ExternalLink, AlertCircle, CheckCircle2, ChevronRight, X, 
-  RefreshCw, FileText
+  RefreshCw, FileText, Settings, ShieldCheck, Mail, Phone, 
+  Check, Save, Lock
 } from 'lucide-react';
 
 const loadRazorpayScript = () => {
@@ -27,13 +28,26 @@ const loadRazorpayScript = () => {
   });
 };
 
-export default function CustomerDashboard() {
+export default function CustomerDashboard({ initialTab }) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlTab = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(initialTab || urlTab || 'bookings');
+
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [payingBookingId, setPayingBookingId] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+
+  // Profile Editor state
+  const [profileName, setProfileName] = useState('');
+  const [profilePhone, setProfilePhone] = useState('');
+  const [profileCity, setProfileCity] = useState('');
+  const [profilePincode, setProfilePincode] = useState('');
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileSuccessMsg, setProfileSuccessMsg] = useState('');
+  const [profileErrorMsg, setProfileErrorMsg] = useState('');
 
   // Pagination & Modal state
   const [currentPage, setCurrentPage] = useState(1);
@@ -45,6 +59,17 @@ export default function CustomerDashboard() {
   const [ratingValue, setRatingValue] = useState(5);
   const [reviewText, setReviewText] = useState('');
   const [submittingRating, setSubmittingRating] = useState(false);
+
+  useEffect(() => {
+    if (urlTab && (urlTab === 'bookings' || urlTab === 'profile')) {
+      setActiveTab(urlTab);
+    }
+  }, [urlTab]);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setSearchParams({ tab });
+  };
 
   const fetchMyBookings = async () => {
     setLoading(true);
@@ -64,13 +89,41 @@ export default function CustomerDashboard() {
     }
   };
 
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    setSavingProfile(true);
+    setProfileSuccessMsg('');
+    setProfileErrorMsg('');
+    try {
+      const updated = await api.auth.updateProfile({
+        name: profileName.trim(),
+        phone: profilePhone.trim(),
+        city: profileCity.trim(),
+        pincode: profilePincode.trim()
+      });
+      setCurrentUser(updated);
+      setProfileSuccessMsg('Profile updated successfully! Your default booking details have been saved.');
+      setTimeout(() => setProfileSuccessMsg(''), 4000);
+    } catch (err) {
+      setProfileErrorMsg(err.message || 'Failed to update profile');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
   useEffect(() => {
     fetchMyBookings();
     
     const loadUser = async () => {
       try {
         const profile = await api.auth.me();
-        setCurrentUser(profile);
+        if (profile) {
+          setCurrentUser(profile);
+          setProfileName(profile.name || '');
+          setProfilePhone(profile.phone && !profile.phone.startsWith('NA-') ? profile.phone : '');
+          setProfileCity(profile.city || '');
+          setProfilePincode(profile.pincode || '');
+        }
       } catch (e) {}
     };
     loadUser();
@@ -194,20 +247,76 @@ export default function CustomerDashboard() {
   return (
     <div className="app-container animate-fade-in" style={{ paddingBottom: '3rem' }}>
       {/* Header Bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>My Bookings</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>Track and manage your scheduled services, trips, and payment receipts.</p>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>
+            {activeTab === 'profile' ? 'Profile Settings' : 'My Bookings'}
+          </h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
+            {activeTab === 'profile'
+              ? 'Manage your personal details, verified contacts, and default service locations.'
+              : 'Track and manage your scheduled services, trips, and payment receipts.'}
+          </p>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button onClick={fetchMyBookings} className="btn btn-secondary btn-sm">
-            <RefreshCw size={13} />
-            <span>Refresh</span>
-          </button>
+          {activeTab === 'bookings' && (
+            <button onClick={fetchMyBookings} className="btn btn-secondary btn-sm">
+              <RefreshCw size={13} />
+              <span>Refresh</span>
+            </button>
+          )}
           <Link to="/" className="btn btn-primary btn-sm">
             Book New Service
           </Link>
         </div>
+      </div>
+
+      {/* Navigation Tabs */}
+      <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid var(--border-light)', marginBottom: '1.5rem', paddingBottom: '0.25rem' }}>
+        <button
+          onClick={() => handleTabChange('bookings')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            padding: '0.6rem 1.1rem',
+            border: 'none',
+            background: 'none',
+            borderBottom: activeTab === 'bookings' ? '2px solid var(--primary)' : '2px solid transparent',
+            color: activeTab === 'bookings' ? 'var(--primary)' : 'var(--text-muted)',
+            fontWeight: activeTab === 'bookings' ? 600 : 500,
+            fontSize: '0.875rem',
+            cursor: 'pointer',
+            transition: 'var(--transition-fast)'
+          }}
+        >
+          <Calendar size={15} />
+          <span>My Bookings</span>
+          <span className="badge badge-assigned" style={{ fontSize: '0.7rem', padding: '0.1rem 0.45rem' }}>
+            {bookings.length}
+          </span>
+        </button>
+
+        <button
+          onClick={() => handleTabChange('profile')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            padding: '0.6rem 1.1rem',
+            border: 'none',
+            background: 'none',
+            borderBottom: activeTab === 'profile' ? '2px solid var(--primary)' : '2px solid transparent',
+            color: activeTab === 'profile' ? 'var(--primary)' : 'var(--text-muted)',
+            fontWeight: activeTab === 'profile' ? 600 : 500,
+            fontSize: '0.875rem',
+            cursor: 'pointer',
+            transition: 'var(--transition-fast)'
+          }}
+        >
+          <Settings size={15} />
+          <span>Profile Settings</span>
+        </button>
       </div>
 
       {currentUser && currentUser.emailVerified === false && (
@@ -270,36 +379,236 @@ export default function CustomerDashboard() {
         </div>
       )}
 
-      {errorMessage && (
-        <div style={{
-          background: 'var(--error-bg)', border: '1px solid var(--error-border)', color: 'var(--error)',
-          padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem',
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8125rem'
-        }}>
-          <span>{errorMessage}</span>
-          <button onClick={fetchMyBookings} className="btn btn-secondary btn-sm" style={{ padding: '0.2rem 0.5rem' }}>
-            Retry
-          </button>
-        </div>
-      )}
+      {/* TAB 1: PROFILE SETTINGS VIEW */}
+      {activeTab === 'profile' ? (
+        <div className="grid-cols-2" style={{ gap: '1.5rem', alignItems: 'flex-start' }}>
+          {/* Left Column: User Summary Card */}
+          <div className="panel">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', marginBottom: '1.25rem' }}>
+              <div style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: 'var(--radius-sm)',
+                backgroundColor: 'var(--primary-subtle)',
+                color: 'var(--primary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 700,
+                fontSize: '1.35rem',
+                border: '1px solid var(--border-light)'
+              }}>
+                {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
+              </div>
+              <div>
+                <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
+                  {currentUser?.name || 'Account User'}
+                </h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.25rem' }}>
+                  <span className="badge badge-assigned" style={{ textTransform: 'uppercase' }}>
+                    {currentUser?.role || 'CUSTOMER'}
+                  </span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    {currentUser?.city ? `${currentUser.city} • ${currentUser.pincode || ''}` : 'Location Not Configured'}
+                  </span>
+                </div>
+              </div>
+            </div>
 
-      {loading ? (
-        <div className="panel" style={{ height: '300px', display: 'flex', flexDirection: 'column', gap: '1rem', justifyContent: 'center', alignItems: 'center' }}>
-          <div className="skeleton" style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
-          <div className="skeleton" style={{ width: '200px', height: '16px' }} />
-        </div>
-      ) : bookings.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-state-icon">
-            <Calendar size={22} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem', marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8125rem' }}>
+                <span style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <Mail size={14} /> Email Address:
+                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{currentUser?.email}</span>
+                  {currentUser?.emailVerified ? (
+                    <span className="badge badge-completed" style={{ fontSize: '0.68rem', padding: '0.1rem 0.35rem' }}>
+                      <Check size={11} /> Verified
+                    </span>
+                  ) : (
+                    <Link to={`/verify-email?email=${encodeURIComponent(currentUser?.email || '')}`} className="badge badge-pending" style={{ fontSize: '0.68rem', padding: '0.1rem 0.35rem', textDecoration: 'none' }}>
+                      Verify
+                    </Link>
+                  )}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8125rem' }}>
+                <span style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <Phone size={14} /> Phone Number:
+                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>
+                    {currentUser?.phone && !currentUser.phone.startsWith('NA-') ? currentUser.phone : 'Not set'}
+                  </span>
+                  {currentUser?.phoneVerified ? (
+                    <span className="badge badge-completed" style={{ fontSize: '0.68rem', padding: '0.1rem 0.35rem' }}>
+                      <Check size={11} /> Verified
+                    </span>
+                  ) : currentUser?.phone && !currentUser.phone.startsWith('NA-') ? (
+                    <Link to={`/verify-phone?type=phone&phone=${encodeURIComponent(currentUser?.phone || '')}`} className="badge badge-pending" style={{ fontSize: '0.68rem', padding: '0.1rem 0.35rem', textDecoration: 'none' }}>
+                      Verify
+                    </Link>
+                  ) : null}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8125rem' }}>
+                <span style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <ShieldCheck size={14} /> Account Status:
+                </span>
+                <span className="badge badge-completed" style={{ fontSize: '0.68rem', padding: '0.1rem 0.35rem' }}>
+                  Active Customer
+                </span>
+              </div>
+            </div>
+
+            <div style={{ background: 'var(--bg-subtle)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '0.2rem' }}>
+                <Lock size={13} color="var(--primary)" />
+                <span>Security & Credentials</span>
+              </div>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0 0 0.5rem 0' }}>
+                Need to change your account password or recovery credentials?
+              </p>
+              <Link to="/forgot-password" className="btn btn-secondary btn-sm" style={{ width: '100%', fontSize: '0.75rem' }}>
+                Reset / Change Password
+              </Link>
+            </div>
           </div>
-          <h3 className="empty-state-title">No bookings yet</h3>
-          <p className="empty-state-description">
-            You haven't placed any bookings yet. Choose from our verified services catalog to get started.
-          </p>
-          <Link to="/" className="btn btn-primary btn-sm">Browse Services</Link>
+
+          {/* Right Column: Edit Profile Form */}
+          <form onSubmit={handleUpdateProfile} className="panel">
+            <div className="panel-header">
+              <h3 className="panel-title">
+                <Settings size={16} color="var(--primary)" />
+                <span>Personal Information & Defaults</span>
+              </h3>
+            </div>
+
+            {profileSuccessMsg && (
+              <div style={{ padding: '0.75rem 1rem', background: 'var(--success-bg)', border: '1px solid var(--success-border)', color: 'var(--success)', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', fontSize: '0.8125rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <CheckCircle2 size={16} />
+                <span>{profileSuccessMsg}</span>
+              </div>
+            )}
+
+            {profileErrorMsg && (
+              <div style={{ padding: '0.75rem 1rem', background: 'var(--error-bg)', border: '1px solid var(--error-border)', color: 'var(--error)', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', fontSize: '0.8125rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <AlertCircle size={16} />
+                <span>{profileErrorMsg}</span>
+              </div>
+            )}
+
+            <div className="form-group">
+              <label className="form-label">Full Name *</label>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="e.g. John Doe"
+                value={profileName}
+                onChange={(e) => setProfileName(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">
+                <span>Email Address (Account ID)</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Registered Email</span>
+              </label>
+              <input
+                type="email"
+                className="form-control"
+                value={currentUser?.email || ''}
+                disabled
+                style={{ opacity: 0.7, cursor: 'not-allowed', backgroundColor: 'var(--bg-subtle)' }}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">
+                <span>Mobile Phone Number</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>For Live SMS Alerts</span>
+              </label>
+              <input
+                type="tel"
+                className="form-control"
+                placeholder="e.g. 9876543210"
+                value={profilePhone}
+                onChange={(e) => setProfilePhone(e.target.value)}
+              />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">Default City</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="e.g. Indore"
+                  value={profileCity}
+                  onChange={(e) => setProfileCity(e.target.value)}
+                />
+              </div>
+
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">Default Pincode</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="e.g. 452001"
+                  value={profilePincode}
+                  onChange={(e) => setProfilePincode(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{ width: '100%', padding: '0.65rem' }}
+              disabled={savingProfile || !profileName.trim()}
+            >
+              <Save size={15} />
+              <span>{savingProfile ? 'Saving Changes...' : 'Save Profile Settings'}</span>
+            </button>
+          </form>
         </div>
       ) : (
+        /* TAB 2: MY BOOKINGS LIST VIEW */
+        <div>
+          {errorMessage && (
+            <div style={{
+              background: 'var(--error-bg)', border: '1px solid var(--error-border)', color: 'var(--error)',
+              padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8125rem'
+            }}>
+              <span>{errorMessage}</span>
+              <button onClick={fetchMyBookings} className="btn btn-secondary btn-sm" style={{ padding: '0.2rem 0.5rem' }}>
+                Retry
+              </button>
+            </div>
+          )}
+
+          {loading ? (
+            <div className="panel" style={{ height: '300px', display: 'flex', flexDirection: 'column', gap: '1rem', justifyContent: 'center', alignItems: 'center' }}>
+              <div className="skeleton" style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
+              <div className="skeleton" style={{ width: '200px', height: '16px' }} />
+            </div>
+          ) : bookings.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-state-icon">
+                <Calendar size={22} />
+              </div>
+              <h3 className="empty-state-title">No bookings yet</h3>
+              <p className="empty-state-description">
+                You haven't placed any bookings yet. Choose from our verified services catalog to get started.
+              </p>
+              <Link to="/" className="btn btn-primary btn-sm">Browse Services</Link>
+            </div>
+          ) : (
         <div className="table-container">
           <table className="enterprise-table">
             <thead>
@@ -393,6 +702,8 @@ export default function CustomerDashboard() {
           />
         </div>
       )}
+    </div>
+  )}
 
       {/* Booking Details Modal */}
       {selectedBooking && (

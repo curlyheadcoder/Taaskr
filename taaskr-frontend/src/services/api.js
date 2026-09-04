@@ -82,6 +82,21 @@ export const api = {
       return makeRequest('/api/auth/me');
     },
 
+    updateProfile: async (data) => {
+      const res = await makeRequest('/api/auth/profile', {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+      if (res) {
+        // Update local storage user details if available
+        try {
+          const cached = JSON.parse(localStorage.getItem('taaskr_current_user') || '{}');
+          localStorage.setItem('taaskr_current_user', JSON.stringify({ ...cached, ...res }));
+        } catch (e) {}
+      }
+      return res;
+    },
+
     sendVerificationOtp: async (email) => {
       return makeRequest('/api/auth/send-verification-otp', {
         method: 'POST',

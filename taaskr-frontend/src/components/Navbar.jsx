@@ -730,7 +730,11 @@ export default function Navbar() {
 
         {user ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <Link
+              to={user.role === 'PROVIDER' ? '/provider' : user.role === 'ADMIN' ? '/admin' : '/profile'}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', textDecoration: 'none', color: 'inherit' }}
+              title="View & Edit Profile Settings"
+            >
               <div style={{
                 width: '32px',
                 height: '32px',
@@ -756,9 +760,8 @@ export default function Navbar() {
                       <ShieldCheck size={14} />
                     </span>
                   ) : (
-                    <Link
-                      to={!user.emailVerified ? `/verify-email?email=${encodeURIComponent(user.email || '')}` : `/verify-phone?type=phone&phone=${encodeURIComponent(user.phone || '')}`}
-                      title={!user.emailVerified ? "Email Unverified - Click to Verify" : "Phone Unverified - Click to Verify"}
+                    <span
+                      title={!user.emailVerified ? "Email Unverified" : "Phone Unverified"}
                       style={{
                         fontSize: '0.65rem',
                         background: 'var(--warning-bg)',
@@ -766,12 +769,11 @@ export default function Navbar() {
                         border: '1px solid var(--warning-border)',
                         padding: '0.08rem 0.35rem',
                         borderRadius: '4px',
-                        fontWeight: 600,
-                        textDecoration: 'none'
+                        fontWeight: 600
                       }}
                     >
-                      {!user.emailVerified ? 'Verify Email' : 'Verify Phone'}
-                    </Link>
+                      Settings
+                    </span>
                   )}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
@@ -782,20 +784,11 @@ export default function Navbar() {
                     textTransform: 'uppercase',
                     letterSpacing: '0.04em'
                   }}>
-                    {user.role}
+                    {user.role === 'USER' ? 'Profile Settings' : user.role}
                   </span>
-                  {user.emailVerified && !user.phoneVerified && (
-                    <Link 
-                      to={`/verify-phone?type=phone&phone=${encodeURIComponent(user.phone || '')}`}
-                      style={{ fontSize: '0.68rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}
-                      title="Verify Phone Number"
-                    >
-                      • +Phone
-                    </Link>
-                  )}
                 </div>
               </div>
-            </div>
+            </Link>
 
             <button 
               onClick={handleLogout} 
