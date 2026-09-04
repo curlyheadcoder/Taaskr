@@ -175,369 +175,220 @@ export default function Home() {
     return { icon: <Hammer size={24} />, color: '#6366F1', bg: 'rgba(99, 102, 241, 0.15)' };
   };
 
-  const [searchFocused, setSearchFocused] = useState(false);
-
-  // Trending search chips
-  const trendingSearches = [
-    { label: 'Electrician', icon: '⚡' },
-    { label: 'AC Repair', icon: '❄️' },
-    { label: 'Mini Truck', icon: '🚚' },
-    { label: 'Plumbing', icon: '🚰' },
-    { label: 'Deep Cleaning', icon: '✨' },
-    { label: 'Diagnostics', icon: '🩺' }
-  ];
-
   return (
     <div className="animate-fade-in">
-      {/* Dynamic Production-Grade Hero Section */}
+      {/* Dynamic Y-Combinator Style Hero Section */}
       <section style={{
         position: 'relative',
-        background: 'radial-gradient(ellipse at 30% 20%, #1e1b4b 0%, #0f172a 50%, #020617 100%)',
-        overflow: 'visible',
-        padding: '5rem 2rem 5.5rem 2rem',
-        minHeight: '480px',
+        background: 'radial-gradient(ellipse at 30% 15%, #1e1b4b 0%, #0f172a 45%, #020617 100%)',
+        overflow: 'hidden',
+        padding: '5.5rem 2rem 6rem 2rem',
+        minHeight: '520px',
         display: 'flex',
         alignItems: 'center',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-        zIndex: 30
+        borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
       }}>
-        {/* Glow & Grid Boundary Container (Prevents background elements from overflowing viewport) */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          overflow: 'hidden',
-          pointerEvents: 'none',
-          zIndex: 1
-        }}>
-          {/* Dynamic Glowing Ambient Orbs */}
+        {/* Glowing Ambient Orbs */}
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 1 }}>
           <div className="hero-orb-1" style={{
-            position: 'absolute',
-            top: '-10%',
-            left: '15%',
-            width: '420px',
-            height: '420px',
-            background: 'radial-gradient(circle, rgba(56, 189, 248, 0.25) 0%, rgba(37, 99, 235, 0.08) 50%, transparent 70%)',
-            borderRadius: '50%',
-            filter: 'blur(50px)',
-            pointerEvents: 'none'
+            position: 'absolute', top: '-10%', left: '15%', width: '450px', height: '450px',
+            background: 'radial-gradient(circle, rgba(56, 189, 248, 0.22) 0%, rgba(37, 99, 235, 0.06) 50%, transparent 70%)',
+            borderRadius: '50%', filter: 'blur(50px)'
           }} />
-          
           <div className="hero-orb-2" style={{
-            position: 'absolute',
-            bottom: '-15%',
-            right: '10%',
-            width: '480px',
-            height: '480px',
-            background: 'radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, rgba(99, 102, 241, 0.06) 50%, transparent 70%)',
-            borderRadius: '50%',
-            filter: 'blur(60px)',
-            pointerEvents: 'none'
+            position: 'absolute', bottom: '-15%', right: '10%', width: '500px', height: '500px',
+            background: 'radial-gradient(circle, rgba(168, 85, 247, 0.18) 0%, rgba(99, 102, 241, 0.05) 50%, transparent 70%)',
+            borderRadius: '50%', filter: 'blur(60px)'
           }} />
-
-          <div className="hero-orb-3" style={{
-            position: 'absolute',
-            top: '20%',
-            right: '35%',
-            width: '320px',
-            height: '320px',
-            background: 'radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, transparent 70%)',
-            borderRadius: '50%',
-            filter: 'blur(45px)',
-            pointerEvents: 'none'
-          }} />
-
-          {/* Blueprint Grid Overlay */}
-          <div className="hero-grid-pattern" style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            pointerEvents: 'none'
-          }} />
+          <div className="hero-grid-pattern" style={{ position: 'absolute', inset: 0 }} />
         </div>
 
         {/* Hero Content Container */}
-        <div style={{ maxWidth: '1280px', margin: '0 auto', width: '100%', position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '3rem' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', width: '100%', position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '3.5rem' }}>
           
-          {/* Left Column: Headline & Search */}
+          {/* Left Column: YC-Style Typography & Primary CTAs */}
           <div style={{ flex: '1 1 540px', maxWidth: '640px' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(59, 130, 246, 0.15)', border: '1px solid rgba(59, 130, 246, 0.3)', borderRadius: '9999px', padding: '0.35rem 0.9rem', marginBottom: '1.25rem', backdropFilter: 'blur(8px)' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#38BDF8', display: 'inline-block', boxShadow: '0 0 10px #38BDF8' }} />
-              <span style={{ color: '#93C5FD', fontSize: '0.8rem', fontWeight: 600, letterSpacing: '0.02em' }}>
-                Verified On-Demand Service Network
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.55rem',
+              background: 'rgba(59, 130, 246, 0.12)',
+              border: '1px solid rgba(59, 130, 246, 0.28)',
+              borderRadius: '9999px',
+              padding: '0.35rem 0.95rem',
+              marginBottom: '1.35rem',
+              backdropFilter: 'blur(10px)'
+            }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block', boxShadow: '0 0 10px #10B981' }} />
+              <span style={{ color: '#93C5FD', fontSize: '0.8125rem', fontWeight: 600, letterSpacing: '0.02em' }}>
+                Instant Dispatch Network • 99.4% On-Time SLA
               </span>
             </div>
 
             <h1 style={{
-              fontSize: 'clamp(2.3rem, 4vw, 3.4rem)',
+              fontSize: 'clamp(2.5rem, 4.5vw, 3.8rem)',
               fontWeight: 800,
               color: '#ffffff',
-              lineHeight: 1.12,
-              marginBottom: '1.15rem',
-              letterSpacing: '-0.03em'
+              lineHeight: 1.1,
+              marginBottom: '1.25rem',
+              letterSpacing: '-0.035em'
             }}>
-              Trusted Services.<br />
+              On-Demand Services.<br />
               <span style={{
                 background: 'linear-gradient(135deg, #60A5FA 0%, #A78BFA 50%, #38BDF8 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
               }}>
-                Right at Your Door.
+                Engineered for Speed.
               </span>
             </h1>
 
             <p style={{
-              fontSize: '1.08rem',
+              fontSize: '1.1rem',
               color: '#94A3B8',
-              marginBottom: '2rem',
+              marginBottom: '2.25rem',
               lineHeight: 1.6,
               maxWidth: '520px'
             }}>
-              Book top-rated verified professionals for home repairs, electrical, AC servicing, and freight logistics in under 60 seconds.
+              The modern platform for verified home repairs, electrical, HVAC cooling, and freight logistics. Upfront pricing, vetted specialists, dispatched to your doorstep in under 60 seconds.
             </p>
 
-            {/* Upgraded Command-Center Search Bar */}
-            <div style={{ position: 'relative', maxWidth: '540px' }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                backgroundColor: '#FFFFFF',
-                borderRadius: '12px',
-                padding: '0.45rem 0.6rem 0.45rem 1rem',
-                gap: '0.75rem',
-                boxShadow: searchFocused
-                  ? '0 0 0 3px rgba(96, 165, 250, 0.5), 0 20px 25px -5px rgba(0, 0, 0, 0.5)'
-                  : '0 12px 28px -5px rgba(0,0,0,0.4)',
-                transition: 'all 0.2s ease',
-                border: '1px solid rgba(255, 255, 255, 0.2)'
-              }}>
-                <Search size={20} color="#64748B" style={{ flexShrink: 0 }} />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onFocus={() => setSearchFocused(true)}
-                  onBlur={() => setTimeout(() => setSearchFocused(false), 250)}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search services (e.g. Electrician, Mini Truck, AC Repair)..."
-                  style={{
-                    border: 'none',
-                    background: 'transparent',
-                    outline: 'none',
-                    width: '100%',
-                    fontSize: '0.9375rem',
-                    color: '#0F172A',
-                    fontWeight: 500
-                  }}
-                />
-                {searchQuery ? (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    style={{
-                      background: 'rgba(100, 116, 139, 0.12)',
-                      border: 'none',
-                      borderRadius: '6px',
-                      color: '#475569',
-                      cursor: 'pointer',
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      padding: '0.3rem 0.6rem',
-                      flexShrink: 0
-                    }}
-                  >
-                    Clear
-                  </button>
-                ) : (
-                  <button
-                    className="btn btn-primary btn-sm"
-                    style={{ padding: '0.45rem 0.9rem', fontSize: '0.8rem', borderRadius: '8px', flexShrink: 0 }}
-                  >
-                    Search
-                  </button>
-                )}
+            {/* High-Converting CTA Button Group */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '2.5rem' }}>
+              <button
+                onClick={() => {
+                  const elem = document.getElementById('services-catalog');
+                  if (elem) elem.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="btn btn-primary"
+                style={{
+                  padding: '0.85rem 1.6rem',
+                  fontSize: '0.95rem',
+                  fontWeight: 700,
+                  borderRadius: '10px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  boxShadow: '0 0 25px rgba(59, 130, 246, 0.45)',
+                  cursor: 'pointer'
+                }}
+              >
+                <span>Explore Services</span>
+                <ArrowRight size={17} />
+              </button>
+
+              <button
+                onClick={() => navigate('/register?role=PROVIDER')}
+                className="btn btn-secondary"
+                style={{
+                  padding: '0.85rem 1.5rem',
+                  fontSize: '0.95rem',
+                  fontWeight: 600,
+                  borderRadius: '10px',
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  color: '#F1F5F9',
+                  backdropFilter: 'blur(8px)',
+                  cursor: 'pointer'
+                }}
+              >
+                Join as Partner
+              </button>
+            </div>
+
+            {/* Trust Highlights Strip */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1.75rem',
+              flexWrap: 'wrap',
+              borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+              paddingTop: '1.25rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#CBD5E1', fontSize: '0.8125rem' }}>
+                <ShieldCheck size={16} color="#10B981" />
+                <span>100% Background Checked</span>
               </div>
-
-              {/* Autocomplete Suggestions Dropdown - Floating above all sections */}
-              {searchFocused && searchQuery.trim().length > 0 && (
-                <div style={{
-                  position: 'absolute',
-                  top: 'calc(100% + 8px)',
-                  left: 0,
-                  right: 0,
-                  backgroundColor: '#FFFFFF',
-                  borderRadius: '14px',
-                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.1)',
-                  border: '1px solid #E2E8F0',
-                  maxHeight: '380px',
-                  overflowY: 'auto',
-                  zIndex: 99999,
-                  padding: '0.6rem'
-                }}>
-                  {searchDropdownResults.length === 0 ? (
-                    <div style={{ padding: '1.25rem 1rem', textAlign: 'center', color: '#64748B', fontSize: '0.875rem' }}>
-                      <p style={{ margin: 0, fontWeight: 600, color: '#334155' }}>No services found for "{searchQuery}"</p>
-                      <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.75rem', color: '#94A3B8' }}>Try searching for "AC Repair", "Electrician", "Plumbing", "Cleaning", or "Truck"</p>
-                    </div>
-                  ) : (
-                    <div>
-                      <div style={{ 
-                        padding: '0.4rem 0.75rem 0.5rem 0.75rem', 
-                        fontSize: '0.72rem', 
-                        fontWeight: 700, 
-                        textTransform: 'uppercase', 
-                        letterSpacing: '0.05em', 
-                        color: '#64748B',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        borderBottom: '1px solid #F1F5F9',
-                        marginBottom: '0.35rem'
-                      }}>
-                        <span>Matching Services ({searchDropdownResults.length})</span>
-                        <span style={{ background: '#F1F5F9', padding: '0.15rem 0.5rem', borderRadius: '9999px', fontSize: '0.7rem', color: '#475569', fontWeight: 600 }}>
-                          Select to view
-                        </span>
-                      </div>
-                      {searchDropdownResults.map((service) => {
-                        const cat = categories.find(c => c.id === service.categoryId);
-                        const cfg = getServiceConfig(service.name, cat?.name);
-                        return (
-                          <div
-                            key={service.id}
-                            className="search-dropdown-card"
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              navigate(`/services/${service.id}`);
-                            }}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              padding: '0.65rem 0.75rem',
-                              borderRadius: '10px',
-                              cursor: 'pointer',
-                              gap: '0.75rem',
-                              transition: 'background-color 0.15s ease'
-                            }}
-                          >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
-                              <div style={{
-                                width: '36px',
-                                height: '36px',
-                                borderRadius: '10px',
-                                backgroundColor: cfg.bg,
-                                color: cfg.color,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                flexShrink: 0
-                              }}>
-                                {React.cloneElement(cfg.icon, { size: 18 })}
-                              </div>
-                              <div style={{ minWidth: 0 }}>
-                                <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                  {service.name}
-                                </div>
-                                <div style={{ fontSize: '0.75rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                  <span>{cat?.name || 'General Service'}</span>
-                                  {service.durationMinutes ? <span>• {service.durationMinutes} mins</span> : null}
-                                </div>
-                              </div>
-                            </div>
-                            <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                              <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#2563EB' }}>
-                                ₹{service.price}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Quick Trending Filter Pills */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginTop: '1rem', flexWrap: 'wrap' }}>
-                <span style={{ color: '#94A3B8', fontSize: '0.78rem', fontWeight: 500, marginRight: '0.2rem' }}>
-                  Popular:
-                </span>
-                {trendingSearches.map((chip, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      setSearchQuery(chip.label);
-                      setSelectedCategory(null);
-                      setSearchFocused(true);
-                    }}
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.08)',
-                      border: '1px solid rgba(255, 255, 255, 0.12)',
-                      color: '#E2E8F0',
-                      borderRadius: '9999px',
-                      padding: '0.25rem 0.65rem',
-                      fontSize: '0.75rem',
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.3rem',
-                      transition: 'all 0.15s ease',
-                      backdropFilter: 'blur(4px)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.18)';
-                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
-                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)';
-                    }}
-                  >
-                    <span>{chip.icon}</span>
-                    <span>{chip.label}</span>
-                  </button>
-                ))}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#CBD5E1', fontSize: '0.8125rem' }}>
+                <Zap size={16} color="#EAB308" />
+                <span>&lt;45 min Avg Dispatch</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#CBD5E1', fontSize: '0.8125rem' }}>
+                <CreditCard size={16} color="#38BDF8" />
+                <span>Cash After Service</span>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Dynamic Glassmorphic Stats Grid */}
-          <div style={{ flex: '1 1 360px', maxWidth: '440px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {/* Right Column: YC-Style Live Operations Dashboard Widget */}
+          <div style={{ flex: '1 1 380px', maxWidth: '460px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{
-              background: 'rgba(15, 23, 42, 0.65)',
+              background: 'rgba(15, 23, 42, 0.7)',
               border: '1px solid rgba(255, 255, 255, 0.12)',
-              backdropFilter: 'blur(16px)',
-              borderRadius: '16px',
-              padding: '1.4rem',
-              boxShadow: '0 20px 35px -10px rgba(0, 0, 0, 0.4)'
+              backdropFilter: 'blur(20px)',
+              borderRadius: '18px',
+              padding: '1.5rem',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-                  <Zap size={22} />
+              {/* Telemetry Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', paddingBottom: '0.85rem', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block', boxShadow: '0 0 8px #10B981' }} />
+                  <span style={{ color: '#F8FAFC', fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                    Live Telemetry
+                  </span>
                 </div>
-                <div>
-                  <h3 style={{ color: '#fff', fontSize: '1rem', fontWeight: 700, margin: 0 }}>Instant Dispatch</h3>
-                  <p style={{ color: '#94A3B8', fontSize: '0.78rem', margin: '2px 0 0 0' }}>Average 45 mins arrival time</p>
+                <span style={{ fontSize: '0.72rem', color: '#94A3B8', fontFamily: 'monospace', background: 'rgba(255, 255, 255, 0.06)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                  v2.4 ACTIVE
+                </span>
+              </div>
+
+              {/* Real-time stats row */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+                <div style={{ background: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', padding: '0.9rem', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                  <div style={{ color: '#38BDF8', fontSize: '1.4rem', fontWeight: 800 }}>5,000+</div>
+                  <div style={{ color: '#94A3B8', fontSize: '0.75rem', fontWeight: 500 }}>Verified Partners</div>
+                </div>
+                <div style={{ background: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', padding: '0.9rem', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                  <div style={{ color: '#FBBF24', fontSize: '1.4rem', fontWeight: 800 }}>4.92 ★</div>
+                  <div style={{ color: '#94A3B8', fontSize: '0.75rem', fontWeight: 500 }}>Customer Rating</div>
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <div style={{ background: 'rgba(255, 255, 255, 0.04)', borderRadius: '10px', padding: '0.85rem', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
-                  <div style={{ color: '#38BDF8', fontSize: '1.35rem', fontWeight: 800 }}>5,000+</div>
-                  <div style={{ color: '#94A3B8', fontSize: '0.72rem' }}>Verified Partners</div>
+              {/* Live Dispatch Feed Mockup */}
+              <div style={{ background: 'rgba(0, 0, 0, 0.3)', borderRadius: '12px', padding: '0.85rem', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: '#64748B', fontWeight: 700, marginBottom: '0.5rem', letterSpacing: '0.05em' }}>
+                  Recent Live Dispatches
                 </div>
-                <div style={{ background: 'rgba(255, 255, 255, 0.04)', borderRadius: '10px', padding: '0.85rem', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
-                  <div style={{ color: '#FBBF24', fontSize: '1.35rem', fontWeight: 800 }}>4.9 ★</div>
-                  <div style={{ color: '#94A3B8', fontSize: '0.72rem' }}>Service Rating</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.78rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#E2E8F0' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <span style={{ color: '#38BDF8' }}>❄️</span> AC Jet Servicing
+                    </span>
+                    <span style={{ color: '#10B981', fontSize: '0.7rem', fontWeight: 600 }}>Matched (2m ago)</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#E2E8F0' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <span style={{ color: '#F59E0B' }}>🚚</span> Mini Truck (1 Ton)
+                    </span>
+                    <span style={{ color: '#38BDF8', fontSize: '0.7rem', fontWeight: 600 }}>In Transit (5m ago)</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#E2E8F0' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <span style={{ color: '#EAB308' }}>⚡</span> Circuit Board Repair
+                    </span>
+                    <span style={{ color: '#A855F7', fontSize: '0.7rem', fontWeight: 600 }}>Completed</span>
+                  </div>
                 </div>
               </div>
             </div>
 
+            {/* Shield Insurance Guarantee Pill */}
             <div style={{
-              background: 'rgba(15, 23, 42, 0.45)',
+              background: 'rgba(15, 23, 42, 0.5)',
               border: '1px solid rgba(255, 255, 255, 0.08)',
               backdropFilter: 'blur(12px)',
-              borderRadius: '12px',
+              borderRadius: '14px',
               padding: '0.85rem 1.15rem',
               display: 'flex',
               alignItems: 'center',
@@ -545,44 +396,64 @@ export default function Home() {
             }}>
               <ShieldCheck size={20} color="#10B981" style={{ flexShrink: 0 }} />
               <span style={{ color: '#CBD5E1', fontSize: '0.8125rem' }}>
-                <strong>Taaskr Shield:</strong> 100% background checked & insured work.
+                <strong>Taaskr Shield:</strong> ₹50,000 damage protection guarantee on every job.
               </span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Trust Highlights Strip */}
-      <section style={{ background: 'var(--bg-card)', padding: '2rem 1.5rem', borderBottom: '1px solid var(--border-light)' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.5rem' }}>
-          {[
-            { icon: <ShieldCheck size={24} color="var(--success)" />, title: 'Verified Professionals', desc: 'Background checked & highly rated' },
-            { icon: <Tag size={24} color="var(--primary)" />, title: 'Transparent Pricing', desc: 'No hidden fees or surprise charges' },
-            { icon: <CreditCard size={24} color="#0284C7" />, title: 'Secure Booking', desc: 'Pay safely online or after service' },
-            { icon: <Star size={24} color="#D97706" />, title: 'Reliable Service', desc: 'Guaranteed quality execution' }
-          ].map((item, idx) => (
-            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flex: 1, minWidth: '220px' }}>
-              <div style={{ background: 'var(--bg-subtle)', padding: '0.85rem', borderRadius: 'var(--radius-sm)' }}>{item.icon}</div>
-              <div>
-                <h4 style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.15rem' }}>{item.title}</h4>
-                <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: 0 }}>{item.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Main Services Area with Category Tiles */}
-      <main className="app-container" style={{ paddingTop: '3.5rem', paddingBottom: '5rem' }}>
+      {/* Main Services Area with Category Tiles & Integrated Search */}
+      <main id="services-catalog" className="app-container" style={{ paddingTop: '4rem', paddingBottom: '5rem' }}>
         
         {/* Section Header */}
         <div style={{ textAlign: 'center', marginBottom: '2.5rem', maxWidth: '750px', margin: '0 auto 2.5rem auto' }}>
-          <h2 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--text-main)' }}>
-            Services That Make Life Easier
+          <h2 style={{ fontSize: '2.25rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+            Explore Verified Services
           </h2>
-          <p style={{ fontSize: '0.9375rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-            Find trusted professionals for your everyday needs — from home repairs to maintenance and transport.
+          <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+            Select a service category or filter by name to instantly dispatch top-rated professionals.
           </p>
+        </div>
+
+        {/* Integrated Clean Search & Filter Control Bar */}
+        <div style={{ maxWidth: '640px', margin: '0 auto 2.5rem auto' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: 'var(--bg-card)',
+            borderRadius: '12px',
+            padding: '0.45rem 0.6rem 0.45rem 1rem',
+            gap: '0.75rem',
+            boxShadow: '0 4px 20px -2px rgba(0, 0, 0, 0.1)',
+            border: '1px solid var(--border-light)'
+          }}>
+            <Search size={18} color="var(--text-muted)" style={{ flexShrink: 0 }} />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by service name, category, or keyword..."
+              style={{
+                border: 'none',
+                background: 'transparent',
+                outline: 'none',
+                width: '100%',
+                fontSize: '0.9rem',
+                color: 'var(--text-main)',
+                fontWeight: 500
+              }}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="btn btn-ghost btn-sm"
+                style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', color: 'var(--text-muted)' }}
+              >
+                Clear
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Service Categories Dynamic Tiles */}
