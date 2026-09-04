@@ -1024,7 +1024,7 @@ button, input, select, textarea {
 }
 
 .search-dropdown-card:hover {
-  background-color: var(--bg-subtle) !important;
+  background-color: #F1F5F9 !important;
   transform: translateX(3px);
 }
 

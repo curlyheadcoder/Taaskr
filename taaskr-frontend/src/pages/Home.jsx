@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
+import Pagination from '../components/Pagination';
 import { 
   Search, ShieldCheck, Tag, CreditCard, Star, LayoutList, 
   Sparkles, Droplets, Zap, Paintbrush, Leaf, Truck, Settings, 
@@ -14,6 +15,15 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+
+  // Pagination state for services catalog grid
+  const [servicesPage, setServicesPage] = useState(1);
+  const servicesPerPage = 8;
+
+  // Reset page when filtering or searching
+  useEffect(() => {
+    setServicesPage(1);
+  }, [selectedCategory, searchQuery]);
 
   useEffect(() => {
     const checkRoleAndLoadCatalog = async () => {
@@ -48,11 +58,27 @@ export default function Home() {
     checkRoleAndLoadCatalog();
   }, [navigate]);
 
+  // Comprehensive multi-token search matcher across service name, description, category name, and keywords
+  const doesServiceMatch = (service, query) => {
+    if (!query || !query.trim()) return true;
+    const qTokens = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    const cat = categories.find(c => c.id === service.categoryId);
+    const catName = (cat?.name || '').toLowerCase();
+    const sName = (service.name || '').toLowerCase();
+    const sDesc = (service.description || '').toLowerCase();
+    const fullText = `${sName} ${catName} ${sDesc}`;
+
+    return qTokens.every(token => fullText.includes(token));
+  };
+
+  // Dropdown searches globally across all services
+  const searchDropdownResults = searchQuery.trim() === ''
+    ? []
+    : services.filter(service => doesServiceMatch(service, searchQuery));
+
   const filteredServices = services.filter(service => {
     const matchesCategory = selectedCategory ? service.categoryId === selectedCategory : true;
-    const matchesSearch = searchQuery.trim() === '' || 
-      service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      service.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = searchQuery.trim() === '' || doesServiceMatch(service, searchQuery);
     return matchesCategory && matchesSearch;
   });
 
@@ -127,7 +153,7 @@ export default function Home() {
       return { icon: <Activity size={24} />, color: '#EF4444', bg: 'rgba(239, 68, 68, 0.15)' };
     }
     if (cat.includes('health') || name.includes('patient') || name.includes('doctor') || name.includes('nurse') || name.includes('compounder')) {
-      return { icon: <Stethoscope size={24} />, color: '#10B981', bg: 'rgba(16, 185, 129, 0.15)' };
+      return { icon: <Stethoscope size={24} />, color: '#10B981', bg: 'rgba(168, 185, 129, 0.15)' };
     }
 
     // 10. Appliances (Washing Machine, Microwave, TV, Chimney)
@@ -167,63 +193,69 @@ export default function Home() {
       <section style={{
         position: 'relative',
         background: 'radial-gradient(ellipse at 30% 20%, #1e1b4b 0%, #0f172a 50%, #020617 100%)',
-        overflow: 'hidden',
+        overflow: 'visible',
         padding: '5rem 2rem 5.5rem 2rem',
         minHeight: '480px',
         display: 'flex',
         alignItems: 'center',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
+        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+        zIndex: 30
       }}>
-        {/* Dynamic Glowing Ambient Orbs */}
-        <div className="hero-orb-1" style={{
+        {/* Glow & Grid Boundary Container (Prevents background elements from overflowing viewport) */}
+        <div style={{
           position: 'absolute',
-          top: '-10%',
-          left: '15%',
-          width: '420px',
-          height: '420px',
-          background: 'radial-gradient(circle, rgba(56, 189, 248, 0.25) 0%, rgba(37, 99, 235, 0.08) 50%, transparent 70%)',
-          borderRadius: '50%',
-          filter: 'blur(50px)',
+          inset: 0,
+          overflow: 'hidden',
           pointerEvents: 'none',
           zIndex: 1
-        }} />
-        
-        <div className="hero-orb-2" style={{
-          position: 'absolute',
-          bottom: '-15%',
-          right: '10%',
-          width: '480px',
-          height: '480px',
-          background: 'radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, rgba(99, 102, 241, 0.06) 50%, transparent 70%)',
-          borderRadius: '50%',
-          filter: 'blur(60px)',
-          pointerEvents: 'none',
-          zIndex: 1
-        }} />
+        }}>
+          {/* Dynamic Glowing Ambient Orbs */}
+          <div className="hero-orb-1" style={{
+            position: 'absolute',
+            top: '-10%',
+            left: '15%',
+            width: '420px',
+            height: '420px',
+            background: 'radial-gradient(circle, rgba(56, 189, 248, 0.25) 0%, rgba(37, 99, 235, 0.08) 50%, transparent 70%)',
+            borderRadius: '50%',
+            filter: 'blur(50px)',
+            pointerEvents: 'none'
+          }} />
+          
+          <div className="hero-orb-2" style={{
+            position: 'absolute',
+            bottom: '-15%',
+            right: '10%',
+            width: '480px',
+            height: '480px',
+            background: 'radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, rgba(99, 102, 241, 0.06) 50%, transparent 70%)',
+            borderRadius: '50%',
+            filter: 'blur(60px)',
+            pointerEvents: 'none'
+          }} />
 
-        <div className="hero-orb-3" style={{
-          position: 'absolute',
-          top: '20%',
-          right: '35%',
-          width: '320px',
-          height: '320px',
-          background: 'radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, transparent 70%)',
-          borderRadius: '50%',
-          filter: 'blur(45px)',
-          pointerEvents: 'none',
-          zIndex: 1
-        }} />
+          <div className="hero-orb-3" style={{
+            position: 'absolute',
+            top: '20%',
+            right: '35%',
+            width: '320px',
+            height: '320px',
+            background: 'radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, transparent 70%)',
+            borderRadius: '50%',
+            filter: 'blur(45px)',
+            pointerEvents: 'none'
+          }} />
 
-        {/* Blueprint Grid Overlay */}
-        <div className="hero-grid-pattern" style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          pointerEvents: 'none',
-          zIndex: 2
-        }} />
+          {/* Blueprint Grid Overlay */}
+          <div className="hero-grid-pattern" style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            pointerEvents: 'none'
+          }} />
+        </div>
 
         {/* Hero Content Container */}
         <div style={{ maxWidth: '1280px', margin: '0 auto', width: '100%', position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '3rem' }}>
@@ -285,7 +317,7 @@ export default function Home() {
                   type="text"
                   value={searchQuery}
                   onFocus={() => setSearchFocused(true)}
-                  onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
+                  onBlur={() => setTimeout(() => setSearchFocused(false), 250)}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search services (e.g. Electrician, Mini Truck, AC Repair)..."
                   style={{
@@ -325,7 +357,7 @@ export default function Home() {
                 )}
               </div>
 
-              {/* Autocomplete Suggestions Dropdown */}
+              {/* Autocomplete Suggestions Dropdown - Floating above all sections */}
               {searchFocused && searchQuery.trim().length > 0 && (
                 <div style={{
                   position: 'absolute',
@@ -333,46 +365,66 @@ export default function Home() {
                   left: 0,
                   right: 0,
                   backgroundColor: '#FFFFFF',
-                  borderRadius: '12px',
-                  boxShadow: '0 20px 30px -8px rgba(0, 0, 0, 0.35)',
+                  borderRadius: '14px',
+                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.1)',
                   border: '1px solid #E2E8F0',
-                  maxHeight: '320px',
+                  maxHeight: '380px',
                   overflowY: 'auto',
-                  zIndex: 50,
-                  padding: '0.5rem'
+                  zIndex: 99999,
+                  padding: '0.6rem'
                 }}>
-                  {filteredServices.length === 0 ? (
-                    <div style={{ padding: '1rem', textAlign: 'center', color: '#64748B', fontSize: '0.875rem' }}>
-                      No services found for "{searchQuery}"
+                  {searchDropdownResults.length === 0 ? (
+                    <div style={{ padding: '1.25rem 1rem', textAlign: 'center', color: '#64748B', fontSize: '0.875rem' }}>
+                      <p style={{ margin: 0, fontWeight: 600, color: '#334155' }}>No services found for "{searchQuery}"</p>
+                      <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.75rem', color: '#94A3B8' }}>Try searching for "AC Repair", "Electrician", "Plumbing", "Cleaning", or "Truck"</p>
                     </div>
                   ) : (
                     <div>
-                      <div style={{ padding: '0.4rem 0.75rem', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94A3B8' }}>
-                        Matching Services ({filteredServices.length})
+                      <div style={{ 
+                        padding: '0.4rem 0.75rem 0.5rem 0.75rem', 
+                        fontSize: '0.72rem', 
+                        fontWeight: 700, 
+                        textTransform: 'uppercase', 
+                        letterSpacing: '0.05em', 
+                        color: '#64748B',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        borderBottom: '1px solid #F1F5F9',
+                        marginBottom: '0.35rem'
+                      }}>
+                        <span>Matching Services ({searchDropdownResults.length})</span>
+                        <span style={{ background: '#F1F5F9', padding: '0.15rem 0.5rem', borderRadius: '9999px', fontSize: '0.7rem', color: '#475569', fontWeight: 600 }}>
+                          Select to view
+                        </span>
                       </div>
-                      {filteredServices.slice(0, 6).map((service) => {
+                      {searchDropdownResults.map((service) => {
                         const cat = categories.find(c => c.id === service.categoryId);
                         const cfg = getServiceConfig(service.name, cat?.name);
                         return (
                           <div
                             key={service.id}
                             className="search-dropdown-card"
-                            onMouseDown={() => navigate(`/services/${service.id}`)}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              navigate(`/services/${service.id}`);
+                            }}
                             style={{
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'space-between',
-                              padding: '0.6rem 0.75rem',
-                              borderRadius: '8px',
+                              padding: '0.65rem 0.75rem',
+                              borderRadius: '10px',
                               cursor: 'pointer',
-                              gap: '0.75rem'
+                              gap: '0.75rem',
+                              transition: 'background-color 0.15s ease'
                             }}
                           >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
                               <div style={{
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '8px',
+                                width: '36px',
+                                height: '36px',
+                                borderRadius: '10px',
                                 backgroundColor: cfg.bg,
                                 color: cfg.color,
                                 display: 'flex',
@@ -380,19 +432,20 @@ export default function Home() {
                                 justifyContent: 'center',
                                 flexShrink: 0
                               }}>
-                                {React.cloneElement(cfg.icon, { size: 16 })}
+                                {React.cloneElement(cfg.icon, { size: 18 })}
                               </div>
-                              <div>
-                                <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#0F172A' }}>
+                              <div style={{ minWidth: 0 }}>
+                                <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                   {service.name}
                                 </div>
-                                <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
-                                  {cat?.name || 'General Service'}
+                                <div style={{ fontSize: '0.75rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                  <span>{cat?.name || 'General Service'}</span>
+                                  {service.durationMinutes ? <span>• {service.durationMinutes} mins</span> : null}
                                 </div>
                               </div>
                             </div>
-                            <div style={{ textAlign: 'right' }}>
-                              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary)' }}>
+                            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                              <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#2563EB' }}>
                                 ₹{service.price}
                               </span>
                             </div>
@@ -414,8 +467,8 @@ export default function Home() {
                     key={idx}
                     onClick={() => {
                       setSearchQuery(chip.label);
-                      const matchedCat = categories.find(c => c.name.toLowerCase().includes(chip.label.toLowerCase()));
-                      if (matchedCat) setSelectedCategory(matchedCat.id);
+                      setSelectedCategory(null);
+                      setSearchFocused(true);
                     }}
                     style={{
                       background: 'rgba(255, 255, 255, 0.08)',
@@ -603,49 +656,57 @@ export default function Home() {
             </button>
           </div>
         ) : (
-          <div className="grid-cols-4">
-            {filteredServices.map((service) => {
-              const cat = categories.find(c => c.id === service.categoryId);
-              const config = getServiceConfig(service.name, cat?.name);
-              const priceUnit = service.pricingType === 'HOURLY' ? '/ hr' : service.pricingType === 'PER_KM' ? '/ km' : '';
+          <div>
+            <div className="grid-cols-4">
+              {filteredServices.slice((servicesPage - 1) * servicesPerPage, servicesPage * servicesPerPage).map((service) => {
+                const cat = categories.find(c => c.id === service.categoryId);
+                const config = getServiceConfig(service.name, cat?.name);
+                const priceUnit = service.pricingType === 'HOURLY' ? '/ hr' : service.pricingType === 'PER_KM' ? '/ km' : '';
 
-              return (
-                <div
-                  key={service.id}
-                  className="service-card"
-                  onClick={() => navigate(`/services/${service.id}`)}
-                >
-                  <div className="icon-squircle" style={{ backgroundColor: config.bg, color: config.color }}>
-                    {config.icon}
-                  </div>
-
-                  <h3 className="service-card-title">{service.name}</h3>
-                  <p className="service-card-desc">
-                    {service.description.length > 85 
-                      ? service.description.substring(0, 85) + '...' 
-                      : service.description}
-                  </p>
-
-                  <div className="service-card-footer">
-                    <div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>
-                        Starting from
-                      </div>
-                      <span className="service-price">
-                        ₹{service.price} {priceUnit}
-                      </span>
+                return (
+                  <div
+                    key={service.id}
+                    className="service-card"
+                    onClick={() => navigate(`/services/${service.id}`)}
+                  >
+                    <div className="icon-squircle" style={{ backgroundColor: config.bg, color: config.color }}>
+                      {config.icon}
                     </div>
-                    
-                    <button className="service-cta" style={{ color: config.color }} onClick={(e) => {
-                       e.stopPropagation();
-                       navigate(`/services/${service.id}`);
-                    }}>
-                      <span>View</span> <ArrowRight size={14} />
-                    </button>
+
+                    <h3 className="service-card-title">{service.name}</h3>
+                    <p className="service-card-desc">
+                      {service.description.length > 85 
+                        ? service.description.substring(0, 85) + '...' 
+                        : service.description}
+                    </p>
+
+                    <div className="service-card-footer">
+                      <div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>
+                          Starting from
+                        </div>
+                        <span className="service-price">
+                          ₹{service.price} {priceUnit}
+                        </span>
+                      </div>
+                      
+                      <button className="service-cta" style={{ color: config.color }} onClick={(e) => {
+                         e.stopPropagation();
+                         navigate(`/services/${service.id}`);
+                      }}>
+                        <span>View</span> <ArrowRight size={14} />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+            <Pagination
+              currentPage={servicesPage}
+              totalItems={filteredServices.length}
+              itemsPerPage={servicesPerPage}
+              onPageChange={setServicesPage}
+            />
           </div>
         )}
       </main>

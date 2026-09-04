@@ -3,6 +3,8 @@ import { api } from '../services/api';
 import { Link } from 'react-router-dom';
 import { formatLocalTime } from '../utils/time';
 import confetti from 'canvas-confetti';
+import Pagination from '../components/Pagination';
+import PaymentRestrictionModal from '../components/PaymentRestrictionModal';
 import { 
   Calendar, Clock, CreditCard, Star, Truck, MapPin, User, 
   ExternalLink, AlertCircle, CheckCircle2, ChevronRight, X, 
@@ -31,6 +33,12 @@ export default function CustomerDashboard() {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [payingBookingId, setPayingBookingId] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+
+  // Pagination & Modal state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentRestrictedBooking, setPaymentRestrictedBooking] = useState(null);
 
   const [ratingModalData, setRatingModalData] = useState(null);
   const [ratingValue, setRatingValue] = useState(5);
@@ -88,6 +96,12 @@ export default function CustomerDashboard() {
   };
 
   const handlePayNow = async (booking) => {
+    if (booking.paymentMethod === 'AFTER_SERVICE' && booking.status !== 'COMPLETED') {
+      setPaymentRestrictedBooking(booking);
+      setShowPaymentModal(true);
+      return;
+    }
+
     setPayingBookingId(booking.id);
     try {
       const scriptLoaded = await loadRazorpayScript();
@@ -149,7 +163,12 @@ export default function CustomerDashboard() {
       rzp.open();
 
     } catch (err) {
-      alert(err.message || 'Payment initiation failed.');
+      if (err.message && (err.message.includes('completed') || err.message.includes('after the service is completed') || err.message.includes('done'))) {
+        setPaymentRestrictedBooking(booking);
+        setShowPaymentModal(true);
+      } else {
+        alert(err.message || 'Payment initiation failed.');
+      }
       setPayingBookingId(null);
     }
   };
@@ -295,7 +314,7 @@ export default function CustomerDashboard() {
               </tr>
             </thead>
             <tbody>
-              {bookings.map((booking) => (
+              {bookings.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((booking) => (
                 <tr key={booking.id}>
                   <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--text-muted)' }}>
                     #{String(booking.id).slice(-6)}
@@ -365,6 +384,12 @@ export default function CustomerDashboard() {
               ))}
             </tbody>
           </table>
+          <Pagination
+            currentPage={currentPage}
+            totalItems={bookings.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
         </div>
       )}
 
@@ -558,6 +583,15 @@ export default function CustomerDashboard() {
           </div>
         </div>
       )}
+
+      {/* Pop-up Modal for Payment Collection Restriction */}
+      <PaymentRestrictionModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        booking={paymentRestrictedBooking}
+      />
     </div>
   );
 }
+
+

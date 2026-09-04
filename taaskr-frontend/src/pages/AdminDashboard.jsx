@@ -3,6 +3,7 @@ import { api } from '../services/api';
 import { formatLocalTime } from '../utils/time';
 import AnalyticsDashboardTab from '../components/admin/AnalyticsDashboardTab';
 import SystemObservabilityTab from '../components/admin/SystemObservabilityTab';
+import Pagination from '../components/Pagination';
 import { 
   BarChart3, Activity, Layers, Users, Briefcase, Plus, Trash2, 
   Edit2, Check, X, ShieldCheck, RefreshCw, DollarSign, Calendar, 
@@ -16,6 +17,13 @@ export default function AdminDashboard() {
   const [providers, setProviders] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Pagination states
+  const [servicesPage, setServicesPage] = useState(1);
+  const [providersPage, setProvidersPage] = useState(1);
+  const [bookingsPage, setBookingsPage] = useState(1);
+  const [usersPage, setUsersPage] = useState(1);
+  const itemsPerPage = 8;
 
   // Tabs: 'analytics', 'observability', 'catalog', 'providers', 'bookings', 'users'
   const [activeTab, setActiveTab] = useState('analytics');
@@ -438,7 +446,7 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {services.map((srv) => (
+                    {services.slice((servicesPage - 1) * itemsPerPage, servicesPage * itemsPerPage).map((srv) => (
                       <tr key={srv.id}>
                         <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{srv.name}</td>
                         <td style={{ color: 'var(--text-muted)' }}>{srv.category?.name || categories.find(c => c.id === srv.categoryId)?.name || 'General'}</td>
@@ -463,6 +471,12 @@ export default function AdminDashboard() {
                     ))}
                   </tbody>
                 </table>
+                <Pagination
+                  currentPage={servicesPage}
+                  totalItems={services.length}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={setServicesPage}
+                />
               </div>
             </div>
           </div>
@@ -484,7 +498,7 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {providers.map((p) => (
+                {providers.slice((providersPage - 1) * itemsPerPage, providersPage * itemsPerPage).map((p) => (
                   <tr key={p.id}>
                     <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{p.name}</td>
                     <td>
@@ -533,6 +547,12 @@ export default function AdminDashboard() {
                 ))}
               </tbody>
             </table>
+            <Pagination
+              currentPage={providersPage}
+              totalItems={providers.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setProvidersPage}
+            />
           </div>
         )}
 
@@ -553,7 +573,7 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {bookings.map((b) => (
+                {bookings.slice((bookingsPage - 1) * itemsPerPage, bookingsPage * itemsPerPage).map((b) => (
                   <tr key={b.id}>
                     <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--text-muted)' }}>
                       #{String(b.id).slice(-6)}
@@ -584,6 +604,12 @@ export default function AdminDashboard() {
                 ))}
               </tbody>
             </table>
+            <Pagination
+              currentPage={bookingsPage}
+              totalItems={bookings.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setBookingsPage}
+            />
           </div>
         )}
 
@@ -603,7 +629,7 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {users.map((u) => (
+                {users.slice((usersPage - 1) * itemsPerPage, usersPage * itemsPerPage).map((u) => (
                   <tr key={u.id}>
                     <td style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>#{u.id}</td>
                     <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{u.name}</td>
@@ -643,6 +669,12 @@ export default function AdminDashboard() {
                 ))}
               </tbody>
             </table>
+            <Pagination
+              currentPage={usersPage}
+              totalItems={users.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setUsersPage}
+            />
           </div>
         )}
       </main>
