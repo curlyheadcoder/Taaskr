@@ -97,6 +97,26 @@ export default function ServiceDetails() {
   const availableSlots = getAvailableSlots(selectedDate);
   const [selectedTime, setSelectedTime] = useState(availableSlots[0]?.value || '09:00');
 
+  // Vehicle Transport Specific State
+  const [isVehicleCategory, setIsVehicleCategory] = useState(false);
+  const [pickupAddress, setPickupAddress] = useState('');
+  const [pickupCity, setPickupCity] = useState('Indore');
+  const [pickupPincode, setPickupPincode] = useState('452001');
+  const [pickupCoords, setPickupCoords] = useState({ latitude: 22.7196, longitude: 75.8577 });
+  const [showPickupMap, setShowPickupMap] = useState(false);
+
+  const [dropAddress, setDropAddress] = useState('');
+  const [dropCity, setDropCity] = useState('Indore');
+  const [dropPincode, setDropPincode] = useState('452010');
+  const [dropCoords, setDropCoords] = useState({ latitude: 22.7533, longitude: 75.8937 });
+  const [showDropMap, setShowDropMap] = useState(false);
+
+  const [packageWeightKg, setPackageWeightKg] = useState('15');
+  const [packageDescription, setPackageDescription] = useState('');
+  const [estimating, setEstimating] = useState(false);
+  const [estimateResult, setEstimateResult] = useState(null);
+  const [selectedVehicleOption, setSelectedVehicleOption] = useState(null);
+
   // Keep selectedTime synchronized if selectedDate changes or current selection becomes unavailable
   useEffect(() => {
     const slots = getAvailableSlots(selectedDate);
