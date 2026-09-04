@@ -384,17 +384,8 @@ export default function Home() {
 
   return (
     <div className="animate-fade-in">
-      {/* Dynamic Y-Combinator Style Hero Section */}
-      <section style={{
-        position: 'relative',
-        background: 'radial-gradient(ellipse at 30% 15%, #1e1b4b 0%, #0f172a 45%, #020617 100%)',
-        overflow: 'hidden',
-        padding: '5.5rem 2rem 6rem 2rem',
-        minHeight: '520px',
-        display: 'flex',
-        alignItems: 'center',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
-      }}>
+      {/* Dynamic Responsive Hero Section */}
+      <section className="hero-section">
         {/* Glowing Ambient Orbs */}
         <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 1 }}>
           <div className="hero-orb-1" style={{
@@ -413,36 +404,19 @@ export default function Home() {
         {/* Hero Content Container */}
         <div style={{ maxWidth: '1280px', margin: '0 auto', width: '100%', position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '3.5rem' }}>
           
-          {/* Left Column: YC-Style Typography & Primary CTAs */}
+          {/* Left Column: Typography & Primary CTAs */}
           <div style={{ flex: '1 1 540px', maxWidth: '640px' }}>
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.55rem',
-              background: 'rgba(59, 130, 246, 0.12)',
-              border: '1px solid rgba(59, 130, 246, 0.28)',
-              borderRadius: '9999px',
-              padding: '0.35rem 0.95rem',
-              marginBottom: '1.35rem',
-              backdropFilter: 'blur(10px)'
-            }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block', boxShadow: '0 0 10px #10B981' }} />
-              <span style={{ color: '#93C5FD', fontSize: '0.8125rem', fontWeight: 600, letterSpacing: '0.02em' }}>
-                Instant Dispatch Network • 99.4% On-Time SLA
+            <div className="hero-pill-tag">
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--success)', display: 'inline-block', boxShadow: '0 0 10px var(--success)' }} />
+              <span>
+                Verified Service Marketplace • Real-Time Dispatch
               </span>
             </div>
 
-            <h1 style={{
-              fontSize: 'clamp(2.5rem, 4.5vw, 3.8rem)',
-              fontWeight: 800,
-              color: '#ffffff',
-              lineHeight: 1.1,
-              marginBottom: '1.25rem',
-              letterSpacing: '-0.035em'
-            }}>
+            <h1 className="hero-title">
               On-Demand Services.<br />
               <span style={{
-                background: 'linear-gradient(135deg, #60A5FA 0%, #A78BFA 50%, #38BDF8 100%)',
+                background: 'linear-gradient(135deg, #0284C7 0%, #6366F1 50%, #38BDF8 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
               }}>
@@ -450,35 +424,18 @@ export default function Home() {
               </span>
             </h1>
 
-            <p style={{
-              fontSize: '1.1rem',
-              color: '#94A3B8',
-              marginBottom: '2.25rem',
-              lineHeight: 1.6,
-              maxWidth: '520px'
-            }}>
-              The modern platform for verified home repairs, electrical, HVAC cooling, and freight logistics. Upfront pricing, vetted specialists, dispatched to your doorstep in under 60 seconds.
+            <p className="hero-desc">
+              Book verified electricians, plumbers, cleaners, and moving specialists in minutes. Upfront pricing, vetted partners, and instant scheduling at your doorstep.
             </p>
 
-            {/* High-Converting CTA Button Group */}
+            {/* CTA Button Group */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '2.5rem' }}>
               <button
                 onClick={() => {
                   const elem = document.getElementById('services-catalog');
                   if (elem) elem.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="btn btn-primary"
-                style={{
-                  padding: '0.85rem 1.6rem',
-                  fontSize: '0.95rem',
-                  fontWeight: 700,
-                  borderRadius: '10px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  boxShadow: '0 0 25px rgba(59, 130, 246, 0.45)',
-                  cursor: 'pointer'
-                }}
+                className="btn btn-primary btn-lg"
               >
                 <span>Explore Services</span>
                 <ArrowRight size={17} />
@@ -486,18 +443,7 @@ export default function Home() {
 
               <button
                 onClick={() => navigate('/register?role=PROVIDER')}
-                className="btn btn-secondary"
-                style={{
-                  padding: '0.85rem 1.5rem',
-                  fontSize: '0.95rem',
-                  fontWeight: 600,
-                  borderRadius: '10px',
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  color: '#F1F5F9',
-                  backdropFilter: 'blur(8px)',
-                  cursor: 'pointer'
-                }}
+                className="btn btn-secondary btn-lg"
               >
                 Join as Partner
               </button>
@@ -509,101 +455,102 @@ export default function Home() {
               alignItems: 'center',
               gap: '1.75rem',
               flexWrap: 'wrap',
-              borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+              borderTop: '1px solid var(--border-light)',
               paddingTop: '1.25rem'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#CBD5E1', fontSize: '0.8125rem' }}>
-                <ShieldCheck size={16} color="#10B981" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+                <ShieldCheck size={16} color="var(--success)" />
                 <span>100% Background Checked</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#CBD5E1', fontSize: '0.8125rem' }}>
-                <Zap size={16} color="#EAB308" />
-                <span>&lt;45 min Avg Dispatch</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+                <Zap size={16} color="var(--warning)" />
+                <span>Fast Doorstep Dispatch</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#CBD5E1', fontSize: '0.8125rem' }}>
-                <CreditCard size={16} color="#38BDF8" />
-                <span>Cash After Service</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+                <CreditCard size={16} color="var(--primary)" />
+                <span>Pay After Completion</span>
               </div>
             </div>
           </div>
 
-          {/* Right Column: YC-Style Live Operations Dashboard Widget */}
+          {/* Right Column: Real Live Platform Status Widget */}
           <div style={{ flex: '1 1 380px', maxWidth: '460px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{
-              background: 'rgba(15, 23, 42, 0.7)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              backdropFilter: 'blur(20px)',
-              borderRadius: '18px',
-              padding: '1.5rem',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-            }}>
+            <div className="telemetry-card">
               {/* Telemetry Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', paddingBottom: '0.85rem', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', paddingBottom: '0.85rem', borderBottom: '1px solid var(--border-light)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block', boxShadow: '0 0 8px #10B981' }} />
-                  <span style={{ color: '#F8FAFC', fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                    Live Telemetry
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--success)', display: 'inline-block', boxShadow: '0 0 8px var(--success)' }} />
+                  <span style={{ color: 'var(--text-main)', fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                    Live Platform Status
                   </span>
                 </div>
-                <span style={{ fontSize: '0.72rem', color: '#94A3B8', fontFamily: 'monospace', background: 'rgba(255, 255, 255, 0.06)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
-                  v2.4 ACTIVE
+                <span style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: 600, background: 'var(--primary-subtle)', padding: '0.2rem 0.55rem', borderRadius: '4px' }}>
+                  ONLINE
                 </span>
               </div>
 
-              {/* Real-time stats row */}
+              {/* Real-time stats row from live catalog data */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
-                <div style={{ background: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', padding: '0.9rem', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
-                  <div style={{ color: '#38BDF8', fontSize: '1.4rem', fontWeight: 800 }}>5,000+</div>
-                  <div style={{ color: '#94A3B8', fontSize: '0.75rem', fontWeight: 500 }}>Verified Partners</div>
+                <div className="telemetry-stat-box">
+                  <div style={{ color: 'var(--primary)', fontSize: '1.4rem', fontWeight: 800, fontFeatureSettings: 'tnum' }}>
+                    {loading ? '...' : services.length}
+                  </div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 500 }}>
+                    Active Services
+                  </div>
                 </div>
-                <div style={{ background: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', padding: '0.9rem', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
-                  <div style={{ color: '#FBBF24', fontSize: '1.4rem', fontWeight: 800 }}>4.92 ★</div>
-                  <div style={{ color: '#94A3B8', fontSize: '0.75rem', fontWeight: 500 }}>Customer Rating</div>
+                <div className="telemetry-stat-box">
+                  <div style={{ color: 'var(--warning)', fontSize: '1.4rem', fontWeight: 800, fontFeatureSettings: 'tnum' }}>
+                    {loading ? '...' : categories.length}
+                  </div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 500 }}>
+                    Service Domains
+                  </div>
                 </div>
               </div>
 
-              {/* Live Dispatch Feed Mockup */}
-              <div style={{ background: 'rgba(0, 0, 0, 0.3)', borderRadius: '12px', padding: '0.85rem', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: '#64748B', fontWeight: 700, marginBottom: '0.5rem', letterSpacing: '0.05em' }}>
-                  Recent Live Dispatches
+              {/* Real Catalog Dispatch Feed */}
+              <div className="telemetry-feed-box">
+                <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '0.5rem', letterSpacing: '0.05em' }}>
+                  Featured On-Demand Catalog
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.78rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#E2E8F0' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      <span style={{ color: '#38BDF8' }}>❄️</span> AC Jet Servicing
-                    </span>
-                    <span style={{ color: '#10B981', fontSize: '0.7rem', fontWeight: 600 }}>Matched (2m ago)</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#E2E8F0' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      <span style={{ color: '#F59E0B' }}>🚚</span> Mini Truck (1 Ton)
-                    </span>
-                    <span style={{ color: '#38BDF8', fontSize: '0.7rem', fontWeight: 600 }}>In Transit (5m ago)</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#E2E8F0' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      <span style={{ color: '#EAB308' }}>⚡</span> Circuit Board Repair
-                    </span>
-                    <span style={{ color: '#A855F7', fontSize: '0.7rem', fontWeight: 600 }}>Completed</span>
-                  </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', fontSize: '0.8rem' }}>
+                  {services.slice(0, 3).map((serviceItem) => {
+                    const cat = categories.find(c => c.id === serviceItem.categoryId);
+                    const config = getServiceConfig(serviceItem.name, cat?.name);
+                    return (
+                      <div
+                        key={serviceItem.id}
+                        onClick={() => navigate(`/services/${serviceItem.id}`)}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text-main)', cursor: 'pointer' }}
+                      >
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: 600, fontSize: '0.8125rem' }}>
+                          <span style={{ color: config.color }}>●</span> {serviceItem.name}
+                        </span>
+                        <span style={{ color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 700 }}>
+                          ₹{serviceItem.price}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
 
-            {/* Shield Insurance Guarantee Pill */}
+            {/* Shield Guarantee Pill */}
             <div style={{
-              background: 'rgba(15, 23, 42, 0.5)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              backdropFilter: 'blur(12px)',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-light)',
               borderRadius: '14px',
               padding: '0.85rem 1.15rem',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.75rem'
+              gap: '0.75rem',
+              boxShadow: 'var(--shadow-xs)'
             }}>
-              <ShieldCheck size={20} color="#10B981" style={{ flexShrink: 0 }} />
-              <span style={{ color: '#CBD5E1', fontSize: '0.8125rem' }}>
-                <strong>Taaskr Shield:</strong> ₹50,000 damage protection guarantee on every job.
+              <ShieldCheck size={20} color="var(--success)" style={{ flexShrink: 0 }} />
+              <span style={{ color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+                <strong style={{ color: 'var(--text-main)' }}>Taaskr Guarantee:</strong> 100% verified specialists & transparent pricing.
               </span>
             </div>
           </div>
@@ -611,20 +558,20 @@ export default function Home() {
       </section>
 
       {/* Main Services Area with Category Tiles & Integrated Search */}
-      <main id="services-catalog" className="app-container" style={{ paddingTop: '4rem', paddingBottom: '5rem' }}>
+      <main id="services-catalog" className="app-container" style={{ paddingTop: '3rem', paddingBottom: '4rem' }}>
         
         {/* Section Header */}
-        <div style={{ textAlign: 'center', marginBottom: '2.5rem', maxWidth: '750px', margin: '0 auto 2.5rem auto' }}>
-          <h2 style={{ fontSize: '2.25rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2rem', maxWidth: '750px', margin: '0 auto 2rem auto' }}>
+          <h2 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.4rem', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
             Explore Verified Services
           </h2>
-          <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+          <p style={{ fontSize: '0.925rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
             Select a service category or filter by name to instantly dispatch top-rated professionals.
           </p>
         </div>
 
         {/* Integrated Clean Search & Filter Control Bar */}
-        <div style={{ maxWidth: '640px', margin: '0 auto 2.5rem auto' }}>
+        <div style={{ maxWidth: '640px', margin: '0 auto 2rem auto' }}>
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -632,7 +579,7 @@ export default function Home() {
             borderRadius: '12px',
             padding: '0.45rem 0.6rem 0.45rem 1rem',
             gap: '0.75rem',
-            boxShadow: '0 4px 20px -2px rgba(0, 0, 0, 0.1)',
+            boxShadow: 'var(--shadow-sm)',
             border: '1px solid var(--border-light)'
           }}>
             <Search size={18} color="var(--text-muted)" style={{ flexShrink: 0 }} />
@@ -664,7 +611,7 @@ export default function Home() {
         </div>
 
         {/* Service Categories Dynamic Tiles */}
-        <div style={{ marginBottom: '3.5rem' }}>
+        <div style={{ marginBottom: '3rem' }}>
           <div style={{
             display: 'flex',
             justifyContent: 'center',
@@ -684,58 +631,24 @@ export default function Home() {
                   onClick={() => setSelectedCategory(null)}
                   className={`category-tile ${isSelected ? 'active' : ''}`}
                   style={{
-                    borderColor: isSelected ? theme.border : 'rgba(255, 255, 255, 0.08)',
-                    background: isSelected ? theme.activeBg : undefined,
-                    boxShadow: isSelected 
-                      ? `0 0 32px ${theme.glow}, 0 12px 24px -4px rgba(0, 0, 0, 0.6)` 
-                      : undefined,
-                    transform: isSelected ? 'translateY(-6px) scale(1.02)' : undefined,
+                    borderColor: isSelected ? theme.primary : undefined,
                     minWidth: '135px',
                     flex: '0 1 auto'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isSelected) {
-                      e.currentTarget.style.borderColor = theme.border;
-                      e.currentTarget.style.background = theme.hoverBg;
-                      e.currentTarget.style.boxShadow = `0 18px 36px -8px ${theme.glow}, 0 0 16px ${theme.glow}`;
-                      e.currentTarget.style.transform = 'translateY(-8px) scale(1.035)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isSelected) {
-                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-                      e.currentTarget.style.background = 'linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(15, 23, 42, 0.7) 100%)';
-                      e.currentTarget.style.boxShadow = 'none';
-                      e.currentTarget.style.transform = 'none';
-                    }
                   }}
                 >
                   <div
                     className="cat-icon-badge"
                     style={{
                       background: theme.accentBg,
-                      boxShadow: isSelected ? `0 0 20px ${theme.glow}` : '0 4px 14px rgba(0, 0, 0, 0.3)'
+                      boxShadow: isSelected ? `0 0 16px ${theme.glow}` : '0 4px 12px rgba(0, 0, 0, 0.15)'
                     }}
                   >
                     {theme.icon}
                   </div>
-                  <div style={{
-                    fontWeight: 700,
-                    fontSize: '0.875rem',
-                    color: isSelected ? '#FFFFFF' : '#E2E8F0',
-                    textAlign: 'center',
-                    lineHeight: 1.25,
-                    letterSpacing: '-0.01em'
-                  }}>
+                  <div className="category-tile-title">
                     All Services
                   </div>
-                  <div
-                    className="cat-count-badge"
-                    style={{
-                      background: isSelected ? theme.primary : theme.badgeBg,
-                      color: isSelected ? '#0F172A' : theme.badgeColor
-                    }}
-                  >
+                  <div className="cat-count-badge">
                     {services.length} options
                   </div>
                   {isSelected && (
@@ -764,58 +677,24 @@ export default function Home() {
                   onClick={() => setSelectedCategory(cat.id)}
                   className={`category-tile ${isSelected ? 'active' : ''}`}
                   style={{
-                    borderColor: isSelected ? theme.border : 'rgba(255, 255, 255, 0.08)',
-                    background: isSelected ? theme.activeBg : undefined,
-                    boxShadow: isSelected 
-                      ? `0 0 32px ${theme.glow}, 0 12px 24px -4px rgba(0, 0, 0, 0.6)` 
-                      : undefined,
-                    transform: isSelected ? 'translateY(-6px) scale(1.02)' : undefined,
+                    borderColor: isSelected ? theme.primary : undefined,
                     minWidth: '135px',
                     flex: '0 1 auto'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isSelected) {
-                      e.currentTarget.style.borderColor = theme.border;
-                      e.currentTarget.style.background = theme.hoverBg;
-                      e.currentTarget.style.boxShadow = `0 18px 36px -8px ${theme.glow}, 0 0 16px ${theme.glow}`;
-                      e.currentTarget.style.transform = 'translateY(-8px) scale(1.035)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isSelected) {
-                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-                      e.currentTarget.style.background = 'linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(15, 23, 42, 0.7) 100%)';
-                      e.currentTarget.style.boxShadow = 'none';
-                      e.currentTarget.style.transform = 'none';
-                    }
                   }}
                 >
                   <div
                     className="cat-icon-badge"
                     style={{
                       background: theme.accentBg,
-                      boxShadow: isSelected ? `0 0 20px ${theme.glow}` : '0 4px 14px rgba(0, 0, 0, 0.3)'
+                      boxShadow: isSelected ? `0 0 16px ${theme.glow}` : '0 4px 12px rgba(0, 0, 0, 0.15)'
                     }}
                   >
                     {theme.icon}
                   </div>
-                  <div style={{
-                    fontWeight: 700,
-                    fontSize: '0.875rem',
-                    color: isSelected ? '#FFFFFF' : '#E2E8F0',
-                    textAlign: 'center',
-                    lineHeight: 1.25,
-                    letterSpacing: '-0.01em'
-                  }}>
+                  <div className="category-tile-title">
                     {cat.name}
                   </div>
-                  <div
-                    className="cat-count-badge"
-                    style={{
-                      background: isSelected ? theme.primary : theme.badgeBg,
-                      color: isSelected ? '#0F172A' : theme.badgeColor
-                    }}
-                  >
+                  <div className="cat-count-badge">
                     {catServiceCount} {catServiceCount === 1 ? 'service' : 'services'}
                   </div>
                   {isSelected && (
