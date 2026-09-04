@@ -733,7 +733,15 @@ export default function Navbar() {
             <Link
               to={user.role === 'PROVIDER' ? '/provider' : user.role === 'ADMIN' ? '/admin' : '/profile'}
               style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', textDecoration: 'none', color: 'inherit' }}
-              title="View & Edit Profile Settings"
+              title={
+                !user.emailVerified && !user.phoneVerified
+                  ? "Your email and phone are not verified yet. Click to view profile."
+                  : !user.emailVerified
+                  ? "Your email is not verified yet. Click to view profile."
+                  : !user.phoneVerified
+                  ? "Your phone is not verified yet. Click to view profile."
+                  : "Verified Profile"
+              }
             >
               <div style={{
                 width: '32px',
@@ -756,23 +764,26 @@ export default function Navbar() {
                     {user.name}
                   </span>
                   {user.emailVerified && user.phoneVerified ? (
-                    <span title="Email & Phone Verified" style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--success)' }}>
+                    <span title="Verified Account" style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--success)' }}>
                       <ShieldCheck size={14} />
                     </span>
                   ) : (
                     <span
-                      title={!user.emailVerified ? "Email Unverified" : "Phone Unverified"}
+                      title={
+                        !user.emailVerified && !user.phoneVerified
+                          ? "Your email and phone are not verified yet"
+                          : !user.emailVerified
+                          ? "Your email is not verified yet"
+                          : "Your phone is not verified yet"
+                      }
                       style={{
-                        fontSize: '0.65rem',
-                        background: 'var(--warning-bg)',
-                        color: 'var(--warning)',
-                        border: '1px solid var(--warning-border)',
-                        padding: '0.08rem 0.35rem',
-                        borderRadius: '4px',
-                        fontWeight: 600
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#EF4444'
                       }}
                     >
-                      Settings
+                      <AlertCircle size={15} color="#EF4444" />
                     </span>
                   )}
                 </div>
@@ -784,7 +795,7 @@ export default function Navbar() {
                     textTransform: 'uppercase',
                     letterSpacing: '0.04em'
                   }}>
-                    {user.role === 'USER' ? 'Profile Settings' : user.role}
+                    {user.role}
                   </span>
                 </div>
               </div>

@@ -143,7 +143,7 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
     @Override
     @Transactional
     public ProviderBookingResponse acceptBooking(String providerEmail, Long bookingId) {
-        ProviderProfile provider = getProviderByEmail(providerEmail);
+        ProviderProfile provider = getApprovedProviderByEmail(providerEmail);
         Booking booking = getProviderBooking(provider.getId(), bookingId);
 
         if(booking.getStatus() != BookingStatus.ASSIGNED){
@@ -171,7 +171,7 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
     @Override
     @Transactional
     public ProviderBookingResponse updateBookingStatus(String providerEmail, Long bookingId, UpdateProviderBookingStatusRequest request) {
-        ProviderProfile provider = getProviderByEmail(providerEmail);
+        ProviderProfile provider = getApprovedProviderByEmail(providerEmail);
         Booking booking = getProviderBooking(provider.getId(), bookingId);
 
         BookingStatus current = booking.getStatus();
@@ -235,7 +235,7 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
     @Override
     @Transactional
     public ProviderBookingResponse claimTask(String providerEmail, Long bookingId) {
-        ProviderProfile provider = getProviderByEmail(providerEmail);
+        ProviderProfile provider = getApprovedProviderByEmail(providerEmail);
         
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
@@ -294,6 +294,10 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
 
     private ProviderProfile getApprovedProviderByEmail(String providerEmail) {
         ProviderProfile provider = getProviderByEmail(providerEmail);
+
+        if (!Boolean.TRUE.equals(provider.getUser().getEmailVerified()) || !Boolean.TRUE.equals(provider.getUser().getPhoneVerified())) {
+            throw new BadRequestException("Your partner email address and mobile phone number must both be verified before claiming or working on tasks. Please verify them in your partner console.");
+        }
 
         if(!Boolean.TRUE.equals(provider.getApproved())){
             throw new BadRequestException("Provider is not approved yet");

@@ -100,6 +100,12 @@ export default function BookingFlow() {
       navigate('/');
       return;
     }
+
+    if (currentUser && (!currentUser.emailVerified || !currentUser.phoneVerified)) {
+      alert('Your email and mobile phone number must both be verified before booking a service. Please verify them first.');
+      return;
+    }
+
     if (!address || !city || !pincode) {
       alert('Please fill in all address fields');
       return;
@@ -375,6 +381,48 @@ export default function BookingFlow() {
               <span>{isVehicle ? 'Pickup & Trip Location' : 'Service Address'}</span>
             </h2>
           </div>
+
+          {currentUser && (!currentUser.emailVerified || !currentUser.phoneVerified) && (
+            <div style={{
+              background: 'var(--error-bg)',
+              border: '1px solid var(--error-border)',
+              color: 'var(--error)',
+              padding: '0.85rem 1rem',
+              borderRadius: 'var(--radius-sm)',
+              marginBottom: '1.25rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.5rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: 600, fontSize: '0.875rem' }}>
+                <AlertCircle size={17} color="var(--error)" />
+                <span>Verification Required Before Booking</span>
+              </div>
+              <p style={{ margin: 0, fontSize: '0.8125rem' }}>
+                Your email address and phone number must both be verified before placing a booking.
+              </p>
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
+                {!currentUser.emailVerified && (
+                  <Link
+                    to={`/verify-email?type=email&email=${encodeURIComponent(currentUser.email || '')}`}
+                    className="btn btn-sm"
+                    style={{ backgroundColor: '#EF4444', color: '#fff', fontSize: '0.75rem', textDecoration: 'none' }}
+                  >
+                    Verify Email
+                  </Link>
+                )}
+                {!currentUser.phoneVerified && (
+                  <Link
+                    to={`/verify-phone?type=phone&phone=${encodeURIComponent(currentUser.phone && !currentUser.phone.startsWith('NA-') ? currentUser.phone : '')}`}
+                    className="btn btn-sm"
+                    style={{ backgroundColor: '#EF4444', color: '#fff', fontSize: '0.75rem', textDecoration: 'none' }}
+                  >
+                    Verify Phone
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
           
           <div className="form-group">
             <label className="form-label">
@@ -512,9 +560,9 @@ export default function BookingFlow() {
             type="submit"
             className="btn btn-primary"
             style={{ width: '100%', padding: '0.75rem', fontSize: '0.95rem' }}
-            disabled={loading}
+            disabled={loading || (currentUser && (!currentUser.emailVerified || !currentUser.phoneVerified))}
           >
-            {loading ? 'Confirming Booking...' : paymentMethod === 'online' ? `Confirm Booking & Pay ₹${price}` : `Confirm Booking (₹${price})`}
+            {loading ? 'Confirming Booking...' : (currentUser && (!currentUser.emailVerified || !currentUser.phoneVerified)) ? 'Verify Email & Phone to Book' : paymentMethod === 'online' ? `Confirm Booking & Pay ₹${price}` : `Confirm Booking (₹${price})`}
           </button>
         </form>
 

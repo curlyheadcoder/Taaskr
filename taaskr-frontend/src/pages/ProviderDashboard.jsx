@@ -127,8 +127,14 @@ export default function ProviderDashboard() {
     loadProviderDashboard();
   }, []);
 
+  const isProviderVerified = Boolean(userProfile?.emailVerified && userProfile?.phoneVerified);
+
   const handleAddAvailability = async (e) => {
     e.preventDefault();
+    if (!isProviderVerified) {
+      showNotification('Please verify both your email and phone number before adding availability slots.', 'error');
+      return;
+    }
     try {
       await api.provider.createAvailability({
         availableDate: availDate,
@@ -155,6 +161,10 @@ export default function ProviderDashboard() {
   };
 
   const handleAcceptJob = async (bookingId) => {
+    if (!isProviderVerified) {
+      showNotification('Please verify both your email and phone number before accepting jobs.', 'error');
+      return;
+    }
     try {
       await api.provider.acceptBooking(bookingId);
       showNotification('Job accepted.');
@@ -165,6 +175,10 @@ export default function ProviderDashboard() {
   };
 
   const handleClaimTask = async (bookingId) => {
+    if (!isProviderVerified) {
+      showNotification('Please verify both your email and phone number before claiming tasks.', 'error');
+      return;
+    }
     try {
       await api.provider.claimTask(bookingId);
       showNotification('Task claimed successfully. It is now listed under My Bookings.');
@@ -186,6 +200,10 @@ export default function ProviderDashboard() {
   };
 
   const handleStatusUpdate = async (bookingId, newStatus) => {
+    if (!isProviderVerified) {
+      showNotification('Please verify both your email and phone number before updating task status.', 'error');
+      return;
+    }
     try {
       await api.provider.updateStatus(bookingId, newStatus);
       showNotification(`Status updated to ${newStatus}.`);
@@ -488,9 +506,9 @@ export default function ProviderDashboard() {
 
         {userProfile && userProfile.emailVerified === false && (
           <div style={{
-            background: '#FFFBEB',
-            border: '1px solid #FDE68A',
-            color: '#92400E',
+            background: 'var(--error-bg)',
+            border: '1px solid var(--error-border)',
+            color: 'var(--error)',
             padding: '0.75rem 1rem',
             borderRadius: 'var(--radius-sm)',
             marginBottom: '1rem',
@@ -501,15 +519,15 @@ export default function ProviderDashboard() {
             gap: '0.5rem'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <AlertCircle size={16} color="#D97706" />
+              <AlertCircle size={16} color="var(--error)" />
               <span style={{ fontSize: '0.8125rem' }}>
-                Your partner account email (<strong>{userProfile.email}</strong>) is not verified. Verify your email to activate job notifications and automated dispatch.
+                Your partner account email (<strong>{userProfile.email}</strong>) is not verified. Both email and mobile phone must be verified to claim and work on tasks.
               </span>
             </div>
             <Link 
               to={`/verify-email?type=email&email=${encodeURIComponent(userProfile.email || '')}`}
               className="btn btn-sm"
-              style={{ backgroundColor: '#D97706', color: '#fff', padding: '0.25rem 0.65rem', fontSize: '0.75rem', textDecoration: 'none' }}
+              style={{ backgroundColor: '#EF4444', color: '#fff', padding: '0.25rem 0.65rem', fontSize: '0.75rem', textDecoration: 'none' }}
             >
               Verify Email
             </Link>
@@ -518,9 +536,9 @@ export default function ProviderDashboard() {
 
         {userProfile && userProfile.phoneVerified === false && (
           <div style={{
-            background: '#EFF6FF',
-            border: '1px solid #BFDBFE',
-            color: '#1E40AF',
+            background: 'var(--error-bg)',
+            border: '1px solid var(--error-border)',
+            color: 'var(--error)',
             padding: '0.75rem 1rem',
             borderRadius: 'var(--radius-sm)',
             marginBottom: '1rem',
@@ -531,15 +549,15 @@ export default function ProviderDashboard() {
             gap: '0.5rem'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <AlertCircle size={16} color="#2563EB" />
+              <AlertCircle size={16} color="var(--error)" />
               <span style={{ fontSize: '0.8125rem' }}>
-                Your partner contact phone (<strong>{userProfile.phone || 'Not configured'}</strong>) is not verified. Verify your phone to receive live SMS job dispatch alerts.
+                Your partner contact phone (<strong>{userProfile.phone || 'Not configured'}</strong>) is not verified. Both email and mobile phone must be verified to claim and work on tasks.
               </span>
             </div>
             <Link 
               to={`/verify-phone?type=phone&phone=${encodeURIComponent(userProfile.phone || '')}`}
               className="btn btn-sm"
-              style={{ backgroundColor: '#2563EB', color: '#fff', padding: '0.25rem 0.65rem', fontSize: '0.75rem', textDecoration: 'none' }}
+              style={{ backgroundColor: '#EF4444', color: '#fff', padding: '0.25rem 0.65rem', fontSize: '0.75rem', textDecoration: 'none' }}
             >
               Verify Phone
             </Link>
