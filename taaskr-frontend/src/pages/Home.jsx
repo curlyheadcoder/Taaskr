@@ -87,224 +87,238 @@ export default function Home() {
   const getCategoryTheme = (categoryName) => {
     const cat = (categoryName || '').toLowerCase();
     
-    // 1. Electrical & Power: Radiant Electric Amber -> Flame Orange
+    // 1. Electrical & Power
     if (cat.includes('electric') || cat.includes('wire') || cat.includes('switch') || cat.includes('power')) {
       return {
-        icon: <Zap size={24} strokeWidth={2.4} />,
+        icon: <Zap size={28} strokeWidth={2.4} />,
         primary: '#F59E0B',
         secondary: '#EF4444',
-        accentBg: 'linear-gradient(135deg, #F59E0B 0%, #EA580C 100%)',
-        hoverBg: 'radial-gradient(ellipse at top, rgba(245, 158, 11, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
-        activeBg: 'linear-gradient(160deg, rgba(245, 158, 11, 0.28) 0%, rgba(234, 88, 12, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        tertiary: '#FBBF24',
+        accentBg: 'linear-gradient(135deg, #F59E0B 0%, #EA580C 50%, #EF4444 100%)',
+        shadow1: 'rgba(245, 158, 11, 0.42)',
+        shadow2: 'rgba(239, 68, 68, 0.32)',
+        shadow3: 'rgba(251, 191, 36, 0.28)',
         glow: 'rgba(245, 158, 11, 0.55)',
-        border: '#F59E0B',
         badgeBg: 'rgba(245, 158, 11, 0.2)',
         badgeColor: '#FDE047'
       };
     }
 
-    // 2. Plumbing & Water Works: Oceanic Cyan -> Azure Deep Blue
+    // 2. Plumbing & Water Works
     if (cat.includes('plumb') || cat.includes('water') || cat.includes('pipe') || cat.includes('drain')) {
       return {
-        icon: <Droplets size={24} strokeWidth={2.4} />,
+        icon: <Droplets size={28} strokeWidth={2.4} />,
         primary: '#06B6D4',
         secondary: '#2563EB',
-        accentBg: 'linear-gradient(135deg, #06B6D4 0%, #0284C7 100%)',
-        hoverBg: 'radial-gradient(ellipse at top, rgba(6, 182, 212, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
-        activeBg: 'linear-gradient(160deg, rgba(6, 182, 212, 0.28) 0%, rgba(37, 99, 235, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        tertiary: '#10B981',
+        accentBg: 'linear-gradient(135deg, #06B6D4 0%, #0284C7 50%, #2563EB 100%)',
+        shadow1: 'rgba(6, 182, 212, 0.42)',
+        shadow2: 'rgba(37, 99, 235, 0.32)',
+        shadow3: 'rgba(16, 185, 129, 0.28)',
         glow: 'rgba(6, 182, 212, 0.55)',
-        border: '#06B6D4',
         badgeBg: 'rgba(6, 182, 212, 0.2)',
         badgeColor: '#67E8F9'
       };
     }
 
-    // 3. Cleaning & Housekeeping: Spring Emerald -> Sparkling Aqua
+    // 3. Cleaning & Housekeeping
     if (cat.includes('clean')) {
       return {
-        icon: <Sparkles size={24} strokeWidth={2.4} />,
+        icon: <Sparkles size={28} strokeWidth={2.4} />,
         primary: '#10B981',
         secondary: '#06B6D4',
-        accentBg: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-        hoverBg: 'radial-gradient(ellipse at top, rgba(16, 185, 129, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
-        activeBg: 'linear-gradient(160deg, rgba(16, 185, 129, 0.28) 0%, rgba(6, 182, 212, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        tertiary: '#3B82F6',
+        accentBg: 'linear-gradient(135deg, #10B981 0%, #059669 50%, #06B6D4 100%)',
+        shadow1: 'rgba(16, 185, 129, 0.42)',
+        shadow2: 'rgba(6, 182, 212, 0.32)',
+        shadow3: 'rgba(59, 130, 246, 0.28)',
         glow: 'rgba(16, 185, 129, 0.55)',
-        border: '#10B981',
         badgeBg: 'rgba(16, 185, 129, 0.2)',
         badgeColor: '#6EE7B7'
       };
     }
 
-    // 4. Diagnostic & Health Labs: Pulse Crimson -> Neon Rose
+    // 4. Diagnostic & Health Labs
     if (cat.includes('diagnostic') || cat.includes('patholog') || cat.includes('blood') || cat.includes('test')) {
       return {
-        icon: <Activity size={24} strokeWidth={2.4} />,
+        icon: <Activity size={28} strokeWidth={2.4} />,
         primary: '#F43F5E',
-        secondary: '#E11D48',
-        accentBg: 'linear-gradient(135deg, #F43F5E 0%, #BE123C 100%)',
-        hoverBg: 'radial-gradient(ellipse at top, rgba(244, 63, 94, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
-        activeBg: 'linear-gradient(160deg, rgba(244, 63, 94, 0.28) 0%, rgba(190, 18, 60, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        secondary: '#A855F7',
+        tertiary: '#EC4899',
+        accentBg: 'linear-gradient(135deg, #F43F5E 0%, #BE123C 50%, #A855F7 100%)',
+        shadow1: 'rgba(244, 63, 94, 0.42)',
+        shadow2: 'rgba(168, 85, 247, 0.32)',
+        shadow3: 'rgba(236, 72, 153, 0.28)',
         glow: 'rgba(244, 63, 94, 0.55)',
-        border: '#F43F5E',
         badgeBg: 'rgba(244, 63, 94, 0.2)',
         badgeColor: '#FDA4AF'
       };
     }
 
-    // 5. Healthcare Services: Medical Jade -> Mint Teal
+    // 5. Healthcare Services
     if (cat.includes('health') || cat.includes('care') || cat.includes('doctor') || cat.includes('nurse')) {
       return {
-        icon: <Stethoscope size={24} strokeWidth={2.4} />,
+        icon: <Stethoscope size={28} strokeWidth={2.4} />,
         primary: '#14B8A6',
-        secondary: '#059669',
-        accentBg: 'linear-gradient(135deg, #14B8A6 0%, #0D9488 100%)',
-        hoverBg: 'radial-gradient(ellipse at top, rgba(20, 184, 166, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
-        activeBg: 'linear-gradient(160deg, rgba(20, 184, 166, 0.28) 0%, rgba(13, 148, 136, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        secondary: '#10B981',
+        tertiary: '#0284C7',
+        accentBg: 'linear-gradient(135deg, #14B8A6 0%, #0D9488 50%, #10B981 100%)',
+        shadow1: 'rgba(20, 184, 166, 0.42)',
+        shadow2: 'rgba(16, 185, 129, 0.32)',
+        shadow3: 'rgba(2, 132, 199, 0.28)',
         glow: 'rgba(20, 184, 166, 0.55)',
-        border: '#14B8A6',
         badgeBg: 'rgba(20, 184, 166, 0.2)',
         badgeColor: '#5EEAD4'
       };
     }
 
-    // 6. Logistics & Freight: Royal Cargo Cobalt -> Electric Indigo
+    // 6. Logistics & Freight
     if (cat.includes('logistics') || cat.includes('mov') || cat.includes('vehicle') || cat.includes('transport') || cat.includes('truck') || cat.includes('cargo') || cat.includes('courier') || cat.includes('freight')) {
       return {
-        icon: <Truck size={24} strokeWidth={2.4} />,
+        icon: <Truck size={28} strokeWidth={2.4} />,
         primary: '#3B82F6',
-        secondary: '#6366F1',
-        accentBg: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
-        hoverBg: 'radial-gradient(ellipse at top, rgba(59, 130, 246, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
-        activeBg: 'linear-gradient(160deg, rgba(59, 130, 246, 0.28) 0%, rgba(99, 102, 241, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        secondary: '#8B5CF6',
+        tertiary: '#06B6D4',
+        accentBg: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 50%, #8B5CF6 100%)',
+        shadow1: 'rgba(59, 130, 246, 0.42)',
+        shadow2: 'rgba(139, 92, 246, 0.32)',
+        shadow3: 'rgba(6, 182, 212, 0.28)',
         glow: 'rgba(59, 130, 246, 0.55)',
-        border: '#3B82F6',
         badgeBg: 'rgba(59, 130, 246, 0.2)',
         badgeColor: '#93C5FD'
       };
     }
 
-    // 7. Security Services: Cyber Violet -> Radiant Purple
+    // 7. Security Services
     if (cat.includes('security') || cat.includes('guard') || cat.includes('cctv') || cat.includes('lock')) {
       return {
-        icon: <ShieldCheck size={24} strokeWidth={2.4} />,
+        icon: <ShieldCheck size={28} strokeWidth={2.4} />,
         primary: '#8B5CF6',
-        secondary: '#C026D3',
-        accentBg: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)',
-        hoverBg: 'radial-gradient(ellipse at top, rgba(139, 92, 246, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
-        activeBg: 'linear-gradient(160deg, rgba(139, 92, 246, 0.28) 0%, rgba(192, 38, 211, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        secondary: '#EC4899',
+        tertiary: '#6366F1',
+        accentBg: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 50%, #EC4899 100%)',
+        shadow1: 'rgba(139, 92, 246, 0.42)',
+        shadow2: 'rgba(236, 72, 153, 0.32)',
+        shadow3: 'rgba(99, 102, 241, 0.28)',
         glow: 'rgba(139, 92, 246, 0.55)',
-        border: '#8B5CF6',
         badgeBg: 'rgba(139, 92, 246, 0.2)',
         badgeColor: '#C4B5FD'
       };
     }
 
-    // 8. Civil & Property Maintenance: Sunset Terracotta -> Warm Amber
+    // 8. Civil & Property Maintenance
     if (cat.includes('civil') || cat.includes('property') || cat.includes('mason') || cat.includes('roof') || cat.includes('floor')) {
       return {
-        icon: <Building2 size={24} strokeWidth={2.4} />,
+        icon: <Building2 size={28} strokeWidth={2.4} />,
         primary: '#EA580C',
         secondary: '#F59E0B',
-        accentBg: 'linear-gradient(135deg, #EA580C 0%, #C2410C 100%)',
-        hoverBg: 'radial-gradient(ellipse at top, rgba(234, 88, 12, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
-        activeBg: 'linear-gradient(160deg, rgba(234, 88, 12, 0.28) 0%, rgba(245, 158, 11, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        tertiary: '#E11D48',
+        accentBg: 'linear-gradient(135deg, #EA580C 0%, #C2410C 50%, #F59E0B 100%)',
+        shadow1: 'rgba(234, 88, 12, 0.42)',
+        shadow2: 'rgba(245, 158, 11, 0.32)',
+        shadow3: 'rgba(225, 29, 72, 0.28)',
         glow: 'rgba(234, 88, 12, 0.55)',
-        border: '#EA580C',
         badgeBg: 'rgba(234, 88, 12, 0.2)',
         badgeColor: '#FDBA74'
       };
     }
 
-    // 9. Appliances & Hardware: Metallic Sky Blue -> Royal Indigo
+    // 9. Appliances & Hardware
     if (cat.includes('appliance') || cat.includes('repair') || cat.includes('machine')) {
       return {
-        icon: <Settings size={24} strokeWidth={2.4} />,
+        icon: <Settings size={28} strokeWidth={2.4} />,
         primary: '#0EA5E9',
         secondary: '#6366F1',
-        accentBg: 'linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%)',
-        hoverBg: 'radial-gradient(ellipse at top, rgba(14, 165, 233, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
-        activeBg: 'linear-gradient(160deg, rgba(14, 165, 233, 0.28) 0%, rgba(99, 102, 241, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        tertiary: '#06B6D4',
+        accentBg: 'linear-gradient(135deg, #0EA5E9 0%, #0284C7 50%, #6366F1 100%)',
+        shadow1: 'rgba(14, 165, 233, 0.42)',
+        shadow2: 'rgba(99, 102, 241, 0.32)',
+        shadow3: 'rgba(6, 182, 212, 0.28)',
         glow: 'rgba(14, 165, 233, 0.55)',
-        border: '#0EA5E9',
         badgeBg: 'rgba(14, 165, 233, 0.2)',
         badgeColor: '#7DD3FC'
       };
     }
 
-    // 10. AC & Cooling: Arctic Sky Frost -> Deep Blue
+    // 10. AC & Cooling
     if (/\bac\b/.test(cat) || cat.includes('cool') || cat.includes('refrigerat')) {
       return {
-        icon: <Snowflake size={24} strokeWidth={2.4} />,
+        icon: <Snowflake size={28} strokeWidth={2.4} />,
         primary: '#38BDF8',
-        secondary: '#0284C7',
-        accentBg: 'linear-gradient(135deg, #38BDF8 0%, #0284C7 100%)',
-        hoverBg: 'radial-gradient(ellipse at top, rgba(56, 189, 248, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
-        activeBg: 'linear-gradient(160deg, rgba(56, 189, 248, 0.28) 0%, rgba(2, 132, 199, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        secondary: '#6366F1',
+        tertiary: '#0284C7',
+        accentBg: 'linear-gradient(135deg, #38BDF8 0%, #0284C7 50%, #6366F1 100%)',
+        shadow1: 'rgba(56, 189, 248, 0.42)',
+        shadow2: 'rgba(99, 102, 241, 0.32)',
+        shadow3: 'rgba(2, 132, 199, 0.28)',
         glow: 'rgba(56, 189, 248, 0.55)',
-        border: '#38BDF8',
         badgeBg: 'rgba(56, 189, 248, 0.2)',
         badgeColor: '#BAE6FD'
       };
     }
 
-    // 11. Painting & Walls: Vivid Magenta -> Rose Pink
+    // 11. Painting & Walls
     if (cat.includes('paint')) {
       return {
-        icon: <Paintbrush size={24} strokeWidth={2.4} />,
+        icon: <Paintbrush size={28} strokeWidth={2.4} />,
         primary: '#EC4899',
-        secondary: '#F43F5E',
-        accentBg: 'linear-gradient(135deg, #EC4899 0%, #BE185D 100%)',
-        hoverBg: 'radial-gradient(ellipse at top, rgba(236, 72, 153, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
-        activeBg: 'linear-gradient(160deg, rgba(236, 72, 153, 0.28) 0%, rgba(244, 63, 94, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        secondary: '#8B5CF6',
+        tertiary: '#F43F5E',
+        accentBg: 'linear-gradient(135deg, #EC4899 0%, #BE185D 50%, #8B5CF6 100%)',
+        shadow1: 'rgba(236, 72, 153, 0.42)',
+        shadow2: 'rgba(139, 92, 246, 0.32)',
+        shadow3: 'rgba(244, 63, 94, 0.28)',
         glow: 'rgba(236, 72, 153, 0.55)',
-        border: '#EC4899',
         badgeBg: 'rgba(236, 72, 153, 0.2)',
         badgeColor: '#F472B6'
       };
     }
 
-    // 12. Carpentry & Wood: Wood Bronze -> Deep Caramel
+    // 12. Carpentry & Wood
     if (cat.includes('carpent') || cat.includes('wood')) {
       return {
-        icon: <Ruler size={24} strokeWidth={2.4} />,
+        icon: <Ruler size={28} strokeWidth={2.4} />,
         primary: '#D97706',
-        secondary: '#B45309',
-        accentBg: 'linear-gradient(135deg, #D97706 0%, #92400E 100%)',
-        hoverBg: 'radial-gradient(ellipse at top, rgba(217, 119, 6, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
-        activeBg: 'linear-gradient(160deg, rgba(217, 119, 6, 0.28) 0%, rgba(180, 83, 9, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        secondary: '#EA580C',
+        tertiary: '#CA8A04',
+        accentBg: 'linear-gradient(135deg, #D97706 0%, #92400E 50%, #EA580C 100%)',
+        shadow1: 'rgba(217, 119, 6, 0.42)',
+        shadow2: 'rgba(234, 88, 12, 0.32)',
+        shadow3: 'rgba(202, 138, 4, 0.28)',
         glow: 'rgba(217, 119, 6, 0.55)',
-        border: '#D97706',
         badgeBg: 'rgba(217, 119, 6, 0.2)',
         badgeColor: '#FCD34D'
       };
     }
 
-    // 13. Gardening & Lawn: Vibrant Lime -> Forest Green
+    // 13. Gardening & Lawn
     if (cat.includes('garden') || cat.includes('lawn')) {
       return {
-        icon: <Leaf size={24} strokeWidth={2.4} />,
+        icon: <Leaf size={28} strokeWidth={2.4} />,
         primary: '#84CC16',
-        secondary: '#16A34A',
-        accentBg: 'linear-gradient(135deg, #84CC16 0%, #4D7C0F 100%)',
-        hoverBg: 'radial-gradient(ellipse at top, rgba(132, 204, 22, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
-        activeBg: 'linear-gradient(160deg, rgba(132, 204, 22, 0.28) 0%, rgba(22, 163, 74, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+        secondary: '#10B981',
+        tertiary: '#06B6D4',
+        accentBg: 'linear-gradient(135deg, #84CC16 0%, #4D7C0F 50%, #10B981 100%)',
+        shadow1: 'rgba(132, 204, 22, 0.42)',
+        shadow2: 'rgba(16, 185, 129, 0.32)',
+        shadow3: 'rgba(6, 182, 212, 0.28)',
         glow: 'rgba(132, 204, 22, 0.55)',
-        border: '#84CC16',
         badgeBg: 'rgba(132, 204, 22, 0.2)',
         badgeColor: '#BEF264'
       };
     }
 
-    // Default: All Services (Vibrant Electric Indigo -> Sky Blue)
+    // Default / All Services (Vibrant Electric Indigo -> Pink -> Cyan)
     return {
-      icon: <LayoutList size={24} strokeWidth={2.4} />,
+      icon: <LayoutList size={28} strokeWidth={2.4} />,
       primary: '#6366F1',
-      secondary: '#38BDF8',
-      accentBg: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
-      hoverBg: 'radial-gradient(ellipse at top, rgba(99, 102, 241, 0.32) 0%, rgba(15, 23, 42, 0.85) 80%)',
-      activeBg: 'linear-gradient(160deg, rgba(99, 102, 241, 0.28) 0%, rgba(56, 189, 248, 0.16) 50%, rgba(15, 23, 42, 0.95) 100%)',
+      secondary: '#EC4899',
+      tertiary: '#38BDF8',
+      accentBg: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 50%, #EC4899 100%)',
+      shadow1: 'rgba(99, 102, 241, 0.42)',
+      shadow2: 'rgba(236, 72, 153, 0.32)',
+      shadow3: 'rgba(56, 189, 248, 0.28)',
       glow: 'rgba(99, 102, 241, 0.55)',
-      border: '#6366F1',
       badgeBg: 'rgba(99, 102, 241, 0.2)',
       badgeColor: '#C7D2FE'
     };
@@ -313,75 +327,42 @@ export default function Home() {
   const getServiceConfig = (serviceName, categoryName) => {
     const name = (serviceName || '').toLowerCase();
     const cat = (categoryName || '').toLowerCase();
+    const theme = getCategoryTheme(cat);
     
-    // 1. Civil & Property Maintenance (Roof, Waterproofing, Masonry, Flooring, Tiles)
-    if (cat.includes('civil') || cat.includes('property') || name.includes('roof') || name.includes('terrace') || name.includes('mason') || name.includes('waterproof') || name.includes('tile') || name.includes('floor')) {
-      if (name.includes('waterproof')) {
-        return { icon: <Droplets size={24} />, color: '#06B6D4', bg: 'rgba(6, 182, 212, 0.15)' };
-      }
-      return { icon: <Building2 size={24} />, color: '#F97316', bg: 'rgba(249, 115, 22, 0.15)' };
+    // Choose specific icon if refined
+    let icon = theme.icon;
+    if (name.includes('waterproof') || name.includes('tap') || name.includes('leak') || name.includes('pipe') || name.includes('drain')) {
+      icon = <Droplets size={24} />;
+    } else if (name.includes('switch') || name.includes('wire') || name.includes('fan') || name.includes('inverter') || name.includes('fuse')) {
+      icon = <Zap size={24} />;
+    } else if (name.includes('air condition') || name.includes('cooler') || name.includes('refrigerat')) {
+      icon = <Snowflake size={24} />;
+    } else if (name.includes('guard') || name.includes('cctv') || name.includes('lock') || name.includes('security')) {
+      icon = <ShieldCheck size={24} />;
+    } else if (name.includes('truck') || name.includes('tempo') || name.includes('courier') || name.includes('parcel')) {
+      icon = <Truck size={24} />;
+    } else if (name.includes('clean') || name.includes('dust') || name.includes('mop')) {
+      icon = <Sparkles size={24} />;
+    } else if (name.includes('doctor') || name.includes('blood') || name.includes('test') || name.includes('checkup')) {
+      icon = <Activity size={24} />;
+    } else if (name.includes('paint')) {
+      icon = <Paintbrush size={24} />;
+    } else if (name.includes('carpent') || name.includes('wood')) {
+      icon = <Ruler size={24} />;
+    } else if (name.includes('garden') || name.includes('lawn')) {
+      icon = <Leaf size={24} />;
     }
 
-    // 2. Security & Smart Living (Security Guard, Video Doorbell, Smart Lock, CCTV)
-    if (cat.includes('security') || name.includes('security') || name.includes('doorbell') || name.includes('lock') || name.includes('cctv') || name.includes('guard')) {
-      return { icon: <ShieldCheck size={24} />, color: '#A855F7', bg: 'rgba(168, 85, 247, 0.15)' };
-    }
-
-    // 3. Electrical (Switch Board, Wiring, Fan, MCB, Inverter)
-    if (cat.includes('electric') || name.includes('switch') || name.includes('wire') || name.includes('fan') || name.includes('fuse') || name.includes('spark') || name.includes('board')) {
-      return { icon: <Zap size={24} />, color: '#EAB308', bg: 'rgba(234, 179, 8, 0.18)' };
-    }
-
-    // 4. Plumbing & Water Works (Tap, Leakage, Pipe, Drain, Flush)
-    if (cat.includes('plumb') || name.includes('tap') || name.includes('pipe') || name.includes('leak') || name.includes('drain') || name.includes('sink') || name.includes('toilet')) {
-      return { icon: <Droplets size={24} />, color: '#06B6D4', bg: 'rgba(6, 182, 212, 0.15)' };
-    }
-
-    // 5. AC, Cooling & Refrigeration
-    if (/\bac\b/.test(name) || name.includes('air condition') || name.includes('refrigerat') || name.includes('cooler') || (cat.includes('ac') && !cat.includes('civil'))) {
-      return { icon: <Snowflake size={24} />, color: '#0EA5E9', bg: 'rgba(14, 165, 233, 0.15)' };
-    }
-
-    // 6. Water Purifier & RO
-    if (/\bro\b/.test(name) || name.includes('water purifier') || name.includes('purifier') || name.includes('aquaguard')) {
-      return { icon: <Droplets size={24} />, color: '#38BDF8', bg: 'rgba(56, 189, 248, 0.15)' };
-    }
-
-    // 7. Cleaning & Housekeeping (Deep Cleaning, Bathroom, Kitchen, Sofa)
-    if (cat.includes('clean') || name.includes('clean') || name.includes('dust') || name.includes('mop')) {
-      return { icon: <Sparkles size={24} />, color: '#3B82F6', bg: 'rgba(59, 130, 246, 0.15)' };
-    }
-
-    // 8. Logistics, Freight & Moving (Mini Truck, Bike Courier, Shifting, Tempo)
-    if (cat.includes('logistics') || cat.includes('cargo') || cat.includes('courier') || cat.includes('freight') || cat.includes('transport') || cat.includes('moving') || cat.includes('vehicle') || name.includes('truck') || name.includes('bike') || name.includes('courier') || name.includes('shifting') || name.includes('tempo') || name.includes('loading') || name.includes('parcel')) {
-      return { icon: <Truck size={24} />, color: '#2563EB', bg: 'rgba(37, 99, 235, 0.15)' };
-    }
-
-    // 9. Diagnostics & Health (Blood Test, Doctor, Health Checkup, Pathology)
-    if (cat.includes('diagnostic') || name.includes('blood') || name.includes('test') || name.includes('checkup') || name.includes('pathology')) {
-      return { icon: <Activity size={24} />, color: '#EF4444', bg: 'rgba(239, 68, 68, 0.15)' };
-    }
-    if (cat.includes('health') || name.includes('patient') || name.includes('doctor') || name.includes('nurse') || name.includes('compounder')) {
-      return { icon: <Stethoscope size={24} />, color: '#10B981', bg: 'rgba(168, 185, 129, 0.15)' };
-    }
-
-    // 10. Appliances (Washing Machine, Microwave, TV, Chimney)
-    if (cat.includes('appliance') || name.includes('machine') || name.includes('microwave') || name.includes('geyser') || name.includes('chimney') || name.includes('tv')) {
-      return { icon: <Settings size={24} />, color: '#64748B', bg: 'rgba(100, 116, 139, 0.15)' };
-    }
-
-    // 11. Painting, Carpentry & Gardening
-    if (name.includes('paint') || cat.includes('paint')) {
-      return { icon: <Paintbrush size={24} />, color: '#EC4899', bg: 'rgba(236, 72, 153, 0.15)' }; 
-    }
-    if (name.includes('garden') || name.includes('lawn') || cat.includes('garden')) {
-      return { icon: <Leaf size={24} />, color: '#22C55E', bg: 'rgba(34, 197, 94, 0.15)' }; 
-    }
-    if (name.includes('carpent') || name.includes('wood') || cat.includes('carpent')) {
-      return { icon: <Ruler size={24} />, color: '#8B5CF6', bg: 'rgba(139, 92, 246, 0.15)' }; 
-    }
-
-    return { icon: <Hammer size={24} />, color: '#6366F1', bg: 'rgba(99, 102, 241, 0.15)' };
+    return {
+      icon,
+      color: theme.primary,
+      secondary: theme.secondary,
+      tertiary: theme.tertiary,
+      shadow1: theme.shadow1,
+      shadow2: theme.shadow2,
+      shadow3: theme.shadow3,
+      bg: `${theme.primary}18`
+    };
   };
 
   return (
@@ -533,47 +514,59 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Service Categories Dynamic Tiles */}
+        {/* Category Header & Explore All Services Control */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          marginBottom: '1.35rem'
+        }}>
+          <div>
+            <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em', margin: 0 }}>
+              Service Categories
+            </h3>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '0.2rem', marginBottom: 0 }}>
+              {selectedCategory 
+                ? `Filtered by: ${categories.find(c => c.id === selectedCategory)?.name || 'Category'}` 
+                : 'Choose a category to browse specialized technicians or explore everything'}
+            </p>
+          </div>
+
+          <button
+            onClick={() => setSelectedCategory(null)}
+            className={`btn ${selectedCategory === null ? 'btn-primary' : 'btn-outline'}`}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.55rem',
+              borderRadius: '12px',
+              padding: '0.55rem 1.25rem',
+              fontWeight: 700,
+              fontSize: '0.875rem',
+              transition: 'all 0.25s ease',
+              boxShadow: selectedCategory === null ? '0 6px 20px -3px rgba(99, 102, 241, 0.45)' : 'none'
+            }}
+          >
+            <LayoutList size={18} />
+            <span>Explore All Services</span>
+            <span style={{
+              fontSize: '0.75rem',
+              padding: '0.15rem 0.55rem',
+              borderRadius: '999px',
+              background: selectedCategory === null ? 'rgba(255, 255, 255, 0.25)' : 'var(--bg-subtle)',
+              color: selectedCategory === null ? '#FFFFFF' : 'var(--text-main)',
+              fontWeight: 700
+            }}>
+              {services.length}
+            </span>
+          </button>
+        </div>
+
+        {/* Enlarged Category Tiles Grid */}
         <div style={{ marginBottom: '2.75rem' }}>
           <div className="category-tiles-grid">
-            {/* All Services Tile */}
-            {(() => {
-              const isSelected = selectedCategory === null;
-              const theme = getCategoryTheme('all');
-              return (
-                <button
-                  key="all"
-                  onClick={() => setSelectedCategory(null)}
-                  className={`category-tile ${isSelected ? 'active' : ''}`}
-                  style={{
-                    '--tile-color': theme.primary,
-                    '--tile-glow': theme.glow,
-                    '--tile-accent': theme.accentBg
-                  }}
-                >
-                  <div
-                    className="cat-icon-badge"
-                    style={{
-                      background: theme.accentBg,
-                      boxShadow: isSelected ? `0 0 16px ${theme.glow}` : '0 4px 12px rgba(0, 0, 0, 0.12)'
-                    }}
-                  >
-                    {theme.icon}
-                  </div>
-                  <div className="category-tile-title">
-                    All Services
-                  </div>
-                  <div className="cat-count-badge">
-                    {services.length} options
-                  </div>
-                  {isSelected && (
-                    <div className="cat-active-indicator" style={{ backgroundColor: theme.primary, boxShadow: `0 0 10px ${theme.primary}` }} />
-                  )}
-                </button>
-              );
-            })()}
-
-            {/* Dynamic Domain-Matched Category Tiles */}
             {categories.map((cat) => {
               const isSelected = selectedCategory === cat.id;
               const theme = getCategoryTheme(cat.name);
@@ -581,11 +574,15 @@ export default function Home() {
               return (
                 <button
                   key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
+                  onClick={() => setSelectedCategory(isSelected ? null : cat.id)}
                   className={`category-tile ${isSelected ? 'active' : ''}`}
                   style={{
                     '--tile-color': theme.primary,
-                    '--tile-glow': theme.glow,
+                    '--tile-secondary': theme.secondary,
+                    '--tile-tertiary': theme.tertiary,
+                    '--tile-shadow-1': theme.shadow1,
+                    '--tile-shadow-2': theme.shadow2,
+                    '--tile-shadow-3': theme.shadow3,
                     '--tile-accent': theme.accentBg
                   }}
                 >
@@ -593,7 +590,7 @@ export default function Home() {
                     className="cat-icon-badge"
                     style={{
                       background: theme.accentBg,
-                      boxShadow: isSelected ? `0 0 16px ${theme.glow}` : '0 4px 12px rgba(0, 0, 0, 0.12)'
+                      boxShadow: `0 8px 20px -3px ${theme.shadow1}, 0 4px 12px ${theme.shadow2}`
                     }}
                   >
                     {theme.icon}
@@ -605,7 +602,7 @@ export default function Home() {
                     {catServiceCount} {catServiceCount === 1 ? 'service' : 'services'}
                   </div>
                   {isSelected && (
-                    <div className="cat-active-indicator" style={{ backgroundColor: theme.primary, boxShadow: `0 0 10px ${theme.primary}` }} />
+                    <div className="cat-active-indicator" style={{ backgroundColor: theme.primary, boxShadow: `0 0 12px ${theme.primary}` }} />
                   )}
                 </button>
               );
@@ -662,7 +659,10 @@ export default function Home() {
                     className="service-card"
                     style={{
                       '--service-color': config.color,
-                      '--service-glow': `${config.color}35`,
+                      '--service-shadow-1': config.shadow1,
+                      '--service-shadow-2': config.shadow2,
+                      '--service-shadow-3': config.shadow3,
+                      '--service-glow': config.shadow1,
                       '--service-bg': config.bg
                     }}
                     onClick={() => navigate(`/services/${service.id}`)}
