@@ -6,7 +6,7 @@ import confetti from 'canvas-confetti';
 import LocationPicker from '../components/LocationPicker';
 import { 
   Truck, MapPin, Package, ArrowRight, ShieldCheck, CheckCircle2, 
-  CreditCard, Banknote, Calendar, Clock, Navigation, Check, Lock, ChevronRight
+  CreditCard, Banknote, Calendar, Clock, Navigation, Check, Lock, ChevronRight, AlertCircle
 } from 'lucide-react';
 
 const loadRazorpayScript = () => {

@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../services/api';
 import { 
   Sun, Moon, Briefcase, ShieldCheck, Calendar, Grid, LogOut, 
-  MapPin, Search, ChevronDown, Sparkles, Navigation, X, Check, ArrowRight, Command
+  MapPin, Search, ChevronDown, Sparkles, Navigation, X, Check, ArrowRight, Command, AlertCircle
 } from 'lucide-react';
 
 const POPULAR_LOCATIONS = [
