@@ -13,17 +13,23 @@ public class MeResponse {
     private String pincode;
     private Boolean enabled;
     private Boolean emailVerified;
+    private Boolean phoneVerified;
 
     public MeResponse() {
     }
 
     public MeResponse(Long userId, String name, String email, Role role,
                       String phone, String city, String pincode, Boolean enabled) {
-        this(userId, name, email, role, phone, city, pincode, enabled, false);
+        this(userId, name, email, role, phone, city, pincode, enabled, false, false);
     }
 
     public MeResponse(Long userId, String name, String email, Role role,
                       String phone, String city, String pincode, Boolean enabled, Boolean emailVerified) {
+        this(userId, name, email, role, phone, city, pincode, enabled, emailVerified, false);
+    }
+
+    public MeResponse(Long userId, String name, String email, Role role,
+                      String phone, String city, String pincode, Boolean enabled, Boolean emailVerified, Boolean phoneVerified) {
         this.userId = userId;
         this.name = name;
         this.email = email;
@@ -33,6 +39,7 @@ public class MeResponse {
         this.pincode = pincode;
         this.enabled = enabled;
         this.emailVerified = emailVerified;
+        this.phoneVerified = phoneVerified;
     }
 
     public Long getUserId() {
@@ -71,6 +78,10 @@ public class MeResponse {
         return emailVerified;
     }
 
+    public Boolean getPhoneVerified() {
+        return phoneVerified;
+    }
+
     public void setUserId(Long userId) {
         this.userId = userId;
     }
@@ -105,5 +116,9 @@ public class MeResponse {
 
     public void setEmailVerified(Boolean emailVerified) {
         this.emailVerified = emailVerified;
+    }
+
+    public void setPhoneVerified(Boolean phoneVerified) {
+        this.phoneVerified = phoneVerified;
     }
 }

@@ -13,12 +13,21 @@ public class ProviderProfileResponse {
     private Double rating;
     private Integer totalJobs;
     private String bio;
+    private Boolean emailVerified;
+    private Boolean phoneVerified;
 
     public ProviderProfileResponse() {}
 
     public ProviderProfileResponse(Long id, Long userId, String name, String email, String phone,
                                    Integer experienceYears, String city, String pincode,
                                    Boolean approved, Double rating, Integer totalJobs, String bio) {
+        this(id, userId, name, email, phone, experienceYears, city, pincode, approved, rating, totalJobs, bio, false, false);
+    }
+
+    public ProviderProfileResponse(Long id, Long userId, String name, String email, String phone,
+                                   Integer experienceYears, String city, String pincode,
+                                   Boolean approved, Double rating, Integer totalJobs, String bio,
+                                   Boolean emailVerified, Boolean phoneVerified) {
         this.id = id;
         this.userId = userId;
         this.name = name;
@@ -31,6 +40,8 @@ public class ProviderProfileResponse {
         this.rating = rating;
         this.totalJobs = totalJobs;
         this.bio = bio;
+        this.emailVerified = emailVerified;
+        this.phoneVerified = phoneVerified;
     }
 
     public Long getId() { return id; }
@@ -57,4 +68,8 @@ public class ProviderProfileResponse {
     public void setTotalJobs(Integer totalJobs) { this.totalJobs = totalJobs; }
     public String getBio() { return bio; }
     public void setBio(String bio) { this.bio = bio; }
+    public Boolean getEmailVerified() { return emailVerified; }
+    public void setEmailVerified(Boolean emailVerified) { this.emailVerified = emailVerified; }
+    public Boolean getPhoneVerified() { return phoneVerified; }
+    public void setPhoneVerified(Boolean phoneVerified) { this.phoneVerified = phoneVerified; }
 }

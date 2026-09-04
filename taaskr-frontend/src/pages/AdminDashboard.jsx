@@ -480,15 +480,33 @@ export default function AdminDashboard() {
                   <th>Location</th>
                   <th>Experience</th>
                   <th>Status</th>
-                  <th style={{ textAlign: 'right' }}>Verification</th>
+                  <th style={{ textAlign: 'right' }}>Admin Approval</th>
                 </tr>
               </thead>
               <tbody>
                 {providers.map((p) => (
                   <tr key={p.id}>
                     <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{p.name}</td>
-                    <td style={{ color: 'var(--text-muted)' }}>{p.email}</td>
-                    <td style={{ color: 'var(--text-muted)' }}>{p.phone || 'N/A'}</td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>{p.email}</span>
+                        {p.emailVerified ? (
+                          <span title="Email Verified" style={{ color: '#10B981', display: 'inline-flex' }}><Check size={12} /></span>
+                        ) : (
+                          <span title="Email Unverified" style={{ color: '#D97706', fontSize: '0.65rem', background: '#FEF3C7', padding: '0.05rem 0.3rem', borderRadius: '3px' }}>Unverified</span>
+                        )}
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>{p.phone || 'N/A'}</span>
+                        {p.phoneVerified ? (
+                          <span title="Phone Verified" style={{ color: '#10B981', display: 'inline-flex' }}><Check size={12} /></span>
+                        ) : (
+                          <span title="Phone Unverified" style={{ color: '#2563EB', fontSize: '0.65rem', background: '#EFF6FF', padding: '0.05rem 0.3rem', borderRadius: '3px' }}>Unverified</span>
+                        )}
+                      </div>
+                    </td>
                     <td style={{ color: 'var(--text-main)' }}>{p.city} ({p.pincode})</td>
                     <td style={{ color: 'var(--text-main)' }}>{p.experienceYears || 0} yrs</td>
                     <td>
@@ -507,7 +525,7 @@ export default function AdminDashboard() {
                         </button>
                       ) : (
                         <span style={{ color: 'var(--success)', fontSize: '0.75rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
-                          <Check size={12} /> Verified
+                          <Check size={12} /> Approved
                         </span>
                       )}
                     </td>
@@ -581,6 +599,7 @@ export default function AdminDashboard() {
                   <th>Phone</th>
                   <th>City</th>
                   <th>Role</th>
+                  <th>Verification</th>
                 </tr>
               </thead>
               <tbody>
@@ -595,6 +614,30 @@ export default function AdminDashboard() {
                       <span className={`badge ${u.role === 'ADMIN' ? 'badge-completed' : u.role === 'PROVIDER' ? 'badge-accepted' : 'badge-pending'}`}>
                         {u.role}
                       </span>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                        <span style={{ 
+                          fontSize: '0.68rem', 
+                          padding: '0.1rem 0.35rem', 
+                          borderRadius: '3px',
+                          background: u.emailVerified ? 'rgba(16, 185, 129, 0.12)' : 'rgba(217, 119, 6, 0.12)',
+                          color: u.emailVerified ? '#10B981' : '#D97706',
+                          fontWeight: 600
+                        }}>
+                          {u.emailVerified ? '✓ Email' : '✕ Email'}
+                        </span>
+                        <span style={{ 
+                          fontSize: '0.68rem', 
+                          padding: '0.1rem 0.35rem', 
+                          borderRadius: '3px',
+                          background: u.phoneVerified ? 'rgba(16, 185, 129, 0.12)' : 'rgba(37, 99, 235, 0.12)',
+                          color: u.phoneVerified ? '#10B981' : '#2563EB',
+                          fontWeight: 600
+                        }}>
+                          {u.phoneVerified ? '✓ Phone' : '✕ Phone'}
+                        </span>
+                      </div>
                     </td>
                   </tr>
                 ))}

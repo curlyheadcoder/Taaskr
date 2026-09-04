@@ -14,6 +14,8 @@ public class AdminProviderResponse {
     private Double rating;
     private Integer totalJobs;
     private String bio;
+    private Boolean emailVerified;
+    private Boolean phoneVerified;
 
     public AdminProviderResponse() {
     }
@@ -30,6 +32,23 @@ public class AdminProviderResponse {
                                  Double rating,
                                  Integer totalJobs,
                                  String bio) {
+        this(id, userId, name, email, phone, experienceYears, city, pincode, approved, rating, totalJobs, bio, false, false);
+    }
+
+    public AdminProviderResponse(Long id,
+                                 Long userId,
+                                 String name,
+                                 String email,
+                                 String phone,
+                                 Integer experienceYears,
+                                 String city,
+                                 String pincode,
+                                 Boolean approved,
+                                 Double rating,
+                                 Integer totalJobs,
+                                 String bio,
+                                 Boolean emailVerified,
+                                 Boolean phoneVerified) {
         this.id = id;
         this.userId = userId;
         this.name = name;
@@ -42,6 +61,8 @@ public class AdminProviderResponse {
         this.rating = rating;
         this.totalJobs = totalJobs;
         this.bio = bio;
+        this.emailVerified = emailVerified;
+        this.phoneVerified = phoneVerified;
     }
 
     public Long getId() {
@@ -90,5 +111,21 @@ public class AdminProviderResponse {
 
     public String getBio() {
         return bio;
+    }
+
+    public Boolean getEmailVerified() {
+        return emailVerified;
+    }
+
+    public Boolean getPhoneVerified() {
+        return phoneVerified;
+    }
+
+    public void setEmailVerified(Boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
+
+    public void setPhoneVerified(Boolean phoneVerified) {
+        this.phoneVerified = phoneVerified;
     }
 }

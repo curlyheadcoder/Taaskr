@@ -96,6 +96,20 @@ export const api = {
       });
     },
 
+    sendPhoneOtp: async (phone) => {
+      return makeRequest('/api/auth/send-phone-otp', {
+        method: 'POST',
+        body: JSON.stringify({ phone })
+      });
+    },
+
+    verifyPhone: async (phone, otp) => {
+      return makeRequest('/api/auth/verify-phone', {
+        method: 'POST',
+        body: JSON.stringify({ phone, otp })
+      });
+    },
+
     forgotPassword: async (email) => {
       return makeRequest('/api/auth/forgot-password', {
         method: 'POST',

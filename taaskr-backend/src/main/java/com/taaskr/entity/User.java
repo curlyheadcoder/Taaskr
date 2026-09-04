@@ -19,7 +19,7 @@ public class User {
     private String email;
     @Column(nullable = false, length = 100)
     private String password;
-    @Column(nullable = false, unique = true, length = 10)
+    @Column(nullable = false, unique = true, length = 20)
     private String phone;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
@@ -36,10 +36,18 @@ public class User {
     @Column(nullable = false)
     private Boolean emailVerified = false;
 
+    @Column(nullable = false)
+    private Boolean phoneVerified = false;
+
     @Column(length = 10)
     private String verificationOtp;
 
     private LocalDateTime verificationOtpExpiresAt;
+
+    @Column(length = 10)
+    private String phoneVerificationOtp;
+
+    private LocalDateTime phoneVerificationOtpExpiresAt;
 
     @Column(length = 10)
     private String resetPasswordOtp;
@@ -62,6 +70,9 @@ public class User {
         }
         if (this.emailVerified == null) {
             this.emailVerified = false;
+        }
+        if (this.phoneVerified == null) {
+            this.phoneVerified = false;
         }
     }
 
@@ -166,6 +177,14 @@ public class User {
         this.emailVerified = emailVerified;
     }
 
+    public Boolean getPhoneVerified() {
+        return phoneVerified;
+    }
+
+    public void setPhoneVerified(Boolean phoneVerified) {
+        this.phoneVerified = phoneVerified;
+    }
+
     public String getVerificationOtp() {
         return verificationOtp;
     }
@@ -180,6 +199,22 @@ public class User {
 
     public void setVerificationOtpExpiresAt(LocalDateTime verificationOtpExpiresAt) {
         this.verificationOtpExpiresAt = verificationOtpExpiresAt;
+    }
+
+    public String getPhoneVerificationOtp() {
+        return phoneVerificationOtp;
+    }
+
+    public void setPhoneVerificationOtp(String phoneVerificationOtp) {
+        this.phoneVerificationOtp = phoneVerificationOtp;
+    }
+
+    public LocalDateTime getPhoneVerificationOtpExpiresAt() {
+        return phoneVerificationOtpExpiresAt;
+    }
+
+    public void setPhoneVerificationOtpExpiresAt(LocalDateTime phoneVerificationOtpExpiresAt) {
+        this.phoneVerificationOtpExpiresAt = phoneVerificationOtpExpiresAt;
     }
 
     public String getResetPasswordOtp() {

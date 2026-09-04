@@ -197,7 +197,7 @@ export default function CustomerDashboard() {
           color: '#92400E',
           padding: '0.75rem 1rem',
           borderRadius: 'var(--radius-sm)',
-          marginBottom: '1.25rem',
+          marginBottom: '1rem',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -207,15 +207,45 @@ export default function CustomerDashboard() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <AlertCircle size={16} color="#D97706" />
             <span style={{ fontSize: '0.8125rem' }}>
-              Your email (<strong>{currentUser.email}</strong>) is not verified yet. Verify your email to ensure uninterrupted booking updates and invoices.
+              Your email (<strong>{currentUser.email}</strong>) is not verified. Verify your email to receive invoices and booking updates.
             </span>
           </div>
           <Link 
-            to={`/verify-email?email=${encodeURIComponent(currentUser.email || '')}`}
+            to={`/verify-email?type=email&email=${encodeURIComponent(currentUser.email || '')}`}
             className="btn btn-sm"
-            style={{ backgroundColor: '#D97706', color: '#fff', padding: '0.25rem 0.65rem', fontSize: '0.75rem' }}
+            style={{ backgroundColor: '#D97706', color: '#fff', padding: '0.25rem 0.65rem', fontSize: '0.75rem', textDecoration: 'none' }}
           >
-            Verify Now
+            Verify Email
+          </Link>
+        </div>
+      )}
+
+      {currentUser && currentUser.phoneVerified === false && (
+        <div style={{
+          background: '#EFF6FF',
+          border: '1px solid #BFDBFE',
+          color: '#1E40AF',
+          padding: '0.75rem 1rem',
+          borderRadius: 'var(--radius-sm)',
+          marginBottom: '1rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '0.5rem'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <AlertCircle size={16} color="#2563EB" />
+            <span style={{ fontSize: '0.8125rem' }}>
+              Your mobile contact number {currentUser.phone && !currentUser.phone.startsWith('NA-') ? <strong>({currentUser.phone})</strong> : ''} is not verified. Verify your phone to enable live SMS job dispatches.
+            </span>
+          </div>
+          <Link 
+            to={`/verify-phone?type=phone&phone=${encodeURIComponent(currentUser.phone && !currentUser.phone.startsWith('NA-') ? currentUser.phone : '')}`}
+            className="btn btn-sm"
+            style={{ backgroundColor: '#2563EB', color: '#fff', padding: '0.25rem 0.65rem', fontSize: '0.75rem', textDecoration: 'none' }}
+          >
+            Verify Phone
           </Link>
         </div>
       )}

@@ -61,7 +61,9 @@ public class AdminProviderServiceImpl implements AdminProviderService {
                 providerProfile.getApproved(),
                 providerProfile.getRating(),
                 providerProfile.getTotalJobs(),
-                providerProfile.getBio()
+                providerProfile.getBio(),
+                Boolean.TRUE.equals(user.getEmailVerified()),
+                Boolean.TRUE.equals(user.getPhoneVerified())
         );
     }
 }

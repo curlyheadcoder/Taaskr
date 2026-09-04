@@ -31,6 +31,7 @@ export default function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/verify-phone" element={<VerifyEmail />} />
             <Route path="/services/:serviceId" element={<ServiceDetails />} />
 
             {/* Protected Customer Routes */}

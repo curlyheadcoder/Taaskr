@@ -217,14 +217,14 @@ export default function Navbar() {
                   <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-main)', lineHeight: 1.1 }}>
                     {user.name}
                   </span>
-                  {user.emailVerified ? (
-                    <span title="Email Verified" style={{ display: 'inline-flex', alignItems: 'center', color: '#10B981' }}>
-                      <ShieldCheck size={12} />
+                  {user.emailVerified && user.phoneVerified ? (
+                    <span title="Email & Phone Verified" style={{ display: 'inline-flex', alignItems: 'center', color: '#10B981' }}>
+                      <ShieldCheck size={13} />
                     </span>
                   ) : (
                     <Link
-                      to={`/verify-email?email=${encodeURIComponent(user.email || '')}`}
-                      title="Email Unverified - Click to Verify"
+                      to={!user.emailVerified ? `/verify-email?email=${encodeURIComponent(user.email || '')}` : `/verify-phone?type=phone&phone=${encodeURIComponent(user.phone || '')}`}
+                      title={!user.emailVerified ? "Email Unverified - Click to Verify" : "Phone Unverified - Click to Verify"}
                       style={{
                         fontSize: '0.62rem',
                         background: '#FEF3C7',
@@ -235,19 +235,30 @@ export default function Navbar() {
                         textDecoration: 'none'
                       }}
                     >
-                      Verify
+                      {!user.emailVerified ? 'Verify Email' : 'Verify Phone'}
                     </Link>
                   )}
                 </div>
-                <span style={{
-                  fontSize: '0.65rem',
-                  fontWeight: 500,
-                  color: 'var(--text-muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.03em'
-                }}>
-                  {user.role}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span style={{
+                    fontSize: '0.65rem',
+                    fontWeight: 500,
+                    color: 'var(--text-muted)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.03em'
+                  }}>
+                    {user.role}
+                  </span>
+                  {user.emailVerified && !user.phoneVerified && (
+                    <Link 
+                      to={`/verify-phone?type=phone&phone=${encodeURIComponent(user.phone || '')}`}
+                      style={{ fontSize: '0.62rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}
+                      title="Verify Phone Number"
+                    >
+                      • +Phone
+                    </Link>
+                  )}
+                </div>
               </div>
             </div>
 

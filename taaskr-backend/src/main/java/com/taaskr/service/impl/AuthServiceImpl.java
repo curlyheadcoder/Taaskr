@@ -14,6 +14,7 @@ import com.taaskr.repository.UserRepository;
 import com.taaskr.security.JwtService;
 import com.taaskr.service.AuthService;
 import com.taaskr.service.EmailService;
+import com.taaskr.service.SmsService;
 import jakarta.transaction.Transactional;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -39,6 +40,7 @@ public class AuthServiceImpl implements AuthService {
     private final ProviderCategoryRepository providerCategoryRepository;
     private final ServiceCategoryRepository serviceCategoryRepository;
     private final EmailService emailService;
+    private final SmsService smsService;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public AuthServiceImpl(UserRepository userRepository,
@@ -48,7 +50,8 @@ public class AuthServiceImpl implements AuthService {
                            ProviderProfileRepository providerProfileRepository,
                            ProviderCategoryRepository providerCategoryRepository,
                            ServiceCategoryRepository serviceCategoryRepository,
-                           EmailService emailService) {
+                           EmailService emailService,
+                           SmsService smsService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -57,6 +60,7 @@ public class AuthServiceImpl implements AuthService {
         this.providerCategoryRepository = providerCategoryRepository;
         this.serviceCategoryRepository = serviceCategoryRepository;
         this.emailService = emailService;
+        this.smsService = smsService;
     }
 
     private String generateOtp() {
@@ -81,6 +85,11 @@ public class AuthServiceImpl implements AuthService {
             throw new BadRequestException("Admin registration is not allowed");
         }
 
+        String phone = request.getPhone() != null ? request.getPhone().trim() : null;
+        if (phone != null && !phone.isBlank() && userRepository.existsByPhone(phone)) {
+            throw new BadRequestException("Phone number is already registered with another account");
+        }
+
         String otp = generateOtp();
         LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(15);
 
@@ -88,12 +97,13 @@ public class AuthServiceImpl implements AuthService {
         user.setName(request.getName().trim());
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setPhone(request.getPhone());
+        user.setPhone(phone != null && !phone.isBlank() ? phone : "NA-" + System.currentTimeMillis());
         user.setRole(request.getRole());
         user.setCity(request.getCity());
         user.setPincode(request.getPincode());
         user.setEnabled(true);
         user.setEmailVerified(false);
+        user.setPhoneVerified(false);
         user.setVerificationOtp(otp);
         user.setVerificationOtpExpiresAt(expiresAt);
 
@@ -150,8 +160,10 @@ public class AuthServiceImpl implements AuthService {
                 savedUser.getId(),
                 savedUser.getName(),
                 savedUser.getEmail(),
+                savedUser.getPhone(),
                 savedUser.getRole(),
-                Boolean.TRUE.equals(savedUser.getEmailVerified())
+                Boolean.TRUE.equals(savedUser.getEmailVerified()),
+                Boolean.TRUE.equals(savedUser.getPhoneVerified())
         );
     }
 
@@ -179,14 +191,16 @@ public class AuthServiceImpl implements AuthService {
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
+                user.getPhone(),
                 user.getRole(),
-                Boolean.TRUE.equals(user.getEmailVerified())
+                Boolean.TRUE.equals(user.getEmailVerified()),
+                Boolean.TRUE.equals(user.getPhoneVerified())
         );
     }
 
     @Override
     public MeResponse me(String email) {
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmail(email.trim().toLowerCase())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         return new MeResponse(
@@ -198,7 +212,8 @@ public class AuthServiceImpl implements AuthService {
                 user.getCity(),
                 user.getPincode(),
                 user.getEnabled(),
-                Boolean.TRUE.equals(user.getEmailVerified())
+                Boolean.TRUE.equals(user.getEmailVerified()),
+                Boolean.TRUE.equals(user.getPhoneVerified())
         );
     }
 
@@ -210,7 +225,7 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + normalizedEmail));
 
         if (Boolean.TRUE.equals(user.getEmailVerified())) {
-            return new AuthMessageResponse(true, "Email is already verified", normalizedEmail);
+            return new AuthMessageResponse(true, "Email is already verified", normalizedEmail, user.getPhone(), null);
         }
 
         String otp = generateOtp();
@@ -220,7 +235,7 @@ public class AuthServiceImpl implements AuthService {
 
         emailService.sendVerificationOtp(user.getEmail(), user.getName(), otp);
 
-        return new AuthMessageResponse(true, "Verification code sent to " + normalizedEmail, normalizedEmail);
+        return new AuthMessageResponse(true, "Verification code sent to " + normalizedEmail, normalizedEmail, user.getPhone(), otp);
     }
 
     @Override
@@ -231,7 +246,7 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
 
         if (Boolean.TRUE.equals(user.getEmailVerified())) {
-            return new AuthMessageResponse(true, "Email is already verified", email);
+            return new AuthMessageResponse(true, "Email is already verified", email, user.getPhone(), null);
         }
 
         if (user.getVerificationOtp() == null || user.getVerificationOtpExpiresAt() == null) {
@@ -257,7 +272,92 @@ public class AuthServiceImpl implements AuthService {
             // Ignore email notification failure
         }
 
-        return new AuthMessageResponse(true, "Email verified successfully!", email);
+        return new AuthMessageResponse(true, "Email verified successfully!", email, user.getPhone(), null);
+    }
+
+    @Override
+    @Transactional
+    public AuthMessageResponse sendPhoneOtp(SendPhoneOtpRequest request, String authenticatedEmail) {
+        String targetPhone = request.getPhone() != null ? request.getPhone().trim() : "";
+        User user = null;
+
+        if (authenticatedEmail != null && !authenticatedEmail.isBlank() && !authenticatedEmail.equalsIgnoreCase("anonymousUser")) {
+            user = userRepository.findByEmail(authenticatedEmail.trim().toLowerCase()).orElse(null);
+        }
+
+        if (user == null && !targetPhone.isBlank()) {
+            user = userRepository.findByPhone(targetPhone).orElse(null);
+        }
+
+        if (user == null) {
+            if (!targetPhone.isBlank()) {
+                throw new ResourceNotFoundException("No account found associated with phone: " + targetPhone);
+            } else {
+                throw new BadRequestException("Phone number is required");
+            }
+        }
+
+        if (!targetPhone.isBlank() && !targetPhone.equals(user.getPhone())) {
+            // Check if another user already has this phone number
+            final Long currentUserId = user.getId();
+            userRepository.findByPhone(targetPhone).ifPresent(existingUser -> {
+                if (!existingUser.getId().equals(currentUserId)) {
+                    throw new BadRequestException("Phone number is already associated with another account");
+                }
+            });
+            user.setPhone(targetPhone);
+            user.setPhoneVerified(false);
+        }
+
+        if (Boolean.TRUE.equals(user.getPhoneVerified())) {
+            return new AuthMessageResponse(true, "Phone number is already verified", user.getEmail(), user.getPhone(), null);
+        }
+
+        String otp = generateOtp();
+        user.setPhoneVerificationOtp(otp);
+        user.setPhoneVerificationOtpExpiresAt(LocalDateTime.now().plusMinutes(15));
+        userRepository.save(user);
+
+        smsService.sendPhoneVerificationOtp(user.getPhone(), user.getName(), otp);
+
+        return new AuthMessageResponse(true, "Verification code sent to " + user.getPhone(), user.getEmail(), user.getPhone(), otp);
+    }
+
+    @Override
+    @Transactional
+    public AuthMessageResponse verifyPhone(VerifyPhoneRequest request, String authenticatedEmail) {
+        String targetPhone = request.getPhone().trim();
+        String otp = request.getOtp().trim();
+
+        User user = null;
+        if (authenticatedEmail != null && !authenticatedEmail.isBlank() && !authenticatedEmail.equalsIgnoreCase("anonymousUser")) {
+            user = userRepository.findByEmail(authenticatedEmail.trim().toLowerCase()).orElse(null);
+        }
+
+        if (user == null) {
+            user = userRepository.findByPhone(targetPhone)
+                    .orElseThrow(() -> new ResourceNotFoundException("No account found with phone: " + targetPhone));
+        }
+
+        if (user.getPhoneVerificationOtp() == null || user.getPhoneVerificationOtpExpiresAt() == null) {
+            throw new BadRequestException("No phone verification request found. Please request a new verification code.");
+        }
+
+        if (LocalDateTime.now().isAfter(user.getPhoneVerificationOtpExpiresAt())) {
+            throw new BadRequestException("Phone verification code has expired. Please request a new code.");
+        }
+
+        if (!user.getPhoneVerificationOtp().trim().equals(otp)) {
+            throw new BadRequestException("Invalid phone verification code. Please check and try again.");
+        }
+
+        user.setPhone(targetPhone);
+        user.setPhoneVerified(true);
+        user.setPhoneVerificationOtp(null);
+        user.setPhoneVerificationOtpExpiresAt(null);
+        userRepository.save(user);
+
+        return new AuthMessageResponse(true, "Phone number verified successfully!", user.getEmail(), user.getPhone(), null);
     }
 
     @Override
@@ -274,7 +374,7 @@ public class AuthServiceImpl implements AuthService {
 
         emailService.sendPasswordResetOtp(user.getEmail(), user.getName(), otp);
 
-        return new AuthMessageResponse(true, "Password reset OTP sent to " + email, email);
+        return new AuthMessageResponse(true, "Password reset OTP sent to " + email, email, user.getPhone(), otp);
     }
 
     @Override
@@ -301,7 +401,7 @@ public class AuthServiceImpl implements AuthService {
         user.setResetPasswordOtpExpiresAt(null);
         userRepository.save(user);
 
-        return new AuthMessageResponse(true, "Password reset successfully! You can now sign in with your new password.", email);
+        return new AuthMessageResponse(true, "Password reset successfully! You can now sign in with your new password.", email, user.getPhone(), null);
     }
 
     @Override
@@ -309,6 +409,8 @@ public class AuthServiceImpl implements AuthService {
     public AuthMessageResponse resendOtp(SendOtpRequest request) {
         if ("RESET_PASSWORD".equalsIgnoreCase(request.getType())) {
             return forgotPassword(new ForgotPasswordRequest(request.getEmail()));
+        } else if ("PHONE".equalsIgnoreCase(request.getType())) {
+            return sendPhoneOtp(new SendPhoneOtpRequest(request.getEmail()), null);
         } else {
             return sendVerificationOtp(request.getEmail());
         }

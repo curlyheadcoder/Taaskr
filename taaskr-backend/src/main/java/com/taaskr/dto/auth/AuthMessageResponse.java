@@ -5,6 +5,8 @@ public class AuthMessageResponse {
     private boolean success;
     private String message;
     private String email;
+    private String phone;
+    private String otp;
 
     public AuthMessageResponse() {
     }
@@ -18,6 +20,14 @@ public class AuthMessageResponse {
         this.success = success;
         this.message = message;
         this.email = email;
+    }
+
+    public AuthMessageResponse(boolean success, String message, String email, String phone, String otp) {
+        this.success = success;
+        this.message = message;
+        this.email = email;
+        this.phone = phone;
+        this.otp = otp;
     }
 
     public boolean isSuccess() {
@@ -42,5 +52,21 @@ public class AuthMessageResponse {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getOtp() {
+        return otp;
+    }
+
+    public void setOtp(String otp) {
+        this.otp = otp;
     }
 }

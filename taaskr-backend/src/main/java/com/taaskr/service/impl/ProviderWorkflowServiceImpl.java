@@ -368,8 +368,13 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
         ProviderProfile provider = getProviderByEmail(providerEmail);
         User user = provider.getUser();
 
+        String newPhone = request.getPhone() != null ? request.getPhone().trim() : null;
+        if (newPhone != null && !newPhone.equals(user.getPhone())) {
+            user.setPhone(newPhone);
+            user.setPhoneVerified(false);
+        }
+
         user.setName(request.getName().trim());
-        user.setPhone(request.getPhone());
         user.setCity(request.getCity());
         user.setPincode(request.getPincode());
         userRepository.save(user);
@@ -396,7 +401,9 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
                 provider.getApproved(),
                 provider.getRating(),
                 provider.getTotalJobs(),
-                provider.getBio()
+                provider.getBio(),
+                Boolean.TRUE.equals(provider.getUser().getEmailVerified()),
+                Boolean.TRUE.equals(provider.getUser().getPhoneVerified())
         );
     }
 

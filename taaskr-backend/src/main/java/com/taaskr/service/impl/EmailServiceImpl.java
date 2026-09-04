@@ -217,20 +217,20 @@ public class EmailServiceImpl implements EmailService {
     @Async
     public void sendVerificationOtp(String toEmail, String userName, String otp) {
         String subject = "Taaskr - Verify Your Email Address";
-        String htmlContent = """
+        String template = """
             <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                 <div style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); padding: 28px 24px; text-align: center;">
                     <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">Taaskr</h1>
                     <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 13px;">On-Demand Home & Freight Services</p>
                 </div>
                 <div style="padding: 32px 24px; color: #1e293b;">
-                    <h2 style="margin: 0 0 16px 0; font-size: 20px; color: #0f172a;">Welcome to Taaskr, %s!</h2>
+                    <h2 style="margin: 0 0 16px 0; font-size: 20px; color: #0f172a;">Welcome to Taaskr, {{userName}}!</h2>
                     <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #475569;">
                         Thank you for signing up. Please use the following 6-digit verification code to verify your email address and activate your account:
                     </p>
                     <div style="text-align: center; margin: 28px 0;">
                         <div style="display: inline-block; background-color: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: 8px; padding: 14px 32px; font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #0284c7; font-family: monospace;">
-                            %s
+                            {{otp}}
                         </div>
                     </div>
                     <p style="margin: 0 0 12px 0; font-size: 13px; color: #64748b;">
@@ -241,7 +241,11 @@ public class EmailServiceImpl implements EmailService {
                     &copy; 2026 Taaskr Technologies Inc. All rights reserved.
                 </div>
             </div>
-            """.formatted(userName != null ? userName : "User", otp);
+            """;
+
+        String htmlContent = template
+                .replace("{{userName}}", userName != null && !userName.isBlank() ? userName : "User")
+                .replace("{{otp}}", otp != null ? otp : "");
 
         sendHtmlEmail(toEmail, subject, htmlContent, "VERIFICATION OTP: " + otp);
     }
@@ -250,7 +254,7 @@ public class EmailServiceImpl implements EmailService {
     @Async
     public void sendPasswordResetOtp(String toEmail, String userName, String otp) {
         String subject = "Taaskr - Password Reset Request";
-        String htmlContent = """
+        String template = """
             <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                 <div style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); padding: 28px 24px; text-align: center;">
                     <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">Taaskr</h1>
@@ -259,11 +263,11 @@ public class EmailServiceImpl implements EmailService {
                 <div style="padding: 32px 24px; color: #1e293b;">
                     <h2 style="margin: 0 0 16px 0; font-size: 20px; color: #0f172a;">Password Reset Request</h2>
                     <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #475569;">
-                        Hello %s, we received a request to reset the password for your Taaskr account. Enter the 6-digit OTP below to proceed with resetting your password:
+                        Hello {{userName}}, we received a request to reset the password for your Taaskr account. Enter the 6-digit OTP below to proceed with resetting your password:
                     </p>
                     <div style="text-align: center; margin: 28px 0;">
                         <div style="display: inline-block; background-color: #fef2f2; border: 2px dashed #fca5a5; border-radius: 8px; padding: 14px 32px; font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #dc2626; font-family: monospace;">
-                            %s
+                            {{otp}}
                         </div>
                     </div>
                     <p style="margin: 0 0 12px 0; font-size: 13px; color: #64748b;">
@@ -274,7 +278,11 @@ public class EmailServiceImpl implements EmailService {
                     &copy; 2026 Taaskr Technologies Inc. All rights reserved.
                 </div>
             </div>
-            """.formatted(userName != null ? userName : "User", otp);
+            """;
+
+        String htmlContent = template
+                .replace("{{userName}}", userName != null && !userName.isBlank() ? userName : "User")
+                .replace("{{otp}}", otp != null ? otp : "");
 
         sendHtmlEmail(toEmail, subject, htmlContent, "PASSWORD RESET OTP: " + otp);
     }
@@ -283,7 +291,7 @@ public class EmailServiceImpl implements EmailService {
     @Async
     public void sendWelcomeEmail(String toEmail, String userName) {
         String subject = "Taaskr - Welcome Aboard!";
-        String htmlContent = """
+        String template = """
             <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
                 <div style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); padding: 28px 24px; text-align: center;">
                     <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Taaskr</h1>
@@ -291,11 +299,14 @@ public class EmailServiceImpl implements EmailService {
                 <div style="padding: 32px 24px; color: #1e293b;">
                     <h2 style="margin: 0 0 16px 0; font-size: 20px; color: #0f172a;">Account Verified Successfully!</h2>
                     <p style="font-size: 15px; line-height: 1.6; color: #475569;">
-                        Hello %s, your email has been verified. You can now book trusted home and freight services or manage your professional service catalog seamlessly.
+                        Hello {{userName}}, your email has been verified. You can now book trusted home and freight services or manage your professional service catalog seamlessly.
                     </p>
                 </div>
             </div>
-            """.formatted(userName != null ? userName : "User");
+            """;
+
+        String htmlContent = template
+                .replace("{{userName}}", userName != null && !userName.isBlank() ? userName : "User");
 
         sendHtmlEmail(toEmail, subject, htmlContent, "WELCOME EMAIL");
     }

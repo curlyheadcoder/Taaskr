@@ -10,6 +10,8 @@ public interface AuthService {
     MeResponse me(String email);
     AuthMessageResponse sendVerificationOtp(String email);
     AuthMessageResponse verifyEmail(VerifyEmailRequest request);
+    AuthMessageResponse sendPhoneOtp(SendPhoneOtpRequest request, String authenticatedEmail);
+    AuthMessageResponse verifyPhone(VerifyPhoneRequest request, String authenticatedEmail);
     AuthMessageResponse forgotPassword(ForgotPasswordRequest request);
     AuthMessageResponse resetPassword(ResetPasswordRequest request);
     AuthMessageResponse resendOtp(SendOtpRequest request);

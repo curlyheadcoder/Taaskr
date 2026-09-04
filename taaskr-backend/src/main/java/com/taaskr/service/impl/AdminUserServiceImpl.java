@@ -24,8 +24,8 @@ public class AdminUserServiceImpl implements AdminUserService {
                 .map(this::mapToResponse)
                 .toList();
     }
-    private AdminUserResponse mapToResponse(User user) {
 
+    private AdminUserResponse mapToResponse(User user) {
         return new AdminUserResponse(
                 user.getId(),
                 user.getName(),
@@ -35,6 +35,8 @@ public class AdminUserServiceImpl implements AdminUserService {
                 user.getCity(),
                 user.getPincode(),
                 user.getEnabled(),
+                Boolean.TRUE.equals(user.getEmailVerified()),
+                Boolean.TRUE.equals(user.getPhoneVerified()),
                 user.getCreatedAt(),
                 user.getUpdatedAt()
         );

@@ -3,6 +3,7 @@ package com.taaskr.controller;
 import com.taaskr.dto.auth.*;
 import com.taaskr.service.AuthService;
 import com.taaskr.service.EmailService;
+import com.taaskr.service.SmsService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -15,10 +16,12 @@ public class AuthController {
 
     private final AuthService authService;
     private final EmailService emailService;
+    private final SmsService smsService;
 
-    public AuthController(AuthService authService, EmailService emailService) {
+    public AuthController(AuthService authService, EmailService emailService, SmsService smsService) {
         this.authService = authService;
         this.emailService = emailService;
+        this.smsService = smsService;
     }
 
     @PostMapping("/register")
@@ -50,6 +53,18 @@ public class AuthController {
         return authService.verifyEmail(request);
     }
 
+    @PostMapping("/send-phone-otp")
+    public AuthMessageResponse sendPhoneOtp(@Valid @RequestBody SendPhoneOtpRequest request, Authentication authentication) {
+        String authEmail = authentication != null ? authentication.getName() : null;
+        return authService.sendPhoneOtp(request, authEmail);
+    }
+
+    @PostMapping("/verify-phone")
+    public AuthMessageResponse verifyPhone(@Valid @RequestBody VerifyPhoneRequest request, Authentication authentication) {
+        String authEmail = authentication != null ? authentication.getName() : null;
+        return authService.verifyPhone(request, authEmail);
+    }
+
     @PostMapping("/forgot-password")
     public AuthMessageResponse forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         return authService.forgotPassword(request);
@@ -68,5 +83,10 @@ public class AuthController {
     @GetMapping("/test-email")
     public Map<String, Object> testEmail(@RequestParam(defaultValue = "mayanksonwani078@gmail.com") String to) {
         return emailService.testEmailDispatch(to);
+    }
+
+    @GetMapping("/test-sms")
+    public Map<String, Object> testSms(@RequestParam(defaultValue = "9876543210") String phone) {
+        return smsService.testSmsDispatch(phone);
     }
 }

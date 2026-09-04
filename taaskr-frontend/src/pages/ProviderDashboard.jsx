@@ -455,7 +455,7 @@ export default function ProviderDashboard() {
             color: '#92400E',
             padding: '0.75rem 1rem',
             borderRadius: 'var(--radius-sm)',
-            marginBottom: '1.25rem',
+            marginBottom: '1rem',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -469,11 +469,41 @@ export default function ProviderDashboard() {
               </span>
             </div>
             <Link 
-              to={`/verify-email?email=${encodeURIComponent(userProfile.email || '')}`}
+              to={`/verify-email?type=email&email=${encodeURIComponent(userProfile.email || '')}`}
               className="btn btn-sm"
-              style={{ backgroundColor: '#D97706', color: '#fff', padding: '0.25rem 0.65rem', fontSize: '0.75rem' }}
+              style={{ backgroundColor: '#D97706', color: '#fff', padding: '0.25rem 0.65rem', fontSize: '0.75rem', textDecoration: 'none' }}
             >
               Verify Email
+            </Link>
+          </div>
+        )}
+
+        {userProfile && userProfile.phoneVerified === false && (
+          <div style={{
+            background: '#EFF6FF',
+            border: '1px solid #BFDBFE',
+            color: '#1E40AF',
+            padding: '0.75rem 1rem',
+            borderRadius: 'var(--radius-sm)',
+            marginBottom: '1rem',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '0.5rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <AlertCircle size={16} color="#2563EB" />
+              <span style={{ fontSize: '0.8125rem' }}>
+                Your partner contact phone (<strong>{userProfile.phone || 'Not configured'}</strong>) is not verified. Verify your phone to receive live SMS job dispatch alerts.
+              </span>
+            </div>
+            <Link 
+              to={`/verify-phone?type=phone&phone=${encodeURIComponent(userProfile.phone || '')}`}
+              className="btn btn-sm"
+              style={{ backgroundColor: '#2563EB', color: '#fff', padding: '0.25rem 0.65rem', fontSize: '0.75rem', textDecoration: 'none' }}
+            >
+              Verify Phone
             </Link>
           </div>
         )}

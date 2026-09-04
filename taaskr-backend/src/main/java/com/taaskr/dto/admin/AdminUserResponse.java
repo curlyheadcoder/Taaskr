@@ -14,6 +14,8 @@ public class AdminUserResponse {
     private String city;
     private String pincode;
     private Boolean enabled;
+    private Boolean emailVerified;
+    private Boolean phoneVerified;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -30,6 +32,21 @@ public class AdminUserResponse {
                              Boolean enabled,
                              LocalDateTime createdAt,
                              LocalDateTime updatedAt) {
+        this(id, name, email, phone, role, city, pincode, enabled, false, false, createdAt, updatedAt);
+    }
+
+    public AdminUserResponse(Long id,
+                             String name,
+                             String email,
+                             String phone,
+                             Role role,
+                             String city,
+                             String pincode,
+                             Boolean enabled,
+                             Boolean emailVerified,
+                             Boolean phoneVerified,
+                             LocalDateTime createdAt,
+                             LocalDateTime updatedAt) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -38,6 +55,8 @@ public class AdminUserResponse {
         this.city = city;
         this.pincode = pincode;
         this.enabled = enabled;
+        this.emailVerified = emailVerified;
+        this.phoneVerified = phoneVerified;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -74,11 +93,27 @@ public class AdminUserResponse {
         return enabled;
     }
 
+    public Boolean getEmailVerified() {
+        return emailVerified;
+    }
+
+    public Boolean getPhoneVerified() {
+        return phoneVerified;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public void setEmailVerified(Boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
+
+    public void setPhoneVerified(Boolean phoneVerified) {
+        this.phoneVerified = phoneVerified;
     }
 }
