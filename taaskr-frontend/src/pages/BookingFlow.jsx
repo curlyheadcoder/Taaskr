@@ -490,10 +490,10 @@ export default function BookingFlow() {
           <button
             type="submit"
             className="btn btn-primary"
-            style={{ width: '100%' }}
+            style={{ width: '100%', padding: '0.75rem', fontSize: '0.95rem' }}
             disabled={loading}
           >
-            {loading ? 'Processing Booking...' : paymentMethod === 'online' ? `Pay & Confirm (₹${price})` : `Place Booking (₹${price})`}
+            {loading ? 'Confirming Booking...' : paymentMethod === 'online' ? `Confirm Booking & Pay ₹${price}` : `Confirm Booking (₹${price})`}
           </button>
         </form>
 

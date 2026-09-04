@@ -55,30 +55,30 @@ export default function Navbar() {
       position: 'sticky',
       top: 0,
       zIndex: 50,
-      backgroundColor: 'var(--bg-card)',
+      backgroundColor: 'var(--bg-header)',
       borderBottom: '1px solid var(--border-light)',
-      padding: '0.65rem 1.5rem',
+      padding: '0 1.5rem',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
       height: '56px'
     }}>
-      {/* Brand Logo & Context */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+      {/* Brand Logo & Navigation Links */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
         <Link 
           to={user?.role === 'ADMIN' ? '/admin' : user?.role === 'PROVIDER' ? '/provider' : '/'} 
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}
         >
           <img
             src="/taaskr-logo.png"
             alt="Taaskr"
-            width="28"
-            height="28"
+            width="26"
+            height="26"
             style={{ display: 'block', objectFit: 'contain' }}
           />
           <span style={{
             fontFamily: 'var(--font-body)',
-            fontSize: '1.25rem',
+            fontSize: '1.2rem',
             fontWeight: 700,
             color: 'var(--text-main)',
             letterSpacing: '-0.03em'
@@ -86,21 +86,21 @@ export default function Navbar() {
         </Link>
 
         {/* Workspace Navigation Links */}
-        <nav style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+        <nav style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
           {(!user || user.role === 'USER') && (
             <>
               <Link 
                 to="/" 
                 style={{
-                  padding: '0.4rem 0.65rem',
-                  borderRadius: 'var(--radius-sm)',
-                  fontSize: '0.8125rem',
+                  padding: '0.45rem 0.75rem',
+                  borderRadius: '8px',
+                  fontSize: '0.85rem',
                   fontWeight: location.pathname === '/' ? 600 : 500,
-                  color: location.pathname === '/' ? 'var(--primary)' : 'var(--text-muted)',
-                  backgroundColor: location.pathname === '/' ? 'var(--primary-subtle)' : 'transparent',
+                  color: location.pathname === '/' ? 'var(--secondary-accent)' : 'var(--text-secondary)',
+                  backgroundColor: location.pathname === '/' ? 'var(--icon-container)' : 'transparent',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.35rem',
+                  gap: '0.4rem',
                   transition: 'var(--transition-fast)'
                 }}
               >
@@ -111,15 +111,15 @@ export default function Navbar() {
                 <Link 
                   to="/bookings" 
                   style={{
-                    padding: '0.4rem 0.65rem',
-                    borderRadius: 'var(--radius-sm)',
-                    fontSize: '0.8125rem',
+                    padding: '0.45rem 0.75rem',
+                    borderRadius: '8px',
+                    fontSize: '0.85rem',
                     fontWeight: location.pathname === '/bookings' ? 600 : 500,
-                    color: location.pathname === '/bookings' ? 'var(--primary)' : 'var(--text-muted)',
-                    backgroundColor: location.pathname === '/bookings' ? 'var(--primary-subtle)' : 'transparent',
+                    color: location.pathname === '/bookings' ? 'var(--secondary-accent)' : 'var(--text-secondary)',
+                    backgroundColor: location.pathname === '/bookings' ? 'var(--icon-container)' : 'transparent',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.35rem',
+                    gap: '0.4rem',
                     transition: 'var(--transition-fast)'
                   }}
                 >
@@ -134,12 +134,12 @@ export default function Navbar() {
             <Link 
               to="/provider" 
               style={{
-                padding: '0.35rem 0.75rem',
-                borderRadius: 'var(--radius-sm)',
-                fontSize: '0.8125rem',
+                padding: '0.45rem 0.85rem',
+                borderRadius: '8px',
+                fontSize: '0.85rem',
                 fontWeight: 600,
-                color: 'var(--primary)',
-                backgroundColor: 'var(--primary-subtle)',
+                color: 'var(--secondary-accent)',
+                backgroundColor: 'var(--icon-container)',
                 border: '1px solid var(--border-light)',
                 display: 'flex',
                 alignItems: 'center',
@@ -155,12 +155,12 @@ export default function Navbar() {
             <Link 
               to="/admin" 
               style={{
-                padding: '0.35rem 0.75rem',
-                borderRadius: 'var(--radius-sm)',
-                fontSize: '0.8125rem',
+                padding: '0.45rem 0.85rem',
+                borderRadius: '8px',
+                fontSize: '0.85rem',
                 fontWeight: 600,
                 color: 'var(--text-main)',
-                backgroundColor: 'var(--bg-subtle)',
+                backgroundColor: 'var(--bg-card)',
                 border: '1px solid var(--border-light)',
                 display: 'flex',
                 alignItems: 'center',
@@ -174,62 +174,45 @@ export default function Navbar() {
         </nav>
       </div>
 
-      {/* User Actions & Theme Toggle */}
+      {/* User Actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-        <button 
-          onClick={() => setIsDark(!isDark)} 
-          style={{ 
-            background: 'transparent', 
-            border: '1px solid var(--border-light)', 
-            borderRadius: 'var(--radius-sm)',
-            cursor: 'pointer', 
-            padding: '0.35rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--text-muted)',
-            transition: 'var(--transition-fast)'
-          }}
-          title={isDark ? "Switch to Light theme" : "Switch to Dark theme"}
-        >
-          {isDark ? <Sun size={15} /> : <Moon size={15} />}
-        </button>
-
         {user ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
               <div style={{
-                width: '28px',
-                height: '28px',
-                borderRadius: 'var(--radius-xs)',
-                backgroundColor: 'var(--primary-subtle)',
-                color: 'var(--primary)',
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
+                backgroundColor: 'var(--icon-container)',
+                color: 'var(--secondary-accent)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontWeight: 600,
-                fontSize: '0.75rem'
+                fontSize: '0.85rem',
+                border: '1px solid var(--border-light)'
               }}>
                 {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-main)', lineHeight: 1.1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)', lineHeight: 1.1 }}>
                     {user.name}
                   </span>
                   {user.emailVerified && user.phoneVerified ? (
-                    <span title="Email & Phone Verified" style={{ display: 'inline-flex', alignItems: 'center', color: '#10B981' }}>
-                      <ShieldCheck size={13} />
+                    <span title="Email & Phone Verified" style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--success)' }}>
+                      <ShieldCheck size={14} />
                     </span>
                   ) : (
                     <Link
                       to={!user.emailVerified ? `/verify-email?email=${encodeURIComponent(user.email || '')}` : `/verify-phone?type=phone&phone=${encodeURIComponent(user.phone || '')}`}
                       title={!user.emailVerified ? "Email Unverified - Click to Verify" : "Phone Unverified - Click to Verify"}
                       style={{
-                        fontSize: '0.62rem',
-                        background: '#FEF3C7',
-                        color: '#D97706',
-                        padding: '0.05rem 0.3rem',
+                        fontSize: '0.65rem',
+                        background: 'var(--warning-bg)',
+                        color: 'var(--warning)',
+                        border: '1px solid var(--warning-border)',
+                        padding: '0.08rem 0.35rem',
                         borderRadius: '4px',
                         fontWeight: 600,
                         textDecoration: 'none'
@@ -241,18 +224,18 @@ export default function Navbar() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                   <span style={{
-                    fontSize: '0.65rem',
+                    fontSize: '0.68rem',
                     fontWeight: 500,
                     color: 'var(--text-muted)',
                     textTransform: 'uppercase',
-                    letterSpacing: '0.03em'
+                    letterSpacing: '0.04em'
                   }}>
                     {user.role}
                   </span>
                   {user.emailVerified && !user.phoneVerified && (
                     <Link 
                       to={`/verify-phone?type=phone&phone=${encodeURIComponent(user.phone || '')}`}
-                      style={{ fontSize: '0.62rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}
+                      style={{ fontSize: '0.68rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}
                       title="Verify Phone Number"
                     >
                       • +Phone
@@ -266,14 +249,14 @@ export default function Navbar() {
               onClick={handleLogout} 
               className="btn btn-secondary btn-sm"
               title="Sign out of account"
-              style={{ padding: '0.3rem 0.55rem' }}
+              style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem' }}
             >
               <LogOut size={13} />
               <span>Logout</span>
             </button>
           </div>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <Link to="/login" className="btn btn-ghost btn-sm">
               Sign In
             </Link>
