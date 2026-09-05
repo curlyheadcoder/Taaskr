@@ -143,8 +143,15 @@ export default function ProviderDashboard() {
   const isProviderVerified = Boolean(userProfile?.emailVerified && userProfile?.phoneVerified);
 
   // Filtered booking collections for tabs
-  const inTransitBookings = assignedBookings.filter(b => b.status === 'IN_TRANSIT' || b.status === 'IN_PROGRESS');
-  const completedBookings = assignedBookings.filter(b => b.status === 'COMPLETED');
+  const inTransitBookings = assignedBookings.filter(b => 
+    b.status === 'ACCEPTED' || 
+    b.status === 'IN_TRANSIT' || 
+    b.status === 'IN_PROGRESS' || 
+    (b.status === 'COMPLETED' && b.paymentMethod === 'AFTER_SERVICE' && b.paymentStatus !== 'PAID')
+  );
+  const completedBookings = assignedBookings.filter(b => 
+    b.status === 'COMPLETED' && (b.paymentStatus === 'PAID' || b.paymentMethod !== 'AFTER_SERVICE')
+  );
 
   const handleAddAvailability = async (e) => {
     e.preventDefault();
@@ -167,7 +174,6 @@ export default function ProviderDashboard() {
   };
 
   const handleDeleteAvailability = async (slotId) => {
-    if (!window.confirm('Delete this availability slot?')) return;
     try {
       await api.provider.deleteAvailability(slotId);
       setAvailability(prev => prev.filter(s => s.id !== slotId));
@@ -185,7 +191,8 @@ export default function ProviderDashboard() {
     setActionLoadingId(bookingId);
     try {
       await api.provider.acceptBooking(bookingId);
-      showNotification('Job accepted.');
+      showNotification('Job accepted and moved to In-Transit.');
+      setActiveTab('in-transit');
       await loadProviderDashboard(false);
     } catch (err) {
       showNotification(`Action failed: ${err.message}`, 'error');
@@ -390,7 +397,6 @@ export default function ProviderDashboard() {
   };
 
   const handleDeleteVehicle = async (vehicleId) => {
-    if (!window.confirm('Are you sure you want to remove this vehicle from your fleet?')) return;
     try {
       await api.vehicle.deleteVehicle(vehicleId);
       setMyVehicles(prev => prev.filter(v => v.id !== vehicleId));
@@ -571,15 +577,24 @@ export default function ProviderDashboard() {
                 </>
               )}
 
-              {/* ACCEPTED status actions: Start In-Transit */}
+              {/* ACCEPTED status actions: Start In-Transit or Mark Completed */}
               {job.status === 'ACCEPTED' && (
-                <button 
-                  onClick={() => handleStartInTransit(job.id)} 
-                  className="btn btn-primary btn-sm"
-                  disabled={isActionLoading}
-                >
-                  {isActionLoading ? 'Updating...' : 'In-Transit'}
-                </button>
+                <>
+                  <button 
+                    onClick={() => handleStartInTransit(job.id)} 
+                    className="btn btn-primary btn-sm"
+                    disabled={isActionLoading}
+                  >
+                    {isActionLoading ? 'Updating...' : 'In-Transit'}
+                  </button>
+                  <button 
+                    onClick={() => handleMarkCompleted(job.id)} 
+                    className="btn btn-success btn-sm"
+                    disabled={isActionLoading}
+                  >
+                    {isActionLoading ? 'Completing...' : 'Mark as Completed'}
+                  </button>
+                </>
               )}
 
               {/* IN_TRANSIT or IN_PROGRESS status actions: Mark as Completed */}

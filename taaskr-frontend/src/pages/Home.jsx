@@ -462,56 +462,13 @@ export default function Home() {
       <main id="services-catalog" className="app-container" style={{ paddingTop: '3rem', paddingBottom: '4rem' }}>
         
         {/* Section Header */}
-        <div style={{ textAlign: 'center', marginBottom: '2rem', maxWidth: '750px', margin: '0 auto 2rem auto' }}>
-          <h2 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.4rem', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem', maxWidth: '750px', margin: '0 auto 2.5rem auto' }}>
+          <h2 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.6rem', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
             Explore Verified Services
           </h2>
-          <p style={{ fontSize: '0.925rem', color: 'var(--text-muted)', lineHeight: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <span>Select a service category or filter by name to instantly dispatch top-rated professionals in</span>
-            <span style={{ color: 'var(--primary)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-              📍 {currentLocation.city} {currentLocation.pincode ? `(${currentLocation.pincode})` : ''}
-            </span>
+          <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '620px', margin: '0 auto' }}>
+            Select a verified service category to instantly book top-rated, background-checked professionals with upfront pricing and live tracking.
           </p>
-        </div>
-
-        {/* Integrated Clean Search & Filter Control Bar */}
-        <div style={{ maxWidth: '640px', margin: '0 auto 2rem auto' }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            backgroundColor: 'var(--bg-card)',
-            borderRadius: '12px',
-            padding: '0.45rem 0.6rem 0.45rem 1rem',
-            gap: '0.75rem',
-            boxShadow: 'var(--shadow-sm)',
-            border: '1px solid var(--border-light)'
-          }}>
-            <Search size={18} color="var(--text-muted)" style={{ flexShrink: 0 }} />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by service name, category, or keyword..."
-              style={{
-                border: 'none',
-                background: 'transparent',
-                outline: 'none',
-                width: '100%',
-                fontSize: '0.9rem',
-                color: 'var(--text-main)',
-                fontWeight: 500
-              }}
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="btn btn-ghost btn-sm"
-                style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', color: 'var(--text-muted)' }}
-              >
-                Clear
-              </button>
-            )}
-          </div>
         </div>
 
         {/* Category Header & Explore All Services Control */}

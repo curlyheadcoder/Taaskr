@@ -27,9 +27,9 @@ export default function Navbar() {
   const [currentLocation, setCurrentLocation] = useState(() => {
     try {
       const saved = localStorage.getItem('taaskr_location');
-      return saved ? JSON.parse(saved) : { city: 'Indore', pincode: '452001', area: 'Vijay Nagar & Palasia' };
+      return saved ? JSON.parse(saved) : { city: 'Select Location', pincode: '', area: 'All Service Zones' };
     } catch (e) {
-      return { city: 'Indore', pincode: '452001', area: 'Vijay Nagar & Palasia' };
+      return { city: 'Select Location', pincode: '', area: 'All Service Zones' };
     }
   });
   const [customCity, setCustomCity] = useState('');
@@ -278,7 +278,7 @@ export default function Navbar() {
             >
               <MapPin size={14} color="var(--primary)" />
               <span style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {currentLocation.city} {currentLocation.pincode ? `• ${currentLocation.pincode}` : ''}
+                {currentLocation.pincode ? `${currentLocation.city} • ${currentLocation.pincode}` : (currentLocation.city || 'Select Location')}
               </span>
               <ChevronDown size={13} style={{ opacity: 0.7, transform: locationOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
             </button>
