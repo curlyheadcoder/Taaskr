@@ -1636,5 +1636,89 @@ body.dark .service-card:hover {
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
 }
 
+/* ==========================================================================
+   INTERACTIVE BOUNCING HERO CATEGORY PHYSICS TILES
+   ========================================================================== */
+
+.hero-physics-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.hero-physics-tile {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 178px;
+  height: 72px;
+  border-radius: 16px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--tile-border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 0 16px var(--tile-glow);
+  padding: 0.65rem 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  pointer-events: auto;
+  cursor: pointer;
+  will-change: transform;
+  backdrop-filter: blur(10px);
+  transition: border-color 0.4s ease, box-shadow 0.4s ease, opacity 0.3s ease, transform 0.2s ease;
+  opacity: 0.45;
+  user-select: none;
+}
+
+[data-theme='light'] .hero-physics-tile {
+  opacity: 0.38;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.hero-physics-tile:hover {
+  opacity: 0.95;
+  z-index: 5;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2), 0 0 24px var(--tile-glow);
+}
+
+.physics-tile-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #ffffff;
+}
+
+.physics-tile-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  text-align: left;
+}
+
+.physics-tile-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.physics-tile-tag {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--tile-color);
+  margin-top: 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+
 
 
