@@ -338,10 +338,28 @@ export default function Home() {
 
         if (rawServs.length > 0) {
           const mappedServices = rawServs.map(s => mapServiceToCanonical(s, rawCats));
-          setServices(mappedServices);
+          
+          // Merge with DEFAULT_SERVICES so newly configured catalog items display even before the remote DB is restarted/reseeded
+          const backendNameSet = new Set(mappedServices.map(s => (s.name || '').toLowerCase().trim()));
+          const missingDefaults = DEFAULT_SERVICES.filter(d => !backendNameSet.has((d.name || '').toLowerCase().trim()));
+          const fullCatalog = [...mappedServices, ...missingDefaults];
+
+          setServices(fullCatalog);
 
           const mergedCats = CANONICAL_CATEGORIES.map(canon => {
-            const count = mappedServices.filter(s => s.canonicalCategoryId === canon.id).length;
+            const count = fullCatalog.filter(s => s.canonicalCategoryId === canon.id).length;
+            return {
+              id: canon.id,
+              name: canon.name,
+              count,
+              active: true
+            };
+          });
+          setCategories(mergedCats);
+        } else {
+          setServices(DEFAULT_SERVICES);
+          const mergedCats = CANONICAL_CATEGORIES.map(canon => {
+            const count = DEFAULT_SERVICES.filter(s => s.canonicalCategoryId === canon.id).length;
             return {
               id: canon.id,
               name: canon.name,
@@ -353,6 +371,17 @@ export default function Home() {
         }
       } catch (err) {
         console.warn('Backend catalog sync notice:', err);
+        setServices(DEFAULT_SERVICES);
+        const mergedCats = CANONICAL_CATEGORIES.map(canon => {
+          const count = DEFAULT_SERVICES.filter(s => s.canonicalCategoryId === canon.id).length;
+          return {
+            id: canon.id,
+            name: canon.name,
+            count,
+            active: true
+          };
+        });
+        setCategories(mergedCats);
       } finally {
         setLoading(false);
       }
