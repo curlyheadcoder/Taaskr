@@ -4,11 +4,11 @@ import { api } from '../services/api';
 import Pagination from '../components/Pagination';
 import { 
   Search, ShieldCheck, Tag, CreditCard, Star, LayoutList, 
-  Sparkles, Droplets, Zap, Paintbrush, Leaf, Truck, Settings, 
+  Droplets, Zap, Paintbrush, Leaf, Truck, Settings, 
   Snowflake, Ruler, Hammer, ArrowRight, Activity, Stethoscope, Building2, Scissors,
   Radio, Award, AlertTriangle, CheckCircle2, ChevronRight, Phone, MessageSquare, 
   FileText, Plus, Bell, RefreshCw, Send, Check, X, ArrowUpRight, HelpCircle, Briefcase, Clock,
-  Bug, Laptop, Car, HeartPulse, Wrench, MapPin, TrendingUp, Lock, UserCheck
+  Bug, Laptop, Car, HeartPulse, Wrench, MapPin, TrendingUp, Lock, UserCheck, Layers
 } from 'lucide-react';
 
 const canonicalizeServiceName = (rawName) => {
@@ -579,14 +579,6 @@ const ROTATING_HIGHLIGHTS = [
   'Smart Lock & CCTV Setup'
 ];
 
-const LIVE_ACTIVITY_STREAM = [
-  { name: 'Priya S.', service: 'AC Repair & Diagnostics', locality: 'Vijay Nagar', time: '1m ago', icon: '⚡' },
-  { name: 'Vikram R.', service: 'Mini Truck Goods Transport', locality: 'Palasia', time: '3m ago', icon: '🚚' },
-  { name: 'Ananya M.', service: 'At-Home Haircut & Spa', locality: 'Saket Nagar', time: '5m ago', icon: '✂️' },
-  { name: 'Rohit K.', service: 'Pipe Leakage & Valve Fix', locality: 'Bhawarkua', time: '7m ago', icon: '💧' },
-  { name: 'Neha G.', service: 'Full Home Deep Cleaning', locality: 'Old Palasia', time: '9m ago', icon: '🧹' }
-];
-
 const SMART_SEARCH_PROMPTS = [
   { label: '⚡ AC Cooling Fix', query: 'AC' },
   { label: '💧 Tap Leakage', query: 'Tap' },
@@ -614,21 +606,12 @@ export default function Home() {
   });
 
   const [highlightIndex, setHighlightIndex] = useState(0);
-  const [liveActivityIndex, setLiveActivityIndex] = useState(0);
-  const [showLiveToast, setShowLiveToast] = useState(true);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setHighlightIndex(prev => (prev + 1) % ROTATING_HIGHLIGHTS.length);
     }, 2800);
     return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    const actTimer = setInterval(() => {
-      setLiveActivityIndex(prev => (prev + 1) % LIVE_ACTIVITY_STREAM.length);
-    }, 4500);
-    return () => clearInterval(actTimer);
   }, []);
 
   const [categories, setCategories] = useState(() => {
@@ -945,7 +928,7 @@ export default function Home() {
     }
 
     return {
-      icon: <Sparkles size={24} strokeWidth={2.2} />,
+      icon: <Wrench size={24} strokeWidth={2.2} />,
       image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80',
       primary: '#0284C7',
       accentBg: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
@@ -1264,7 +1247,7 @@ const EXACT_SERVICE_IMAGES = {
                   className="btn btn-primary btn-sm"
                   style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 0.9rem', fontSize: '0.825rem', fontWeight: 600 }}
                 >
-                  <Sparkles size={14} />
+                  <LayoutList size={14} />
                   <span>Open Partner Console</span>
                 </Link>
                 <button
@@ -1544,7 +1527,7 @@ const EXACT_SERVICE_IMAGES = {
               { id: 1, name: 'AC Repair & Diagnostics', category: 'Appliances', rate: '₹699', status: 'AUTHORIZED', icon: <Snowflake size={20} color="#38bdf8" /> },
               { id: 2, name: 'RO Water Purifier Servicing', category: 'Appliances', rate: '₹499', status: 'AUTHORIZED', icon: <Droplets size={20} color="#06b6d4" /> },
               { id: 3, name: 'Switchboard & Electrical Wiring', category: 'Electrical', rate: '₹349', status: 'AUTHORIZED', icon: <Zap size={20} color="#f59e0b" /> },
-              { id: 4, name: 'Deep Home & Bathroom Cleaning', category: 'Cleaning', rate: '₹1,499', status: 'AUTHORIZED', icon: <Sparkles size={20} color="#10b981" /> },
+              { id: 4, name: 'Deep Home & Bathroom Cleaning', category: 'Cleaning', rate: '₹1,499', status: 'AUTHORIZED', icon: <Droplets size={20} color="#10b981" /> },
               { id: 5, name: 'Mini Truck Goods Transport', category: 'Logistics', rate: '₹250/km', status: 'AUTHORIZED', icon: <Truck size={20} color="#a855f7" /> },
               { id: 6, name: 'CCTV & Security Camera Setup', category: 'Security Services', rate: '₹1,199', status: 'AUTHORIZED', icon: <ShieldCheck size={20} color="#ec4899" /> }
             ].map((srv) => (
@@ -2099,16 +2082,6 @@ const EXACT_SERVICE_IMAGES = {
                     cursor: 'pointer',
                     transition: 'all 0.18s ease'
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--primary)';
-                    e.currentTarget.style.color = 'var(--primary)';
-                    e.currentTarget.style.transform = 'translateY(-1px)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--border-light)';
-                    e.currentTarget.style.color = 'var(--text-secondary)';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                  }}
                 >
                   {chip.label}
                 </button>
@@ -2116,36 +2089,33 @@ const EXACT_SERVICE_IMAGES = {
             </div>
           </div>
 
-          {/* Taaskr Pulse™ Live Telemetry & Trust Radar Strip */}
+          {/* Authentic Core Guarantees Strip */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '2rem',
+            gap: '1.75rem',
             flexWrap: 'wrap',
             borderTop: '1px solid var(--border-light)',
-            paddingTop: '1.5rem',
+            paddingTop: '1.35rem',
             maxWidth: '820px',
             margin: '0 auto'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-main)', fontSize: '0.8125rem', fontWeight: 600 }}>
-              <span style={{ position: 'relative', display: 'inline-flex', width: '9px', height: '9px' }}>
-                <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', backgroundColor: '#10B981', opacity: 0.75, animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite' }} />
-                <span style={{ position: 'relative', width: '9px', height: '9px', borderRadius: '50%', backgroundColor: '#10B981' }} />
-              </span>
-              <span>142 Pros Active in {currentLocation.city}</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
-              <Zap size={16} color="var(--warning)" />
-              <span>⚡ 14-min Avg Dispatch</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-main)', fontSize: '0.8125rem', fontWeight: 600 }}>
               <ShieldCheck size={16} color="var(--success)" />
-              <span>₹10,000 SLA Guarantee</span>
+              <span>Aadhaar Verified Pros</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
-              <Star size={16} color="#F59E0B" />
-              <span>4.92 ★ (28k+ Jobs)</span>
+              <CreditCard size={16} color="var(--primary)" />
+              <span>Upfront Fixed Quotes</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+              <Clock size={16} color="var(--warning)" />
+              <span>Instant Doorstep Slot</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+              <CheckCircle2 size={16} color="#10b981" />
+              <span>Job Completion Guarantee</span>
             </div>
           </div>
         </div>
@@ -2245,7 +2215,7 @@ const EXACT_SERVICE_IMAGES = {
         {!selectedCategory && searchQuery.trim() === '' ? (
           <div className="empty-state" style={{ padding: '3.5rem 1.5rem', background: 'var(--bg-card)', border: '1px dashed var(--border-light)', borderRadius: '16px', textAlign: 'center' }}>
             <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: 'rgba(56, 189, 248, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto', color: 'var(--primary)' }}>
-              <Sparkles size={28} />
+              <Layers size={28} />
             </div>
             <h3 className="empty-state-title" style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.4rem' }}>
               Select a Category to View Services
@@ -2362,132 +2332,116 @@ const EXACT_SERVICE_IMAGES = {
       </main>
 
       {/* ========================================================================= */}
-      {/* VENTURE-GRADE ARCHITECTURE SHOWCASE: WHY TAASKR                           */}
+      {/* HOW TAASKR WORKS — 3 STEP SEAMLESS EXECUTION                             */}
       {/* ========================================================================= */}
       <section style={{ backgroundColor: 'var(--bg-subtle)', borderTop: '1px solid var(--border-light)', borderBottom: '1px solid var(--border-light)', padding: '4.5rem 1rem' }}>
         <div className="app-container">
-          <div style={{ textAlign: 'center', maxWidth: '780px', margin: '0 auto 3.5rem auto' }}>
+          <div style={{ textAlign: 'center', maxWidth: '720px', margin: '0 auto 3.5rem auto' }}>
             <div className="hero-pill-tag" style={{ margin: '0 auto 1rem auto' }}>
               <Award size={14} color="var(--primary)" />
-              <span>Full-Stack Hyperlocal Infrastructure</span>
+              <span>Simple 3-Step Experience</span>
             </div>
-            <h2 style={{ fontSize: '2.25rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em', marginBottom: '0.75rem' }}>
-              Why Modern Indian Homes Choose Taaskr
+            <h2 style={{ fontSize: '2.15rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em', marginBottom: '0.75rem' }}>
+              How Taaskr Works
             </h2>
-            <p style={{ fontSize: '1rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-              We rebuilt the home services supply chain from the ground up with programmatic dispatch, upfront transparent escrow, and zero-compromise verified partner quality.
+            <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+              From instant request to verified doorstep service delivery with complete transparency at every stage.
             </p>
           </div>
 
-          {/* 3-Pillar Venture Architecture Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '3.5rem' }}>
-            {/* Pillar 1 */}
+          {/* 3 Step Workflow Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
+            {/* Step 1 */}
             <div className="yc-architecture-card">
-              <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(56, 189, 248, 0.12)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
-                <Zap size={24} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+                <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(56, 189, 248, 0.12)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Search size={22} />
+                </div>
+                <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-muted)', opacity: 0.4 }}>01</span>
               </div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.6rem' }}>
-                Sub-14 Min Telemetry Dispatch
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>
+                Select Your Service
               </h3>
               <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-                Our proprietary geo-fencing radar routes the nearest verified professional instantly, eliminating hours of waiting and uncertain cancellations.
+                Explore verified home, wellness, or logistics categories with upfront transparent quotes and zero hidden charges.
               </p>
             </div>
 
-            {/* Pillar 2 */}
+            {/* Step 2 */}
             <div className="yc-architecture-card">
-              <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
-                <ShieldCheck size={24} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+                <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <UserCheck size={22} />
+                </div>
+                <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-muted)', opacity: 0.4 }}>02</span>
               </div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.6rem' }}>
-                ₹10,000 SLA Property Shield
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>
+                Doorstep Partner Arrival
               </h3>
               <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-                Every service comes backed with biometric Aadhaar KYC verification, transparent digital rate cards, and our ₹10,000 comprehensive property damage cover.
+                A background-verified professional arrives at your preferred slot equipped with standardized equipment and original spares.
               </p>
             </div>
 
-            {/* Pillar 3 */}
+            {/* Step 3 */}
             <div className="yc-architecture-card">
-              <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(168, 85, 247, 0.12)', color: '#a855f7', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
-                <TrendingUp size={24} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+                <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(168, 85, 247, 0.12)', color: '#a855f7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ShieldCheck size={22} />
+                </div>
+                <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-muted)', opacity: 0.4 }}>03</span>
               </div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.6rem' }}>
-                Real-Time Partner Ecosystem
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>
+                Inspect & Pay Securely
               </h3>
               <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-                Partners receive instant automated settlements, live dispatch radar, transparent bonus tiers, and dedicated operations desk support.
+                Review the completed job, verify satisfaction, and pay seamlessly via UPI, Debit/Credit Cards, or Cash on Delivery.
               </p>
             </div>
           </div>
 
-          {/* Live Ecosystem Performance Ticker */}
+          {/* Genuine Trust Features Strip */}
           <div style={{
             backgroundColor: 'var(--bg-card)',
             border: '1px solid var(--border-light)',
             borderRadius: '16px',
-            padding: '2rem 1.5rem',
+            padding: '1.75rem',
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: '1.5rem',
-            textAlign: 'center'
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: '1.5rem'
           }}>
-            <div>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--primary)', letterSpacing: '-0.02em' }}>99.4%</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.2rem', fontWeight: 500 }}>Fulfillment Rate</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(56, 189, 248, 0.12)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Lock size={20} />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-main)' }}>Escrow & Safe Payments</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>UPI, Cards, and Net Banking</div>
+              </div>
             </div>
-            <div>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#10B981', letterSpacing: '-0.02em' }}>₹1.4 Cr+</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.2rem', fontWeight: 500 }}>Partner Payouts</div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <CheckCircle2 size={20} />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-main)' }}>Standardized Pricing</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Fixed digital rate cards</div>
+              </div>
             </div>
-            <div>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#F59E0B', letterSpacing: '-0.02em' }}>14 Mins</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.2rem', fontWeight: 500 }}>Avg Doorstep Arrival</div>
-            </div>
-            <div>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#8B5CF6', letterSpacing: '-0.02em' }}>4.92 ★</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.2rem', fontWeight: 500 }}>Customer Trust Rating</div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Phone size={20} />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-main)' }}>Dedicated Support</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Real-time admin assistance</div>
+              </div>
             </div>
           </div>
         </div>
       </section>
-
-      {/* Floating Live Activity Toast */}
-      {showLiveToast && LIVE_ACTIVITY_STREAM[liveActivityIndex] && (
-        <div className="live-activity-toast">
-          <div style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: '10px',
-            backgroundColor: 'rgba(56, 189, 248, 0.12)',
-            color: 'var(--primary)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0
-          }}>
-            <Sparkles size={18} />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {LIVE_ACTIVITY_STREAM[liveActivityIndex].service}
-            </div>
-            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              <span>📍 {LIVE_ACTIVITY_STREAM[liveActivityIndex].location}</span>
-              <span>•</span>
-              <span style={{ color: '#10B981', fontWeight: 600 }}>{LIVE_ACTIVITY_STREAM[liveActivityIndex].time}</span>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowLiveToast(false)}
-            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.2rem' }}
-            aria-label="Close notification"
-          >
-            <X size={14} />
-          </button>
-        </div>
-      )}
     </div>
   );
 }

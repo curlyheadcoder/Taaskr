@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  ShieldCheck, Sparkles, Phone, Mail, MapPin, 
+  ShieldCheck, Phone, Mail, MapPin, 
   ArrowUpRight, Star, Heart, CheckCircle2, Award
 } from 'lucide-react';
 

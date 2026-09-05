@@ -5,7 +5,7 @@ import LocationPicker from '../components/LocationPicker';
 import { 
   Truck, MapPin, Package, ShieldCheck, CheckCircle2, Clock, 
   AlertCircle, ArrowRight, ChevronRight, RefreshCw, Calendar, 
-  Info, Check, Sparkles, Navigation
+  Info, Check, Navigation
 } from 'lucide-react';
 
 export default function ServiceDetails() {
@@ -636,7 +636,7 @@ export default function ServiceDetails() {
           {/* Left Column: Scope & Deliverables */}
           <div className="panel">
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.5rem' }}>
-              <Sparkles size={14} />
+              <ShieldCheck size={14} />
               <span>Standard Service Package</span>
             </div>
             

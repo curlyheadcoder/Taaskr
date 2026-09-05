@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { 
   ShieldCheck, Mail, Phone, AlertCircle, CheckCircle2, 
-  ArrowRight, RefreshCw, ArrowLeft, KeyRound, Sparkles 
+  ArrowRight, RefreshCw, ArrowLeft, KeyRound
 } from 'lucide-react';
 
 export default function VerifyEmail() {
@@ -363,7 +363,7 @@ export default function VerifyEmail() {
             fontSize: '0.8rem'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--primary)' }}>
-              <Sparkles size={15} />
+              <KeyRound size={15} />
               <span>Simulated Code: <strong>{devCode}</strong></span>
             </div>
             <button

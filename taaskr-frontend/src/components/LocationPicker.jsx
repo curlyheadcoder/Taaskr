@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Search, MapPin, Navigation, Check, Sparkles, Loader2 } from 'lucide-react';
+import { Search, MapPin, Navigation, Check, Loader2 } from 'lucide-react';
 
 // Fix Leaflet default marker icon in React
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
@@ -224,7 +224,7 @@ export default function LocationPicker({ onLocationConfirm, onLocationSelect, in
       {/* Indore Quick Landmark Chips */}
       <div>
         <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-          <Sparkles size={11} color="var(--primary)" />
+          <MapPin size={11} color="var(--primary)" />
           <span>Popular Indore Spots:</span>
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>

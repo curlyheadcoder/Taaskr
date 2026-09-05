@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../services/api';
 import { 
   Sun, Moon, Briefcase, ShieldCheck, Calendar, Grid, LogOut, 
-  MapPin, Search, ChevronDown, Sparkles, Navigation, X, Check, ArrowRight, Command, AlertCircle
+  MapPin, Search, ChevronDown, Bot, Navigation, X, Check, ArrowRight, Command, AlertCircle
 } from 'lucide-react';
 
 const POPULAR_LOCATIONS = [
@@ -688,8 +688,8 @@ export default function Navbar() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <Sparkles size={14} />
-                    <span>Ask Taasky AI: "{searchQuery}"</span>
+                    <Bot size={14} />
+                    <span>Ask Taasky Assistant: "{searchQuery}"</span>
                   </div>
                   <ArrowRight size={14} />
                 </button>

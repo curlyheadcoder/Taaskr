@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { 
-  Bot, X, ArrowRight, Sparkles, Send,
-  Calendar, Clock, Trash2, User, RefreshCw, ShieldAlert
+  Bot, X, ArrowRight, Send,
+  Calendar, Clock, Trash2, User, RefreshCw, ShieldAlert, Zap
 } from 'lucide-react';
 import { useUserRole } from '../hooks/useUserRole';
 
@@ -573,7 +573,7 @@ export default function AiAssistantModal() {
                             e.currentTarget.style.color = 'var(--text-secondary)';
                           }}
                         >
-                          <Sparkles size={11} color="var(--primary)" />
+                          <Zap size={11} color="var(--primary)" />
                           <span>{promptText}</span>
                         </button>
                       ))}
