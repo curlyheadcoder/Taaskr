@@ -5,7 +5,7 @@ import Pagination from '../components/Pagination';
 import { 
   Search, ShieldCheck, Tag, CreditCard, Star, LayoutList, 
   Sparkles, Droplets, Zap, Paintbrush, Leaf, Truck, Settings, 
-  Snowflake, Ruler, Hammer, ArrowRight, Activity, Stethoscope, Building2
+  Snowflake, Ruler, Hammer, ArrowRight, Activity, Stethoscope, Building2, Scissors
 } from 'lucide-react';
 
 const DEFAULT_CATEGORIES = [
