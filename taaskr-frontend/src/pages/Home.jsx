@@ -903,6 +903,42 @@ const ROTATING_HIGHLIGHTS = [
   'Smart Lock & CCTV Setup'
 ];
 
+const getCategoryGradient = (catId, isDark) => {
+  if (catId === 'diagnostic_healthcare') {
+    return isDark
+      ? 'linear-gradient(135deg, #FDA4AF 0%, #F43F5E 50%, #E11D48 100%)'
+      : 'linear-gradient(135deg, #881337 0%, #9F1239 45%, #1E3A8A 100%)';
+  }
+  if (catId === 'appliances_electrical') {
+    return isDark
+      ? 'linear-gradient(135deg, #FDE68A 0%, #F59E0B 50%, #EA580C 100%)'
+      : 'linear-gradient(135deg, #78350F 0%, #9A3412 45%, #1E3A8A 100%)';
+  }
+  if (catId === 'logistics') {
+    return isDark
+      ? 'linear-gradient(135deg, #7DD3FC 0%, #38BDF8 50%, #818CF8 100%)'
+      : 'linear-gradient(135deg, #0F172A 0%, #1E40AF 50%, #312E81 100%)';
+  }
+  if (catId === 'salon_wellness') {
+    return isDark
+      ? 'linear-gradient(135deg, #E879F9 0%, #C084FC 50%, #818CF8 100%)'
+      : 'linear-gradient(135deg, #581C87 0%, #701A75 45%, #1E3A8A 100%)';
+  }
+  if (catId === 'plumbing_cleaning') {
+    return isDark
+      ? 'linear-gradient(135deg, #67E8F9 0%, #22D3EE 50%, #38BDF8 100%)'
+      : 'linear-gradient(135deg, #134E4A 0%, #0F766E 45%, #1E3A8A 100%)';
+  }
+  if (catId === 'civil_maintenance') {
+    return isDark
+      ? 'linear-gradient(135deg, #FDBA74 0%, #FB923C 50%, #F43F5E 100%)'
+      : 'linear-gradient(135deg, #7C2D12 0%, #9A3412 45%, #1E3A8A 100%)';
+  }
+  return isDark
+    ? 'linear-gradient(135deg, #38BDF8 0%, #818CF8 50%, #C084FC 100%)'
+    : 'linear-gradient(135deg, #091E42 0%, #172B4D 35%, #1E40AF 100%)';
+};
+
 const INITIAL_SERVICES = cleanAndDeduplicateCatalog(DEFAULT_SERVICES.map(s => mapServiceToCanonical(s)).filter(Boolean));
 
 export default function Home() {
@@ -916,37 +952,58 @@ export default function Home() {
     }
   });
 
-  const [heroPalette] = useState(() => {
-    return HERO_PALETTES[Math.floor(Math.random() * HERO_PALETTES.length)];
-  });
+  const [lastHitCategory, setLastHitCategory] = useState('logistics');
 
-  const [ambientHeroColor, setAmbientHeroColor] = useState(heroPalette);
+  const [ambientHeroColor, setAmbientHeroColor] = useState(() => {
+    const isDark = document.body.classList.contains('dark');
+    const initCat = BOUNCING_PHYSICS_CATEGORIES[2]; // logistics
+    return {
+      primary: initCat.color,
+      glow: initCat.glow,
+      gradient: getCategoryGradient(initCat.id, isDark),
+      orb1: isDark
+        ? `radial-gradient(circle, ${initCat.glow} 0%, transparent 70%)`
+        : `radial-gradient(circle, ${initCat.glow.replace('0.35', '0.12')} 0%, transparent 70%)`,
+      orb2: isDark
+        ? `radial-gradient(circle, ${initCat.glow} 0%, transparent 70%)`
+        : `radial-gradient(circle, ${initCat.glow.replace('0.35', '0.08')} 0%, transparent 70%)`,
+      badgeColor: isDark ? initCat.color : '#1E40AF'
+    };
+  });
 
   const handleHeroWallHit = useCallback((tile) => {
     const isDark = document.body.classList.contains('dark');
+    setLastHitCategory(tile.id);
+    const dynamicGradient = getCategoryGradient(tile.id, isDark);
     
-    // High-contrast tone mapping for flawless readability in both light & dark themes
-    const lightGradient = tile.color === '#D97706' || tile.color === '#EA580C'
-      ? 'linear-gradient(135deg, #C2410C 0%, #2563EB 55%, #4338CA 100%)'
-      : tile.color === '#E11D48'
-      ? 'linear-gradient(135deg, #BE123C 0%, #4338CA 55%, #1D4ED8 100%)'
-      : `linear-gradient(135deg, ${tile.color} 0%, #1D4ED8 60%, #4338CA 100%)`;
-
-    const darkGradient = `linear-gradient(135deg, ${tile.color} 0%, #38BDF8 50%, #A855F7 100%)`;
-
     setAmbientHeroColor({
       primary: tile.color,
       glow: tile.glow,
-      gradient: isDark ? darkGradient : lightGradient,
+      gradient: dynamicGradient,
       orb1: isDark 
         ? `radial-gradient(circle, ${tile.glow} 0%, transparent 70%)`
-        : `radial-gradient(circle, ${tile.glow.replace('0.35', '0.10')} 0%, transparent 70%)`,
+        : `radial-gradient(circle, ${tile.glow.replace('0.35', '0.12')} 0%, transparent 70%)`,
       orb2: isDark
         ? `radial-gradient(circle, ${tile.glow} 0%, transparent 70%)`
-        : `radial-gradient(circle, ${tile.glow.replace('0.35', '0.06')} 0%, transparent 70%)`,
-      badgeColor: isDark ? tile.color : (tile.color === '#D97706' ? '#B45309' : tile.color)
+        : `radial-gradient(circle, ${tile.glow.replace('0.35', '0.08')} 0%, transparent 70%)`,
+      badgeColor: isDark ? tile.color : (tile.color === '#D97706' || tile.color === '#EA580C' ? '#9A3412' : tile.color === '#E11D48' ? '#9F1239' : tile.color === '#9333EA' ? '#6B21A8' : '#1E40AF')
     });
   }, []);
+
+  // Sync ambient color if theme is toggled by user
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const isDark = document.body.classList.contains('dark');
+      const cat = BOUNCING_PHYSICS_CATEGORIES.find(c => c.id === lastHitCategory) || BOUNCING_PHYSICS_CATEGORIES[0];
+      setAmbientHeroColor(prev => ({
+        ...prev,
+        gradient: getCategoryGradient(cat.id, isDark),
+        badgeColor: isDark ? cat.color : (cat.color === '#D97706' || cat.color === '#EA580C' ? '#9A3412' : cat.color === '#E11D48' ? '#9F1239' : cat.color === '#9333EA' ? '#6B21A8' : '#1E40AF')
+      }));
+    });
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, [lastHitCategory]);
 
   const [highlightIndex, setHighlightIndex] = useState(0);
 
@@ -2292,7 +2349,16 @@ const EXACT_SERVICE_IMAGES = {
 
             <h1 className="hero-title" style={{ maxWidth: '820px', margin: '0 auto 1.25rem auto' }}>
               On-Demand Services.<br />
-              <span className="hero-gradient-text">
+              <span
+                className="hero-gradient-text"
+                style={{
+                  backgroundImage: ambientHeroColor.gradient,
+                  color: ambientHeroColor.badgeColor || '#1E40AF',
+                  WebkitBackgroundClip: 'text',
+                  backgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}
+              >
                 Engineered for Speed.
               </span>
             </h1>
@@ -2312,6 +2378,7 @@ const EXACT_SERVICE_IMAGES = {
             <span
               key={highlightIndex}
               className="hero-highlight-text animate-fade-in"
+              style={{ color: ambientHeroColor.badgeColor }}
             >
               {ROTATING_HIGHLIGHTS[highlightIndex]}?
             </span>
