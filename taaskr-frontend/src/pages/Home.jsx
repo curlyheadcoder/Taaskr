@@ -369,89 +369,96 @@ export default function Home() {
     };
   };
 
+const EXACT_SERVICE_IMAGES = {
+  'tap repair': 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=600&q=80',
+  'pipe leakage fix': 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=600&q=80',
+  'bathroom cleaning': 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80',
+  'full home cleaning': 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80',
+  'switch board repair': 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80',
+  'fan repair': 'https://images.unsplash.com/photo-1590725140246-20150937a07a?auto=format&fit=crop&w=600&q=80',
+  'ro repair': 'https://images.unsplash.com/photo-1563453392212-326f5e854473?auto=format&fit=crop&w=600&q=80',
+  'ro installation': 'https://images.unsplash.com/photo-1563453392212-326f5e854473?auto=format&fit=crop&w=600&q=80',
+  'ro maintenance': 'https://images.unsplash.com/photo-1563453392212-326f5e854473?auto=format&fit=crop&w=600&q=80',
+  'ac repair': 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=600&q=80',
+  'ac installation': 'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?auto=format&fit=crop&w=600&q=80',
+  'ac maintenance': 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=600&q=80',
+  'refrigerator repair': 'https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?auto=format&fit=crop&w=600&q=80',
+  'washing machine repair': 'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=600&q=80',
+  'cctv installation': 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=600&q=80',
+  'smart lock installation': 'https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&w=600&q=80',
+  'video doorbell installation': 'https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&w=600&q=80',
+  'security guard service': 'https://images.unsplash.com/photo-1582139329536-e7284fece509?auto=format&fit=crop&w=600&q=80',
+  'blood test & sample collection': 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=600&q=80',
+  'full body health checkup': 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=600&q=80',
+  'home diagnostic test': 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=600&q=80',
+  'compounder on call': 'https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=600&q=80',
+  'masonry & brickwork': 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80',
+  'waterproofing': 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=600&q=80',
+  'flooring & tiling': 'https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?auto=format&fit=crop&w=600&q=80',
+  'roof & terrace maintenance': 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=600&q=80',
+  'home renovation': 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=600&q=80',
+  'general civil repairs': 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=600&q=80',
+  'electric bike': 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=600&q=80',
+  'petrol bike': 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=600&q=80',
+  'electric rickshaw': 'https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=600&q=80',
+  'loading vehicle': 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80',
+  'loading vehicle (3w)': 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80',
+  'mini truck': 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80',
+  'mini truck (tata ace)': 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80',
+  'truck': 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80',
+  'truck (14ft / 17ft)': 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80',
+  'heavy truck': 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=600&q=80',
+  "men's haircut & grooming": 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80',
+  'head & shoulder massage': 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80',
+  'beard styling & shave': 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=600&q=80'
+};
+
   const getServiceConfig = (serviceName, categoryName) => {
-    const name = (serviceName || '').toLowerCase();
+    const rawName = (serviceName || '').trim();
+    const name = rawName.toLowerCase();
     const cat = (categoryName || '').toLowerCase();
     const theme = getCategoryTheme(cat);
     
-    // Urban Company-aligned accurate service photography
-    let serviceImage = 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80';
+    // 1. Direct exact match from curated dictionary
+    let serviceImage = EXACT_SERVICE_IMAGES[name];
 
-    // 1. AC & HVAC Services
-    if (name.includes('ac install') || name.includes('ac repair') || name.includes('ac service') || name.includes('air condition') || name.includes('gas refill') || name.includes('ac maintenance')) {
-      serviceImage = 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=600&q=80';
-    } 
-    // 2. Electrical Services
-    else if (name.includes('switch') || name.includes('board') || name.includes('wire') || name.includes('inverter') || name.includes('fuse') || name.includes('electric') || name.includes('mcb') || name.includes('short circuit')) {
-      serviceImage = 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('fan')) {
-      serviceImage = 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80';
-    }
-    // 3. Plumbing & Water Works
-    else if (name.includes('tap') || name.includes('faucet') || name.includes('leak') || name.includes('valve') || name.includes('basin') || name.includes('sink')) {
-      serviceImage = 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('pipe') || name.includes('drain') || name.includes('plumb') || name.includes('tank') || name.includes('flush')) {
-      serviceImage = 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80';
-    }
-    // 4. Water Purifiers (RO)
-    else if (name.includes('ro ') || name.includes('water purifier') || name.includes('filter')) {
-      serviceImage = 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=600&q=80';
-    }
-    // 5. Cleaning & Sanitization
-    else if (name.includes('bathroom clean') || name.includes('toilet')) {
-      serviceImage = 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('sofa') || name.includes('carpet') || name.includes('curtain') || name.includes('mattress')) {
-      serviceImage = 'https://images.unsplash.com/photo-1558317374-067fb5f30001?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('house clean') || name.includes('home clean') || name.includes('deep clean') || name.includes('kitchen')) {
-      serviceImage = 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80';
-    }
-    // 6. Medical Diagnostics & Lab Tests
-    else if (name.includes('blood') || name.includes('cbc') || name.includes('thyroid') || name.includes('sample') || name.includes('lab') || name.includes('diagnostic')) {
-      serviceImage = 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('checkup') || name.includes('body health')) {
-      serviceImage = 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=600&q=80';
-    }
-    // 7. Healthcare Assistance
-    else if (name.includes('compounder') || name.includes('nurse') || name.includes('doctor') || name.includes('physiotherapy') || name.includes('consultation')) {
-      serviceImage = 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=600&q=80';
-    }
-    // 8. Men's Salon & Massage
-    else if (name.includes('massage') || name.includes('spa') || name.includes('head')) {
-      serviceImage = 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('beard') || name.includes('shave')) {
-      serviceImage = 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('hair') || name.includes('salon') || name.includes('barber') || name.includes('grooming')) {
-      serviceImage = 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80';
-    }
-    // 9. Security Services
-    else if (name.includes('cctv') || name.includes('camera') || name.includes('surveillance')) {
-      serviceImage = 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('lock') || name.includes('doorbell')) {
-      serviceImage = 'https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('guard') || name.includes('security')) {
-      serviceImage = 'https://images.unsplash.com/photo-1582139329536-e7284fece509?auto=format&fit=crop&w=600&q=80';
-    }
-    // 10. Logistics, Courier & Vehicles
-    else if (name.includes('bike') || name.includes('courier') || name.includes('two wheeler')) {
-      serviceImage = 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('mini truck') || name.includes('tempo') || name.includes('loading') || name.includes('rickshaw')) {
-      serviceImage = 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('truck') || name.includes('cargo') || name.includes('freight') || name.includes('logistics')) {
-      serviceImage = 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80';
-    }
-    // 11. Civil & Property Maintenance
-    else if (name.includes('waterproof') || name.includes('paint') || name.includes('wall')) {
-      serviceImage = 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('tile') || name.includes('floor')) {
-      serviceImage = 'https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('renovation') || name.includes('remodel')) {
-      serviceImage = 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('mason') || name.includes('brick') || name.includes('civil') || name.includes('roof')) {
-      serviceImage = 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80';
-    }
-    // 12. Appliances
-    else if (name.includes('washing') || name.includes('refrigerator') || name.includes('microwave') || name.includes('oven') || name.includes('appliance')) {
-      serviceImage = 'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=600&q=80';
+    // 2. Intelligent keyword fallback if exact name not in map
+    if (!serviceImage) {
+      if (name.includes('ac ') || name.includes('air condition') || name.includes('cooling')) {
+        serviceImage = 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=600&q=80';
+      } else if (name.includes('switch') || name.includes('wire') || name.includes('electric') || name.includes('inverter') || name.includes('fuse') || name.includes('mcb')) {
+        serviceImage = 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80';
+      } else if (name.includes('fan')) {
+        serviceImage = 'https://images.unsplash.com/photo-1590725140246-20150937a07a?auto=format&fit=crop&w=600&q=80';
+      } else if (name.includes('tap') || name.includes('faucet') || name.includes('basin') || name.includes('sink') || name.includes('valve')) {
+        serviceImage = 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=600&q=80';
+      } else if (name.includes('pipe') || name.includes('drain') || name.includes('plumb') || name.includes('tank')) {
+        serviceImage = 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=600&q=80';
+      } else if (name.includes('ro ') || name.includes('purifier') || name.includes('water filter')) {
+        serviceImage = 'https://images.unsplash.com/photo-1563453392212-326f5e854473?auto=format&fit=crop&w=600&q=80';
+      } else if (name.includes('washing machine')) {
+        serviceImage = 'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=600&q=80';
+      } else if (name.includes('refrigerator') || name.includes('fridge')) {
+        serviceImage = 'https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?auto=format&fit=crop&w=600&q=80';
+      } else if (name.includes('bathroom clean') || name.includes('toilet')) {
+        serviceImage = 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80';
+      } else if (name.includes('house clean') || name.includes('home clean') || name.includes('deep clean')) {
+        serviceImage = 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80';
+      } else if (name.includes('blood') || name.includes('cbc') || name.includes('lab') || name.includes('pathology') || name.includes('diagnostic')) {
+        serviceImage = 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=600&q=80';
+      } else if (name.includes('health') || name.includes('doctor') || name.includes('nurse') || name.includes('compounder')) {
+        serviceImage = 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=600&q=80';
+      } else if (name.includes('hair') || name.includes('salon') || name.includes('barber') || name.includes('grooming')) {
+        serviceImage = 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80';
+      } else if (name.includes('cctv') || name.includes('camera') || name.includes('surveillance')) {
+        serviceImage = 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=600&q=80';
+      } else if (name.includes('lock') || name.includes('doorbell')) {
+        serviceImage = 'https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&w=600&q=80';
+      } else if (name.includes('truck') || name.includes('tempo') || name.includes('logistics') || name.includes('cargo') || name.includes('transport')) {
+        serviceImage = 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80';
+      } else {
+        serviceImage = theme.image || 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80';
+      }
     }
 
     return {
