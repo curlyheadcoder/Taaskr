@@ -23,6 +23,16 @@ const handleResponse = async (res) => {
     localStorage.removeItem('taaskr_token');
     localStorage.removeItem('taaskr_current_user');
   }
+  if (res.status === 204) return null;
+
+  const contentType = res.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    if (!res.ok) {
+      throw new Error(`Server returned HTTP ${res.status}`);
+    }
+    throw new Error('API server unreachable or returned non-JSON response');
+  }
+
   if (!res.ok) {
     let errorMsg = 'Something went wrong';
     try {
@@ -31,7 +41,6 @@ const handleResponse = async (res) => {
     } catch (e) { }
     throw new Error(errorMsg);
   }
-  if (res.status === 204) return null;
   return res.json();
 };
 

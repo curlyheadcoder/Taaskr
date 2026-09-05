@@ -8,13 +8,39 @@ import {
   Snowflake, Ruler, Hammer, ArrowRight, Activity, Stethoscope, Building2
 } from 'lucide-react';
 
+const DEFAULT_CATEGORIES = [
+  { id: 1, name: 'Appliances', active: true },
+  { id: 2, name: 'Civil & Property Maintenance', active: true },
+  { id: 3, name: 'Cleaning', active: true },
+  { id: 4, name: 'Diagnostic Services', active: true },
+  { id: 5, name: 'Electrical', active: true },
+  { id: 6, name: 'Healthcare Services', active: true },
+  { id: 7, name: 'Logistics', active: true },
+  { id: 8, name: "Men's Salon & Massage", active: true },
+  { id: 9, name: 'Plumbing', active: true },
+  { id: 10, name: 'Security Services', active: true }
+];
+
+const DEFAULT_SERVICES = [
+  { id: 1, name: 'AC Repair & Service', description: 'Comprehensive diagnostics, coil cleaning, and cooling optimization.', price: 699, pricingType: 'FIXED', categoryId: 1, active: true },
+  { id: 2, name: 'RO Water Purifier Service', description: 'Filter replacement, membrane inspection, and complete purification check.', price: 499, pricingType: 'FIXED', categoryId: 1, active: true },
+  { id: 3, name: 'Switchboard & Wiring Repair', description: 'Quick inspection and repair of loose wiring, burnt sockets, and tripped breakers.', price: 349, pricingType: 'FIXED', categoryId: 5, active: true },
+  { id: 4, name: 'Ceiling & Exhaust Fan Repair', description: 'Bearing replacement, speed regulator setup, and quiet motor tuning.', price: 299, pricingType: 'FIXED', categoryId: 5, active: true },
+  { id: 5, name: 'Tap Leakage & Valve Repair', description: 'Fix dripping faucets, replace internal washers, and ensure seamless water pressure.', price: 299, pricingType: 'FIXED', categoryId: 9, active: true },
+  { id: 6, name: 'Deep Home & Bathroom Cleaning', description: 'Intensive stain removal, floor sanitization, and eco-friendly disinfection.', price: 1499, pricingType: 'FIXED', categoryId: 3, active: true },
+  { id: 7, name: 'Blood Test & Sample Collection', description: 'Hygienic at-home phlebotomy with certified NABL accredited lab processing.', price: 499, pricingType: 'FIXED', categoryId: 4, active: true },
+  { id: 8, name: 'CCTV Installation & Setup', description: 'HD camera mounting, DVR configuration, and mobile live-view setup.', price: 1199, pricingType: 'FIXED', categoryId: 10, active: true },
+  { id: 9, name: 'Mini Truck Goods Transport', description: 'Reliable intra-city tempo transport for furniture, equipment, and shifting.', price: 250, pricingType: 'PER_KM', categoryId: 7, active: true },
+  { id: 10, name: 'General Civil & Wall Repair', description: 'Minor masonry, plaster patching, and tile touch-ups by verified masons.', price: 799, pricingType: 'FIXED', categoryId: 2, active: true }
+];
+
 export default function Home() {
   const navigate = useNavigate();
-  const [categories, setCategories] = useState([]);
-  const [services, setServices] = useState([]);
+  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
+  const [services, setServices] = useState(DEFAULT_SERVICES);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [currentLocation, setCurrentLocation] = useState(() => {
     try {
       const saved = localStorage.getItem('taaskr_location');
@@ -43,18 +69,19 @@ export default function Home() {
 
   useEffect(() => {
     const loadCatalog = async () => {
-      setLoading(true);
       try {
         const [cats, servs] = await Promise.all([
           api.catalog.getCategories(),
           api.catalog.getServices()
         ]);
-        setCategories(Array.isArray(cats) ? cats.filter(c => c && c.active !== false) : []);
-        setServices(Array.isArray(servs) ? servs.filter(s => s && s.active !== false) : []);
+        if (Array.isArray(cats) && cats.length > 0) {
+          setCategories(cats.filter(c => c && c.active !== false));
+        }
+        if (Array.isArray(servs) && servs.length > 0) {
+          setServices(servs.filter(s => s && s.active !== false));
+        }
       } catch (err) {
-        console.error('Error loading catalog:', err);
-        setCategories([]);
-        setServices([]);
+        console.warn('Backend catalog sync notice:', err);
       } finally {
         setLoading(false);
       }
