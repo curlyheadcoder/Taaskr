@@ -160,7 +160,6 @@ public class DataSeeder {
         seedService(serviceRepository, "Flooring & Tiling", "Floor tiling, regrouting, and cracked tile repair services", new BigDecimal("1499.00"), 480, civil);
         seedService(serviceRepository, "Roof & Terrace Maintenance", "Terrace inspection, rain drain clearing, and protective heat-reflective coating", new BigDecimal("1999.00"), 360, civil);
         seedService(serviceRepository, "Home Renovation", "General home civil restructuring, partition remodeling, and repairs", new BigDecimal("4999.00"), 480, civil);
-        seedService(serviceRepository, "General Civil Repairs", "Minor civil patching, masonry touchups, and wall plastering", new BigDecimal("799.00"), 120, civil);
 
         // 6. Tech & Home Automation
         seedService(serviceRepository, "Laptop & PC Diagnostics / OS Setup", "RAM/SSD upgrades, OS installation, virus cleanup, and thermal paste replacement", new BigDecimal("499.00"), 60, techElectronics);
@@ -290,7 +289,7 @@ public class DataSeeder {
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "carpenter@taaskr.com", 4.7, 110, 8, "Master carpenter for custom woodwork, drilling, and furniture setup",
-                serviceRepository, List.of("Carpentry & Furniture Repair", "Furniture Assembly & Flatpack Setup", "Drilling, Hanging & Wall Mounting", "Interior Wall Painting & Touch-up", "General Civil Repairs"));
+                serviceRepository, List.of("Carpentry & Furniture Repair", "Furniture Assembly & Flatpack Setup", "Drilling, Hanging & Wall Mounting", "Interior Wall Painting & Touch-up", "Masonry & Brickwork"));
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "tech@taaskr.com", 4.9, 78, 5, "Hardware, Wi-Fi mesh networking, and smart TV mounting specialist",

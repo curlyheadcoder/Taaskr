@@ -207,7 +207,6 @@ const DEFAULT_SERVICES = [
   { id: 29, name: 'Furniture Assembly & Flatpack Setup', description: 'Assembly of flatpack wardrobes, beds, TV units, and study desks from IKEA/Amazon/Pepperfry.', price: 499, pricingType: 'FIXED', categoryId: 2, active: true },
   { id: 30, name: 'Drilling, Hanging & Wall Mounting', description: 'Precision hammer-drilling for wall art, mirrors, curtain rods, and bathroom towel racks.', price: 249, pricingType: 'FIXED', categoryId: 2, active: true },
   { id: 31, name: 'Interior Wall Painting & Touch-up', description: 'Putty filling, primer, and premium acrylic emulsion roller painting for rooms or accent walls.', price: 1499, pricingType: 'FIXED', categoryId: 2, active: true },
-  { id: 32, name: 'General Civil & Wall Repair', description: 'Minor masonry, plaster patching, and tile touch-ups by verified masons.', price: 799, pricingType: 'FIXED', categoryId: 2, active: true },
 
   // Tech & Home Automation
   { id: 33, name: 'Laptop & PC Diagnostics / OS Setup', description: 'RAM/SSD upgrades, OS installation, virus cleanup, and thermal paste replacement.', price: 499, pricingType: 'FIXED', categoryId: 33, active: true },
@@ -244,7 +243,35 @@ const DEFAULT_SERVICES = [
   { id: 54, name: 'Mini Truck Goods Transport', description: 'Reliable intra-city tempo transport for furniture, equipment, and shifting.', price: 250, pricingType: 'PER_KM', categoryId: 5, active: true },
   { id: 55, name: 'Electric Bike Express Courier', description: 'Fast eco-friendly two-wheeler for small parcels and urgent documents.', price: 40, pricingType: 'PER_KM', categoryId: 5, active: true },
   { id: 56, name: 'Heavy Truck Commercial Freight', description: 'Heavy-duty commercial vehicle for heavy machinery and bulk items.', price: 1200, pricingType: 'PER_KM', categoryId: 5, active: true }
-].map(s => mapServiceToCanonical(s));
+];
+
+// Helper to strictly sanitize and deduplicate catalog items
+const cleanAndDeduplicateCatalog = (servicesList) => {
+  if (!Array.isArray(servicesList)) return [];
+  const seenKeys = new Set();
+  const result = [];
+
+  for (const s of servicesList) {
+    if (!s || !s.name || s.active === false) continue;
+    const nameLower = (s.name || '').toLowerCase().trim();
+
+    // Explicitly exclude unwanted duplicate / vague civil items as requested
+    if (nameLower.includes('general civil') || nameLower === 'minor civil repair' || nameLower === 'civil repair') {
+      continue;
+    }
+
+    const normalizedKey = nameLower.replace(/\s+/g, ' ');
+    if (seenKeys.has(normalizedKey)) {
+      continue;
+    }
+    seenKeys.add(normalizedKey);
+    result.push(s);
+  }
+
+  return result;
+};
+
+const INITIAL_SERVICES = cleanAndDeduplicateCatalog(DEFAULT_SERVICES.map(s => mapServiceToCanonical(s)));
 
 export default function Home() {
   const navigate = useNavigate();
@@ -264,7 +291,7 @@ export default function Home() {
       active: true
     }));
   });
-  const [services, setServices] = useState(DEFAULT_SERVICES);
+  const [services, setServices] = useState(INITIAL_SERVICES);
   const [selectedCategory, setSelectedCategory] = useState('appliances_electrical');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
@@ -339,10 +366,10 @@ export default function Home() {
         if (rawServs.length > 0) {
           const mappedServices = rawServs.map(s => mapServiceToCanonical(s, rawCats));
           
-          // Merge with DEFAULT_SERVICES so newly configured catalog items display even before the remote DB is restarted/reseeded
-          const backendNameSet = new Set(mappedServices.map(s => (s.name || '').toLowerCase().trim()));
-          const missingDefaults = DEFAULT_SERVICES.filter(d => !backendNameSet.has((d.name || '').toLowerCase().trim()));
-          const fullCatalog = [...mappedServices, ...missingDefaults];
+          // Merge with DEFAULT_SERVICES so newly configured catalog items display even before remote DB is restarted/reseeded
+          const backendNameSet = new Set(mappedServices.map(s => (s.name || '').toLowerCase().trim().replace(/\s+/g, ' ')));
+          const missingDefaults = INITIAL_SERVICES.filter(d => !backendNameSet.has((d.name || '').toLowerCase().trim().replace(/\s+/g, ' ')));
+          const fullCatalog = cleanAndDeduplicateCatalog([...mappedServices, ...missingDefaults]);
 
           setServices(fullCatalog);
 
@@ -357,9 +384,9 @@ export default function Home() {
           });
           setCategories(mergedCats);
         } else {
-          setServices(DEFAULT_SERVICES);
+          setServices(INITIAL_SERVICES);
           const mergedCats = CANONICAL_CATEGORIES.map(canon => {
-            const count = DEFAULT_SERVICES.filter(s => s.canonicalCategoryId === canon.id).length;
+            const count = INITIAL_SERVICES.filter(s => s.canonicalCategoryId === canon.id).length;
             return {
               id: canon.id,
               name: canon.name,
@@ -371,9 +398,9 @@ export default function Home() {
         }
       } catch (err) {
         console.warn('Backend catalog sync notice:', err);
-        setServices(DEFAULT_SERVICES);
+        setServices(INITIAL_SERVICES);
         const mergedCats = CANONICAL_CATEGORIES.map(canon => {
-          const count = DEFAULT_SERVICES.filter(s => s.canonicalCategoryId === canon.id).length;
+          const count = INITIAL_SERVICES.filter(s => s.canonicalCategoryId === canon.id).length;
           return {
             id: canon.id,
             name: canon.name,
@@ -1776,7 +1803,7 @@ const EXACT_SERVICE_IMAGES = {
         </div>
 
         {/* Dynamic Services Grid Header */}
-        <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div id="services-catalog-grid-top" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', scrollMarginTop: '100px' }}>
           <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', fontWeight: 700 }}>
             Showing {filteredServices.length} {filteredServices.length === 1 ? 'service' : 'services'} in {categories.find(c => c.id === selectedCategory)?.name || 'Selected Category'}
           </h3>
@@ -1878,7 +1905,13 @@ const EXACT_SERVICE_IMAGES = {
               currentPage={servicesPage}
               totalItems={filteredServices.length}
               itemsPerPage={servicesPerPage}
-              onPageChange={setServicesPage}
+              onPageChange={(newPage) => {
+                setServicesPage(newPage);
+                const target = document.getElementById('services-catalog-grid-top') || document.getElementById('services-catalog');
+                if (target) {
+                  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+              }}
             />
           </div>
         )}
