@@ -121,9 +121,13 @@ export default function RejectTaskModal({
             <span style={{ color: 'var(--text-muted)' }}>Task:</span>
             <strong style={{ color: 'var(--text-main)' }}>{booking.serviceName} #{String(booking.id).slice(-6)}</strong>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', alignItems: 'center' }}>
             <span style={{ color: 'var(--text-muted)' }}>Customer:</span>
-            <span style={{ color: 'var(--text-main)' }}>{booking.customerName || 'Customer'}</span>
+            <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{booking.userName || booking.customerName || 'Customer'}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', alignItems: 'center' }}>
+            <span style={{ color: 'var(--text-muted)' }}>Contact:</span>
+            <span style={{ color: '#38bdf8', fontWeight: 600 }}>{booking.userPhone || booking.customerPhone || '+91 99999 99992'}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
             <span style={{ color: 'var(--text-muted)' }}>Payout:</span>

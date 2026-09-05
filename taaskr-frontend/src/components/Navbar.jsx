@@ -466,22 +466,46 @@ export default function Navbar() {
           {user && user.role === 'PROVIDER' && (
             <Link 
               to="/provider" 
+              className="partner-console-nav-badge"
               style={{
-                padding: '0.45rem 0.85rem',
-                borderRadius: '8px',
-                fontSize: '0.85rem',
+                padding: '0.38rem 0.85rem',
+                borderRadius: '20px',
+                fontSize: '0.8125rem',
                 fontWeight: 600,
-                color: 'var(--secondary-accent)',
-                backgroundColor: 'var(--icon-container)',
-                border: '1px solid var(--border-light)',
+                color: '#38bdf8',
+                backgroundColor: location.pathname === '/provider' ? 'rgba(56, 189, 248, 0.16)' : 'rgba(56, 189, 248, 0.08)',
+                border: location.pathname === '/provider' ? '1px solid rgba(56, 189, 248, 0.5)' : '1px solid rgba(56, 189, 248, 0.25)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.4rem',
-                textDecoration: 'none'
+                gap: '0.45rem',
+                textDecoration: 'none',
+                boxShadow: location.pathname === '/provider' ? '0 0 12px rgba(56, 189, 248, 0.25)' : '0 2px 8px rgba(56, 189, 248, 0.08)',
+                transition: 'all 0.2s ease'
               }}
             >
-              <Briefcase size={15} />
-              <span>Partner Console</span>
+              <div style={{
+                width: '18px',
+                height: '18px',
+                borderRadius: '5px',
+                background: 'linear-gradient(135deg, #0284c7, #38bdf8)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 0 8px rgba(56, 189, 248, 0.5)'
+              }}>
+                <Sparkles size={11} color="#ffffff" />
+              </div>
+              <span style={{ letterSpacing: '0.01em', fontWeight: 600 }}>Partner Console</span>
+              <span style={{
+                fontSize: '0.625rem',
+                fontWeight: 800,
+                backgroundColor: 'rgba(56, 189, 248, 0.22)',
+                color: '#38bdf8',
+                padding: '0.1rem 0.35rem',
+                borderRadius: '4px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}>PRO</span>
             </Link>
           )}
 

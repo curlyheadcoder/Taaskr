@@ -129,8 +129,8 @@ export default function PaymentRestrictionModal({
           >
             <div>
               <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{booking.serviceName || 'Service'}</div>
-              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-                Customer: {booking.customerName || 'Customer'}
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.15rem' }}>
+                Customer: <strong style={{ color: 'var(--text-main)' }}>{booking.userName || booking.customerName || 'Customer'}</strong> • <span style={{ color: '#38bdf8' }}>{booking.userPhone || booking.customerPhone || '+91 99999 99992'}</span>
               </div>
             </div>
             <div style={{ textAlign: 'right' }}>

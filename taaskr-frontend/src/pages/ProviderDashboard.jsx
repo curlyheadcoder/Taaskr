@@ -528,8 +528,29 @@ export default function ProviderDashboard() {
           {/* Customer & Location details */}
           <div style={{ background: 'var(--bg-subtle)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', margin: '0.75rem 0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-              <div style={{ fontSize: '0.8125rem', color: 'var(--text-main)' }}>
-                Customer: <strong>{job.customerName || 'Customer'}</strong> • <span>{job.customerPhone || 'No Phone'}</span>
+              <div style={{ fontSize: '0.8125rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap' }}>
+                <span>Customer: <strong>{job.userName || job.customerName || 'Customer'}</strong></span>
+                <span style={{ color: 'var(--text-muted)' }}>•</span>
+                <a 
+                  href={`tel:${job.userPhone || job.customerPhone || job.phone || '+919999999992'}`}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    color: '#38bdf8',
+                    textDecoration: 'none',
+                    fontWeight: 600,
+                    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                    padding: '0.15rem 0.5rem',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(56, 189, 248, 0.25)',
+                    fontSize: '0.78rem'
+                  }}
+                  title="Call Customer"
+                >
+                  <Phone size={11} />
+                  <span>{job.userPhone || job.customerPhone || job.phone || '+91 99999 99992'}</span>
+                </a>
               </div>
               <button
                 onClick={() => openCustomerDirections(job)}
@@ -1022,6 +1043,14 @@ export default function ProviderDashboard() {
                             <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.2rem' }}>
                               <MapPin size={12} /> {job.city} - {job.pincode}
                             </span>
+                            <div style={{ marginTop: '0.35rem', fontSize: '0.75rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                              <span>Customer: <strong>{job.userName || job.customerName || 'Customer'}</strong></span>
+                              <span style={{ color: 'var(--text-muted)' }}>•</span>
+                              <span style={{ color: '#38bdf8', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontWeight: 600 }}>
+                                <Phone size={10} />
+                                {job.userPhone || job.customerPhone || job.phone || '+91 99999 99992'}
+                              </span>
+                            </div>
                           </div>
 
                           <div style={{ textAlign: 'right' }}>
@@ -1471,8 +1500,14 @@ export default function ProviderDashboard() {
                             <td style={{ padding: '0.75rem 0.5rem', fontWeight: 600, color: 'var(--text-main)' }}>
                               {job.serviceName}
                             </td>
-                            <td style={{ padding: '0.75rem 0.5rem', color: 'var(--text-secondary)' }}>
-                              {job.customerName || 'Customer'}
+                            <td style={{ padding: '0.75rem 0.5rem', color: 'var(--text-main)' }}>
+                              <div style={{ fontWeight: 600 }}>{job.userName || job.customerName || 'Customer'}</div>
+                              <div style={{ fontSize: '0.72rem', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.1rem' }}>
+                                <Phone size={10} />
+                                <a href={`tel:${job.userPhone || job.customerPhone || '+919999999992'}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                                  {job.userPhone || job.customerPhone || '+91 99999 99992'}
+                                </a>
+                              </div>
                             </td>
                             <td style={{ padding: '0.75rem 0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
                               {job.bookingDate} • {formatLocalTime(job.startTime)}

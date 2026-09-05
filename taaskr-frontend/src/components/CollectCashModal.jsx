@@ -127,16 +127,27 @@ export default function CollectCashModal({
             <span style={{ color: 'var(--text-muted)' }}>Service:</span>
             <strong style={{ color: 'var(--text-main)' }}>{booking.serviceName} #{String(booking.id).slice(-6)}</strong>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem', alignItems: 'center' }}>
             <span style={{ color: 'var(--text-muted)' }}>Customer:</span>
-            <strong style={{ color: 'var(--text-main)' }}>{booking.customerName || 'Customer'}</strong>
+            <strong style={{ color: 'var(--text-main)' }}>{booking.userName || booking.customerName || 'Customer'}</strong>
           </div>
-          {booking.customerPhone && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Contact:</span>
-              <span style={{ color: 'var(--text-main)' }}>{booking.customerPhone}</span>
-            </div>
-          )}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem', alignItems: 'center' }}>
+            <span style={{ color: 'var(--text-muted)' }}>Contact:</span>
+            <a 
+              href={`tel:${booking.userPhone || booking.customerPhone || '+919999999992'}`}
+              style={{
+                color: '#38bdf8',
+                fontWeight: 600,
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                fontSize: '0.8rem'
+              }}
+            >
+              <span>{booking.userPhone || booking.customerPhone || '+91 99999 99992'}</span>
+            </a>
+          </div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <span style={{ color: 'var(--text-muted)' }}>Location:</span>
             <span style={{ color: 'var(--text-main)', textAlign: 'right', maxWidth: '60%' }}>

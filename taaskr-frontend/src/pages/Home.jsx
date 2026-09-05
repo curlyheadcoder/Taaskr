@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import Pagination from '../components/Pagination';
 import { 
   Search, ShieldCheck, Tag, CreditCard, Star, LayoutList, 
   Sparkles, Droplets, Zap, Paintbrush, Leaf, Truck, Settings, 
-  Snowflake, Ruler, Hammer, ArrowRight, Activity, Stethoscope, Building2, Scissors
+  Snowflake, Ruler, Hammer, ArrowRight, Activity, Stethoscope, Building2, Scissors,
+  Radio, Award, AlertTriangle, CheckCircle2, ChevronRight, Phone, MessageSquare, 
+  FileText, Plus, Bell, RefreshCw, Send, Check, X, ArrowUpRight, HelpCircle, Briefcase, Clock
 } from 'lucide-react';
 
 const DEFAULT_CATEGORIES = [
@@ -36,6 +38,15 @@ const DEFAULT_SERVICES = [
 
 export default function Home() {
   const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('user');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
   const [services, setServices] = useState(DEFAULT_SERVICES);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -49,6 +60,37 @@ export default function Home() {
       return { city: 'Indore', pincode: '452001' };
     }
   });
+
+  // Partner Operations State
+  const [isOnline, setIsOnline] = useState(true);
+  const [showSkillRequestModal, setShowSkillRequestModal] = useState(false);
+  const [showEscalationModal, setShowEscalationModal] = useState(false);
+  const [requestedCategory, setRequestedCategory] = useState('');
+  const [requestedSkillExp, setRequestedSkillExp] = useState('3');
+  const [requestedSkillNotes, setRequestedSkillNotes] = useState('');
+  const [requestSubmitted, setRequestSubmitted] = useState(false);
+  const [escalationType, setEscalationType] = useState('PARTS_REIMBURSEMENT');
+  const [escalationAmount, setEscalationAmount] = useState('');
+  const [escalationBookingId, setEscalationBookingId] = useState('');
+  const [escalationNotes, setEscalationNotes] = useState('');
+  const [escalationSubmitted, setEscalationSubmitted] = useState(false);
+
+  useEffect(() => {
+    const handleAuthChange = () => {
+      try {
+        const saved = localStorage.getItem('user');
+        setCurrentUser(saved ? JSON.parse(saved) : null);
+      } catch (e) {
+        setCurrentUser(null);
+      }
+    };
+    window.addEventListener('auth_change', handleAuthChange);
+    window.addEventListener('storage', handleAuthChange);
+    return () => {
+      window.removeEventListener('auth_change', handleAuthChange);
+      window.removeEventListener('storage', handleAuthChange);
+    };
+  }, []);
 
   useEffect(() => {
     const handleLocChange = (e) => {
@@ -529,6 +571,769 @@ const EXACT_SERVICE_IMAGES = {
     };
   };
 
+  // If logged in as PROVIDER, render the dedicated Partner Operations & Admin Collaboration Nexus
+  if (currentUser && currentUser.role === 'PROVIDER') {
+    return (
+      <div className="animate-fade-in" style={{ maxWidth: '1200px', margin: '0 auto', padding: '1.5rem 1rem 3rem 1rem' }}>
+        {/* Partner Executive Operations Header */}
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%)',
+          border: '1px solid rgba(56, 189, 248, 0.25)',
+          borderRadius: '16px',
+          padding: '1.75rem',
+          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.25), 0 0 20px rgba(56, 189, 248, 0.1)',
+          marginBottom: '2rem',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          {/* Subtle Ambient Glow */}
+          <div style={{
+            position: 'absolute',
+            top: '-50px',
+            right: '-50px',
+            width: '200px',
+            height: '200px',
+            background: 'radial-gradient(circle, rgba(56, 189, 248, 0.25) 0%, transparent 70%)',
+            borderRadius: '50%',
+            filter: 'blur(30px)',
+            pointerEvents: 'none'
+          }} />
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.25rem', position: 'relative', zIndex: 2 }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
+                <span style={{
+                  padding: '0.2rem 0.6rem',
+                  borderRadius: '20px',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                  color: '#38bdf8',
+                  border: '1px solid rgba(56, 189, 248, 0.3)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em'
+                }}>
+                  <Radio size={12} className="animate-pulse" />
+                  <span>Taaskr Partner Operations Hub</span>
+                </span>
+                <span style={{
+                  fontSize: '0.75rem',
+                  color: 'var(--text-muted)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem'
+                }}>
+                  ID: <strong style={{ color: 'var(--text-main)', fontFamily: 'var(--font-mono)' }}>#TK-IND-{currentUser.id ? String(currentUser.id).padStart(4, '0') : '8842'}</strong>
+                </span>
+              </div>
+
+              <h1 style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--text-main)', margin: '0 0 0.4rem 0', letterSpacing: '-0.02em' }}>
+                Welcome back, {currentUser.name || 'Partner Specialist'}
+              </h1>
+              <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', margin: 0, maxWidth: '650px', lineHeight: 1.5 }}>
+                Connected to <strong>Taaskr Central Operations Desk</strong> • Authorized territory: <strong>Indore Metro & East Zone (15 km dispatch radius)</strong>
+              </p>
+            </div>
+
+            {/* Live Dispatch Toggle & Quick Launch */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem' }}>
+              <button
+                onClick={() => setIsOnline(!isOnline)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.55rem',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '30px',
+                  border: isOnline ? '1px solid rgba(16, 185, 129, 0.5)' : '1px solid rgba(239, 68, 68, 0.5)',
+                  backgroundColor: isOnline ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                  color: isOnline ? '#10b981' : '#ef4444',
+                  fontWeight: 700,
+                  fontSize: '0.825rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  boxShadow: isOnline ? '0 0 12px rgba(16, 185, 129, 0.2)' : 'none'
+                }}
+              >
+                <span style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: isOnline ? '#10b981' : '#ef4444',
+                  boxShadow: isOnline ? '0 0 8px #10b981' : 'none'
+                }} />
+                <span>{isOnline ? 'Active on Dispatch Grid' : 'Dispatch Paused (On Break)'}</span>
+              </button>
+
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <Link
+                  to="/provider"
+                  className="btn btn-primary btn-sm"
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 0.9rem', fontSize: '0.825rem', fontWeight: 600 }}
+                >
+                  <Sparkles size={14} />
+                  <span>Open Partner Console</span>
+                </Link>
+                <button
+                  onClick={() => setShowEscalationModal(true)}
+                  className="btn btn-secondary btn-sm"
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 0.8rem', fontSize: '0.825rem' }}
+                >
+                  <AlertTriangle size={13} color="#f59e0b" />
+                  <span>Admin Help Desk</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ========================================================================= */}
+        {/* SECTION 1: ADMIN OPERATIONS BROADCASTS & NOTICES (Admin -> Provider)      */}
+        {/* ========================================================================= */}
+        <div style={{ marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
+            <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+              <Bell size={18} color="var(--primary)" />
+              <span>Admin Operational Directives & Live Bulletins</span>
+            </h2>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Updated 10 mins ago • Taaskr Ops Desk</span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1rem' }}>
+            {/* Bulletin 1: Monsoon Surge Incentive */}
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%)',
+              border: '1px solid rgba(245, 158, 11, 0.25)',
+              borderRadius: '12px',
+              padding: '1.15rem',
+              position: 'relative'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                <span style={{
+                  padding: '0.15rem 0.5rem',
+                  borderRadius: '6px',
+                  backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                  color: '#f59e0b',
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                  textTransform: 'uppercase'
+                }}>Active Surge</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Indore East & Vijay Nagar</span>
+              </div>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)', margin: '0 0 0.35rem 0' }}>
+                ⚡ +₹150 Emergency Surcharge Incentive
+              </h3>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
+                Admin has activated monsoon emergency surge. Earn an extra <strong>₹150 bonus</strong> on every AC, RO & Electrical repair completed within 45 minutes of customer request.
+              </p>
+            </div>
+
+            {/* Bulletin 2: Security & OTP Protocol */}
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%)',
+              border: '1px solid rgba(56, 189, 248, 0.25)',
+              borderRadius: '12px',
+              padding: '1.15rem',
+              position: 'relative'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                <span style={{
+                  padding: '0.15rem 0.5rem',
+                  borderRadius: '6px',
+                  backgroundColor: 'rgba(56, 189, 248, 0.2)',
+                  color: '#38bdf8',
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                  textTransform: 'uppercase'
+                }}>Compliance Rule</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Standard Operating Procedure</span>
+              </div>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)', margin: '0 0 0.35rem 0' }}>
+                🛡️ Mandatory 4-Digit Start OTP & ID Badge
+              </h3>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
+                All partners must display the digital Taaskr ID and verify the customer's 4-digit start OTP before commencing work to ensure immediate insurance coverage.
+              </p>
+            </div>
+
+            {/* Bulletin 3: Payout Notice */}
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%)',
+              border: '1px solid rgba(16, 185, 129, 0.25)',
+              borderRadius: '12px',
+              padding: '1.15rem',
+              position: 'relative'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                <span style={{
+                  padding: '0.15rem 0.5rem',
+                  borderRadius: '6px',
+                  backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                  color: '#10b981',
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                  textTransform: 'uppercase'
+                }}>Payout Batch</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Weekly Settlement</span>
+              </div>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)', margin: '0 0 0.35rem 0' }}>
+                💳 Auto-IMPS Payouts Scheduled
+              </h3>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
+                Next batch settlement will process automatically on <strong>Tuesday 10:00 AM</strong> to your registered bank account. Cash on Delivery collections are reconciled in real-time.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* ========================================================================= */}
+        {/* SECTION 2: PROVIDER-ADMIN SLA & COMPLIANCE GOVERNANCE                      */}
+        {/* ========================================================================= */}
+        <div style={{ marginBottom: '2rem' }}>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.85rem' }}>
+            <ShieldCheck size={18} color="#10b981" />
+            <span>Admin-Partner Governance & SLA Compliance Index</span>
+          </h2>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+            {/* KYC Card */}
+            <div style={{
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border-light)',
+              borderRadius: '12px',
+              padding: '1rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.85rem'
+            }}>
+              <div style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '10px',
+                backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#10b981',
+                flexShrink: 0
+              }}>
+                <CheckCircle2 size={22} />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>KYC & Verification</div>
+                <div style={{ fontSize: '0.925rem', fontWeight: 700, color: 'var(--text-main)' }}>100% Verified</div>
+                <div style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 500 }}>Aadhaar & Police Clearance OK</div>
+              </div>
+            </div>
+
+            {/* SLA Rating */}
+            <div style={{
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border-light)',
+              borderRadius: '12px',
+              padding: '1rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.85rem'
+            }}>
+              <div style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '10px',
+                backgroundColor: 'rgba(245, 158, 11, 0.12)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#f59e0b',
+                flexShrink: 0
+              }}>
+                <Star size={22} />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Quality & SLA Score</div>
+                <div style={{ fontSize: '0.925rem', fontWeight: 700, color: 'var(--text-main)' }}>4.9 ★ Gold Tier</div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>98.6% On-Time • 0 Penalties</div>
+              </div>
+            </div>
+
+            {/* Revenue Share Split */}
+            <div style={{
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border-light)',
+              borderRadius: '12px',
+              padding: '1rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.85rem'
+            }}>
+              <div style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '10px',
+                backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#38bdf8',
+                flexShrink: 0
+              }}>
+                <Award size={22} />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Partner Revenue Share</div>
+                <div style={{ fontSize: '0.925rem', fontWeight: 700, color: 'var(--text-main)' }}>85% Net Payout</div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>15% Platform & Insurance SLA</div>
+              </div>
+            </div>
+
+            {/* Payout Bank */}
+            <div style={{
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border-light)',
+              borderRadius: '12px',
+              padding: '1rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.85rem'
+            }}>
+              <div style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '10px',
+                backgroundColor: 'rgba(168, 85, 247, 0.12)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#a855f7',
+                flexShrink: 0
+              }}>
+                <CreditCard size={22} />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Registered Settlement Bank</div>
+                <div style={{ fontSize: '0.925rem', fontWeight: 700, color: 'var(--text-main)' }}>HDFC Bank ****4892</div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Direct IMPS / UPI Enabled</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ========================================================================= */}
+        {/* SECTION 3: AUTHORIZED SERVICE CAPABILITY MATRIX (Admin Approved Trades)   */}
+        {/* ========================================================================= */}
+        <div style={{ marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div>
+              <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+                <Briefcase size={18} color="var(--primary)" />
+                <span>Admin Approved Service Trades & Capabilities</span>
+              </h2>
+              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
+                Services authorized by Taaskr Admin for your technician profile to receive automatic customer dispatches.
+              </p>
+            </div>
+
+            <button
+              onClick={() => {
+                setRequestSubmitted(false);
+                setShowSkillRequestModal(true);
+              }}
+              className="btn btn-secondary btn-sm"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600, fontSize: '0.8rem' }}
+            >
+              <Plus size={14} />
+              <span>Request New Trade Approval</span>
+            </button>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+            {[
+              { id: 1, name: 'AC Repair & Diagnostics', category: 'Appliances', rate: '₹699', status: 'AUTHORIZED', icon: <Snowflake size={20} color="#38bdf8" /> },
+              { id: 2, name: 'RO Water Purifier Servicing', category: 'Appliances', rate: '₹499', status: 'AUTHORIZED', icon: <Droplets size={20} color="#06b6d4" /> },
+              { id: 3, name: 'Switchboard & Electrical Wiring', category: 'Electrical', rate: '₹349', status: 'AUTHORIZED', icon: <Zap size={20} color="#f59e0b" /> },
+              { id: 4, name: 'Deep Home & Bathroom Cleaning', category: 'Cleaning', rate: '₹1,499', status: 'AUTHORIZED', icon: <Sparkles size={20} color="#10b981" /> },
+              { id: 5, name: 'Mini Truck Goods Transport', category: 'Logistics', rate: '₹250/km', status: 'AUTHORIZED', icon: <Truck size={20} color="#a855f7" /> },
+              { id: 6, name: 'CCTV & Security Camera Setup', category: 'Security Services', rate: '₹1,199', status: 'AUTHORIZED', icon: <ShieldCheck size={20} color="#ec4899" /> }
+            ].map((srv) => (
+              <div
+                key={srv.id}
+                style={{
+                  backgroundColor: 'var(--bg-card)',
+                  border: '1px solid var(--border-light)',
+                  borderRadius: '12px',
+                  padding: '1.15rem',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  transition: 'border-color 0.2s ease'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '8px',
+                    backgroundColor: 'var(--bg-subtle)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    {srv.icon}
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)', margin: '0 0 0.2rem 0' }}>
+                      {srv.name}
+                    </h3>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                      Category: <span style={{ color: 'var(--text-secondary)' }}>{srv.category}</span> • Base Payout: <strong style={{ color: 'var(--text-main)' }}>{srv.rate}</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <span style={{
+                  fontSize: '0.6875rem',
+                  fontWeight: 700,
+                  color: '#10b981',
+                  backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                  padding: '0.2rem 0.5rem',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(16, 185, 129, 0.25)',
+                  flexShrink: 0
+                }}>
+                  ● Approved
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ========================================================================= */}
+        {/* SECTION 4: ADMIN INCIDENT & ESCALATION DESK (Provider -> Admin)           */}
+        {/* ========================================================================= */}
+        <div style={{
+          backgroundColor: 'var(--bg-card)',
+          border: '1px solid var(--border-light)',
+          borderRadius: '16px',
+          padding: '1.5rem',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: '1.5rem',
+          alignItems: 'center'
+        }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+              <AlertTriangle size={18} color="#f59e0b" />
+              <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
+                Admin Operations & Dispute Desk
+              </h2>
+            </div>
+            <p style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+              Facing on-site issues, spare parts extra costs, or customer unavailability? Connect directly with Taaskr Central Operations for rapid resolution.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <button
+              onClick={() => {
+                setEscalationType('PARTS_REIMBURSEMENT');
+                setEscalationSubmitted(false);
+                setShowEscalationModal(true);
+              }}
+              className="btn btn-secondary btn-sm"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', padding: '0.5rem 0.85rem' }}
+            >
+              <FileText size={14} />
+              <span>Claim Extra Parts Cost</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setEscalationType('CUSTOMER_UNREACHABLE');
+                setEscalationSubmitted(false);
+                setShowEscalationModal(true);
+              }}
+              className="btn btn-secondary btn-sm"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', padding: '0.5rem 0.85rem' }}
+            >
+              <Phone size={14} />
+              <span>Report Customer Unreachable</span>
+            </button>
+
+            <a
+              href="tel:+917314009000"
+              className="btn btn-primary btn-sm"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', padding: '0.5rem 0.85rem', textDecoration: 'none' }}
+            >
+              <Phone size={14} />
+              <span>Priority Admin Hotline</span>
+            </a>
+          </div>
+        </div>
+
+        {/* ========================================================================= */}
+        {/* MODAL 1: REQUEST NEW TRADE / SKILL AUTHORIZATION FROM ADMIN               */}
+        {/* ========================================================================= */}
+        {showSkillRequestModal && (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '1rem'
+          }}>
+            <div style={{
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border-light)',
+              borderRadius: '16px',
+              padding: '1.75rem',
+              maxWidth: '500px',
+              width: '100%',
+              boxShadow: 'var(--shadow-xl)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                  <Briefcase size={18} color="var(--primary)" />
+                  <span>Request Trade Authorization</span>
+                </h3>
+                <button
+                  onClick={() => setShowSkillRequestModal(false)}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {requestSubmitted ? (
+                <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981', margin: '0 auto 1rem auto' }}>
+                    <Check size={24} />
+                  </div>
+                  <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.35rem' }}>
+                    Application Submitted to Admin Desk
+                  </h4>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '1.25rem' }}>
+                    Taaskr Technical Operations will review your certification and dispatch history. You will be notified within 24 hours upon approval.
+                  </p>
+                  <button
+                    onClick={() => setShowSkillRequestModal(false)}
+                    className="btn btn-primary btn-sm"
+                  >
+                    Done
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  setRequestSubmitted(true);
+                }}>
+                  <div className="form-group" style={{ marginBottom: '1rem' }}>
+                    <label className="form-label">Service Category to Authorize</label>
+                    <select
+                      className="form-control"
+                      value={requestedCategory}
+                      onChange={(e) => setRequestedCategory(e.target.value)}
+                      required
+                    >
+                      <option value="">-- Select Category --</option>
+                      <option value="Solar Inverter Maintenance">Solar Inverter & Renewable Energy</option>
+                      <option value="Medical Diagnostic Phlebotomy">Healthcare Sample Collection</option>
+                      <option value="Plumbing & Pipe Overhaul">Advanced Commercial Plumbing</option>
+                      <option value="Heavy Freight Logistics">Heavy Freight & Interstate Transport</option>
+                      <option value="Fire Alarm & Security">Fire Safety & Alarm Setup</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: '1rem' }}>
+                    <label className="form-label">Years of Industry Experience</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      min="1"
+                      max="30"
+                      value={requestedSkillExp}
+                      onChange={(e) => setRequestedSkillExp(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                    <label className="form-label">Trade Certification / Notes for Admin</label>
+                    <textarea
+                      className="form-control"
+                      rows="3"
+                      placeholder="Mention your ITI certificate, brand certifications (e.g. Daikin, Voltas, Havells) or prior experience..."
+                      value={requestedSkillNotes}
+                      onChange={(e) => setRequestedSkillNotes(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+                    <button
+                      type="button"
+                      onClick={() => setShowSkillRequestModal(false)}
+                      className="btn btn-secondary btn-sm"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn btn-primary btn-sm"
+                    >
+                      Submit for Admin Approval
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* MODAL 2: ADMIN INCIDENT & MATERIAL REIMBURSEMENT DESK                     */}
+        {/* ========================================================================= */}
+        {showEscalationModal && (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '1rem'
+          }}>
+            <div style={{
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border-light)',
+              borderRadius: '16px',
+              padding: '1.75rem',
+              maxWidth: '500px',
+              width: '100%',
+              boxShadow: 'var(--shadow-xl)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                  <AlertTriangle size={18} color="#f59e0b" />
+                  <span>Admin Operations Ticket</span>
+                </h3>
+                <button
+                  onClick={() => setShowEscalationModal(false)}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {escalationSubmitted ? (
+                <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981', margin: '0 auto 1rem auto' }}>
+                    <Check size={24} />
+                  </div>
+                  <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.35rem' }}>
+                    Ticket #{Math.floor(100000 + Math.random() * 900000)} Created
+                  </h4>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '1.25rem' }}>
+                    Taaskr Dispatch Supervisor has been assigned to your ticket. A supervisor will call you within 5 minutes.
+                  </p>
+                  <button
+                    onClick={() => setShowEscalationModal(false)}
+                    className="btn btn-primary btn-sm"
+                  >
+                    Close
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  setEscalationSubmitted(true);
+                }}>
+                  <div className="form-group" style={{ marginBottom: '1rem' }}>
+                    <label className="form-label">Issue Category</label>
+                    <select
+                      className="form-control"
+                      value={escalationType}
+                      onChange={(e) => setEscalationType(e.target.value)}
+                    >
+                      <option value="PARTS_REIMBURSEMENT">Extra Spare Parts Reimbursement Claim</option>
+                      <option value="CUSTOMER_UNREACHABLE">Customer Not Answering / Door Locked</option>
+                      <option value="SCOPE_CHANGE">Customer Requested Additional Heavy Scope</option>
+                      <option value="SAFETY_HAZARD">Onsite Electrical / Structural Safety Hazard</option>
+                    </select>
+                  </div>
+
+                  {escalationType === 'PARTS_REIMBURSEMENT' && (
+                    <div className="form-group" style={{ marginBottom: '1rem' }}>
+                      <label className="form-label">Spare Part Cost (₹)</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        placeholder="e.g. 450 (Capacitor / Valve replacement)"
+                        value={escalationAmount}
+                        onChange={(e) => setEscalationAmount(e.target.value)}
+                        required
+                      />
+                    </div>
+                  )}
+
+                  <div className="form-group" style={{ marginBottom: '1rem' }}>
+                    <label className="form-label">Booking ID (Optional)</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="e.g. #61 or leave blank for general issue"
+                      value={escalationBookingId}
+                      onChange={(e) => setEscalationBookingId(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                    <label className="form-label">Detailed Notes for Admin Desk</label>
+                    <textarea
+                      className="form-control"
+                      rows="3"
+                      placeholder="Describe the issue in detail..."
+                      value={escalationNotes}
+                      onChange={(e) => setEscalationNotes(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+                    <button
+                      type="button"
+                      onClick={() => setShowEscalationModal(false)}
+                      className="btn btn-secondary btn-sm"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn btn-primary btn-sm"
+                    >
+                      Submit Ticket
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Regular Customer / Guest Catalog View
   return (
     <div className="animate-fade-in">
       {/* Dynamic Responsive Hero Section */}
