@@ -91,6 +91,7 @@ export default function Home() {
     if (cat.includes('electric') || cat.includes('wire') || cat.includes('switch') || cat.includes('power')) {
       return {
         icon: <Zap size={28} strokeWidth={2.4} />,
+        image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=400&q=80',
         primary: '#F59E0B',
         secondary: '#EF4444',
         tertiary: '#FBBF24',
@@ -108,6 +109,7 @@ export default function Home() {
     if (cat.includes('plumb') || cat.includes('water') || cat.includes('pipe') || cat.includes('drain')) {
       return {
         icon: <Droplets size={28} strokeWidth={2.4} />,
+        image: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=400&q=80',
         primary: '#06B6D4',
         secondary: '#2563EB',
         tertiary: '#10B981',
@@ -125,6 +127,7 @@ export default function Home() {
     if (cat.includes('clean')) {
       return {
         icon: <Sparkles size={28} strokeWidth={2.4} />,
+        image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80',
         primary: '#10B981',
         secondary: '#06B6D4',
         tertiary: '#3B82F6',
@@ -142,6 +145,7 @@ export default function Home() {
     if (cat.includes('diagnostic') || cat.includes('patholog') || cat.includes('blood') || cat.includes('test')) {
       return {
         icon: <Activity size={28} strokeWidth={2.4} />,
+        image: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=400&q=80',
         primary: '#F43F5E',
         secondary: '#A855F7',
         tertiary: '#EC4899',
@@ -159,6 +163,7 @@ export default function Home() {
     if (cat.includes('health') || cat.includes('care') || cat.includes('doctor') || cat.includes('nurse')) {
       return {
         icon: <Stethoscope size={28} strokeWidth={2.4} />,
+        image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=400&q=80',
         primary: '#14B8A6',
         secondary: '#10B981',
         tertiary: '#0284C7',
@@ -176,6 +181,7 @@ export default function Home() {
     if (cat.includes('logistics') || cat.includes('mov') || cat.includes('vehicle') || cat.includes('transport') || cat.includes('truck') || cat.includes('cargo') || cat.includes('courier') || cat.includes('freight')) {
       return {
         icon: <Truck size={28} strokeWidth={2.4} />,
+        image: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=400&q=80',
         primary: '#3B82F6',
         secondary: '#8B5CF6',
         tertiary: '#06B6D4',
@@ -193,6 +199,7 @@ export default function Home() {
     if (cat.includes('security') || cat.includes('guard') || cat.includes('cctv') || cat.includes('lock')) {
       return {
         icon: <ShieldCheck size={28} strokeWidth={2.4} />,
+        image: 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=400&q=80',
         primary: '#8B5CF6',
         secondary: '#EC4899',
         tertiary: '#6366F1',
@@ -210,6 +217,7 @@ export default function Home() {
     if (cat.includes('civil') || cat.includes('property') || cat.includes('mason') || cat.includes('roof') || cat.includes('floor')) {
       return {
         icon: <Building2 size={28} strokeWidth={2.4} />,
+        image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=400&q=80',
         primary: '#EA580C',
         secondary: '#F59E0B',
         tertiary: '#E11D48',
@@ -227,6 +235,7 @@ export default function Home() {
     if (cat.includes('appliance') || cat.includes('repair') || cat.includes('machine')) {
       return {
         icon: <Settings size={28} strokeWidth={2.4} />,
+        image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=400&q=80',
         primary: '#0EA5E9',
         secondary: '#6366F1',
         tertiary: '#06B6D4',
@@ -240,10 +249,29 @@ export default function Home() {
       };
     }
 
-    // 10. AC & Cooling
+    // 10. Men's Salon & Massage
+    if (cat.includes('salon') || cat.includes('massage') || cat.includes('barber') || cat.includes('hair') || cat.includes('spa') || cat.includes('men')) {
+      return {
+        icon: <Scissors size={28} strokeWidth={2.4} />,
+        image: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=400&q=80',
+        primary: '#A855F7',
+        secondary: '#EC4899',
+        tertiary: '#6366F1',
+        accentBg: 'linear-gradient(135deg, #A855F7 0%, #9333EA 50%, #EC4899 100%)',
+        shadow1: 'rgba(168, 85, 247, 0.42)',
+        shadow2: 'rgba(236, 72, 153, 0.32)',
+        shadow3: 'rgba(99, 102, 241, 0.28)',
+        glow: 'rgba(168, 85, 247, 0.55)',
+        badgeBg: 'rgba(168, 85, 247, 0.2)',
+        badgeColor: '#E9D5FF'
+      };
+    }
+
+    // 11. AC & Cooling
     if (/\bac\b/.test(cat) || cat.includes('cool') || cat.includes('refrigerat')) {
       return {
         icon: <Snowflake size={28} strokeWidth={2.4} />,
+        image: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=400&q=80',
         primary: '#38BDF8',
         secondary: '#6366F1',
         tertiary: '#0284C7',
@@ -257,10 +285,11 @@ export default function Home() {
       };
     }
 
-    // 11. Painting & Walls
+    // 12. Painting & Walls
     if (cat.includes('paint')) {
       return {
         icon: <Paintbrush size={28} strokeWidth={2.4} />,
+        image: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=400&q=80',
         primary: '#EC4899',
         secondary: '#8B5CF6',
         tertiary: '#F43F5E',
@@ -274,10 +303,11 @@ export default function Home() {
       };
     }
 
-    // 12. Carpentry & Wood
+    // 13. Carpentry & Wood
     if (cat.includes('carpent') || cat.includes('wood')) {
       return {
         icon: <Ruler size={28} strokeWidth={2.4} />,
+        image: 'https://images.unsplash.com/photo-1502005229762-ee1b2b8ab98f?auto=format&fit=crop&w=400&q=80',
         primary: '#D97706',
         secondary: '#EA580C',
         tertiary: '#CA8A04',
@@ -291,26 +321,10 @@ export default function Home() {
       };
     }
 
-    // 13. Gardening & Lawn
-    if (cat.includes('garden') || cat.includes('lawn')) {
-      return {
-        icon: <Leaf size={28} strokeWidth={2.4} />,
-        primary: '#84CC16',
-        secondary: '#10B981',
-        tertiary: '#06B6D4',
-        accentBg: 'linear-gradient(135deg, #84CC16 0%, #4D7C0F 50%, #10B981 100%)',
-        shadow1: 'rgba(132, 204, 22, 0.42)',
-        shadow2: 'rgba(16, 185, 129, 0.32)',
-        shadow3: 'rgba(6, 182, 212, 0.28)',
-        glow: 'rgba(132, 204, 22, 0.55)',
-        badgeBg: 'rgba(132, 204, 22, 0.2)',
-        badgeColor: '#BEF264'
-      };
-    }
-
     // Default / All Services (Vibrant Electric Indigo -> Pink -> Cyan)
     return {
       icon: <LayoutList size={28} strokeWidth={2.4} />,
+      image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80',
       primary: '#6366F1',
       secondary: '#EC4899',
       tertiary: '#38BDF8',
@@ -329,32 +343,39 @@ export default function Home() {
     const cat = (categoryName || '').toLowerCase();
     const theme = getCategoryTheme(cat);
     
-    // Choose specific icon if refined
-    let icon = theme.icon;
-    if (name.includes('waterproof') || name.includes('tap') || name.includes('leak') || name.includes('pipe') || name.includes('drain')) {
-      icon = <Droplets size={24} />;
-    } else if (name.includes('switch') || name.includes('wire') || name.includes('fan') || name.includes('inverter') || name.includes('fuse')) {
-      icon = <Zap size={24} />;
-    } else if (name.includes('air condition') || name.includes('cooler') || name.includes('refrigerat')) {
-      icon = <Snowflake size={24} />;
-    } else if (name.includes('guard') || name.includes('cctv') || name.includes('lock') || name.includes('security')) {
-      icon = <ShieldCheck size={24} />;
-    } else if (name.includes('truck') || name.includes('tempo') || name.includes('courier') || name.includes('parcel')) {
-      icon = <Truck size={24} />;
-    } else if (name.includes('clean') || name.includes('dust') || name.includes('mop')) {
-      icon = <Sparkles size={24} />;
-    } else if (name.includes('doctor') || name.includes('blood') || name.includes('test') || name.includes('checkup')) {
-      icon = <Activity size={24} />;
-    } else if (name.includes('paint')) {
-      icon = <Paintbrush size={24} />;
-    } else if (name.includes('carpent') || name.includes('wood')) {
-      icon = <Ruler size={24} />;
-    } else if (name.includes('garden') || name.includes('lawn')) {
-      icon = <Leaf size={24} />;
+    // Select real, high-resolution stock photo matching the specific service
+    let serviceImage = theme.image;
+    if (name.includes('ac install') || name.includes('ac repair') || name.includes('ac service') || name.includes('air condition') || name.includes('gas refill')) {
+      serviceImage = 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=600&q=80';
+    } else if (name.includes('fan') || name.includes('switch') || name.includes('wire') || name.includes('inverter') || name.includes('fuse') || name.includes('electric')) {
+      serviceImage = 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80';
+    } else if (name.includes('tap') || name.includes('leak') || name.includes('pipe') || name.includes('drain') || name.includes('plumb') || name.includes('tank')) {
+      serviceImage = 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=600&q=80';
+    } else if (name.includes('sofa') || name.includes('carpet') || name.includes('curtain') || name.includes('mattress')) {
+      serviceImage = 'https://images.unsplash.com/photo-1558317374-067fb5f30001?auto=format&fit=crop&w=600&q=80';
+    } else if (name.includes('house clean') || name.includes('home clean') || name.includes('deep clean') || name.includes('kitchen clean') || name.includes('bathroom clean')) {
+      serviceImage = 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80';
+    } else if (name.includes('blood') || name.includes('cbc') || name.includes('thyroid') || name.includes('test') || name.includes('lab') || name.includes('checkup')) {
+      serviceImage = 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=600&q=80';
+    } else if (name.includes('physician') || name.includes('doctor') || name.includes('nurse') || name.includes('physiotherapy') || name.includes('consultation')) {
+      serviceImage = 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=600&q=80';
+    } else if (name.includes('hair') || name.includes('beard') || name.includes('massage') || name.includes('facial') || name.includes('spa') || name.includes('grooming')) {
+      serviceImage = 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80';
+    } else if (name.includes('truck') || name.includes('courier') || name.includes('tempo') || name.includes('cargo') || name.includes('freight') || name.includes('logistics')) {
+      serviceImage = 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80';
+    } else if (name.includes('cctv') || name.includes('guard') || name.includes('security') || name.includes('alarm') || name.includes('camera')) {
+      serviceImage = 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=600&q=80';
+    } else if (name.includes('paint') || name.includes('wall') || name.includes('waterproof')) {
+      serviceImage = 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=600&q=80';
+    } else if (name.includes('mason') || name.includes('tile') || name.includes('civil') || name.includes('construction') || name.includes('plaster')) {
+      serviceImage = 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80';
+    } else if (name.includes('appliance') || name.includes('washing') || name.includes('refrigerator') || name.includes('microwave') || name.includes('oven') || name.includes('geyser')) {
+      serviceImage = 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80';
     }
 
     return {
-      icon,
+      image: serviceImage,
+      icon: theme.icon,
       color: theme.primary,
       secondary: theme.secondary,
       tertiary: theme.tertiary,
@@ -550,7 +571,12 @@ export default function Home() {
                       boxShadow: `0 8px 20px -3px ${theme.shadow1}, 0 4px 12px ${theme.shadow2}`
                     }}
                   >
-                    {theme.icon}
+                    <img
+                      src={theme.image}
+                      alt={cat.name}
+                      className="cat-thumb-img"
+                      loading="lazy"
+                    />
                   </div>
                   <div className="category-tile-title">
                     {cat.name}
@@ -624,8 +650,13 @@ export default function Home() {
                     }}
                     onClick={() => navigate(`/services/${service.id}`)}
                   >
-                    <div className="icon-squircle" style={{ backgroundColor: config.bg, color: config.color }}>
-                      {config.icon}
+                    <div className="service-card-image-box">
+                      <img
+                        src={config.image}
+                        alt={service.name}
+                        className="service-card-img"
+                        loading="lazy"
+                      />
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
