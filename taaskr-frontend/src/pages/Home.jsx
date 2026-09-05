@@ -768,10 +768,10 @@ function BouncingHeroPhysics({ onWallHit, onSelectCategory }) {
             tagEl.classList.add('tag-bounce-pop');
           }
 
-          if (now - lastColorChangeTime > 2500) {
+          if (now - lastColorChangeTime > 400) {
             lastColorChangeTime = now;
             if (onWallHit) {
-              onWallHit(tile);
+              onWallHit(tile, nextService);
             }
           }
         }
@@ -953,6 +953,7 @@ export default function Home() {
   });
 
   const [lastHitCategory, setLastHitCategory] = useState('logistics');
+  const [activeHighlightService, setActiveHighlightService] = useState('Express Goods Transport');
 
   const [ambientHeroColor, setAmbientHeroColor] = useState(() => {
     const isDark = document.body.classList.contains('dark');
@@ -967,15 +968,29 @@ export default function Home() {
       orb2: isDark
         ? `radial-gradient(circle, ${initCat.glow} 0%, transparent 70%)`
         : `radial-gradient(circle, ${initCat.glow.replace('0.35', '0.08')} 0%, transparent 70%)`,
-      badgeColor: isDark ? initCat.color : '#1E40AF'
+      badgeColor: isDark ? initCat.color : '#1D4ED8'
     };
   });
 
-  const handleHeroWallHit = useCallback((tile) => {
+  const handleHeroWallHit = useCallback((tile, serviceName) => {
     const isDark = document.body.classList.contains('dark');
     setLastHitCategory(tile.id);
+    if (serviceName) {
+      setActiveHighlightService(serviceName);
+    }
     const dynamicGradient = getCategoryGradient(tile.id, isDark);
-    
+    const accentColor = isDark
+      ? tile.color
+      : (tile.color === '#D97706' || tile.color === '#EA580C'
+          ? '#C2410C'
+          : tile.color === '#E11D48'
+          ? '#BE123C'
+          : tile.color === '#9333EA'
+          ? '#7E22CE'
+          : tile.color === '#0891B2'
+          ? '#0F766E'
+          : '#1D4ED8');
+
     setAmbientHeroColor({
       primary: tile.color,
       glow: tile.glow,
@@ -986,7 +1001,7 @@ export default function Home() {
       orb2: isDark
         ? `radial-gradient(circle, ${tile.glow} 0%, transparent 70%)`
         : `radial-gradient(circle, ${tile.glow.replace('0.35', '0.08')} 0%, transparent 70%)`,
-      badgeColor: isDark ? tile.color : (tile.color === '#D97706' || tile.color === '#EA580C' ? '#9A3412' : tile.color === '#E11D48' ? '#9F1239' : tile.color === '#9333EA' ? '#6B21A8' : '#1E40AF')
+      badgeColor: accentColor
     });
   }, []);
 
@@ -995,10 +1010,22 @@ export default function Home() {
     const observer = new MutationObserver(() => {
       const isDark = document.body.classList.contains('dark');
       const cat = BOUNCING_PHYSICS_CATEGORIES.find(c => c.id === lastHitCategory) || BOUNCING_PHYSICS_CATEGORIES[0];
+      const accentColor = isDark
+        ? cat.color
+        : (cat.color === '#D97706' || cat.color === '#EA580C'
+            ? '#C2410C'
+            : cat.color === '#E11D48'
+            ? '#BE123C'
+            : cat.color === '#9333EA'
+            ? '#7E22CE'
+            : cat.color === '#0891B2'
+            ? '#0F766E'
+            : '#1D4ED8');
+
       setAmbientHeroColor(prev => ({
         ...prev,
         gradient: getCategoryGradient(cat.id, isDark),
-        badgeColor: isDark ? cat.color : (cat.color === '#D97706' || cat.color === '#EA580C' ? '#9A3412' : cat.color === '#E11D48' ? '#9F1239' : cat.color === '#9333EA' ? '#6B21A8' : '#1E40AF')
+        badgeColor: accentColor
       }));
     });
     observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
@@ -2356,31 +2383,39 @@ const EXACT_SERVICE_IMAGES = {
                   color: ambientHeroColor.badgeColor || '#1E40AF',
                   WebkitBackgroundClip: 'text',
                   backgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
+                  WebkitTextFillColor: 'transparent',
+                  transition: 'background-image 0.4s ease, color 0.4s ease'
                 }}
               >
                 Engineered for Speed.
               </span>
             </h1>
 
-          {/* Dynamic Live Cycling Service Highlight Pill */}
+          {/* Dynamic Live Cycling Service Highlight Pill Synchronized with Bouncing Tiles */}
           <div className="hero-highlight-pill" style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '0.6rem',
             padding: '0.45rem 1.15rem',
             borderRadius: '999px',
+            border: `1.5px solid ${ambientHeroColor.badgeColor}40`,
+            boxShadow: `0 4px 18px ${ambientHeroColor.glow || 'rgba(0,0,0,0.06)'}`,
+            transition: 'border-color 0.4s ease, box-shadow 0.4s ease',
             marginBottom: '1.25rem'
           }}>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>
               Need fast
             </span>
             <span
-              key={highlightIndex}
+              key={activeHighlightService}
               className="hero-highlight-text animate-fade-in"
-              style={{ color: ambientHeroColor.badgeColor }}
+              style={{
+                color: ambientHeroColor.badgeColor,
+                fontWeight: 800,
+                transition: 'color 0.4s ease'
+              }}
             >
-              {ROTATING_HIGHLIGHTS[highlightIndex]}?
+              {activeHighlightService}?
             </span>
             <span style={{ fontSize: '0.72rem', padding: '0.12rem 0.45rem', borderRadius: '4px', backgroundColor: 'rgba(16, 185, 129, 0.12)', color: '#10B981', fontWeight: 600 }}>
               Book in 60s
