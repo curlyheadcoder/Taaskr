@@ -511,37 +511,37 @@ const cleanAndDeduplicateCatalog = (servicesList) => {
 const HERO_PALETTES = [
   {
     name: 'Sapphire Horizon',
-    gradient: 'linear-gradient(135deg, #0284C7 0%, #6366F1 50%, #38BDF8 100%)',
-    orb1: 'radial-gradient(circle, rgba(56, 189, 248, 0.28) 0%, rgba(37, 99, 235, 0.08) 50%, transparent 70%)',
-    orb2: 'radial-gradient(circle, rgba(99, 102, 241, 0.24) 0%, rgba(168, 85, 247, 0.06) 50%, transparent 70%)',
+    gradient: 'linear-gradient(135deg, #0284C7 0%, #2563EB 50%, #4F46E5 100%)',
+    orb1: 'radial-gradient(circle, rgba(56, 189, 248, 0.18) 0%, rgba(37, 99, 235, 0.04) 50%, transparent 70%)',
+    orb2: 'radial-gradient(circle, rgba(99, 102, 241, 0.16) 0%, rgba(168, 85, 247, 0.03) 50%, transparent 70%)',
     badgeColor: '#0284C7'
   },
   {
     name: 'Oceanic Emerald',
-    gradient: 'linear-gradient(135deg, #0D9488 0%, #0284C7 50%, #10B981 100%)',
-    orb1: 'radial-gradient(circle, rgba(20, 184, 166, 0.28) 0%, rgba(2, 132, 199, 0.08) 50%, transparent 70%)',
-    orb2: 'radial-gradient(circle, rgba(16, 185, 129, 0.24) 0%, rgba(6, 182, 212, 0.06) 50%, transparent 70%)',
+    gradient: 'linear-gradient(135deg, #0D9488 0%, #0284C7 50%, #2563EB 100%)',
+    orb1: 'radial-gradient(circle, rgba(20, 184, 166, 0.18) 0%, rgba(2, 132, 199, 0.04) 50%, transparent 70%)',
+    orb2: 'radial-gradient(circle, rgba(16, 185, 129, 0.16) 0%, rgba(6, 182, 212, 0.03) 50%, transparent 70%)',
     badgeColor: '#0D9488'
   },
   {
     name: 'Cyber Violet',
-    gradient: 'linear-gradient(135deg, #7C3AED 0%, #2563EB 50%, #A855F7 100%)',
-    orb1: 'radial-gradient(circle, rgba(168, 85, 247, 0.28) 0%, rgba(37, 99, 235, 0.08) 50%, transparent 70%)',
-    orb2: 'radial-gradient(circle, rgba(124, 58, 237, 0.24) 0%, rgba(56, 189, 248, 0.06) 50%, transparent 70%)',
+    gradient: 'linear-gradient(135deg, #7C3AED 0%, #2563EB 50%, #4F46E5 100%)',
+    orb1: 'radial-gradient(circle, rgba(168, 85, 247, 0.18) 0%, rgba(37, 99, 235, 0.04) 50%, transparent 70%)',
+    orb2: 'radial-gradient(circle, rgba(124, 58, 237, 0.16) 0%, rgba(56, 189, 248, 0.03) 50%, transparent 70%)',
     badgeColor: '#7C3AED'
   },
   {
     name: 'Electric Cyan',
-    gradient: 'linear-gradient(135deg, #0891B2 0%, #4F46E5 50%, #06B6D4 100%)',
-    orb1: 'radial-gradient(circle, rgba(6, 182, 212, 0.28) 0%, rgba(79, 70, 229, 0.08) 50%, transparent 70%)',
-    orb2: 'radial-gradient(circle, rgba(8, 145, 178, 0.24) 0%, rgba(99, 102, 241, 0.06) 50%, transparent 70%)',
+    gradient: 'linear-gradient(135deg, #0891B2 0%, #2563EB 50%, #4F46E5 100%)',
+    orb1: 'radial-gradient(circle, rgba(6, 182, 212, 0.18) 0%, rgba(79, 70, 229, 0.04) 50%, transparent 70%)',
+    orb2: 'radial-gradient(circle, rgba(8, 145, 178, 0.16) 0%, rgba(99, 102, 241, 0.03) 50%, transparent 70%)',
     badgeColor: '#0891B2'
   },
   {
-    name: 'Royal Sapphire',
-    gradient: 'linear-gradient(135deg, #2563EB 0%, #0D9488 50%, #60A5FA 100%)',
-    orb1: 'radial-gradient(circle, rgba(37, 99, 235, 0.28) 0%, rgba(13, 148, 136, 0.08) 50%, transparent 70%)',
-    orb2: 'radial-gradient(circle, rgba(96, 165, 250, 0.24) 0%, rgba(2, 132, 199, 0.06) 50%, transparent 70%)',
+    name: 'Royal Indigo',
+    gradient: 'linear-gradient(135deg, #2563EB 0%, #4338CA 50%, #7C3AED 100%)',
+    orb1: 'radial-gradient(circle, rgba(37, 99, 235, 0.18) 0%, rgba(13, 148, 136, 0.04) 50%, transparent 70%)',
+    orb2: 'radial-gradient(circle, rgba(96, 165, 250, 0.16) 0%, rgba(2, 132, 199, 0.03) 50%, transparent 70%)',
     badgeColor: '#2563EB'
   }
 ];
@@ -551,85 +551,134 @@ const BOUNCING_PHYSICS_CATEGORIES = [
     id: 'diagnostic_healthcare',
     name: 'Health & Diagnostics',
     tag: 'Doorstep Lab',
+    services: [
+      'Doorstep Lab',
+      'Blood Test & CBC',
+      'Compounder on Call',
+      'ECG & Vitals Test',
+      'Senior Care Nurse',
+      'Physiotherapy'
+    ],
     icon: <HeartPulse size={18} strokeWidth={2.2} />,
-    color: '#F43F5E',
-    glow: 'rgba(244, 63, 94, 0.4)',
-    accentBg: 'linear-gradient(135deg, #F43F5E 0%, #BE123C 100%)',
-    startX: 0.05,
-    startY: 0.08,
-    vx: 0.40,
-    vy: 0.34
+    color: '#E11D48',
+    glow: 'rgba(225, 29, 72, 0.35)',
+    accentBg: 'linear-gradient(135deg, #E11D48 0%, #BE123C 100%)',
+    startX: 0.04,
+    startY: 0.06,
+    vx: 0.38,
+    vy: 0.32
   },
   {
     id: 'appliances_electrical',
     name: 'Electrical & AC',
     tag: 'Quick Repair',
+    services: [
+      'AC Deep Clean & Gas',
+      'Switch & Inverter Fix',
+      'Geyser Servicing',
+      'Appliance Repair',
+      'Fan & Light Setup',
+      'Fuse & Wiring Fix'
+    ],
     icon: <Zap size={18} strokeWidth={2.2} />,
-    color: '#F59E0B',
-    glow: 'rgba(245, 158, 11, 0.4)',
-    accentBg: 'linear-gradient(135deg, #F59E0B 0%, #EA580C 100%)',
-    startX: 0.82,
-    startY: 0.12,
-    vx: -0.37,
-    vy: 0.44
+    color: '#D97706',
+    glow: 'rgba(217, 119, 6, 0.35)',
+    accentBg: 'linear-gradient(135deg, #D97706 0%, #EA580C 100%)',
+    startX: 0.84,
+    startY: 0.10,
+    vx: -0.36,
+    vy: 0.42
   },
   {
     id: 'logistics',
     name: 'Logistics Fleet',
     tag: 'Direct Shifting',
+    services: [
+      'Direct Shifting',
+      'Tata Ace / Mini Truck',
+      '2-Wheeler Courier',
+      'Furniture Relocation',
+      '3-Wheeler Loading',
+      'Intercity Freight'
+    ],
     icon: <Truck size={18} strokeWidth={2.2} />,
-    color: '#3B82F6',
-    glow: 'rgba(59, 130, 246, 0.4)',
-    accentBg: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
-    startX: 0.06,
-    startY: 0.78,
-    vx: 0.44,
-    vy: -0.34
+    color: '#2563EB',
+    glow: 'rgba(37, 99, 235, 0.35)',
+    accentBg: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+    startX: 0.05,
+    startY: 0.80,
+    vx: 0.42,
+    vy: -0.32
   },
   {
     id: 'salon_wellness',
     name: 'Salon & Wellness',
     tag: 'At-Home Spa',
+    services: [
+      'At-Home Spa',
+      'Hair Styling & Spa',
+      'Bridal Makeover',
+      'Full Body Therapy',
+      'Facial & Skin Glow',
+      'Manicure & Pedicure'
+    ],
     icon: <Scissors size={18} strokeWidth={2.2} />,
-    color: '#A855F7',
-    glow: 'rgba(168, 85, 247, 0.4)',
-    accentBg: 'linear-gradient(135deg, #A855F7 0%, #EC4899 100%)',
-    startX: 0.84,
-    startY: 0.76,
-    vx: -0.37,
-    vy: -0.40
+    color: '#9333EA',
+    glow: 'rgba(147, 51, 234, 0.35)',
+    accentBg: 'linear-gradient(135deg, #9333EA 0%, #C026D3 100%)',
+    startX: 0.85,
+    startY: 0.78,
+    vx: -0.36,
+    vy: -0.38
   },
   {
     id: 'plumbing_cleaning',
     name: 'Plumbing & Clean',
     tag: 'Deep Sanitization',
+    services: [
+      'Deep Sanitization',
+      'Tap Leak & Pipe Fix',
+      'Drain Clog Clearance',
+      'Full Home Cleaning',
+      'Kitchen Degreasing',
+      'Sofa Shampooing'
+    ],
     icon: <Droplets size={18} strokeWidth={2.2} />,
-    color: '#06B6D4',
-    glow: 'rgba(6, 182, 212, 0.4)',
-    accentBg: 'linear-gradient(135deg, #06B6D4 0%, #0D9488 100%)',
-    startX: 0.42,
-    startY: 0.04,
-    vx: -0.30,
-    vy: 0.37
+    color: '#0891B2',
+    glow: 'rgba(8, 145, 178, 0.35)',
+    accentBg: 'linear-gradient(135deg, #0891B2 0%, #0D9488 100%)',
+    startX: 0.44,
+    startY: 0.03,
+    vx: -0.28,
+    vy: 0.36
   },
   {
     id: 'civil_maintenance',
     name: 'Civil & Woodwork',
     tag: 'Carpenter & Paint',
+    services: [
+      'Carpenter & Paint',
+      'Furniture Assembly',
+      'Drilling & Hanging',
+      'Wall Plaster & Tile',
+      'Lock & Handle Fix',
+      'Waterproofing'
+    ],
     icon: <Hammer size={18} strokeWidth={2.2} />,
-    color: '#F97316',
-    glow: 'rgba(249, 115, 22, 0.4)',
-    accentBg: 'linear-gradient(135deg, #F97316 0%, #C2410C 100%)',
-    startX: 0.54,
-    startY: 0.86,
-    vx: 0.34,
-    vy: -0.40
+    color: '#EA580C',
+    glow: 'rgba(234, 88, 12, 0.35)',
+    accentBg: 'linear-gradient(135deg, #EA580C 0%, #C2410C 100%)',
+    startX: 0.52,
+    startY: 0.88,
+    vx: 0.32,
+    vy: -0.38
   }
 ];
 
 function BouncingHeroPhysics({ onWallHit, onSelectCategory }) {
   const containerRef = useRef(null);
   const tilesRef = useRef([]);
+  const tagsRef = useRef([]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -645,7 +694,8 @@ function BouncingHeroPhysics({ onWallHit, onSelectCategory }) {
       x: 0,
       y: 0,
       vx: cat.vx,
-      vy: cat.vy
+      vy: cat.vy,
+      serviceIndex: 0
     }));
 
     const updateBounds = () => {
@@ -706,15 +756,28 @@ function BouncingHeroPhysics({ onWallHit, onSelectCategory }) {
           el.style.transform = `translate3d(${tile.x}px, ${tile.y}px, 0)`;
         }
 
-        if (hit && now - lastColorChangeTime > 4000) {
-          lastColorChangeTime = now;
-          if (onWallHit) {
-            onWallHit(tile);
+        // When touching any wall/edge: rotate to next available service in this category!
+        if (hit) {
+          tile.serviceIndex = (tile.serviceIndex + 1) % (tile.services ? tile.services.length : 1);
+          const nextService = tile.services ? tile.services[tile.serviceIndex] : tile.tag;
+          const tagEl = tagsRef.current[index];
+          if (tagEl) {
+            tagEl.textContent = nextService;
+            tagEl.classList.remove('tag-bounce-pop');
+            void tagEl.offsetWidth; // trigger reflow for smooth animation
+            tagEl.classList.add('tag-bounce-pop');
+          }
+
+          if (now - lastColorChangeTime > 3000) {
+            lastColorChangeTime = now;
+            if (onWallHit) {
+              onWallHit(tile);
+            }
           }
         }
       });
 
-      // 2. Tile-to-Tile Collision Avoidance (prevent overlapping)
+      // 2. Tile-to-Tile Collision Avoidance
       const numTiles = state.length;
       for (let i = 0; i < numTiles; i++) {
         for (let j = i + 1; j < numTiles; j++) {
@@ -723,20 +786,18 @@ function BouncingHeroPhysics({ onWallHit, onSelectCategory }) {
           const dx = (t2.x + tileWidth / 2) - (t1.x + tileWidth / 2);
           const dy = (t2.y + tileHeight / 2) - (t1.y + tileHeight / 2);
           const distSq = dx * dx + dy * dy;
-          const minDist = 185; // safe distance between tile centers
+          const minDist = 185;
           if (distSq < minDist * minDist && distSq > 0) {
             const dist = Math.sqrt(distSq);
             const nx = dx / dist;
             const ny = dy / dist;
 
-            // Simple elastic separation
             const overlap = (minDist - dist) * 0.5;
             t1.x -= nx * overlap;
             t1.y -= ny * overlap;
             t2.x += nx * overlap;
             t2.y += ny * overlap;
 
-            // Reflect velocities along normal
             const kx = t1.vx - t2.vx;
             const ky = t1.vy - t2.vy;
             const p = 2 * (nx * kx + ny * ky) / 2;
@@ -789,7 +850,12 @@ function BouncingHeroPhysics({ onWallHit, onSelectCategory }) {
           </div>
           <div className="physics-tile-content">
             <span className="physics-tile-title">{cat.name}</span>
-            <span className="physics-tile-tag">{cat.tag}</span>
+            <span
+              ref={(el) => (tagsRef.current[index] = el)}
+              className="physics-tile-tag tag-bounce-pop"
+            >
+              {cat.services ? cat.services[0] : cat.tag}
+            </span>
           </div>
         </div>
       ))}
@@ -828,13 +894,28 @@ export default function Home() {
   const [ambientHeroColor, setAmbientHeroColor] = useState(heroPalette);
 
   const handleHeroWallHit = useCallback((tile) => {
+    const isDark = document.body.classList.contains('dark');
+    
+    // High-contrast tone mapping for flawless readability in both light & dark themes
+    const lightGradient = tile.color === '#D97706' || tile.color === '#EA580C'
+      ? 'linear-gradient(135deg, #C2410C 0%, #2563EB 55%, #4338CA 100%)'
+      : tile.color === '#E11D48'
+      ? 'linear-gradient(135deg, #BE123C 0%, #4338CA 55%, #1D4ED8 100%)'
+      : `linear-gradient(135deg, ${tile.color} 0%, #1D4ED8 60%, #4338CA 100%)`;
+
+    const darkGradient = `linear-gradient(135deg, ${tile.color} 0%, #38BDF8 50%, #A855F7 100%)`;
+
     setAmbientHeroColor({
       primary: tile.color,
       glow: tile.glow,
-      gradient: `linear-gradient(135deg, ${tile.color} 0%, #2563EB 50%, #0284C7 100%)`,
-      orb1: `radial-gradient(circle, ${tile.glow} 0%, transparent 70%)`,
-      orb2: `radial-gradient(circle, ${tile.glow} 0%, transparent 70%)`,
-      badgeColor: tile.color
+      gradient: isDark ? darkGradient : lightGradient,
+      orb1: isDark 
+        ? `radial-gradient(circle, ${tile.glow} 0%, transparent 70%)`
+        : `radial-gradient(circle, ${tile.glow.replace('0.35', '0.10')} 0%, transparent 70%)`,
+      orb2: isDark
+        ? `radial-gradient(circle, ${tile.glow} 0%, transparent 70%)`
+        : `radial-gradient(circle, ${tile.glow.replace('0.35', '0.06')} 0%, transparent 70%)`,
+      badgeColor: isDark ? tile.color : (tile.color === '#D97706' ? '#B45309' : tile.color)
     });
   }, []);
 
@@ -2170,31 +2251,31 @@ const EXACT_SERVICE_IMAGES = {
           onSelectCategory={setSelectedCategory}
         />
 
-        {/* Hero Content Container */}
-        <div style={{ maxWidth: '960px', margin: '0 auto', width: '100%', position: 'relative', zIndex: 10, textAlign: 'center', padding: '2rem 1rem' }}>
-          
-          <div className="hero-pill-tag" style={{ margin: '0 auto 1.25rem auto' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--success)', display: 'inline-block', boxShadow: '0 0 10px var(--success)' }} />
-            <span>
-              Verified Service Marketplace • Real-Time Dispatch
-            </span>
-          </div>
+        {/* Hero Content Container with Frosted Glass Shield */}
+        <div style={{ maxWidth: '960px', margin: '0 auto', width: '100%', position: 'relative', zIndex: 10, padding: '1rem' }}>
+          <div className="hero-content-glass">
+            <div className="hero-pill-tag" style={{ margin: '0 auto 1.25rem auto' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--success)', display: 'inline-block', boxShadow: '0 0 10px var(--success)' }} />
+              <span>
+                Verified Service Marketplace • Real-Time Dispatch
+              </span>
+            </div>
 
-          <h1 className="hero-title" style={{ maxWidth: '820px', margin: '0 auto 1.25rem auto' }}>
-            On-Demand Services.<br />
-            <span
-              className="hero-gradient-text"
-              style={{
-                backgroundImage: ambientHeroColor.gradient || 'linear-gradient(135deg, #0284C7 0%, #2563EB 100%)',
-                color: ambientHeroColor.badgeColor || 'var(--primary)',
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text',
-                WebkitTextFillColor: 'transparent'
-              }}
-            >
-              Engineered for Speed.
-            </span>
-          </h1>
+            <h1 className="hero-title" style={{ maxWidth: '820px', margin: '0 auto 1.25rem auto' }}>
+              On-Demand Services.<br />
+              <span
+                className="hero-gradient-text"
+                style={{
+                  backgroundImage: ambientHeroColor.gradient || 'linear-gradient(135deg, #1E40AF 0%, #2563EB 50%, #7C3AED 100%)',
+                  color: ambientHeroColor.badgeColor || '#1E40AF',
+                  WebkitBackgroundClip: 'text',
+                  backgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}
+              >
+                Engineered for Speed.
+              </span>
+            </h1>
 
           {/* Dynamic Live Cycling Service Highlight Pill */}
           <div style={{
@@ -2289,7 +2370,8 @@ const EXACT_SERVICE_IMAGES = {
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
       {/* Main Services Area with Category Tiles & Integrated Search */}
       <main id="services-catalog" className="app-container" style={{ paddingTop: '3rem', paddingBottom: '4rem' }}>

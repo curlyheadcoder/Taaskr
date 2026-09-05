@@ -813,12 +813,32 @@ body.dark .hero-section {
 }
 
 body:not(.dark) .hero-section {
-  background: radial-gradient(ellipse at 30% 15%, #eff6ff 0%, #f8fafc 60%, #ffffff 100%);
+  background: radial-gradient(ellipse at 50% 20%, #eff6ff 0%, #f8fafc 55%, #ffffff 100%);
+}
+
+.hero-content-glass {
+  position: relative;
+  z-index: 10;
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 2.25rem 1.25rem;
+  border-radius: 28px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+body:not(.dark) .hero-content-glass {
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.90) 0%, rgba(255, 255, 255, 0.55) 75%, transparent 100%);
+}
+
+body.dark .hero-content-glass {
+  background: radial-gradient(ellipse at center, rgba(15, 23, 42, 0.80) 0%, rgba(15, 23, 42, 0.40) 75%, transparent 100%);
 }
 
 .hero-title {
   font-size: clamp(2.5rem, 4.5vw, 3.85rem);
-  font-weight: 800;
+  font-weight: 850;
   color: var(--text-main);
   line-height: 1.15;
   margin-bottom: 1.25rem;
@@ -829,19 +849,19 @@ body:not(.dark) .hero-section {
 
 body.dark .hero-title {
   color: #FFFFFF;
-  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.7);
 }
 
 body:not(.dark) .hero-title {
   color: #0F172A;
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
 }
 
 .hero-gradient-text {
   display: inline-block;
-  font-weight: 800;
+  font-weight: 850;
   color: var(--primary);
-  background-image: var(--hero-gradient, linear-gradient(135deg, #0284C7 0%, #2563EB 100%));
+  background-image: var(--hero-gradient, linear-gradient(135deg, #1E40AF 0%, #2563EB 50%, #7C3AED 100%));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -853,15 +873,17 @@ body.dark .hero-gradient-text {
 }
 
 body:not(.dark) .hero-gradient-text {
-  filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.12));
+  filter: drop-shadow(0 1px 1px rgba(30, 64, 175, 0.15));
 }
 
 .hero-desc {
   font-size: 1.075rem;
-  font-weight: 450;
+  font-weight: 500;
   margin-bottom: 2.25rem;
   line-height: 1.65;
-  max-width: 620px;
+  max-width: 660px;
+  margin-left: auto;
+  margin-right: auto;
   position: relative;
   z-index: 10;
 }
@@ -873,7 +895,7 @@ body.dark .hero-desc {
 
 body:not(.dark) .hero-desc {
   color: #334155;
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.6);
 }
 
 .hero-pill-tag {
@@ -1762,8 +1784,24 @@ body:not(.dark) .hero-physics-tile {
   margin-top: 0.2rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  display: inline-block;
 }
 
+.tag-bounce-pop {
+  animation: tagPopAnimation 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
 
-
-
+@keyframes tagPopAnimation {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.3;
+  }
+  65% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
