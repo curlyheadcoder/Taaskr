@@ -463,52 +463,6 @@ export default function Navbar() {
             </>
           )}
 
-          {user && user.role === 'PROVIDER' && (
-            <Link 
-              to="/provider" 
-              className="partner-console-nav-badge"
-              style={{
-                padding: '0.38rem 0.85rem',
-                borderRadius: '20px',
-                fontSize: '0.8125rem',
-                fontWeight: 600,
-                color: '#38bdf8',
-                backgroundColor: location.pathname === '/provider' ? 'rgba(56, 189, 248, 0.16)' : 'rgba(56, 189, 248, 0.08)',
-                border: location.pathname === '/provider' ? '1px solid rgba(56, 189, 248, 0.5)' : '1px solid rgba(56, 189, 248, 0.25)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.45rem',
-                textDecoration: 'none',
-                boxShadow: location.pathname === '/provider' ? '0 0 12px rgba(56, 189, 248, 0.25)' : '0 2px 8px rgba(56, 189, 248, 0.08)',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              <div style={{
-                width: '18px',
-                height: '18px',
-                borderRadius: '5px',
-                background: 'linear-gradient(135deg, #0284c7, #38bdf8)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 0 8px rgba(56, 189, 248, 0.5)'
-              }}>
-                <Sparkles size={11} color="#ffffff" />
-              </div>
-              <span style={{ letterSpacing: '0.01em', fontWeight: 600 }}>Partner Console</span>
-              <span style={{
-                fontSize: '0.625rem',
-                fontWeight: 800,
-                backgroundColor: 'rgba(56, 189, 248, 0.22)',
-                color: '#38bdf8',
-                padding: '0.1rem 0.35rem',
-                borderRadius: '4px',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em'
-              }}>PRO</span>
-            </Link>
-          )}
-
           {user && user.role === 'ADMIN' && (
             <Link 
               to="/admin" 
@@ -533,8 +487,29 @@ export default function Navbar() {
         </nav>
       </div>
 
-      {/* Center Section: Compact Global Service Search (User / Guest Only) */}
-      {isCustomerView ? (
+      {/* Center Section: Provider Console (Provider View) or Compact Global Service Search (User / Guest Only) */}
+      {user && user.role === 'PROVIDER' ? (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+          <Link
+            to="/provider"
+            style={{
+              padding: '0.45rem 1.35rem',
+              borderRadius: '24px',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              color: location.pathname === '/provider' ? '#38bdf8' : 'var(--text-main)',
+              backgroundColor: location.pathname === '/provider' ? 'rgba(56, 189, 248, 0.12)' : 'var(--bg-subtle)',
+              border: location.pathname === '/provider' ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid var(--border-light)',
+              textDecoration: 'none',
+              letterSpacing: '0.01em',
+              transition: 'all 0.2s ease',
+              boxShadow: location.pathname === '/provider' ? '0 0 12px rgba(56, 189, 248, 0.15)' : 'none'
+            }}
+          >
+            Provider Console
+          </Link>
+        </div>
+      ) : isCustomerView ? (
         <div ref={searchContainerRef} style={{ position: 'relative', flex: '0 1 240px', maxWidth: '260px' }}>
           <div style={{
             position: 'relative',
