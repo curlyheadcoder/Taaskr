@@ -1,5 +1,5 @@
 import React from 'react';
-import { DollarSign, CheckCircle2, X, AlertCircle, MapPin, User, Phone, Check } from 'lucide-react';
+import { Receipt, CheckCircle2, X, AlertCircle, MapPin, User, Phone, Check } from 'lucide-react';
 
 export default function CollectCashModal({
   isOpen,
@@ -78,7 +78,7 @@ export default function CollectCashModal({
               flexShrink: 0
             }}
           >
-            <DollarSign size={26} />
+            <Receipt size={24} />
           </div>
           <div>
             <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-main)' }}>

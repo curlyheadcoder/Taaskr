@@ -577,7 +577,7 @@ export default function ProviderDashboard() {
                 </>
               )}
 
-              {/* ACCEPTED status actions: Start In-Transit or Mark Completed */}
+              {/* ACCEPTED status actions: Start work or Mark Completed */}
               {job.status === 'ACCEPTED' && (
                 <>
                   <button 
@@ -585,7 +585,7 @@ export default function ProviderDashboard() {
                     className="btn btn-primary btn-sm"
                     disabled={isActionLoading}
                   >
-                    {isActionLoading ? 'Updating...' : 'In-Transit'}
+                    {isActionLoading ? 'Starting...' : 'Start work'}
                   </button>
                   <button 
                     onClick={() => handleMarkCompleted(job.id)} 
@@ -613,10 +613,9 @@ export default function ProviderDashboard() {
                 <button 
                   onClick={() => handleCollectCashClick(job)} 
                   className="btn btn-success btn-sm"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                  style={{ fontWeight: 600 }}
                 >
-                  <DollarSign size={14} />
-                  <span>Collect Cash</span>
+                  Collect Cash
                 </button>
               )}
 
