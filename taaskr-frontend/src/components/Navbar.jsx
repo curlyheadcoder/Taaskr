@@ -804,11 +804,11 @@ export default function Navbar() {
             <button 
               onClick={handleLogout} 
               className="btn btn-secondary btn-sm"
-              title="Sign out of account"
-              style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem' }}
+              title="Logout"
+              aria-label="Logout"
+              style={{ padding: '0.4rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 'var(--radius-sm)' }}
             >
-              <LogOut size={13} />
-              <span>Logout</span>
+              <LogOut size={15} />
             </button>
           </div>
         ) : (

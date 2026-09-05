@@ -11,7 +11,8 @@ import {
   Truck, MapPin, Package, Navigation, CheckCircle2, ShieldCheck, 
   Clock, Check, X, AlertCircle, Plus, Trash2, Edit2, Phone, Mail, 
   Star, Briefcase, Calendar, CheckSquare, Settings, User, RefreshCw,
-  DollarSign, ExternalLink, Power
+  DollarSign, ExternalLink, Power, TrendingUp, BarChart3, PieChart,
+  PanelLeftClose, PanelLeftOpen, Wallet, Award, ArrowUpRight
 } from 'lucide-react';
 
 export default function ProviderDashboard() {
@@ -23,12 +24,26 @@ export default function ProviderDashboard() {
   const [errorMessage, setErrorMessage] = useState('');
   const [notification, setNotification] = useState(null);
 
-  // Pagination states
+  // Pagination states (10 items per page)
   const [tasksPage, setTasksPage] = useState(1);
   const [bookingsPage, setBookingsPage] = useState(1);
   const [inTransitPage, setInTransitPage] = useState(1);
   const [completedPage, setCompletedPage] = useState(1);
-  const itemsPerPage = 5;
+  const [earningsPage, setEarningsPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Sidebar Expand / Collapse state
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    return localStorage.getItem('taaskr_provider_sidebar_collapsed') === 'true';
+  });
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('taaskr_provider_sidebar_collapsed', String(next));
+      return next;
+    });
+  };
 
   // Modals state
   const [paymentRestrictedBooking, setPaymentRestrictedBooking] = useState(null);
@@ -656,32 +671,97 @@ export default function ProviderDashboard() {
     return name.includes('vehicle') || name.includes('transport') || name.includes('logistic') || name.includes('cargo');
   }) || (myVehicles && myVehicles.length > 0);
 
+  const totalEarnings = completedBookings.reduce((sum, b) => sum + (Number(b.finalAmount) || 0), 0);
+  const cashCollected = completedBookings.filter(b => b.paymentMethod === 'AFTER_SERVICE').reduce((sum, b) => sum + (Number(b.finalAmount) || 0), 0);
+  const onlineSettled = completedBookings.filter(b => b.paymentMethod !== 'AFTER_SERVICE').reduce((sum, b) => sum + (Number(b.finalAmount) || 0), 0);
+  const avgPerJob = completedBookings.length > 0 ? Math.round(totalEarnings / completedBookings.length) : 0;
+  
+  const currentYearMonth = new Date().toISOString().slice(0, 7);
+  const currentMonthEarnings = completedBookings
+    .filter(b => (b.bookingDate || '').startsWith(currentYearMonth) || (b.updatedAt || '').startsWith(currentYearMonth))
+    .reduce((sum, b) => sum + (Number(b.finalAmount) || 0), 0);
+
+  const completionRate = assignedBookings.length > 0 ? Math.round((completedBookings.length / assignedBookings.length) * 100) : 100;
+
+  const serviceEarningsMap = {};
+  completedBookings.forEach(b => {
+    const name = b.serviceName || 'Service';
+    if (!serviceEarningsMap[name]) {
+      serviceEarningsMap[name] = { name, count: 0, amount: 0 };
+    }
+    serviceEarningsMap[name].count += 1;
+    serviceEarningsMap[name].amount += (Number(b.finalAmount) || 0);
+  });
+  const serviceEarningsList = Object.values(serviceEarningsMap).sort((a, b) => b.amount - a.amount);
+
+  const dateEarningsMap = {};
+  completedBookings.forEach(b => {
+    const d = b.bookingDate || (b.updatedAt ? b.updatedAt.slice(0, 10) : 'Recent');
+    dateEarningsMap[d] = (dateEarningsMap[d] || 0) + (Number(b.finalAmount) || 0);
+  });
+  const chartData = Object.entries(dateEarningsMap)
+    .map(([date, amount]) => ({ date, amount }))
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(-7);
+  const maxChartAmount = Math.max(1, ...chartData.map(c => c.amount));
+
   return (
     <div className="enterprise-layout animate-fade-in">
       {/* Sidebar Navigation */}
-      <aside className="enterprise-sidebar">
-        <div style={{ padding: '0.25rem 0.5rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-          <div style={{
-            width: '36px', height: '36px', borderRadius: 'var(--radius-sm)',
-            backgroundColor: 'var(--primary-subtle)', color: 'var(--primary)', display: 'flex',
-            alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.95rem'
-          }}>
-            {userProfile?.name?.charAt(0) || 'P'}
-          </div>
-          <div>
-            <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)', lineHeight: 1.1 }}>
-              {userProfile?.name || 'Partner'}
+      <aside className={`enterprise-sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
+        <div style={{
+          padding: '0.25rem 0.25rem',
+          marginBottom: '1.25rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: isSidebarCollapsed ? 'center' : 'space-between',
+          gap: '0.5rem'
+        }}>
+          {!isSidebarCollapsed && (
+            <div className="sidebar-user-info" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', overflow: 'hidden' }}>
+              <div style={{
+                width: '36px', height: '36px', borderRadius: 'var(--radius-sm)',
+                backgroundColor: 'var(--primary-subtle)', color: 'var(--primary)', display: 'flex',
+                alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.95rem',
+                flexShrink: 0
+              }}>
+                {userProfile?.name?.charAt(0) || 'P'}
+              </div>
+              <div style={{ overflow: 'hidden' }}>
+                <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)', lineHeight: 1.1, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                  {userProfile?.name || 'Partner'}
+                </div>
+                <span style={{ fontSize: '0.6875rem', color: 'var(--success)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.15rem' }}>
+                  <span className="badge-dot" style={{ backgroundColor: 'var(--success)' }} /> Active Partner
+                </span>
+              </div>
             </div>
-            <span style={{ fontSize: '0.6875rem', color: 'var(--success)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              <span className="badge-dot" style={{ backgroundColor: 'var(--success)' }} /> Active Partner
-            </span>
-          </div>
+          )}
+          <button
+            onClick={toggleSidebar}
+            className="btn btn-ghost btn-sm"
+            title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            aria-label={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            style={{
+              padding: '0.35rem',
+              color: 'var(--text-muted)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 'var(--radius-sm)',
+              minWidth: '30px',
+              height: '30px'
+            }}
+          >
+            {isSidebarCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+          </button>
         </div>
 
         <nav className="enterprise-sidebar-nav">
           <button 
             className={`sidebar-item ${activeTab === 'tasks' ? 'active' : ''}`}
             onClick={() => setActiveTab('tasks')}
+            title="Task Feed"
           >
             <CheckSquare size={16} />
             <span>Task Feed ({availableTasks.length})</span>
@@ -690,6 +770,7 @@ export default function ProviderDashboard() {
           <button 
             className={`sidebar-item ${activeTab === 'bookings' ? 'active' : ''}`}
             onClick={() => setActiveTab('bookings')}
+            title="My Bookings"
           >
             <Briefcase size={16} />
             <span>My Bookings ({assignedBookings.length})</span>
@@ -698,6 +779,7 @@ export default function ProviderDashboard() {
           <button 
             className={`sidebar-item ${activeTab === 'in-transit' ? 'active' : ''}`}
             onClick={() => setActiveTab('in-transit')}
+            title="In-Transit"
           >
             <Navigation size={16} />
             <span>In-Transit ({inTransitBookings.length})</span>
@@ -706,15 +788,26 @@ export default function ProviderDashboard() {
           <button 
             className={`sidebar-item ${activeTab === 'completed' ? 'active' : ''}`}
             onClick={() => setActiveTab('completed')}
+            title="Completed"
           >
             <CheckCircle2 size={16} />
             <span>Completed ({completedBookings.length})</span>
+          </button>
+
+          <button 
+            className={`sidebar-item ${activeTab === 'earnings' ? 'active' : ''}`}
+            onClick={() => setActiveTab('earnings')}
+            title="Earnings & Analytics"
+          >
+            <TrendingUp size={16} />
+            <span>Earnings & Analytics</span>
           </button>
 
           {isLogisticsPartner && (
             <button 
               className={`sidebar-item ${activeTab === 'fleet' ? 'active' : ''}`}
               onClick={() => setActiveTab('fleet')}
+              title="Fleet Manager"
             >
               <Truck size={16} />
               <span>Fleet Manager ({myVehicles.length})</span>
@@ -724,6 +817,7 @@ export default function ProviderDashboard() {
           <button 
             className={`sidebar-item ${activeTab === 'schedule' ? 'active' : ''}`}
             onClick={() => setActiveTab('schedule')}
+            title="Availability Slots"
           >
             <Calendar size={16} />
             <span>Availability Slots ({availability.length})</span>
@@ -732,6 +826,7 @@ export default function ProviderDashboard() {
           <button 
             className={`sidebar-item ${activeTab === 'profile' ? 'active' : ''}`}
             onClick={() => setActiveTab('profile')}
+            title="Profile & Services"
           >
             <Settings size={16} />
             <span>Profile & Services</span>
@@ -1111,7 +1206,310 @@ export default function ProviderDashboard() {
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 5: FLEET MANAGER (Logistics Vehicles)                                 */}
+        {/* TAB 5: EARNINGS & ANALYTICS                                               */}
+        {/* ========================================================================= */}
+        {activeTab === 'earnings' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <TrendingUp size={20} color="var(--primary)" />
+                  <span>Partner Earnings & Performance Insights</span>
+                </h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', marginTop: '0.25rem' }}>
+                  Track revenue generated from completed service bookings, payment collection methods, and payout settlements.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <span className="badge badge-completed" style={{ fontSize: '0.8125rem', padding: '0.35rem 0.75rem' }}>
+                  <span className="badge-dot" style={{ backgroundColor: 'var(--success)' }} /> All Payouts Active & Settled
+                </span>
+              </div>
+            </div>
+
+            {/* Earnings Stat Cards */}
+            <div className="grid-cols-4" style={{ gap: '1rem' }}>
+              {/* Card 1: Total Lifetime Earnings */}
+              <div className="stat-card-modern">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <span className="stat-label">Lifetime Earnings</span>
+                    <div className="stat-value" style={{ color: 'var(--success)', fontFeatureSettings: 'tnum' }}>
+                      ₹{totalEarnings.toLocaleString('en-IN')}
+                    </div>
+                  </div>
+                  <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(16, 185, 129, 0.12)', color: 'var(--success)' }}>
+                    <Wallet size={18} />
+                  </div>
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <ArrowUpRight size={13} color="var(--success)" />
+                  <span>Across {completedBookings.length} completed tasks</span>
+                </div>
+              </div>
+
+              {/* Card 2: This Month's Earnings */}
+              <div className="stat-card-modern">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <span className="stat-label">This Month</span>
+                    <div className="stat-value" style={{ color: 'var(--primary)', fontFeatureSettings: 'tnum' }}>
+                      ₹{currentMonthEarnings.toLocaleString('en-IN')}
+                    </div>
+                  </div>
+                  <div className="stat-icon-wrapper" style={{ backgroundColor: 'var(--primary-subtle)', color: 'var(--primary)' }}>
+                    <Calendar size={18} />
+                  </div>
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+                  Current billing period revenue
+                </div>
+              </div>
+
+              {/* Card 3: Cash Collected (COD) */}
+              <div className="stat-card-modern">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <span className="stat-label">Cash Collected</span>
+                    <div className="stat-value" style={{ fontFeatureSettings: 'tnum' }}>
+                      ₹{cashCollected.toLocaleString('en-IN')}
+                    </div>
+                  </div>
+                  <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(245, 158, 11, 0.12)', color: 'var(--warning)' }}>
+                    <DollarSign size={18} />
+                  </div>
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+                  Direct after-service customer cash
+                </div>
+              </div>
+
+              {/* Card 4: Avg. Earnings Per Job */}
+              <div className="stat-card-modern">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <span className="stat-label">Avg. Per Job</span>
+                    <div className="stat-value" style={{ fontFeatureSettings: 'tnum' }}>
+                      ₹{avgPerJob.toLocaleString('en-IN')}
+                    </div>
+                  </div>
+                  <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(99, 102, 241, 0.12)', color: '#818CF8' }}>
+                    <Award size={18} />
+                  </div>
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+                  Avg. revenue per service ticket
+                </div>
+              </div>
+            </div>
+
+            {/* Analytics Grid: Service Breakdown & Revenue Timeline */}
+            <div className="grid-cols-2" style={{ gap: '1.5rem', alignItems: 'stretch' }}>
+              {/* Left Column: Earnings by Service Breakdown */}
+              <div className="panel" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <div className="panel-header" style={{ marginBottom: '1rem' }}>
+                    <h3 className="panel-title">
+                      <PieChart size={16} color="var(--primary)" />
+                      <span>Revenue by Service Category</span>
+                    </h3>
+                    <span className="badge badge-assigned">{serviceEarningsList.length} Services</span>
+                  </div>
+
+                  {serviceEarningsList.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
+                      No completed services yet to generate breakdown analytics.
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                      {serviceEarningsList.slice(0, 5).map((srv, idx) => {
+                        const pct = totalEarnings > 0 ? Math.round((srv.amount / totalEarnings) * 100) : 0;
+                        const colors = ['#38BDF8', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899'];
+                        const barColor = colors[idx % colors.length];
+
+                        return (
+                          <div key={srv.name}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8125rem', marginBottom: '0.35rem' }}>
+                              <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>
+                                {srv.name} <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>({srv.count} {srv.count === 1 ? 'task' : 'tasks'})</span>
+                              </span>
+                              <span style={{ fontWeight: 700, color: 'var(--text-main)', fontFeatureSettings: 'tnum' }}>
+                                ₹{srv.amount.toLocaleString('en-IN')} <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 500 }}>({pct}%)</span>
+                              </span>
+                            </div>
+                            <div style={{ height: '7px', width: '100%', backgroundColor: 'var(--bg-subtle)', borderRadius: '999px', overflow: 'hidden' }}>
+                              <div
+                                style={{
+                                  height: '100%',
+                                  width: `${pct}%`,
+                                  backgroundColor: barColor,
+                                  borderRadius: '999px',
+                                  transition: 'width 0.4s ease'
+                                }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ marginTop: '1.25rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  <span>Online Payments: <strong>₹{onlineSettled.toLocaleString('en-IN')}</strong></span>
+                  <span>Cash Collections: <strong>₹{cashCollected.toLocaleString('en-IN')}</strong></span>
+                </div>
+              </div>
+
+              {/* Right Column: Performance & Settlement Metrics */}
+              <div className="panel" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <div className="panel-header" style={{ marginBottom: '1rem' }}>
+                    <h3 className="panel-title">
+                      <BarChart3 size={16} color="var(--success)" />
+                      <span>Daily Revenue Activity</span>
+                    </h3>
+                    <span className="badge badge-completed">Recent Daily Volume</span>
+                  </div>
+
+                  {chartData.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
+                      No recent revenue timeline data recorded.
+                    </div>
+                  ) : (
+                    <div>
+                      {/* CSS Bar Chart */}
+                      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.75rem', height: '140px', padding: '0.5rem 0', borderBottom: '1px solid var(--border-light)' }}>
+                        {chartData.map((d) => {
+                          const heightPct = Math.max(12, Math.round((d.amount / maxChartAmount) * 100));
+                          return (
+                            <div key={d.date} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem', height: '100%', justifyContent: 'flex-end' }}>
+                              <span style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--text-muted)', fontFeatureSettings: 'tnum' }}>
+                                ₹{d.amount >= 1000 ? `${(d.amount / 1000).toFixed(1)}k` : d.amount}
+                              </span>
+                              <div
+                                style={{
+                                  width: '100%',
+                                  maxWidth: '36px',
+                                  height: `${heightPct}%`,
+                                  backgroundColor: 'var(--primary)',
+                                  borderRadius: '4px 4px 0 0',
+                                  background: 'linear-gradient(180deg, var(--primary) 0%, rgba(56, 189, 248, 0.4) 100%)',
+                                  transition: 'height 0.3s ease'
+                                }}
+                                title={`${d.date}: ₹${d.amount}`}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.4rem', fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
+                        {chartData.map(d => (
+                          <span key={d.date} style={{ flex: 1, textAlign: 'center' }}>
+                            {d.date.slice(5)}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ marginTop: '1.25rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-subtle)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontSize: '0.75rem' }}>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', display: 'block' }}>Job Completion Rate</span>
+                    <strong style={{ color: 'var(--success)', fontSize: '0.9375rem' }}>{completionRate}% On-Time</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', display: 'block' }}>Partner Tier Status</span>
+                    <strong style={{ color: 'var(--primary)', fontSize: '0.9375rem' }}>Verified Professional (4.9★)</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Settlements & Transaction History Log */}
+            <div className="panel">
+              <div className="panel-header" style={{ marginBottom: '1rem' }}>
+                <h3 className="panel-title">
+                  <Wallet size={16} color="var(--primary)" />
+                  <span>Settled Bookings & Completed Payout Records</span>
+                </h3>
+                <span className="badge badge-completed">{completedBookings.length} Total Settlements</span>
+              </div>
+
+              {completedBookings.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-state-icon">
+                    <CheckCircle2 size={20} />
+                  </div>
+                  <h3 className="empty-state-title">No completed earnings history</h3>
+                  <p className="empty-state-description">
+                    When you accept, perform, and complete service jobs, your earnings statements will appear here.
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8125rem', textAlign: 'left' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '1px solid var(--border-light)', color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '0.6875rem', letterSpacing: '0.04em' }}>
+                          <th style={{ padding: '0.65rem 0.5rem' }}>Task #</th>
+                          <th style={{ padding: '0.65rem 0.5rem' }}>Service Performed</th>
+                          <th style={{ padding: '0.65rem 0.5rem' }}>Customer</th>
+                          <th style={{ padding: '0.65rem 0.5rem' }}>Date & Schedule</th>
+                          <th style={{ padding: '0.65rem 0.5rem' }}>Payment Mode</th>
+                          <th style={{ padding: '0.65rem 0.5rem' }}>Status</th>
+                          <th style={{ padding: '0.65rem 0.5rem', textAlign: 'right' }}>Earned</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {completedBookings.slice((earningsPage - 1) * itemsPerPage, earningsPage * itemsPerPage).map((job) => (
+                          <tr key={job.id} style={{ borderBottom: '1px solid var(--border-subtle)', transition: 'background-color 0.15s' }}>
+                            <td style={{ padding: '0.75rem 0.5rem', fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--primary)' }}>
+                              #{String(job.id).slice(-6)}
+                            </td>
+                            <td style={{ padding: '0.75rem 0.5rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                              {job.serviceName}
+                            </td>
+                            <td style={{ padding: '0.75rem 0.5rem', color: 'var(--text-secondary)' }}>
+                              {job.customerName || 'Customer'}
+                            </td>
+                            <td style={{ padding: '0.75rem 0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                              {job.bookingDate} • {formatLocalTime(job.startTime)}
+                            </td>
+                            <td style={{ padding: '0.75rem 0.5rem' }}>
+                              <span className="badge" style={{ backgroundColor: 'var(--bg-subtle)', color: 'var(--text-secondary)', fontSize: '0.6875rem' }}>
+                                {job.paymentMethod === 'AFTER_SERVICE' ? 'Cash on Delivery' : 'Online Gateway'}
+                              </span>
+                            </td>
+                            <td style={{ padding: '0.75rem 0.5rem' }}>
+                              <span className="badge badge-completed">
+                                <span className="badge-dot" /> Settled
+                              </span>
+                            </td>
+                            <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right', fontWeight: 700, color: 'var(--success)', fontSize: '0.9375rem', fontFeatureSettings: 'tnum' }}>
+                              ₹{job.finalAmount}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <Pagination
+                    currentPage={earningsPage}
+                    totalItems={completedBookings.length}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setEarningsPage}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB 6: FLEET MANAGER (Logistics Vehicles)                                 */}
         {/* ========================================================================= */}
         {activeTab === 'fleet' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
