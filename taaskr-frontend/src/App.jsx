@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import AiAssistantModal from './components/AiAssistantModal';
+import Footer from './components/Footer';
 
 // Page Views
 import Home from './pages/Home';
@@ -137,6 +138,9 @@ export default function App() {
 
         {/* Global AI Diagnostic Assistant Modal */}
         <AiAssistantModal />
+
+        {/* Global Production Footer */}
+        <Footer />
       </div>
     </Router>
   );

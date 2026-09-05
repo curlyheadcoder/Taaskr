@@ -10,15 +10,111 @@ import {
   FileText, Plus, Bell, RefreshCw, Send, Check, X, ArrowUpRight, HelpCircle, Briefcase, Clock
 } from 'lucide-react';
 
-const DEFAULT_CATEGORIES = [
-  { id: 1, name: 'Appliances & Electrical', active: true },
-  { id: 2, name: 'Civil & Property Maintenance', active: true },
-  { id: 3, name: 'Plumbing & Cleaning', active: true },
-  { id: 4, name: 'Diagnostic & Healthcare Services', active: true },
-  { id: 5, name: 'Logistics', active: true },
-  { id: 6, name: "Men's Salon & Massage", active: true },
-  { id: 7, name: 'Security Services', active: true }
+const CANONICAL_CATEGORIES = [
+  { 
+    id: 'appliances_electrical', 
+    name: 'Appliances & Electrical',
+    matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase();
+      const s = (sName || '').toLowerCase();
+      return c.includes('appliance') || c.includes('electric') || 
+             s.includes('ac ') || s.includes('air condition') || s.includes('ro ') || s.includes('purifier') || 
+             s.includes('switch') || s.includes('wire') || s.includes('fan') || s.includes('refrigerator') || 
+             s.includes('washing') || s.includes('microwave') || s.includes('inverter');
+    }
+  },
+  { 
+    id: 'civil_maintenance', 
+    name: 'Civil & Property Maintenance',
+    matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase();
+      const s = (sName || '').toLowerCase();
+      return c.includes('civil') || c.includes('property') || 
+             s.includes('mason') || s.includes('wall') || s.includes('waterproof') || s.includes('tiling') || 
+             s.includes('flooring') || s.includes('roof') || s.includes('renovat') || s.includes('carpent') || 
+             s.includes('wood') || s.includes('paint');
+    }
+  },
+  { 
+    id: 'plumbing_cleaning', 
+    name: 'Plumbing & Cleaning',
+    matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase();
+      const s = (sName || '').toLowerCase();
+      return c.includes('plumb') || c.includes('clean') || 
+             s.includes('tap') || s.includes('faucet') || s.includes('pipe') || s.includes('drain') || 
+             s.includes('leak') || s.includes('bathroom') || s.includes('housekeep') || s.includes('sofa') || 
+             s.includes('kitchen deep') || s.includes('toilet');
+    }
+  },
+  { 
+    id: 'diagnostic_healthcare', 
+    name: 'Diagnostic & Healthcare Services',
+    matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase();
+      const s = (sName || '').toLowerCase();
+      return c.includes('diagnostic') || c.includes('health') || 
+             s.includes('blood') || s.includes('doctor') || s.includes('nurse') || s.includes('compounder') || 
+             s.includes('sample') || s.includes('checkup') || s.includes('lab') || s.includes('patholog');
+    }
+  },
+  { 
+    id: 'logistics', 
+    name: 'Logistics',
+    matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase();
+      const s = (sName || '').toLowerCase();
+      return c.includes('logistics') || 
+             s.includes('truck') || s.includes('tempo') || s.includes('courier') || s.includes('cargo') || 
+             s.includes('transport') || s.includes('moving') || s.includes('shifting') || s.includes('furniture') || 
+             s.includes('bike') || s.includes('rickshaw');
+    }
+  },
+  { 
+    id: 'mens_salon', 
+    name: "Men's Salon & Massage",
+    matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase();
+      const s = (sName || '').toLowerCase();
+      return c.includes('salon') || c.includes('massage') || 
+             s.includes('haircut') || s.includes('beard') || s.includes('shave') || s.includes('spa') || 
+             s.includes('grooming') || s.includes('therapy');
+    }
+  },
+  { 
+    id: 'security_services', 
+    name: 'Security Services',
+    matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase();
+      const s = (sName || '').toLowerCase();
+      return c.includes('security') || 
+             s.includes('cctv') || s.includes('lock') || s.includes('guard') || s.includes('doorbell') || 
+             s.includes('camera') || s.includes('surveillance');
+    }
+  }
 ];
+
+const mapServiceToCanonical = (service, rawCategories = []) => {
+  const rawCat = (rawCategories || []).find(c => c && c.id === service.categoryId);
+  const catName = rawCat?.name || service.categoryName || '';
+  const serviceName = service.name || '';
+  
+  for (const canon of CANONICAL_CATEGORIES) {
+    if (canon.matcher(catName, serviceName)) {
+      return {
+        ...service,
+        canonicalCategoryId: canon.id,
+        canonicalCategoryName: canon.name
+      };
+    }
+  }
+
+  return {
+    ...service,
+    canonicalCategoryId: 'appliances_electrical',
+    canonicalCategoryName: 'Appliances & Electrical'
+  };
+};
 
 const DEFAULT_SERVICES = [
   { id: 1, name: 'AC Repair & Service', description: 'Comprehensive diagnostics, coil cleaning, and cooling optimization.', price: 699, pricingType: 'FIXED', categoryId: 1, active: true },
@@ -31,7 +127,7 @@ const DEFAULT_SERVICES = [
   { id: 8, name: 'CCTV Installation & Setup', description: 'HD camera mounting, DVR configuration, and mobile live-view setup.', price: 1199, pricingType: 'FIXED', categoryId: 7, active: true },
   { id: 9, name: 'Mini Truck Goods Transport', description: 'Reliable intra-city tempo transport for furniture, equipment, and shifting.', price: 250, pricingType: 'PER_KM', categoryId: 5, active: true },
   { id: 10, name: 'General Civil & Wall Repair', description: 'Minor masonry, plaster patching, and tile touch-ups by verified masons.', price: 799, pricingType: 'FIXED', categoryId: 2, active: true }
-];
+].map(s => mapServiceToCanonical(s));
 
 export default function Home() {
   const navigate = useNavigate();
@@ -44,9 +140,15 @@ export default function Home() {
     }
   });
 
-  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
+  const [categories, setCategories] = useState(() => {
+    return CANONICAL_CATEGORIES.map(c => ({
+      id: c.id,
+      name: c.name,
+      active: true
+    }));
+  });
   const [services, setServices] = useState(DEFAULT_SERVICES);
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('appliances_electrical');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [currentLocation, setCurrentLocation] = useState(() => {
@@ -113,11 +215,24 @@ export default function Home() {
           api.catalog.getCategories(),
           api.catalog.getServices()
         ]);
-        if (Array.isArray(cats) && cats.length > 0) {
-          setCategories(cats.filter(c => c && c.active !== false));
-        }
-        if (Array.isArray(servs) && servs.length > 0) {
-          setServices(servs.filter(s => s && s.active !== false));
+        
+        const rawCats = Array.isArray(cats) ? cats.filter(c => c && c.active !== false) : [];
+        const rawServs = Array.isArray(servs) ? servs.filter(s => s && s.active !== false) : [];
+
+        if (rawServs.length > 0) {
+          const mappedServices = rawServs.map(s => mapServiceToCanonical(s, rawCats));
+          setServices(mappedServices);
+
+          const mergedCats = CANONICAL_CATEGORIES.map(canon => {
+            const count = mappedServices.filter(s => s.canonicalCategoryId === canon.id).length;
+            return {
+              id: canon.id,
+              name: canon.name,
+              count,
+              active: true
+            };
+          });
+          setCategories(mergedCats);
         }
       } catch (err) {
         console.warn('Backend catalog sync notice:', err);
@@ -133,8 +248,7 @@ export default function Home() {
     if (!service) return false;
     if (!query || !query.trim()) return true;
     const qTokens = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
-    const cat = categories.find(c => c && c.id === service.categoryId);
-    const catName = (cat?.name || '').toLowerCase();
+    const catName = (service.canonicalCategoryName || '').toLowerCase();
     const sName = (service.name || '').toLowerCase();
     const sDesc = (service.description || '').toLowerCase();
     const fullText = `${sName} ${catName} ${sDesc}`;
@@ -149,7 +263,9 @@ export default function Home() {
 
   const filteredServices = (services || []).filter(service => {
     if (!service) return false;
-    const matchesCategory = selectedCategory ? service.categoryId === selectedCategory : true;
+    const matchesCategory = selectedCategory 
+      ? (service.canonicalCategoryId === selectedCategory || service.categoryId === selectedCategory) 
+      : true;
     const matchesSearch = searchQuery.trim() === '' || doesServiceMatch(service, searchQuery);
     return matchesCategory && matchesSearch;
   });
@@ -1405,7 +1521,7 @@ const EXACT_SERVICE_IMAGES = {
           </p>
         </div>
 
-        {/* Category Header & Explore All Services Control */}
+        {/* Category Header (Explore All Services button removed) */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -1419,40 +1535,9 @@ const EXACT_SERVICE_IMAGES = {
               Service Categories
             </h3>
             <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '0.2rem', marginBottom: 0 }}>
-              {selectedCategory 
-                ? `Filtered by: ${categories.find(c => c.id === selectedCategory)?.name || 'Category'}` 
-                : 'Choose a category to browse specialized technicians or explore everything'}
+              Selected category: <strong style={{ color: 'var(--primary)' }}>{categories.find(c => c.id === selectedCategory)?.name || 'Appliances & Electrical'}</strong>
             </p>
           </div>
-
-          <button
-            onClick={() => setSelectedCategory(null)}
-            className={`btn ${selectedCategory === null ? 'btn-primary' : 'btn-outline'}`}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.55rem',
-              borderRadius: '12px',
-              padding: '0.55rem 1.25rem',
-              fontWeight: 700,
-              fontSize: '0.875rem',
-              transition: 'all 0.25s ease',
-              boxShadow: selectedCategory === null ? '0 6px 20px -3px rgba(99, 102, 241, 0.45)' : 'none'
-            }}
-          >
-            <LayoutList size={18} />
-            <span>Explore All Services</span>
-            <span style={{
-              fontSize: '0.75rem',
-              padding: '0.15rem 0.55rem',
-              borderRadius: '999px',
-              background: selectedCategory === null ? 'rgba(255, 255, 255, 0.25)' : 'var(--bg-subtle)',
-              color: selectedCategory === null ? '#FFFFFF' : 'var(--text-main)',
-              fontWeight: 700
-            }}>
-              {services.length}
-            </span>
-          </button>
         </div>
 
         {/* Enlarged Category Tiles Grid */}
@@ -1462,11 +1547,11 @@ const EXACT_SERVICE_IMAGES = {
               if (!cat) return null;
               const isSelected = selectedCategory === cat.id;
               const theme = getCategoryTheme(cat.name);
-              const catServiceCount = (services || []).filter(s => s && s.categoryId === cat.id).length;
+              const catServiceCount = (services || []).filter(s => s && (s.canonicalCategoryId === cat.id || s.categoryId === cat.id)).length;
               return (
                 <button
                   key={cat.id}
-                  onClick={() => setSelectedCategory(isSelected ? null : cat.id)}
+                  onClick={() => setSelectedCategory(cat.id)}
                   className={`category-tile ${isSelected ? 'active' : ''}`}
                   style={{
                     '--tile-color': theme.primary,
@@ -1505,7 +1590,7 @@ const EXACT_SERVICE_IMAGES = {
         {/* Dynamic Services Grid Header */}
         <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', fontWeight: 700 }}>
-            Showing {filteredServices.length} {selectedCategory ? 'services' : 'options'}
+            Showing {filteredServices.length} {filteredServices.length === 1 ? 'service' : 'services'} in {categories.find(c => c.id === selectedCategory)?.name || 'Selected Category'}
           </h3>
         </div>
 
@@ -1526,24 +1611,18 @@ const EXACT_SERVICE_IMAGES = {
             <div className="empty-state-icon">
               <Search size={22} />
             </div>
-            <h3 className="empty-state-title">No Services Found</h3>
+            <h3 className="empty-state-title">No Services in this Category</h3>
             <p className="empty-state-description">
-              We couldn't find any services matching your search. Try adjusting your filters.
+              No services found for the selected category. Try selecting another category above.
             </p>
-            <button
-              onClick={() => { setSelectedCategory(null); setSearchQuery(''); }}
-              className="btn btn-secondary btn-sm"
-            >
-              Reset Filters
-            </button>
           </div>
         ) : (
           <div>
             <div className="grid-cols-4">
               {filteredServices.slice((servicesPage - 1) * servicesPerPage, servicesPage * servicesPerPage).map((service) => {
                 if (!service) return null;
-                const cat = categories.find(c => c && c.id === service.categoryId);
-                const config = getServiceConfig(service.name, cat?.name);
+                const catName = service.canonicalCategoryName || categories.find(c => c && c.id === service.categoryId)?.name || 'Service';
+                const config = getServiceConfig(service.name, catName);
                 const priceUnit = service.pricingType === 'HOURLY' ? '/ hr' : service.pricingType === 'PER_KM' ? '/ km' : '';
                 const descText = service.description || 'Verified, professional on-demand home and maintenance service.';
 
@@ -1578,11 +1657,9 @@ const EXACT_SERVICE_IMAGES = {
                       <h3 className="service-card-title">{service.name || 'Service'}</h3>
                     </div>
 
-                    {cat && (
-                      <span className="service-category-tag" style={{ color: config.color, backgroundColor: config.bg }}>
-                        {cat.name}
-                      </span>
-                    )}
+                    <span className="service-category-tag" style={{ color: config.color, backgroundColor: config.bg }}>
+                      {catName}
+                    </span>
 
                     <p className="service-card-desc">
                       {descText.length > 85 ? descText.substring(0, 85) + '...' : descText}
