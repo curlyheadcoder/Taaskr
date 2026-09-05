@@ -557,8 +557,8 @@ const BOUNCING_PHYSICS_CATEGORIES = [
     accentBg: 'linear-gradient(135deg, #F43F5E 0%, #BE123C 100%)',
     startX: 0.05,
     startY: 0.08,
-    vx: 0.24,
-    vy: 0.20
+    vx: 0.40,
+    vy: 0.34
   },
   {
     id: 'appliances_electrical',
@@ -570,8 +570,8 @@ const BOUNCING_PHYSICS_CATEGORIES = [
     accentBg: 'linear-gradient(135deg, #F59E0B 0%, #EA580C 100%)',
     startX: 0.82,
     startY: 0.12,
-    vx: -0.22,
-    vy: 0.26
+    vx: -0.37,
+    vy: 0.44
   },
   {
     id: 'logistics',
@@ -583,8 +583,8 @@ const BOUNCING_PHYSICS_CATEGORIES = [
     accentBg: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
     startX: 0.06,
     startY: 0.78,
-    vx: 0.26,
-    vy: -0.20
+    vx: 0.44,
+    vy: -0.34
   },
   {
     id: 'salon_wellness',
@@ -596,8 +596,8 @@ const BOUNCING_PHYSICS_CATEGORIES = [
     accentBg: 'linear-gradient(135deg, #A855F7 0%, #EC4899 100%)',
     startX: 0.84,
     startY: 0.76,
-    vx: -0.22,
-    vy: -0.24
+    vx: -0.37,
+    vy: -0.40
   },
   {
     id: 'plumbing_cleaning',
@@ -609,8 +609,8 @@ const BOUNCING_PHYSICS_CATEGORIES = [
     accentBg: 'linear-gradient(135deg, #06B6D4 0%, #0D9488 100%)',
     startX: 0.42,
     startY: 0.04,
-    vx: -0.18,
-    vy: 0.22
+    vx: -0.30,
+    vy: 0.37
   },
   {
     id: 'civil_maintenance',
@@ -622,8 +622,8 @@ const BOUNCING_PHYSICS_CATEGORIES = [
     accentBg: 'linear-gradient(135deg, #F97316 0%, #C2410C 100%)',
     startX: 0.54,
     startY: 0.86,
-    vx: 0.20,
-    vy: -0.24
+    vx: 0.34,
+    vy: -0.40
   }
 ];
 

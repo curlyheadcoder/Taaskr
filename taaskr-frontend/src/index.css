@@ -817,7 +817,7 @@ body:not(.dark) .hero-section {
 }
 
 .hero-title {
-  font-size: clamp(2.4rem, 4.2vw, 3.6rem);
+  font-size: clamp(2.5rem, 4.5vw, 3.85rem);
   font-weight: 800;
   color: var(--text-main);
   line-height: 1.15;
@@ -825,6 +825,16 @@ body:not(.dark) .hero-section {
   letter-spacing: -0.035em;
   position: relative;
   z-index: 10;
+}
+
+body.dark .hero-title {
+  color: #FFFFFF;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.6);
+}
+
+body:not(.dark) .hero-title {
+  color: #0F172A;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
 }
 
 .hero-gradient-text {
@@ -839,21 +849,31 @@ body:not(.dark) .hero-section {
 }
 
 body.dark .hero-gradient-text {
-  filter: drop-shadow(0 2px 14px rgba(56, 189, 248, 0.35));
+  filter: drop-shadow(0 2px 18px rgba(56, 189, 248, 0.45));
 }
 
 body:not(.dark) .hero-gradient-text {
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.05));
+  filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.12));
 }
 
 .hero-desc {
-  font-size: 1.05rem;
-  color: var(--text-muted);
+  font-size: 1.075rem;
+  font-weight: 450;
   margin-bottom: 2.25rem;
-  line-height: 1.6;
-  max-width: 520px;
+  line-height: 1.65;
+  max-width: 620px;
   position: relative;
   z-index: 10;
+}
+
+body.dark .hero-desc {
+  color: #CBD5E1;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+body:not(.dark) .hero-desc {
+  color: #334155;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
 }
 
 .hero-pill-tag {
@@ -867,7 +887,7 @@ body:not(.dark) .hero-gradient-text {
   margin-bottom: 1.35rem;
   color: var(--primary);
   font-size: 0.8125rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.02em;
 }
 
