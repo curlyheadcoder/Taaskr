@@ -7,7 +7,8 @@ import {
   Sparkles, Droplets, Zap, Paintbrush, Leaf, Truck, Settings, 
   Snowflake, Ruler, Hammer, ArrowRight, Activity, Stethoscope, Building2, Scissors,
   Radio, Award, AlertTriangle, CheckCircle2, ChevronRight, Phone, MessageSquare, 
-  FileText, Plus, Bell, RefreshCw, Send, Check, X, ArrowUpRight, HelpCircle, Briefcase, Clock
+  FileText, Plus, Bell, RefreshCw, Send, Check, X, ArrowUpRight, HelpCircle, Briefcase, Clock,
+  Bug, Laptop, Car, HeartPulse, Wrench
 } from 'lucide-react';
 
 const CANONICAL_CATEGORIES = [
@@ -20,7 +21,43 @@ const CANONICAL_CATEGORIES = [
       return c.includes('appliance') || c.includes('electric') || 
              s.includes('ac ') || s.includes('air condition') || s.includes('ro ') || s.includes('purifier') || 
              s.includes('switch') || s.includes('wire') || s.includes('fan') || s.includes('refrigerator') || 
-             s.includes('washing') || s.includes('microwave') || s.includes('inverter');
+             s.includes('washing') || s.includes('microwave') || s.includes('otg') || s.includes('inverter') || 
+             s.includes('geyser') || s.includes('water heater');
+    }
+  },
+  { 
+    id: 'plumbing_cleaning', 
+    name: 'Plumbing & Cleaning',
+    matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase();
+      const s = (sName || '').toLowerCase();
+      return (c.includes('plumb') || c.includes('clean')) && !c.includes('pest') || 
+             s.includes('tap') || s.includes('faucet') || s.includes('pipe') || s.includes('drain') || 
+             s.includes('leak') || s.includes('bathroom') || s.includes('housekeep') || s.includes('sofa') || 
+             s.includes('carpet') || s.includes('kitchen deep') || s.includes('chimney') || s.includes('toilet');
+    }
+  },
+  { 
+    id: 'pest_control', 
+    name: 'Pest Control',
+    matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase();
+      const s = (sName || '').toLowerCase();
+      return c.includes('pest') || 
+             s.includes('pest') || s.includes('cockroach') || s.includes('termite') || 
+             s.includes('bed bug') || s.includes('mosquito') || s.includes('ant control') || s.includes('borer');
+    }
+  },
+  { 
+    id: 'salon_wellness', 
+    name: 'Salon & Massage / Wellness',
+    matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase();
+      const s = (sName || '').toLowerCase();
+      return c.includes('salon') || c.includes('massage') || c.includes('wellness') || c.includes('beauty') || 
+             s.includes('haircut') || s.includes('beard') || s.includes('shave') || s.includes('spa') || 
+             s.includes('grooming') || s.includes('facial') || s.includes('manicure') || s.includes('pedicure') || 
+             s.includes('waxing') || s.includes('makeup') || s.includes('bridal') || s.includes('therapy');
     }
   },
   { 
@@ -30,55 +67,44 @@ const CANONICAL_CATEGORIES = [
       const c = (cName || '').toLowerCase();
       const s = (sName || '').toLowerCase();
       return c.includes('civil') || c.includes('property') || 
-             s.includes('mason') || s.includes('wall') || s.includes('waterproof') || s.includes('tiling') || 
-             s.includes('flooring') || s.includes('roof') || s.includes('renovat') || s.includes('carpent') || 
-             s.includes('wood') || s.includes('paint');
+             s.includes('carpenter') || s.includes('carpentry') || s.includes('woodwork') || s.includes('furniture assembly') || 
+             s.includes('drilling') || s.includes('hanging') || s.includes('painting') || s.includes('mason') || 
+             s.includes('wall') || s.includes('waterproof') || s.includes('tiling') || s.includes('flooring') || 
+             s.includes('roof') || s.includes('renovat');
     }
   },
   { 
-    id: 'plumbing_cleaning', 
-    name: 'Plumbing & Cleaning',
+    id: 'tech_automation', 
+    name: 'Tech & Home Automation',
     matcher: (cName, sName) => {
       const c = (cName || '').toLowerCase();
       const s = (sName || '').toLowerCase();
-      return c.includes('plumb') || c.includes('clean') || 
-             s.includes('tap') || s.includes('faucet') || s.includes('pipe') || s.includes('drain') || 
-             s.includes('leak') || s.includes('bathroom') || s.includes('housekeep') || s.includes('sofa') || 
-             s.includes('kitchen deep') || s.includes('toilet');
+      return c.includes('tech') || c.includes('automation') || 
+             s.includes('laptop') || s.includes('pc ') || s.includes('computer') || s.includes('wi-fi') || 
+             s.includes('router') || s.includes('mesh') || s.includes('smart tv') || s.includes('printer');
     }
   },
   { 
-    id: 'diagnostic_healthcare', 
-    name: 'Diagnostic & Healthcare Services',
+    id: 'vehicle_autocare', 
+    name: 'Vehicle & Auto Care',
     matcher: (cName, sName) => {
       const c = (cName || '').toLowerCase();
       const s = (sName || '').toLowerCase();
-      return c.includes('diagnostic') || c.includes('health') || 
-             s.includes('blood') || s.includes('doctor') || s.includes('nurse') || s.includes('compounder') || 
-             s.includes('sample') || s.includes('checkup') || s.includes('lab') || s.includes('patholog');
+      return c.includes('auto') || (c.includes('vehicle') && !c.includes('on-demand vehicle')) || 
+             s.includes('car foam') || s.includes('bike foam') || s.includes('detailing') || 
+             s.includes('car wash') || s.includes('bike wash') || s.includes('jump start') || s.includes('battery jump');
     }
   },
   { 
-    id: 'logistics', 
-    name: 'Logistics',
+    id: 'home_help', 
+    name: 'Home Help & Errand Services',
     matcher: (cName, sName) => {
       const c = (cName || '').toLowerCase();
       const s = (sName || '').toLowerCase();
-      return c.includes('logistics') || 
-             s.includes('truck') || s.includes('tempo') || s.includes('courier') || s.includes('cargo') || 
-             s.includes('transport') || s.includes('moving') || s.includes('shifting') || s.includes('furniture') || 
-             s.includes('bike') || s.includes('rickshaw');
-    }
-  },
-  { 
-    id: 'mens_salon', 
-    name: "Men's Salon & Massage",
-    matcher: (cName, sName) => {
-      const c = (cName || '').toLowerCase();
-      const s = (sName || '').toLowerCase();
-      return c.includes('salon') || c.includes('massage') || 
-             s.includes('haircut') || s.includes('beard') || s.includes('shave') || s.includes('spa') || 
-             s.includes('grooming') || s.includes('therapy');
+      return c.includes('home help') || c.includes('errand') || 
+             s.includes('maid') || s.includes('domestic helper') || s.includes('cook') || s.includes('chef') || 
+             s.includes('laundry') || s.includes('steam ironing') || s.includes('medicine') || s.includes('grocery') || 
+             s.includes('queue') || s.includes('errand assistance');
     }
   },
   { 
@@ -90,6 +116,30 @@ const CANONICAL_CATEGORIES = [
       return c.includes('security') || 
              s.includes('cctv') || s.includes('lock') || s.includes('guard') || s.includes('doorbell') || 
              s.includes('camera') || s.includes('surveillance');
+    }
+  },
+  { 
+    id: 'diagnostic_healthcare', 
+    name: 'Diagnostic & Healthcare Services',
+    matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase();
+      const s = (sName || '').toLowerCase();
+      return c.includes('diagnostic') || c.includes('health') || 
+             s.includes('blood') || s.includes('doctor') || s.includes('nurse') || s.includes('compounder') || 
+             s.includes('sample') || s.includes('checkup') || s.includes('lab') || s.includes('patholog') || 
+             s.includes('elderly assistance') || s.includes('hospital escort');
+    }
+  },
+  { 
+    id: 'logistics', 
+    name: 'Logistics',
+    matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase();
+      const s = (sName || '').toLowerCase();
+      return c.includes('logistics') || c.includes('on-demand vehicle') || 
+             s.includes('truck') || s.includes('tempo') || s.includes('courier') || s.includes('cargo') || 
+             s.includes('transport') || s.includes('moving') || s.includes('shifting') || s.includes('furniture moving') || 
+             s.includes('electric bike') || s.includes('petrol bike') || s.includes('rickshaw');
     }
   }
 ];
@@ -117,16 +167,83 @@ const mapServiceToCanonical = (service, rawCategories = []) => {
 };
 
 const DEFAULT_SERVICES = [
+  // Appliances & Electrical
   { id: 1, name: 'AC Repair & Service', description: 'Comprehensive diagnostics, coil cleaning, and cooling optimization.', price: 699, pricingType: 'FIXED', categoryId: 1, active: true },
   { id: 2, name: 'RO Water Purifier Service', description: 'Filter replacement, membrane inspection, and complete purification check.', price: 499, pricingType: 'FIXED', categoryId: 1, active: true },
   { id: 3, name: 'Switchboard & Wiring Repair', description: 'Quick inspection and repair of loose wiring, burnt sockets, and tripped breakers.', price: 349, pricingType: 'FIXED', categoryId: 1, active: true },
   { id: 4, name: 'Ceiling & Exhaust Fan Repair', description: 'Bearing replacement, speed regulator setup, and quiet motor tuning.', price: 299, pricingType: 'FIXED', categoryId: 1, active: true },
-  { id: 5, name: 'Tap Leakage & Valve Repair', description: 'Fix dripping faucets, replace internal washers, and ensure seamless water pressure.', price: 299, pricingType: 'FIXED', categoryId: 3, active: true },
-  { id: 6, name: 'Deep Home & Bathroom Cleaning', description: 'Intensive stain removal, floor sanitization, and eco-friendly disinfection.', price: 1499, pricingType: 'FIXED', categoryId: 3, active: true },
-  { id: 7, name: 'Blood Test & Sample Collection', description: 'Hygienic at-home phlebotomy with certified NABL accredited lab processing.', price: 499, pricingType: 'FIXED', categoryId: 4, active: true },
-  { id: 8, name: 'CCTV Installation & Setup', description: 'HD camera mounting, DVR configuration, and mobile live-view setup.', price: 1199, pricingType: 'FIXED', categoryId: 7, active: true },
-  { id: 9, name: 'Mini Truck Goods Transport', description: 'Reliable intra-city tempo transport for furniture, equipment, and shifting.', price: 250, pricingType: 'PER_KM', categoryId: 5, active: true },
-  { id: 10, name: 'General Civil & Wall Repair', description: 'Minor masonry, plaster patching, and tile touch-ups by verified masons.', price: 799, pricingType: 'FIXED', categoryId: 2, active: true }
+  { id: 5, name: 'Geyser & Water Heater Servicing', description: 'Element descaling, thermostat inspection, and leak repairs for storage/instant geysers.', price: 449, pricingType: 'FIXED', categoryId: 1, active: true },
+  { id: 6, name: 'Inverter & Battery Servicing', description: 'Battery distilled water top-up, terminal desulfation, and inverter load testing.', price: 349, pricingType: 'FIXED', categoryId: 1, active: true },
+  { id: 7, name: 'Microwave & OTG Repair', description: 'Magnetron check, high-voltage fuse change, and rotating plate motor repair.', price: 399, pricingType: 'FIXED', categoryId: 1, active: true },
+  { id: 8, name: 'Refrigerator Repair', description: 'Compressor troubleshooting, gas charge, and cooling thermostat repair.', price: 599, pricingType: 'FIXED', categoryId: 1, active: true },
+  { id: 9, name: 'Washing Machine Repair', description: 'Drum balance, drain pump, motor belt, and PCB diagnostic.', price: 599, pricingType: 'FIXED', categoryId: 1, active: true },
+
+  // Plumbing & Cleaning
+  { id: 10, name: 'Tap Leakage & Valve Repair', description: 'Fix dripping faucets, replace internal washers, and ensure seamless water pressure.', price: 299, pricingType: 'FIXED', categoryId: 3, active: true },
+  { id: 11, name: 'Pipe Leakage Fix', description: 'Detect and repair concealed or open pipe leakages.', price: 499, pricingType: 'FIXED', categoryId: 3, active: true },
+  { id: 12, name: 'Drain Blockage & Clog Clearance', description: 'Mechanical spring clearing for clogged kitchen sinks, washbasins, and bathroom drain traps.', price: 399, pricingType: 'FIXED', categoryId: 3, active: true },
+  { id: 13, name: 'Kitchen Deep Cleaning & Chimney Degreasing', description: 'Thorough degreasing of chimney filters, gas stove scrub, and kitchen oil stain removal.', price: 799, pricingType: 'FIXED', categoryId: 3, active: true },
+  { id: 14, name: 'Sofa & Carpet Shampooing', description: 'High-suction wet extraction shampooing for fabric sofas, cushions, and floor carpets.', price: 699, pricingType: 'FIXED', categoryId: 3, active: true },
+  { id: 15, name: 'Deep Home & Bathroom Cleaning', description: 'Intensive stain removal, floor sanitization, and eco-friendly disinfection.', price: 1499, pricingType: 'FIXED', categoryId: 3, active: true },
+
+  // Pest Control
+  { id: 16, name: 'General Pest & Cockroach Control', description: 'Odorless herbal gel baiting and spray targeting cockroaches, ants, and silverfish with 90-day warranty.', price: 899, pricingType: 'FIXED', categoryId: 16, active: true },
+  { id: 17, name: 'Termite & Wood Borer Treatment', description: 'Chemical barrier drill-and-fill treatment protecting wooden structures against subterranean termites.', price: 1899, pricingType: 'FIXED', categoryId: 16, active: true },
+  { id: 18, name: 'Bed Bug Eradication Treatment', description: 'Two-round high-potency chemical spray treatment targeting mattress seams and sofa crevices.', price: 1199, pricingType: 'FIXED', categoryId: 16, active: true },
+  { id: 19, name: 'Mosquito & Flying Insect Control', description: 'Cold-fogging and residual wall misting to eliminate adult mosquitoes and larvae.', price: 799, pricingType: 'FIXED', categoryId: 16, active: true },
+
+  // Salon & Massage / Wellness (Unisex)
+  { id: 20, name: "Men's Haircut & Beard Styling", description: 'Doorstep hygienic haircut, beard trimming, styling, and disposable kit protocol.', price: 349, pricingType: 'FIXED', categoryId: 6, active: true },
+  { id: 21, name: "Women's Haircut & Hair Spa", description: 'Professional precision haircut, deep conditioning hair spa, and blowout styling at home.', price: 699, pricingType: 'FIXED', categoryId: 6, active: true },
+  { id: 22, name: 'At-Home Manicure & Pedicure', description: 'Relaxing cuticle care, scrub, foot massage, and polish using sterile tools.', price: 599, pricingType: 'FIXED', categoryId: 6, active: true },
+  { id: 23, name: 'Full Arms & Legs Waxing', description: 'Hygienic RICA / honey waxing with post-wax soothing lotion application.', price: 499, pricingType: 'FIXED', categoryId: 6, active: true },
+  { id: 24, name: 'Bridal & Party Makeup at Home', description: 'HD glam and party makeover by certified makeup artists using premium cosmetics.', price: 1499, pricingType: 'FIXED', categoryId: 6, active: true },
+  { id: 25, name: 'At-Home Facial & Skin Glow', description: 'Deep pore cleansing, tan removal scrub, steam, and herbal face pack for all skin types.', price: 799, pricingType: 'FIXED', categoryId: 6, active: true },
+  { id: 26, name: 'Head, Neck & Shoulder Massage', description: 'Stress-relief acupressure therapy using soothing warm herbal oils.', price: 499, pricingType: 'FIXED', categoryId: 6, active: true },
+  { id: 27, name: 'Full Body Stress Relief Therapy', description: 'Rejuvenating full body Swedish / Ayurvedic oil massage by certified wellness therapists.', price: 1299, pricingType: 'FIXED', categoryId: 6, active: true },
+
+  // Civil & Property Maintenance
+  { id: 28, name: 'Carpentry & Furniture Repair', description: 'Fixing misaligned cabinet hinges, drawer channels, hydraulic bed lifts, and wooden doors.', price: 399, pricingType: 'FIXED', categoryId: 2, active: true },
+  { id: 29, name: 'Furniture Assembly & Flatpack Setup', description: 'Assembly of flatpack wardrobes, beds, TV units, and study desks from IKEA/Amazon/Pepperfry.', price: 499, pricingType: 'FIXED', categoryId: 2, active: true },
+  { id: 30, name: 'Drilling, Hanging & Wall Mounting', description: 'Precision hammer-drilling for wall art, mirrors, curtain rods, and bathroom towel racks.', price: 249, pricingType: 'FIXED', categoryId: 2, active: true },
+  { id: 31, name: 'Interior Wall Painting & Touch-up', description: 'Putty filling, primer, and premium acrylic emulsion roller painting for rooms or accent walls.', price: 1499, pricingType: 'FIXED', categoryId: 2, active: true },
+  { id: 32, name: 'General Civil & Wall Repair', description: 'Minor masonry, plaster patching, and tile touch-ups by verified masons.', price: 799, pricingType: 'FIXED', categoryId: 2, active: true },
+
+  // Tech & Home Automation
+  { id: 33, name: 'Laptop & PC Diagnostics / OS Setup', description: 'RAM/SSD upgrades, OS installation, virus cleanup, and thermal paste replacement.', price: 499, pricingType: 'FIXED', categoryId: 33, active: true },
+  { id: 34, name: 'Wi-Fi Router & Mesh Network Setup', description: 'High-speed fiber router installation, dead zone mesh repeater config, and security tuning.', price: 399, pricingType: 'FIXED', categoryId: 33, active: true },
+  { id: 35, name: 'Smart TV & Home Theater Wall Setup', description: 'Wall bracket mounting for 32-75 inch Smart TVs, soundbar setup, and cable concealment.', price: 599, pricingType: 'FIXED', categoryId: 33, active: true },
+  { id: 36, name: 'Printer Setup & Troubleshooting', description: 'Driver installation, wireless network printing setup, and paper feed troubleshooting.', price: 349, pricingType: 'FIXED', categoryId: 33, active: true },
+
+  // Vehicle & Auto Care
+  { id: 37, name: 'Doorstep Eco Car Foam Wash & Vacuum', description: 'Pressure foam wash, tire shine, and interior carpet/seat high-suction vacuuming at your parking spot.', price: 499, pricingType: 'FIXED', categoryId: 37, active: true },
+  { id: 38, name: 'Doorstep Bike Foam Wash & Chain Lube', description: 'Two-wheeler pressure foam wash, degreasing, and synthetic chain lubrication.', price: 249, pricingType: 'FIXED', categoryId: 37, active: true },
+  { id: 39, name: 'Deep Car Interior Detailing & Polishing', description: 'Fabric shampooing, leather conditioning, dashboard polish, and AC vent steam sanitization.', price: 1199, pricingType: 'FIXED', categoryId: 37, active: true },
+  { id: 40, name: 'Car Battery Jump Start Assistance', description: '15-minute emergency roadside/home jumper cable restart and battery alternator check.', price: 349, pricingType: 'FIXED', categoryId: 37, active: true },
+
+  // Home Help & Errand Services
+  { id: 41, name: 'Daily Domestic Helper / Maid on Demand', description: 'Verified on-demand helper for sweeping, mopping, utensil cleaning, and kitchen surface wipe-down.', price: 399, pricingType: 'FIXED', categoryId: 41, active: true },
+  { id: 42, name: 'Home Chef & Daily Cook on Demand', description: 'Freshly prepared home-style vegetarian / non-vegetarian meals cooked at your kitchen.', price: 499, pricingType: 'FIXED', categoryId: 41, active: true },
+  { id: 43, name: 'Doorstep Laundry & Steam Ironing', description: 'Clothes wash, gentle fabric dry, and crisp wrinkle-free steam press pickup & drop.', price: 299, pricingType: 'FIXED', categoryId: 41, active: true },
+  { id: 44, name: 'Urgent Medicine & Prescription Delivery', description: 'Fast doorstep pickup of emergency medications from authorized local pharmacies.', price: 149, pricingType: 'FIXED', categoryId: 41, active: true },
+  { id: 45, name: 'Local Grocery & Market Pickup Delivery', description: 'Handpicked vegetables, fruits, and groceries purchased and delivered from nearby markets.', price: 199, pricingType: 'FIXED', categoryId: 41, active: true },
+  { id: 46, name: 'Personal Errand & Queue Assistance', description: 'On-demand assistant for document submission, standing in billing queues, and municipal errands.', price: 249, pricingType: 'FIXED', categoryId: 41, active: true },
+
+  // Security Services
+  { id: 47, name: 'CCTV Installation & Setup', description: 'HD camera mounting, DVR configuration, and mobile live-view setup.', price: 1199, pricingType: 'FIXED', categoryId: 7, active: true },
+  { id: 48, name: 'Smart Lock Installation', description: 'Install and set up a biometric fingerprint and digital keypad smart lock.', price: 799, pricingType: 'FIXED', categoryId: 7, active: true },
+  { id: 49, name: 'Security Guard Service', description: 'Professional, verified security guard shift for residential societies and commercial premises.', price: 1499, pricingType: 'FIXED', categoryId: 7, active: true },
+
+  // Diagnostic & Healthcare Services
+  { id: 50, name: 'Blood Test & Sample Collection', description: 'Hygienic at-home phlebotomy with certified NABL accredited lab processing.', price: 499, pricingType: 'FIXED', categoryId: 4, active: true },
+  { id: 51, name: 'Full Body Health Checkup', description: 'Comprehensive full body preventive health screening covering 60+ vital parameters.', price: 1999, pricingType: 'FIXED', categoryId: 4, active: true },
+  { id: 52, name: 'Compounder on Call', description: 'Healthcare assistance for basic patient care, IV infusion, dressing, and prescribed medication support.', price: 599, pricingType: 'FIXED', categoryId: 4, active: true },
+  { id: 53, name: 'Elderly Assistance & Hospital Escort', description: 'Companion escort for senior citizens to doctor appointments, mobility aid, and clinic visits.', price: 799, pricingType: 'FIXED', categoryId: 4, active: true },
+
+  // Logistics
+  { id: 54, name: 'Mini Truck Goods Transport', description: 'Reliable intra-city tempo transport for furniture, equipment, and shifting.', price: 250, pricingType: 'PER_KM', categoryId: 5, active: true },
+  { id: 55, name: 'Electric Bike Express Courier', description: 'Fast eco-friendly two-wheeler for small parcels and urgent documents.', price: 40, pricingType: 'PER_KM', categoryId: 5, active: true },
+  { id: 56, name: 'Heavy Truck Commercial Freight', description: 'Heavy-duty commercial vehicle for heavy machinery and bulk items.', price: 1200, pricingType: 'PER_KM', categoryId: 5, active: true }
 ].map(s => mapServiceToCanonical(s));
 
 export default function Home() {
@@ -270,11 +387,11 @@ export default function Home() {
     return matchesCategory && matchesSearch;
   });
 
-  const getCategoryTheme = (categoryName) => {
-    const cat = (categoryName || '').toLowerCase();
+  const getCategoryTheme = (categoryIdentifier) => {
+    const key = (categoryIdentifier || '').toLowerCase();
     
     // 1. Appliances & Electrical
-    if (cat.includes('electric') || cat.includes('appliance') || cat.includes('wire') || cat.includes('switch') || cat.includes('power') || cat.includes('fan') || cat.includes('ac')) {
+    if (key.includes('appliances_electrical') || key.includes('electric') || key.includes('appliance') || key.includes('wire') || key.includes('switch') || key.includes('power') || key.includes('fan') || key.includes('ac ') || key.includes('geyser') || key.includes('inverter') || key.includes('microwave') || key.includes('purifier')) {
       return {
         icon: <Zap size={28} strokeWidth={2.4} />,
         image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=400&q=80',
@@ -292,7 +409,7 @@ export default function Home() {
     }
 
     // 2. Plumbing & Cleaning
-    if (cat.includes('plumb') || cat.includes('clean') || cat.includes('water') || cat.includes('pipe') || cat.includes('drain') || cat.includes('wash') || cat.includes('tap')) {
+    if ((key.includes('plumbing_cleaning') || key.includes('plumb') || key.includes('clean') || key.includes('water') || key.includes('pipe') || key.includes('drain') || key.includes('wash') || key.includes('tap') || key.includes('carpet') || key.includes('sofa') || key.includes('chimney')) && !key.includes('pest') && !key.includes('car') && !key.includes('bike')) {
       return {
         icon: <Droplets size={28} strokeWidth={2.4} />,
         image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80',
@@ -309,44 +426,116 @@ export default function Home() {
       };
     }
 
-    // 3. Diagnostic & Healthcare Services
-    if (cat.includes('diagnostic') || cat.includes('health') || cat.includes('patholog') || cat.includes('blood') || cat.includes('doctor') || cat.includes('care') || cat.includes('medic') || cat.includes('test')) {
+    // 3. Pest Control
+    if (key.includes('pest') || key.includes('cockroach') || key.includes('termite') || key.includes('bed bug') || key.includes('mosquito')) {
       return {
-        icon: <Activity size={28} strokeWidth={2.4} />,
-        image: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=400&q=80',
-        primary: '#F43F5E',
-        secondary: '#14B8A6',
-        tertiary: '#A855F7',
-        accentBg: 'linear-gradient(135deg, #F43F5E 0%, #BE123C 50%, #14B8A6 100%)',
-        shadow1: 'rgba(244, 63, 94, 0.42)',
-        shadow2: 'rgba(20, 184, 166, 0.32)',
-        shadow3: 'rgba(168, 85, 247, 0.28)',
-        glow: 'rgba(244, 63, 94, 0.55)',
-        badgeBg: 'rgba(244, 63, 94, 0.2)',
-        badgeColor: '#FDA4AF'
+        icon: <Bug size={28} strokeWidth={2.4} />,
+        image: 'https://images.unsplash.com/photo-1587293852726-70cdb56c2866?auto=format&fit=crop&w=400&q=80',
+        primary: '#10B981',
+        secondary: '#84CC16',
+        tertiary: '#059669',
+        accentBg: 'linear-gradient(135deg, #10B981 0%, #059669 50%, #84CC16 100%)',
+        shadow1: 'rgba(16, 185, 129, 0.42)',
+        shadow2: 'rgba(132, 204, 22, 0.32)',
+        shadow3: 'rgba(5, 150, 105, 0.28)',
+        glow: 'rgba(16, 185, 129, 0.55)',
+        badgeBg: 'rgba(16, 185, 129, 0.2)',
+        badgeColor: '#A7F3D0'
       };
     }
 
-    // 6. Logistics & Freight
-    if (cat.includes('logistics') || cat.includes('mov') || cat.includes('vehicle') || cat.includes('transport') || cat.includes('truck') || cat.includes('cargo') || cat.includes('courier') || cat.includes('freight')) {
+    // 4. Salon & Massage / Wellness (Unisex)
+    if (key.includes('salon_wellness') || key.includes('salon') || key.includes('massage') || key.includes('wellness') || key.includes('beauty') || key.includes('hair') || key.includes('spa') || key.includes('facial') || key.includes('makeup') || key.includes('waxing') || key.includes('grooming')) {
       return {
-        icon: <Truck size={28} strokeWidth={2.4} />,
-        image: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=400&q=80',
-        primary: '#3B82F6',
-        secondary: '#8B5CF6',
+        icon: <Sparkles size={28} strokeWidth={2.4} />,
+        image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80',
+        primary: '#EC4899',
+        secondary: '#A855F7',
+        tertiary: '#F43F5E',
+        accentBg: 'linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #F43F5E 100%)',
+        shadow1: 'rgba(236, 72, 153, 0.42)',
+        shadow2: 'rgba(168, 85, 247, 0.32)',
+        shadow3: 'rgba(244, 63, 94, 0.28)',
+        glow: 'rgba(236, 72, 153, 0.55)',
+        badgeBg: 'rgba(236, 72, 153, 0.2)',
+        badgeColor: '#FBCFE8'
+      };
+    }
+
+    // 5. Civil & Property Maintenance
+    if (key.includes('civil_maintenance') || key.includes('civil') || key.includes('property') || key.includes('carpenter') || key.includes('wood') || key.includes('drilling') || key.includes('mason') || key.includes('roof') || key.includes('floor') || key.includes('paint')) {
+      return {
+        icon: <Hammer size={28} strokeWidth={2.4} />,
+        image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=400&q=80',
+        primary: '#EA580C',
+        secondary: '#F59E0B',
+        tertiary: '#E11D48',
+        accentBg: 'linear-gradient(135deg, #EA580C 0%, #C2410C 50%, #F59E0B 100%)',
+        shadow1: 'rgba(234, 88, 12, 0.42)',
+        shadow2: 'rgba(245, 158, 11, 0.32)',
+        shadow3: 'rgba(225, 29, 72, 0.28)',
+        glow: 'rgba(234, 88, 12, 0.55)',
+        badgeBg: 'rgba(234, 88, 12, 0.2)',
+        badgeColor: '#FDBA74'
+      };
+    }
+
+    // 6. Tech & Home Automation
+    if (key.includes('tech') || key.includes('automation') || key.includes('laptop') || key.includes('computer') || key.includes('router') || key.includes('wifi') || key.includes('printer')) {
+      return {
+        icon: <Laptop size={28} strokeWidth={2.4} />,
+        image: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=400&q=80',
+        primary: '#6366F1',
+        secondary: '#38BDF8',
+        tertiary: '#8B5CF6',
+        accentBg: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 50%, #38BDF8 100%)',
+        shadow1: 'rgba(99, 102, 241, 0.42)',
+        shadow2: 'rgba(56, 189, 248, 0.32)',
+        shadow3: 'rgba(139, 92, 246, 0.28)',
+        glow: 'rgba(99, 102, 241, 0.55)',
+        badgeBg: 'rgba(99, 102, 241, 0.2)',
+        badgeColor: '#C7D2FE'
+      };
+    }
+
+    // 7. Vehicle & Auto Care
+    if (key.includes('vehicle_autocare') || key.includes('auto') || key.includes('car') || key.includes('bike wash') || key.includes('detailing') || key.includes('jump start')) {
+      return {
+        icon: <Car size={28} strokeWidth={2.4} />,
+        image: 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=400&q=80',
+        primary: '#0284C7',
+        secondary: '#38BDF8',
+        tertiary: '#2563EB',
+        accentBg: 'linear-gradient(135deg, #0284C7 0%, #0369A1 50%, #38BDF8 100%)',
+        shadow1: 'rgba(2, 132, 199, 0.42)',
+        shadow2: 'rgba(56, 189, 248, 0.32)',
+        shadow3: 'rgba(37, 99, 235, 0.28)',
+        glow: 'rgba(2, 132, 199, 0.55)',
+        badgeBg: 'rgba(2, 132, 199, 0.2)',
+        badgeColor: '#BAE6FD'
+      };
+    }
+
+    // 8. Home Help & Errand Services
+    if (key.includes('home_help') || key.includes('help') || key.includes('errand') || key.includes('maid') || key.includes('cook') || key.includes('chef') || key.includes('laundry') || key.includes('grocery') || key.includes('medicine')) {
+      return {
+        icon: <HeartPulse size={28} strokeWidth={2.4} />,
+        image: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=400&q=80',
+        primary: '#14B8A6',
+        secondary: '#F43F5E',
         tertiary: '#06B6D4',
-        accentBg: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 50%, #8B5CF6 100%)',
-        shadow1: 'rgba(59, 130, 246, 0.42)',
-        shadow2: 'rgba(139, 92, 246, 0.32)',
+        accentBg: 'linear-gradient(135deg, #14B8A6 0%, #0D9488 50%, #F43F5E 100%)',
+        shadow1: 'rgba(20, 184, 166, 0.42)',
+        shadow2: 'rgba(244, 63, 94, 0.32)',
         shadow3: 'rgba(6, 182, 212, 0.28)',
-        glow: 'rgba(59, 130, 246, 0.55)',
-        badgeBg: 'rgba(59, 130, 246, 0.2)',
-        badgeColor: '#93C5FD'
+        glow: 'rgba(20, 184, 166, 0.55)',
+        badgeBg: 'rgba(20, 184, 166, 0.2)',
+        badgeColor: '#99F6E4'
       };
     }
 
-    // 7. Security Services
-    if (cat.includes('security') || cat.includes('guard') || cat.includes('cctv') || cat.includes('lock')) {
+    // 9. Security Services
+    if (key.includes('security') || key.includes('guard') || key.includes('cctv') || key.includes('lock')) {
       return {
         icon: <ShieldCheck size={28} strokeWidth={2.4} />,
         image: 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=400&q=80',
@@ -363,115 +552,43 @@ export default function Home() {
       };
     }
 
-    // 8. Civil & Property Maintenance
-    if (cat.includes('civil') || cat.includes('property') || cat.includes('mason') || cat.includes('roof') || cat.includes('floor')) {
+    // 10. Diagnostic & Healthcare Services
+    if (key.includes('diagnostic_healthcare') || key.includes('diagnostic') || key.includes('health') || key.includes('patholog') || key.includes('blood') || key.includes('doctor') || key.includes('care') || key.includes('medic') || key.includes('test') || key.includes('elderly')) {
       return {
-        icon: <Building2 size={28} strokeWidth={2.4} />,
-        image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=400&q=80',
-        primary: '#EA580C',
-        secondary: '#F59E0B',
-        tertiary: '#E11D48',
-        accentBg: 'linear-gradient(135deg, #EA580C 0%, #C2410C 50%, #F59E0B 100%)',
-        shadow1: 'rgba(234, 88, 12, 0.42)',
-        shadow2: 'rgba(245, 158, 11, 0.32)',
-        shadow3: 'rgba(225, 29, 72, 0.28)',
-        glow: 'rgba(234, 88, 12, 0.55)',
-        badgeBg: 'rgba(234, 88, 12, 0.2)',
-        badgeColor: '#FDBA74'
+        icon: <Activity size={28} strokeWidth={2.4} />,
+        image: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=400&q=80',
+        primary: '#F43F5E',
+        secondary: '#14B8A6',
+        tertiary: '#A855F7',
+        accentBg: 'linear-gradient(135deg, #F43F5E 0%, #BE123C 50%, #14B8A6 100%)',
+        shadow1: 'rgba(244, 63, 94, 0.42)',
+        shadow2: 'rgba(20, 184, 166, 0.32)',
+        shadow3: 'rgba(168, 85, 247, 0.28)',
+        glow: 'rgba(244, 63, 94, 0.55)',
+        badgeBg: 'rgba(244, 63, 94, 0.2)',
+        badgeColor: '#FDA4AF'
       };
     }
 
-    // 9. Appliances & Hardware
-    if (cat.includes('appliance') || cat.includes('repair') || cat.includes('machine')) {
+    // 11. Logistics & Freight
+    if (key.includes('logistics') || key.includes('mov') || key.includes('vehicle') || key.includes('transport') || key.includes('truck') || key.includes('cargo') || key.includes('courier') || key.includes('freight')) {
       return {
-        icon: <Settings size={28} strokeWidth={2.4} />,
-        image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=400&q=80',
-        primary: '#0EA5E9',
-        secondary: '#6366F1',
-        tertiary: '#06B6D4',
-        accentBg: 'linear-gradient(135deg, #0EA5E9 0%, #0284C7 50%, #6366F1 100%)',
-        shadow1: 'rgba(14, 165, 233, 0.42)',
-        shadow2: 'rgba(99, 102, 241, 0.32)',
-        shadow3: 'rgba(6, 182, 212, 0.28)',
-        glow: 'rgba(14, 165, 233, 0.55)',
-        badgeBg: 'rgba(14, 165, 233, 0.2)',
-        badgeColor: '#7DD3FC'
-      };
-    }
-
-    // 10. Men's Salon & Massage
-    if (cat.includes('salon') || cat.includes('massage') || cat.includes('barber') || cat.includes('hair') || cat.includes('spa') || cat.includes('men')) {
-      return {
-        icon: <Scissors size={28} strokeWidth={2.4} />,
-        image: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=400&q=80',
-        primary: '#A855F7',
-        secondary: '#EC4899',
-        tertiary: '#6366F1',
-        accentBg: 'linear-gradient(135deg, #A855F7 0%, #9333EA 50%, #EC4899 100%)',
-        shadow1: 'rgba(168, 85, 247, 0.42)',
-        shadow2: 'rgba(236, 72, 153, 0.32)',
-        shadow3: 'rgba(99, 102, 241, 0.28)',
-        glow: 'rgba(168, 85, 247, 0.55)',
-        badgeBg: 'rgba(168, 85, 247, 0.2)',
-        badgeColor: '#E9D5FF'
-      };
-    }
-
-    // 11. AC & Cooling
-    if (/\bac\b/.test(cat) || cat.includes('cool') || cat.includes('refrigerat')) {
-      return {
-        icon: <Snowflake size={28} strokeWidth={2.4} />,
-        image: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=400&q=80',
-        primary: '#38BDF8',
-        secondary: '#6366F1',
-        tertiary: '#0284C7',
-        accentBg: 'linear-gradient(135deg, #38BDF8 0%, #0284C7 50%, #6366F1 100%)',
-        shadow1: 'rgba(56, 189, 248, 0.42)',
-        shadow2: 'rgba(99, 102, 241, 0.32)',
-        shadow3: 'rgba(2, 132, 199, 0.28)',
-        glow: 'rgba(56, 189, 248, 0.55)',
-        badgeBg: 'rgba(56, 189, 248, 0.2)',
-        badgeColor: '#BAE6FD'
-      };
-    }
-
-    // 12. Painting & Walls
-    if (cat.includes('paint')) {
-      return {
-        icon: <Paintbrush size={28} strokeWidth={2.4} />,
-        image: 'https://images.unsplash.com/photo-1562259949-e8ce0f68d60f?auto=format&fit=crop&w=400&q=80',
-        primary: '#EC4899',
+        icon: <Truck size={28} strokeWidth={2.4} />,
+        image: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=400&q=80',
+        primary: '#3B82F6',
         secondary: '#8B5CF6',
-        tertiary: '#F43F5E',
-        accentBg: 'linear-gradient(135deg, #EC4899 0%, #BE185D 50%, #8B5CF6 100%)',
-        shadow1: 'rgba(236, 72, 153, 0.42)',
+        tertiary: '#06B6D4',
+        accentBg: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 50%, #8B5CF6 100%)',
+        shadow1: 'rgba(59, 130, 246, 0.42)',
         shadow2: 'rgba(139, 92, 246, 0.32)',
-        shadow3: 'rgba(244, 63, 94, 0.28)',
-        glow: 'rgba(236, 72, 153, 0.55)',
-        badgeBg: 'rgba(236, 72, 153, 0.2)',
-        badgeColor: '#F472B6'
+        shadow3: 'rgba(6, 182, 212, 0.28)',
+        glow: 'rgba(59, 130, 246, 0.55)',
+        badgeBg: 'rgba(59, 130, 246, 0.2)',
+        badgeColor: '#93C5FD'
       };
     }
 
-    // 13. Carpentry & Wood
-    if (cat.includes('carpent') || cat.includes('wood')) {
-      return {
-        icon: <Ruler size={28} strokeWidth={2.4} />,
-        image: 'https://images.unsplash.com/photo-1502005229762-ee1b2b8ab98f?auto=format&fit=crop&w=400&q=80',
-        primary: '#D97706',
-        secondary: '#EA580C',
-        tertiary: '#CA8A04',
-        accentBg: 'linear-gradient(135deg, #D97706 0%, #92400E 50%, #EA580C 100%)',
-        shadow1: 'rgba(217, 119, 6, 0.42)',
-        shadow2: 'rgba(234, 88, 12, 0.32)',
-        shadow3: 'rgba(202, 138, 4, 0.28)',
-        glow: 'rgba(217, 119, 6, 0.55)',
-        badgeBg: 'rgba(217, 119, 6, 0.2)',
-        badgeColor: '#FCD34D'
-      };
-    }
-
-    // Default / All Services (Vibrant Electric Indigo -> Pink -> Cyan)
+    // Default
     return {
       icon: <LayoutList size={28} strokeWidth={2.4} />,
       image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80',
@@ -489,40 +606,89 @@ export default function Home() {
   };
 
 const EXACT_SERVICE_IMAGES = {
-  // Plumbing
+  // Plumbing & Cleaning
   'tap repair': 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=600&q=80',
+  'tap leakage & valve repair': 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=600&q=80',
   'pipe leakage fix': 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=600&q=80',
-  'ceiling leakage fixing': 'https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=600&q=80',
-  'drain blockage removal': 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=600&q=80',
-
-  // Cleaning
+  'drain blockage & clog clearance': 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=600&q=80',
   'bathroom cleaning': 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80',
-  'bathroom deep cleaning': 'https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?auto=format&fit=crop&w=600&q=80',
+  'deep home & bathroom cleaning': 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80',
+  'kitchen deep cleaning & chimney degreasing': 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=600&q=80',
+  'sofa & carpet shampooing': 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&w=600&q=80',
   'full home cleaning': 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80',
-  'house deep cleaning': 'https://images.unsplash.com/photo-1558317374-067fb5f30001?auto=format&fit=crop&w=600&q=80',
-  'kitchen deep cleaning': 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=600&q=80',
-  'sofa cleaning': 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&w=600&q=80',
 
-  // Electrical
+  // Appliances & Electrical
   'switch board repair': 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80',
+  'switchboard & wiring repair': 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80',
   'fan repair': 'https://images.unsplash.com/photo-1590725140246-20150937a07a?auto=format&fit=crop&w=600&q=80',
+  'ceiling & exhaust fan repair': 'https://images.unsplash.com/photo-1590725140246-20150937a07a?auto=format&fit=crop&w=600&q=80',
+  'geyser & water heater servicing': 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?auto=format&fit=crop&w=600&q=80',
   'inverter & battery servicing': 'https://images.unsplash.com/photo-1558441719-646b22ad4409?auto=format&fit=crop&w=600&q=80',
-
-  // Appliances
+  'microwave & otg repair': 'https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?auto=format&fit=crop&w=600&q=80',
   'ro repair': 'https://images.unsplash.com/photo-1662647343432-a8710bfd6162?auto=format&fit=crop&w=600&q=80',
+  'ro water purifier service': 'https://images.unsplash.com/photo-1662647343432-a8710bfd6162?auto=format&fit=crop&w=600&q=80',
   'ro installation': 'https://images.unsplash.com/photo-1548839140-29a749e1bc4e?auto=format&fit=crop&w=600&q=80',
   'ro maintenance': 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?auto=format&fit=crop&w=600&q=80',
   'ac repair': 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=600&q=80',
+  'ac repair & service': 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=600&q=80',
   'ac installation': 'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?auto=format&fit=crop&w=600&q=80',
   'ac maintenance': 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80',
   'refrigerator repair': 'https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?auto=format&fit=crop&w=600&q=80',
   'washing machine repair': 'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=600&q=80',
-  'microwave repair': 'https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?auto=format&fit=crop&w=600&q=80',
+
+  // Pest Control
+  'general pest & cockroach control': 'https://images.unsplash.com/photo-1587293852726-70cdb56c2866?auto=format&fit=crop&w=600&q=80',
+  'termite & wood borer treatment': 'https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?auto=format&fit=crop&w=600&q=80',
+  'bed bug eradication treatment': 'https://images.unsplash.com/photo-1584622781564-1d987f7333c1?auto=format&fit=crop&w=600&q=80',
+  'mosquito & flying insect control': 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=600&q=80',
+
+  // Salon & Massage / Wellness (Unisex)
+  "men's haircut & beard styling": 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80',
+  "women's haircut & hair spa": 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=600&q=80',
+  'at-home manicure & pedicure': 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80',
+  'full arms & legs waxing': 'https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=600&q=80',
+  'bridal & party makeup at home': 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=600&q=80',
+  'at-home facial & skin glow': 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80',
+  'head, neck & shoulder massage': 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80',
+  'full body stress relief therapy': 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&fit=crop&w=600&q=80',
+
+  // Civil & Property Maintenance
+  'carpentry & furniture repair': 'https://images.unsplash.com/photo-1502005229762-ee1b2b8ab98f?auto=format&fit=crop&w=600&q=80',
+  'furniture assembly & flatpack setup': 'https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=600&q=80',
+  'drilling, hanging & wall mounting': 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80',
+  'interior wall painting & touch-up': 'https://images.unsplash.com/photo-1562259949-e8ce0f68d60f?auto=format&fit=crop&w=600&q=80',
+  'masonry & brickwork': 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80',
+  'waterproofing': 'https://images.unsplash.com/photo-1674485169641-bcb2bf6f1df9?auto=format&fit=crop&w=600&q=80',
+  'flooring & tiling': 'https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?auto=format&fit=crop&w=600&q=80',
+  'roof & terrace maintenance': 'https://images.unsplash.com/photo-1635424709845-3a85ad5e1f5e?auto=format&fit=crop&w=600&q=80',
+  'home renovation': 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=600&q=80',
+  'general civil repairs': 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=600&q=80',
+  'general civil & wall repair': 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=600&q=80',
+
+  // Tech & Home Automation
+  'laptop & pc diagnostics / os setup': 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=600&q=80',
+  'wi-fi router & mesh network setup': 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=600&q=80',
+  'smart tv & home theater wall setup': 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=600&q=80',
+  'printer setup & troubleshooting': 'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?auto=format&fit=crop&w=600&q=80',
+
+  // Vehicle & Auto Care
+  'doorstep eco car foam wash & vacuum': 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=600&q=80',
+  'doorstep bike foam wash & chain lube': 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80',
+  'deep car interior detailing & polishing': 'https://images.unsplash.com/photo-1607860108855-64acf2078ed9?auto=format&fit=crop&w=600&q=80',
+  'car battery jump start assistance': 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=600&q=80',
+
+  // Home Help & Errand Services
+  'daily domestic helper / maid on demand': 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80',
+  'home chef & daily cook on demand': 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=600&q=80',
+  'doorstep laundry & steam ironing': 'https://images.unsplash.com/photo-1545173168-9f1947eebb7f?auto=format&fit=crop&w=600&q=80',
+  'urgent medicine & prescription delivery': 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=80',
+  'local grocery & market pickup delivery': 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80',
+  'personal errand & queue assistance': 'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=600&q=80',
 
   // Security Services
   'cctv installation': 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=600&q=80',
+  'cctv installation & setup': 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=600&q=80',
   'smart lock installation': 'https://images.unsplash.com/photo-1558089687-f282ffcbc126?auto=format&fit=crop&w=600&q=80',
-  'door lock repair': 'https://images.unsplash.com/photo-1555529902-5261145633bf?auto=format&fit=crop&w=600&q=80',
   'video doorbell installation': 'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=600&q=80',
   'security guard service': 'https://images.unsplash.com/photo-1581568736305-49a04e012c13?auto=format&fit=crop&w=600&q=80',
 
@@ -531,28 +697,11 @@ const EXACT_SERVICE_IMAGES = {
   'full body health checkup': 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=600&q=80',
   'home diagnostic test': 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=600&q=80',
   'compounder on call': 'https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=600&q=80',
-
-  // Civil & Maintenance
-  'masonry & brickwork': 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80',
-  'waterproofing': 'https://images.unsplash.com/photo-1674485169641-bcb2bf6f1df9?auto=format&fit=crop&w=600&q=80',
-  'flooring & tiling': 'https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?auto=format&fit=crop&w=600&q=80',
-  'roof & terrace maintenance': 'https://images.unsplash.com/photo-1635424709845-3a85ad5e1f5e?auto=format&fit=crop&w=600&q=80',
-  'home renovation': 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=600&q=80',
-  'general civil repairs': 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=600&q=80',
-
-  // Carpentry
-  'carpentry services': 'https://images.unsplash.com/photo-1502005229762-ee1b2b8ab98f?auto=format&fit=crop&w=600&q=80',
-  'cabinet & woodwork repair': 'https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=600&q=80',
-  'door & window repair': 'https://images.unsplash.com/photo-1534349762230-e0cadf78f5da?auto=format&fit=crop&w=600&q=80',
-
-  // Salon & Spa
-  "men's haircut & grooming": 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80',
-  'head & shoulder massage': 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80',
-  'quick comfort therapy': 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&fit=crop&w=600&q=80',
-  'beard styling & shave': 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=600&q=80',
+  'elderly assistance & hospital escort': 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=600&q=80',
 
   // Logistics & Vehicles
   'electric bike': 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=600&q=80',
+  'electric bike express courier': 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=600&q=80',
   'petrol bike': 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=600&q=80',
   'express courier (local)': 'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=600&q=80',
   'personal items (documents & files)': 'https://images.unsplash.com/photo-1586528116493-a029325540fa?auto=format&fit=crop&w=600&q=80',
@@ -561,6 +710,7 @@ const EXACT_SERVICE_IMAGES = {
   'loading vehicle': 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80',
   'mini truck': 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=600&q=80',
   'mini truck (tata ace)': 'https://images.unsplash.com/photo-1592838064575-70ed626d3a0e?auto=format&fit=crop&w=600&q=80',
+  'mini truck goods transport': 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=600&q=80',
   'retail store delivery': 'https://images.unsplash.com/photo-1586528116024-e1b1d7d0a2ec?auto=format&fit=crop&w=600&q=80',
   'truck': 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80',
   'truck (14ft / 17ft)': 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80',
@@ -568,7 +718,8 @@ const EXACT_SERVICE_IMAGES = {
   'furniture shifting': '/furniture-moving.jpg',
   'furniture transport': '/furniture-moving.jpg',
   'house shifting & furniture': '/furniture-moving.jpg',
-  'heavy truck': 'https://images.unsplash.com/photo-1501700493788-fa1a4fc9fe62?auto=format&fit=crop&w=600&q=80'
+  'heavy truck': 'https://images.unsplash.com/photo-1501700493788-fa1a4fc9fe62?auto=format&fit=crop&w=600&q=80',
+  'heavy truck commercial freight': 'https://images.unsplash.com/photo-1501700493788-fa1a4fc9fe62?auto=format&fit=crop&w=600&q=80'
 };
 
   const getServiceConfig = (serviceName, categoryName) => {
@@ -582,7 +733,19 @@ const EXACT_SERVICE_IMAGES = {
 
     // 2. Intelligent keyword fallback if exact name not in map
     if (!serviceImage) {
-      if (name.includes('furniture') || name.includes('sofa') || name.includes('shifting') || name.includes('relocation') || name.includes('movers') || name.includes('packers')) {
+      if (name.includes('pest') || name.includes('cockroach') || name.includes('termite') || name.includes('bed bug') || name.includes('mosquito')) {
+        serviceImage = 'https://images.unsplash.com/photo-1587293852726-70cdb56c2866?auto=format&fit=crop&w=600&q=80';
+      } else if (name.includes('car ') || name.includes('bike wash') || name.includes('detailing') || name.includes('jump start')) {
+        serviceImage = 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=600&q=80';
+      } else if (name.includes('laptop') || name.includes('pc ') || name.includes('computer') || name.includes('router') || name.includes('tv ') || name.includes('printer')) {
+        serviceImage = 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=600&q=80';
+      } else if (name.includes('maid') || name.includes('cook') || name.includes('chef') || name.includes('laundry') || name.includes('grocery') || name.includes('medicine')) {
+        serviceImage = 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=600&q=80';
+      } else if (name.includes('hair') || name.includes('spa') || name.includes('facial') || name.includes('manicure') || name.includes('pedicure') || name.includes('waxing') || name.includes('makeup') || name.includes('bridal')) {
+        serviceImage = 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=600&q=80';
+      } else if (name.includes('massage') || name.includes('therapy')) {
+        serviceImage = 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80';
+      } else if (name.includes('furniture') || name.includes('sofa') || name.includes('shifting') || name.includes('relocation') || name.includes('movers') || name.includes('packers')) {
         serviceImage = '/furniture-moving.jpg';
       } else if (name.includes('ac ') || name.includes('air condition') || name.includes('cooling') || name.includes('hvac')) {
         serviceImage = 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=600&q=80';
@@ -596,35 +759,31 @@ const EXACT_SERVICE_IMAGES = {
         serviceImage = 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=600&q=80';
       } else if (name.includes('ro ') || name.includes('purifier') || name.includes('water filter') || name.includes('water clean')) {
         serviceImage = 'https://images.unsplash.com/photo-1662647343432-a8710bfd6162?auto=format&fit=crop&w=600&q=80';
-      } else if (name.includes('washing machine') || name.includes('laundry')) {
+      } else if (name.includes('washing machine')) {
         serviceImage = 'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=600&q=80';
       } else if (name.includes('refrigerator') || name.includes('fridge')) {
         serviceImage = 'https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?auto=format&fit=crop&w=600&q=80';
       } else if (name.includes('bathroom') || name.includes('toilet') || name.includes('washroom')) {
         serviceImage = 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80';
-      } else if (name.includes('clean') || name.includes('housekeep') || name.includes('dusting') || name.includes('maid')) {
+      } else if (name.includes('clean') || name.includes('housekeep') || name.includes('dusting')) {
         serviceImage = 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80';
       } else if (name.includes('blood') || name.includes('cbc') || name.includes('lab') || name.includes('pathology') || name.includes('sample')) {
         serviceImage = 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=600&q=80';
-      } else if (name.includes('health') || name.includes('doctor') || name.includes('nurse') || name.includes('compounder') || name.includes('patient') || name.includes('diagnostic')) {
+      } else if (name.includes('health') || name.includes('doctor') || name.includes('nurse') || name.includes('compounder') || name.includes('patient') || name.includes('diagnostic') || name.includes('elderly')) {
         serviceImage = 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=600&q=80';
-      } else if (name.includes('hair') || name.includes('barber') || name.includes('shave') || name.includes('beard') || name.includes('grooming')) {
-        serviceImage = 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80';
-      } else if (name.includes('massage') || name.includes('therapy') || name.includes('spa')) {
-        serviceImage = 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80';
       } else if (name.includes('cctv') || name.includes('camera') || name.includes('surveillance')) {
         serviceImage = 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=600&q=80';
       } else if (name.includes('guard') || name.includes('security') || name.includes('officer')) {
         serviceImage = 'https://images.unsplash.com/photo-1581568736305-49a04e012c13?auto=format&fit=crop&w=600&q=80';
       } else if (name.includes('lock') || name.includes('doorbell') || name.includes('key')) {
         serviceImage = 'https://images.unsplash.com/photo-1558089687-f282ffcbc126?auto=format&fit=crop&w=600&q=80';
-      } else if (name.includes('carpent') || name.includes('wood') || name.includes('cabinet')) {
+      } else if (name.includes('carpent') || name.includes('wood') || name.includes('cabinet') || name.includes('assembly') || name.includes('drilling')) {
         serviceImage = 'https://images.unsplash.com/photo-1502005229762-ee1b2b8ab98f?auto=format&fit=crop&w=600&q=80';
       } else if (name.includes('waterproof')) {
         serviceImage = 'https://images.unsplash.com/photo-1674485169641-bcb2bf6f1df9?auto=format&fit=crop&w=600&q=80';
       } else if (name.includes('roof') || name.includes('terrace')) {
         serviceImage = 'https://images.unsplash.com/photo-1635424709845-3a85ad5e1f5e?auto=format&fit=crop&w=600&q=80';
-      } else if (name.includes('mason') || name.includes('brick') || name.includes('civil') || name.includes('plaster') || name.includes('renovat')) {
+      } else if (name.includes('mason') || name.includes('brick') || name.includes('civil') || name.includes('plaster') || name.includes('renovat') || name.includes('paint')) {
         serviceImage = 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80';
       } else if (name.includes('bike') || name.includes('courier') || name.includes('document') || name.includes('parcel')) {
         serviceImage = 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=600&q=80';

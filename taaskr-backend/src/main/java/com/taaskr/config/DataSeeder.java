@@ -53,6 +53,13 @@ public class DataSeeder {
         seedUser(userRepository, passwordEncoder, "Amit Sharma (Master Electrician)", "electrician@taaskr.com", "Provider@123", "9999999996", Role.PROVIDER, "Indore", "452001");
         seedUser(userRepository, passwordEncoder, "Dinesh Gupta (Senior Plumber)", "plumber@taaskr.com", "Provider@123", "9999999997", Role.PROVIDER, "Indore", "452002");
         seedUser(userRepository, passwordEncoder, "Suresh Verma (Appliance Expert)", "appliance@taaskr.com", "Provider@123", "9999999998", Role.PROVIDER, "Indore", "452001");
+        seedUser(userRepository, passwordEncoder, "Pooja Sharma (Salon & Beauty Expert)", "salon@taaskr.com", "Provider@123", "9999999999", Role.PROVIDER, "Indore", "452001");
+        seedUser(userRepository, passwordEncoder, "Pankaj Malviya (Pest Control Expert)", "pest@taaskr.com", "Provider@123", "8880000010", Role.PROVIDER, "Indore", "452001");
+        seedUser(userRepository, passwordEncoder, "Kailash Sharma (Master Carpenter)", "carpenter@taaskr.com", "Provider@123", "8880000011", Role.PROVIDER, "Indore", "452001");
+        seedUser(userRepository, passwordEncoder, "Sunil Jain (Hardware & Tech Expert)", "tech@taaskr.com", "Provider@123", "8880000012", Role.PROVIDER, "Indore", "452001");
+        seedUser(userRepository, passwordEncoder, "Gopal Lodhi (Auto Detailing Specialist)", "autocare@taaskr.com", "Provider@123", "8880000013", Role.PROVIDER, "Indore", "452001");
+        seedUser(userRepository, passwordEncoder, "Sunita Bai (Home Help & Cook)", "homehelp@taaskr.com", "Provider@123", "8880000014", Role.PROVIDER, "Indore", "452001");
+        seedUser(userRepository, passwordEncoder, "Sister Anita Joseph (Elderly Care Nurse)", "nurse@taaskr.com", "Provider@123", "8880000015", Role.PROVIDER, "Indore", "452001");
         seedUser(userRepository, passwordEncoder, "Ravi Shankar (CCTV & Security)", "security@taaskr.com", "Provider@123", "8880000001", Role.PROVIDER, "Indore", "452001");
         seedUser(userRepository, passwordEncoder, "Devendra Rathore (Security Guard)", "guard@taaskr.com", "Provider@123", "8880000002", Role.PROVIDER, "Indore", "452001");
 
@@ -91,57 +98,109 @@ public class DataSeeder {
     }
 
     private void seedCatalog(ServiceCategoryRepository categoryRepository, ServiceRepository serviceRepository) {
-        ServiceCategory plumbingCleaning = seedCategory(categoryRepository, "Plumbing & Cleaning", "Home plumbing repairs, pipe leakage fixes, and deep home cleaning services");
-        ServiceCategory appliancesElectrical = seedCategory(categoryRepository, "Appliances & Electrical", "Home appliance repair, AC maintenance, and electrical wiring services");
-        ServiceCategory security = seedCategory(categoryRepository, "Security Services", "Home security installation and protection services");
-        ServiceCategory diagnosticHealthcare = seedCategory(categoryRepository, "Diagnostic & Healthcare Services", "Doorstep diagnostic tests, health checkups, and patient care assistance");
-        ServiceCategory civil = seedCategory(categoryRepository, "Civil & Property Maintenance", "Construction, renovation, repair, and property maintenance services.");
-
-        // Plumbing & Cleaning
-        seedService(serviceRepository, "Tap Repair", "Fix leaking or damaged taps", new BigDecimal("299.00"), 60, plumbingCleaning);
-        seedService(serviceRepository, "Pipe Leakage Fix", "Detect and repair minor pipe leakage", new BigDecimal("499.00"), 90, plumbingCleaning);
-        seedService(serviceRepository, "Bathroom Cleaning", "Deep clean bathroom and fittings", new BigDecimal("399.00"), 90, plumbingCleaning);
-        seedService(serviceRepository, "Full Home Cleaning", "General home cleaning service", new BigDecimal("1499.00"), 240, plumbingCleaning);
-        
-        // Appliances & Electrical
-        seedService(serviceRepository, "Switch Board Repair", "Repair or replace faulty switch boards", new BigDecimal("349.00"), 60, appliancesElectrical);
-        seedService(serviceRepository, "Fan Repair", "Ceiling and exhaust fan repair", new BigDecimal("299.00"), 60, appliancesElectrical);
-        seedService(serviceRepository, "RO Repair", "Reverse Osmosis water purifier repair", new BigDecimal("499.00"), 90, appliancesElectrical);
-        seedService(serviceRepository, "RO Installation", "RO water purifier installation", new BigDecimal("399.00"), 60, appliancesElectrical);
-        seedService(serviceRepository, "RO Maintenance", "Routine RO maintenance and filter change", new BigDecimal("599.00"), 90, appliancesElectrical);
-        seedService(serviceRepository, "AC Repair", "Air conditioner repair service", new BigDecimal("699.00"), 120, appliancesElectrical);
-        seedService(serviceRepository, "AC Installation", "Air conditioner installation service", new BigDecimal("1499.00"), 180, appliancesElectrical);
-        seedService(serviceRepository, "AC Maintenance", "Routine AC servicing and cleaning", new BigDecimal("599.00"), 90, appliancesElectrical);
-        seedService(serviceRepository, "Refrigerator Repair", "Refrigerator repair and maintenance", new BigDecimal("599.00"), 90, appliancesElectrical);
-        seedService(serviceRepository, "Washing Machine Repair", "Washing machine repair service", new BigDecimal("599.00"), 90, appliancesElectrical);
-
-        // Security Services
-        seedService(serviceRepository, "CCTV Installation", "Install and configure CCTV cameras for your home", new BigDecimal("1199.00"), 120, security);
-        seedService(serviceRepository, "Smart Lock Installation", "Install and set up a smart door lock", new BigDecimal("799.00"), 90, security);
-        seedService(serviceRepository, "Video Doorbell Installation", "Install and configure a video doorbell", new BigDecimal("899.00"), 90, security);
-        seedService(serviceRepository, "Security Guard Service", "Professional security guard service for your premises", new BigDecimal("1499.00"), 480, security);
-
-        // Diagnostic & Healthcare Services
-        seedService(serviceRepository, "Blood Test & Sample Collection", "At-home blood test and sample collection", new BigDecimal("499.00"), 30, diagnosticHealthcare);
-        seedService(serviceRepository, "Full Body Health Checkup", "Comprehensive full body checkup package", new BigDecimal("1999.00"), 60, diagnosticHealthcare);
-        seedService(serviceRepository, "Home Diagnostic Test", "Various home diagnostic tests and screenings", new BigDecimal("999.00"), 45, diagnosticHealthcare);
-        seedService(serviceRepository, "Compounder on Call", "Healthcare assistance for basic patient care and prescribed medication support at home.", new BigDecimal("599.00"), 60, diagnosticHealthcare);
-
-        // Civil & Property Maintenance
-        seedService(serviceRepository, "Masonry & Brickwork", "Professional masonry and brickwork services", new BigDecimal("899.00"), 240, civil);
-        seedService(serviceRepository, "Waterproofing", "Roof and bathroom waterproofing solutions", new BigDecimal("2499.00"), 360, civil);
-        seedService(serviceRepository, "Flooring & Tiling", "Floor tiling and repair services", new BigDecimal("1499.00"), 480, civil);
-        seedService(serviceRepository, "Roof & Terrace Maintenance", "Roof repair and terrace maintenance", new BigDecimal("1999.00"), 360, civil);
-        seedService(serviceRepository, "Home Renovation", "General home renovation and remodeling", new BigDecimal("4999.00"), 480, civil);
-        seedService(serviceRepository, "General Civil Repairs", "Minor civil repairs and wall plastering", new BigDecimal("799.00"), 120, civil);
-
-        // On-Demand Intra-City Vehicle Service Category
+        ServiceCategory plumbingCleaning = seedCategory(categoryRepository, "Plumbing & Cleaning", "Home plumbing repairs, pipe leakage fixes, drain cleaning, and deep sanitization services");
+        ServiceCategory appliancesElectrical = seedCategory(categoryRepository, "Appliances & Electrical", "Home appliance repair, AC maintenance, geyser servicing, and electrical wiring");
+        ServiceCategory pestControl = seedCategory(categoryRepository, "Pest Control", "Eco-friendly, odorless pest, cockroach, termite, and bed bug eradication treatments");
+        ServiceCategory salonWellness = seedCategory(categoryRepository, "Salon & Massage / Wellness", "Professional doorstep grooming, beauty, hair styling, and relaxing massage therapies for men and women");
+        ServiceCategory civil = seedCategory(categoryRepository, "Civil & Property Maintenance", "Carpentry, drilling, wall painting, masonry, waterproofing, and renovation services");
+        ServiceCategory techElectronics = seedCategory(categoryRepository, "Tech & Home Automation", "Laptop diagnostics, Wi-Fi router setup, smart TV mounting, and printer repair");
+        ServiceCategory vehicleAuto = seedCategory(categoryRepository, "Vehicle & Auto Care", "Doorstep car/bike foam wash, detailing, and emergency battery jump start assistance");
+        ServiceCategory homeHelp = seedCategory(categoryRepository, "Home Help & Errand Services", "On-demand cooks, domestic helpers, laundry, urgent medicine, and grocery pickups");
+        ServiceCategory security = seedCategory(categoryRepository, "Security Services", "Home security CCTV installation, smart locks, and verified security guard protection");
+        ServiceCategory diagnosticHealthcare = seedCategory(categoryRepository, "Diagnostic & Healthcare Services", "Doorstep blood tests, full body checkups, compounder nursing, and elderly care assistance");
         ServiceCategory vehicleCategory = seedCategory(categoryRepository, "On-Demand Vehicle", "Intra-city on-demand goods transport and vehicle with driver service.");
+
+        // 1. Plumbing & Cleaning
+        seedService(serviceRepository, "Tap Repair", "Fix leaking or damaged taps and replace worn washers", new BigDecimal("299.00"), 60, plumbingCleaning);
+        seedService(serviceRepository, "Pipe Leakage Fix", "Detect and repair concealed or open pipe leakages", new BigDecimal("499.00"), 90, plumbingCleaning);
+        seedService(serviceRepository, "Drain Blockage & Clog Clearance", "Mechanical spring clearing for clogged kitchen sinks, washbasins, and bathroom drain traps", new BigDecimal("399.00"), 60, plumbingCleaning);
+        seedService(serviceRepository, "Bathroom Cleaning", "Deep tile scrub, lime stain removal, and sanitaryware disinfection", new BigDecimal("399.00"), 90, plumbingCleaning);
+        seedService(serviceRepository, "Kitchen Deep Cleaning & Chimney Degreasing", "Thorough degreasing of chimney filters, gas stove scrub, and kitchen oil stain removal", new BigDecimal("799.00"), 120, plumbingCleaning);
+        seedService(serviceRepository, "Sofa & Carpet Shampooing", "High-suction wet extraction shampooing for fabric sofas, cushions, and floor carpets", new BigDecimal("699.00"), 90, plumbingCleaning);
+        seedService(serviceRepository, "Full Home Cleaning", "Complete multi-room deep cleaning, floor scrubbing, and dusting", new BigDecimal("1499.00"), 240, plumbingCleaning);
+        
+        // 2. Appliances & Electrical
+        seedService(serviceRepository, "Switch Board Repair", "Repair or replace faulty switch boards, tripped MCBs, and wiring", new BigDecimal("349.00"), 60, appliancesElectrical);
+        seedService(serviceRepository, "Fan Repair", "Ceiling and exhaust fan motor, capacitor, and regulator repair", new BigDecimal("299.00"), 60, appliancesElectrical);
+        seedService(serviceRepository, "Geyser & Water Heater Servicing", "Element descaling, thermostat inspection, and leak repairs for storage/instant geysers", new BigDecimal("449.00"), 60, appliancesElectrical);
+        seedService(serviceRepository, "Inverter & Battery Servicing", "Battery distilled water top-up, terminal desulfation, and inverter load testing", new BigDecimal("349.00"), 45, appliancesElectrical);
+        seedService(serviceRepository, "Microwave & OTG Repair", "Magnetron check, high-voltage fuse change, and rotating plate motor repair", new BigDecimal("399.00"), 60, appliancesElectrical);
+        seedService(serviceRepository, "RO Repair", "Reverse Osmosis water purifier pump and membrane troubleshooting", new BigDecimal("499.00"), 90, appliancesElectrical);
+        seedService(serviceRepository, "RO Installation", "RO water purifier wall mounting and plumbing connection", new BigDecimal("399.00"), 60, appliancesElectrical);
+        seedService(serviceRepository, "RO Maintenance", "Routine RO filter cartridge change and TDS balance check", new BigDecimal("599.00"), 90, appliancesElectrical);
+        seedService(serviceRepository, "AC Repair", "Air conditioner cooling diagnostics, gas leak check, and coil cleaning", new BigDecimal("699.00"), 120, appliancesElectrical);
+        seedService(serviceRepository, "AC Installation", "Air conditioner indoor/outdoor unit bracket mounting and copper piping setup", new BigDecimal("1499.00"), 180, appliancesElectrical);
+        seedService(serviceRepository, "AC Maintenance", "Routine seasonal AC foam wash, filter cleaning, and pressure tuning", new BigDecimal("599.00"), 90, appliancesElectrical);
+        seedService(serviceRepository, "Refrigerator Repair", "Single/double door refrigerator cooling, compressor, and defrost repair", new BigDecimal("599.00"), 90, appliancesElectrical);
+        seedService(serviceRepository, "Washing Machine Repair", "Automatic/semi-automatic washing machine drum, drain pump, and PCB servicing", new BigDecimal("599.00"), 90, appliancesElectrical);
+
+        // 3. Pest Control
+        seedService(serviceRepository, "General Pest & Cockroach Control", "Odorless herbal gel baiting and spray targeting cockroaches, ants, and silverfish with 90-day warranty", new BigDecimal("899.00"), 90, pestControl);
+        seedService(serviceRepository, "Termite & Wood Borer Treatment", "Chemical barrier drill-and-fill treatment protecting wooden structures against subterranean termites", new BigDecimal("1899.00"), 180, pestControl);
+        seedService(serviceRepository, "Bed Bug Eradication Treatment", "Two-round high-potency chemical spray treatment targeting mattress seams and sofa crevices", new BigDecimal("1199.00"), 120, pestControl);
+        seedService(serviceRepository, "Mosquito & Flying Insect Control", "Cold-fogging and residual wall misting to eliminate adult mosquitoes and larvae", new BigDecimal("799.00"), 60, pestControl);
+
+        // 4. Salon & Massage / Wellness (Unisex: Men & Women)
+        seedService(serviceRepository, "Men's Haircut & Beard Styling", "Doorstep hygienic haircut, beard trimming, styling, and disposable kit protocol", new BigDecimal("349.00"), 45, salonWellness);
+        seedService(serviceRepository, "Women's Haircut & Hair Spa", "Professional precision haircut, deep conditioning hair spa, and blowout styling at home", new BigDecimal("699.00"), 60, salonWellness);
+        seedService(serviceRepository, "At-Home Manicure & Pedicure", "Relaxing cuticle care, scrub, foot massage, and polish using sterile tools", new BigDecimal("599.00"), 60, salonWellness);
+        seedService(serviceRepository, "Full Arms & Legs Waxing", "Hygienic RICA / honey waxing with post-wax soothing lotion application", new BigDecimal("499.00"), 45, salonWellness);
+        seedService(serviceRepository, "Bridal & Party Makeup at Home", "HD glam and party makeover by certified makeup artists using premium cosmetics", new BigDecimal("1499.00"), 90, salonWellness);
+        seedService(serviceRepository, "At-Home Facial & Skin Glow", "Deep pore cleansing, tan removal scrub, steam, and herbal face pack for all skin types", new BigDecimal("799.00"), 60, salonWellness);
+        seedService(serviceRepository, "Head, Neck & Shoulder Massage", "Stress-relief acupressure therapy using soothing warm herbal oils", new BigDecimal("499.00"), 45, salonWellness);
+        seedService(serviceRepository, "Full Body Stress Relief Therapy", "Rejuvenating full body Swedish / Ayurvedic oil massage by certified wellness therapists", new BigDecimal("1299.00"), 90, salonWellness);
+
+        // 5. Civil & Property Maintenance
+        seedService(serviceRepository, "Carpentry & Furniture Repair", "Fixing misaligned cabinet hinges, drawer channels, hydraulic bed lifts, and wooden doors", new BigDecimal("399.00"), 60, civil);
+        seedService(serviceRepository, "Furniture Assembly & Flatpack Setup", "Assembly of flatpack wardrobes, beds, TV units, and study desks from IKEA/Amazon/Pepperfry", new BigDecimal("499.00"), 90, civil);
+        seedService(serviceRepository, "Drilling, Hanging & Wall Mounting", "Precision hammer-drilling for wall art, mirrors, curtain rods, and bathroom towel racks", new BigDecimal("249.00"), 45, civil);
+        seedService(serviceRepository, "Interior Wall Painting & Touch-up", "Putty filling, primer, and premium acrylic emulsion roller painting for rooms or accent walls", new BigDecimal("1499.00"), 240, civil);
+        seedService(serviceRepository, "Masonry & Brickwork", "Professional masonry, brickwork, and plastering services", new BigDecimal("899.00"), 240, civil);
+        seedService(serviceRepository, "Waterproofing", "Roof slab, terrace, and bathroom waterproofing chemical coating", new BigDecimal("2499.00"), 360, civil);
+        seedService(serviceRepository, "Flooring & Tiling", "Floor tiling, regrouting, and cracked tile repair services", new BigDecimal("1499.00"), 480, civil);
+        seedService(serviceRepository, "Roof & Terrace Maintenance", "Terrace inspection, rain drain clearing, and protective heat-reflective coating", new BigDecimal("1999.00"), 360, civil);
+        seedService(serviceRepository, "Home Renovation", "General home civil restructuring, partition remodeling, and repairs", new BigDecimal("4999.00"), 480, civil);
+        seedService(serviceRepository, "General Civil Repairs", "Minor civil patching, masonry touchups, and wall plastering", new BigDecimal("799.00"), 120, civil);
+
+        // 6. Tech & Home Automation
+        seedService(serviceRepository, "Laptop & PC Diagnostics / OS Setup", "RAM/SSD upgrades, OS installation, virus cleanup, and thermal paste replacement", new BigDecimal("499.00"), 60, techElectronics);
+        seedService(serviceRepository, "Wi-Fi Router & Mesh Network Setup", "High-speed fiber router installation, dead zone mesh repeater config, and security tuning", new BigDecimal("399.00"), 45, techElectronics);
+        seedService(serviceRepository, "Smart TV & Home Theater Wall Setup", "Wall bracket mounting for 32-75 inch Smart TVs, soundbar setup, and cable concealment", new BigDecimal("599.00"), 60, techElectronics);
+        seedService(serviceRepository, "Printer Setup & Troubleshooting", "Driver installation, wireless network printing setup, and paper feed troubleshooting", new BigDecimal("349.00"), 45, techElectronics);
+
+        // 7. Vehicle & Auto Care
+        seedService(serviceRepository, "Doorstep Eco Car Foam Wash & Vacuum", "Pressure foam wash, tire shine, and interior carpet/seat high-suction vacuuming at your parking spot", new BigDecimal("499.00"), 60, vehicleAuto);
+        seedService(serviceRepository, "Doorstep Bike Foam Wash & Chain Lube", "Two-wheeler pressure foam wash, degreasing, and synthetic chain lubrication", new BigDecimal("249.00"), 45, vehicleAuto);
+        seedService(serviceRepository, "Deep Car Interior Detailing & Polishing", "Fabric shampooing, leather conditioning, dashboard polish, and AC vent steam sanitization", new BigDecimal("1199.00"), 120, vehicleAuto);
+        seedService(serviceRepository, "Car Battery Jump Start Assistance", "15-minute emergency roadside/home jumper cable restart and battery alternator check", new BigDecimal("349.00"), 30, vehicleAuto);
+
+        // 8. Home Help & Errand Services
+        seedService(serviceRepository, "Daily Domestic Helper / Maid on Demand", "Verified on-demand helper for sweeping, mopping, utensil cleaning, and kitchen surface wipe-down", new BigDecimal("399.00"), 120, homeHelp);
+        seedService(serviceRepository, "Home Chef & Daily Cook on Demand", "Freshly prepared home-style vegetarian / non-vegetarian meals cooked at your kitchen", new BigDecimal("499.00"), 120, homeHelp);
+        seedService(serviceRepository, "Doorstep Laundry & Steam Ironing", "Clothes wash, gentle fabric dry, and crisp wrinkle-free steam press pickup & drop", new BigDecimal("299.00"), 60, homeHelp);
+        seedService(serviceRepository, "Urgent Medicine & Prescription Delivery", "Fast doorstep pickup of emergency medications from authorized local pharmacies", new BigDecimal("149.00"), 30, homeHelp);
+        seedService(serviceRepository, "Local Grocery & Market Pickup Delivery", "Handpicked vegetables, fruits, and groceries purchased and delivered from nearby markets", new BigDecimal("199.00"), 45, homeHelp);
+        seedService(serviceRepository, "Personal Errand & Queue Assistance", "On-demand assistant for document submission, standing in billing queues, and municipal errands", new BigDecimal("249.00"), 60, homeHelp);
+
+        // 9. Security Services
+        seedService(serviceRepository, "CCTV Installation", "Install and configure CCTV cameras with mobile live-view setup", new BigDecimal("1199.00"), 120, security);
+        seedService(serviceRepository, "Smart Lock Installation", "Install and set up a biometric fingerprint and digital keypad smart lock", new BigDecimal("799.00"), 90, security);
+        seedService(serviceRepository, "Video Doorbell Installation", "Install and configure wireless / wired video doorbell with two-way audio", new BigDecimal("899.00"), 90, security);
+        seedService(serviceRepository, "Security Guard Service", "Professional, verified security guard shift for residential societies and commercial premises", new BigDecimal("1499.00"), 480, security);
+
+        // 10. Diagnostic & Healthcare Services
+        seedService(serviceRepository, "Blood Test & Sample Collection", "At-home phlebotomy sample collection with NABL certified laboratory analysis", new BigDecimal("499.00"), 30, diagnosticHealthcare);
+        seedService(serviceRepository, "Full Body Health Checkup", "Comprehensive full body preventive health screening covering 60+ vital parameters", new BigDecimal("1999.00"), 60, diagnosticHealthcare);
+        seedService(serviceRepository, "Home Diagnostic Test", "At-home vital checks, blood sugar profiling, and rapid diagnostic screenings", new BigDecimal("999.00"), 45, diagnosticHealthcare);
+        seedService(serviceRepository, "Compounder on Call", "Healthcare assistance for basic patient care, IV infusion, dressing, and prescribed medication support", new BigDecimal("599.00"), 60, diagnosticHealthcare);
+        seedService(serviceRepository, "Elderly Assistance & Hospital Escort", "Companion escort for senior citizens to doctor appointments, mobility aid, and clinic visits", new BigDecimal("799.00"), 180, diagnosticHealthcare);
+
+        // 11. On-Demand Intra-City Vehicle Service Category (Logistics)
         seedService(serviceRepository, "Electric Bike", "Fast eco-friendly two-wheeler for small parcels and urgent documents", new BigDecimal("40.00"), 30, vehicleCategory);
         seedService(serviceRepository, "Petrol Bike", "Quick two-wheeler courier for lightweight goods and packages", new BigDecimal("45.00"), 30, vehicleCategory);
         seedService(serviceRepository, "Electric Rickshaw", "Electric 3-wheeler for medium boxes and multi-package local transport", new BigDecimal("90.00"), 45, vehicleCategory);
         seedService(serviceRepository, "Loading Vehicle", "Dedicated 3-wheeler loading tempo for appliances and furniture transport", new BigDecimal("150.00"), 60, vehicleCategory);
-        seedService(serviceRepository, "Mini Truck", "Reliable mini truck (Tata Ace / Pickup) for home shifting & heavy goods", new BigDecimal("250.00"), 90, vehicleCategory);
+        seedService(serviceRepository, "Mini Truck", "Reliable mini truck (Tata Ace / Mahindra Bolero Pickup) for home shifting & furniture transport", new BigDecimal("250.00"), 90, vehicleCategory);
         seedService(serviceRepository, "Truck", "Large 14ft/17ft truck for full house or office goods relocation", new BigDecimal("600.00"), 120, vehicleCategory);
         seedService(serviceRepository, "Heavy Truck", "Heavy-duty commercial vehicle for heavy machinery and bulk items", new BigDecimal("1200.00"), 180, vehicleCategory);
     }
@@ -220,6 +279,34 @@ public class DataSeeder {
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "provider@taaskr.com", 4.7, 12, 3, "Experienced home service professional",
                 serviceRepository, List.of("Tap Repair", "Bathroom Cleaning", "Full Home Cleaning"));
+
+        setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
+                "salon@taaskr.com", 4.9, 150, 7, "Certified unisex salon, bridal makeup, and relaxation therapist",
+                serviceRepository, List.of("Men's Haircut & Beard Styling", "Women's Haircut & Hair Spa", "At-Home Manicure & Pedicure", "Full Arms & Legs Waxing", "Bridal & Party Makeup at Home", "At-Home Facial & Skin Glow", "Head, Neck & Shoulder Massage", "Full Body Stress Relief Therapy"));
+
+        setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
+                "pest@taaskr.com", 4.8, 92, 6, "Government certified pest control operator with odorless green chemicals",
+                serviceRepository, List.of("General Pest & Cockroach Control", "Termite & Wood Borer Treatment", "Bed Bug Eradication Treatment", "Mosquito & Flying Insect Control"));
+
+        setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
+                "carpenter@taaskr.com", 4.7, 110, 8, "Master carpenter for custom woodwork, drilling, and furniture setup",
+                serviceRepository, List.of("Carpentry & Furniture Repair", "Furniture Assembly & Flatpack Setup", "Drilling, Hanging & Wall Mounting", "Interior Wall Painting & Touch-up", "General Civil Repairs"));
+
+        setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
+                "tech@taaskr.com", 4.9, 78, 5, "Hardware, Wi-Fi mesh networking, and smart TV mounting specialist",
+                serviceRepository, List.of("Laptop & PC Diagnostics / OS Setup", "Wi-Fi Router & Mesh Network Setup", "Smart TV & Home Theater Wall Setup", "Printer Setup & Troubleshooting"));
+
+        setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
+                "autocare@taaskr.com", 4.8, 65, 4, "Doorstep car & bike foam detailing and battery jump start technician",
+                serviceRepository, List.of("Doorstep Eco Car Foam Wash & Vacuum", "Doorstep Bike Foam Wash & Chain Lube", "Deep Car Interior Detailing & Polishing", "Car Battery Jump Start Assistance"));
+
+        setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
+                "homehelp@taaskr.com", 4.6, 140, 6, "Reliable home chef, daily domestic helper, and errand assistant",
+                serviceRepository, List.of("Daily Domestic Helper / Maid on Demand", "Home Chef & Daily Cook on Demand", "Doorstep Laundry & Steam Ironing", "Urgent Medicine & Prescription Delivery", "Local Grocery & Market Pickup Delivery", "Personal Errand & Queue Assistance"));
+
+        setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
+                "nurse@taaskr.com", 4.9, 88, 9, "Registered nursing professional for vitals, injections, and elderly care",
+                serviceRepository, List.of("Blood Test & Sample Collection", "Full Body Health Checkup", "Home Diagnostic Test", "Compounder on Call", "Elderly Assistance & Hospital Escort"));
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "security@taaskr.com", 4.8, 38, 6, "Certified home security and surveillance systems specialist",
