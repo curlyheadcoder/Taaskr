@@ -565,8 +565,8 @@ const BOUNCING_PHYSICS_CATEGORIES = [
     accentBg: 'linear-gradient(135deg, #E11D48 0%, #BE123C 100%)',
     startX: 0.04,
     startY: 0.06,
-    vx: 0.38,
-    vy: 0.32
+    vx: 0.54,
+    vy: 0.46
   },
   {
     id: 'appliances_electrical',
@@ -586,8 +586,8 @@ const BOUNCING_PHYSICS_CATEGORIES = [
     accentBg: 'linear-gradient(135deg, #D97706 0%, #EA580C 100%)',
     startX: 0.84,
     startY: 0.10,
-    vx: -0.36,
-    vy: 0.42
+    vx: -0.52,
+    vy: 0.58
   },
   {
     id: 'logistics',
@@ -607,8 +607,8 @@ const BOUNCING_PHYSICS_CATEGORIES = [
     accentBg: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
     startX: 0.05,
     startY: 0.80,
-    vx: 0.42,
-    vy: -0.32
+    vx: 0.58,
+    vy: -0.46
   },
   {
     id: 'salon_wellness',
@@ -628,8 +628,8 @@ const BOUNCING_PHYSICS_CATEGORIES = [
     accentBg: 'linear-gradient(135deg, #9333EA 0%, #C026D3 100%)',
     startX: 0.85,
     startY: 0.78,
-    vx: -0.36,
-    vy: -0.38
+    vx: -0.52,
+    vy: -0.54
   },
   {
     id: 'plumbing_cleaning',
@@ -649,8 +649,8 @@ const BOUNCING_PHYSICS_CATEGORIES = [
     accentBg: 'linear-gradient(135deg, #0891B2 0%, #0D9488 100%)',
     startX: 0.44,
     startY: 0.03,
-    vx: -0.28,
-    vy: 0.36
+    vx: -0.42,
+    vy: 0.52
   },
   {
     id: 'civil_maintenance',
@@ -670,8 +670,8 @@ const BOUNCING_PHYSICS_CATEGORIES = [
     accentBg: 'linear-gradient(135deg, #EA580C 0%, #C2410C 100%)',
     startX: 0.52,
     startY: 0.88,
-    vx: 0.32,
-    vy: -0.38
+    vx: 0.46,
+    vy: -0.54
   }
 ];
 
@@ -768,7 +768,7 @@ function BouncingHeroPhysics({ onWallHit, onSelectCategory }) {
             tagEl.classList.add('tag-bounce-pop');
           }
 
-          if (now - lastColorChangeTime > 3000) {
+          if (now - lastColorChangeTime > 2500) {
             lastColorChangeTime = now;
             if (onWallHit) {
               onWallHit(tile);
@@ -777,7 +777,7 @@ function BouncingHeroPhysics({ onWallHit, onSelectCategory }) {
         }
       });
 
-      // 2. Tile-to-Tile Collision Avoidance
+      // 2. Full Elastic Tile-to-Tile Collision with Opposite Deflection
       const numTiles = state.length;
       for (let i = 0; i < numTiles; i++) {
         for (let j = i + 1; j < numTiles; j++) {
@@ -792,19 +792,48 @@ function BouncingHeroPhysics({ onWallHit, onSelectCategory }) {
             const nx = dx / dist;
             const ny = dy / dist;
 
+            // Separate overlapping tiles
             const overlap = (minDist - dist) * 0.5;
             t1.x -= nx * overlap;
             t1.y -= ny * overlap;
             t2.x += nx * overlap;
             t2.y += ny * overlap;
 
+            // Relative velocity along collision normal
             const kx = t1.vx - t2.vx;
             const ky = t1.vy - t2.vy;
-            const p = 2 * (nx * kx + ny * ky) / 2;
-            t1.vx -= p * nx * 0.5;
-            t1.vy -= p * ny * 0.5;
-            t2.vx += p * nx * 0.5;
-            t2.vy += p * ny * 0.5;
+            const p = nx * kx + ny * ky;
+
+            // If moving towards each other, execute full 2D elastic collision bounce
+            if (p > 0) {
+              t1.vx -= p * nx;
+              t1.vy -= p * ny;
+              t2.vx += p * nx;
+              t2.vy += p * ny;
+
+              // Ensure brisk minimum velocity
+              [t1, t2].forEach((t) => {
+                const currentSpeed = Math.sqrt(t.vx * t.vx + t.vy * t.vy);
+                if (currentSpeed < 0.55 && currentSpeed > 0) {
+                  const factor = 0.65 / currentSpeed;
+                  t.vx *= factor;
+                  t.vy *= factor;
+                }
+              });
+
+              // Cycle service tags on collision impact
+              [i, j].forEach((idx) => {
+                const t = state[idx];
+                t.serviceIndex = (t.serviceIndex + 1) % (t.services ? t.services.length : 1);
+                const tagEl = tagsRef.current[idx];
+                if (tagEl) {
+                  tagEl.textContent = t.services ? t.services[t.serviceIndex] : t.tag;
+                  tagEl.classList.remove('tag-bounce-pop');
+                  void tagEl.offsetWidth;
+                  tagEl.classList.add('tag-bounce-pop');
+                }
+              });
+            }
           }
         }
       }
