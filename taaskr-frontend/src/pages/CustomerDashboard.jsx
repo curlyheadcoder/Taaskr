@@ -137,6 +137,8 @@ export default function CustomerDashboard({ initialTab }) {
         return <span className="badge badge-assigned"><span className="badge-dot" /> Assigned</span>;
       case 'ACCEPTED':
         return <span className="badge badge-accepted"><span className="badge-dot" /> Accepted</span>;
+      case 'IN_TRANSIT':
+        return <span className="badge badge-inprogress"><span className="badge-dot" /> In-Transit</span>;
       case 'IN_PROGRESS':
         return <span className="badge badge-inprogress"><span className="badge-dot" /> In Progress</span>;
       case 'COMPLETED':

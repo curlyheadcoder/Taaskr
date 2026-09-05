@@ -5,6 +5,7 @@
 export const sortBookingsByStatusPriority = (bookings = []) => {
   const getPriority = (status) => {
     switch (status) {
+      case 'IN_TRANSIT':
       case 'IN_PROGRESS':
         return 1;
       case 'PENDING':

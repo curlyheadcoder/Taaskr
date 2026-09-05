@@ -5,6 +5,8 @@ import { formatLocalTime } from '../utils/time';
 import { sortBookingsByStatusPriority } from '../utils/sorting';
 import Pagination from '../components/Pagination';
 import PaymentRestrictionModal from '../components/PaymentRestrictionModal';
+import CollectCashModal from '../components/CollectCashModal';
+import RejectTaskModal from '../components/RejectTaskModal';
 import { 
   Truck, MapPin, Package, Navigation, CheckCircle2, ShieldCheck, 
   Clock, Check, X, AlertCircle, Plus, Trash2, Edit2, Phone, Mail, 
@@ -24,11 +26,22 @@ export default function ProviderDashboard() {
   // Pagination states
   const [tasksPage, setTasksPage] = useState(1);
   const [bookingsPage, setBookingsPage] = useState(1);
+  const [inTransitPage, setInTransitPage] = useState(1);
+  const [completedPage, setCompletedPage] = useState(1);
   const itemsPerPage = 5;
 
-  // Payment Restriction Modal state
+  // Modals state
   const [paymentRestrictedBooking, setPaymentRestrictedBooking] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+  const [collectCashBooking, setCollectCashBooking] = useState(null);
+  const [showCollectCashModal, setShowCollectCashModal] = useState(false);
+
+  const [rejectingBooking, setRejectingBooking] = useState(null);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+
+  const [actionLoadingId, setActionLoadingId] = useState(null);
+  const [modalSubmitting, setModalSubmitting] = useState(false);
 
   // Active Tab state for desktop/mobile views
   const [activeTab, setActiveTab] = useState('tasks');
@@ -73,8 +86,8 @@ export default function ProviderDashboard() {
     setTimeout(() => setNotification(null), 4000);
   };
 
-  const loadProviderDashboard = async () => {
-    setLoading(true);
+  const loadProviderDashboard = async (isInitial = false) => {
+    if (isInitial) setLoading(true);
     setErrorMessage('');
     try {
       const user = await api.provider.getProfile();
@@ -119,15 +132,19 @@ export default function ProviderDashboard() {
       console.error('Failed to load provider dashboard:', err);
       setErrorMessage(err.message || 'Error loading dashboard data from backend.');
     } finally {
-      setLoading(false);
+      if (isInitial) setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadProviderDashboard();
+    loadProviderDashboard(true);
   }, []);
 
   const isProviderVerified = Boolean(userProfile?.emailVerified && userProfile?.phoneVerified);
+
+  // Filtered booking collections for tabs
+  const inTransitBookings = assignedBookings.filter(b => b.status === 'IN_TRANSIT' || b.status === 'IN_PROGRESS');
+  const completedBookings = assignedBookings.filter(b => b.status === 'COMPLETED');
 
   const handleAddAvailability = async (e) => {
     e.preventDefault();
@@ -165,12 +182,15 @@ export default function ProviderDashboard() {
       showNotification('Please verify both your email and phone number before accepting jobs.', 'error');
       return;
     }
+    setActionLoadingId(bookingId);
     try {
       await api.provider.acceptBooking(bookingId);
       showNotification('Job accepted.');
-      loadProviderDashboard();
+      await loadProviderDashboard(false);
     } catch (err) {
       showNotification(`Action failed: ${err.message}`, 'error');
+    } finally {
+      setActionLoadingId(null);
     }
   };
 
@@ -179,63 +199,104 @@ export default function ProviderDashboard() {
       showNotification('Please verify both your email and phone number before claiming tasks.', 'error');
       return;
     }
+    setActionLoadingId(bookingId);
     try {
       await api.provider.claimTask(bookingId);
       showNotification('Task claimed successfully. It is now listed under My Bookings.');
-      loadProviderDashboard();
+      await loadProviderDashboard(false);
     } catch (err) {
       showNotification(`Claim failed: ${err.message}`, 'error');
+    } finally {
+      setActionLoadingId(null);
     }
   };
 
-  const handleRejectJob = async (bookingId) => {
-    if (!window.confirm('Are you sure you want to reject this job?')) return;
+  // Open custom modal instead of browser confirm
+  const handleRejectClick = (job) => {
+    setRejectingBooking(job);
+    setShowRejectModal(true);
+  };
+
+  const handleConfirmReject = async (bookingId) => {
+    setModalSubmitting(true);
     try {
       await api.provider.rejectBooking(bookingId);
-      showNotification('Job rejected.');
-      loadProviderDashboard();
+      showNotification('Job rejected and returned to dispatch pool.');
+      setShowRejectModal(false);
+      setRejectingBooking(null);
+      await loadProviderDashboard(false);
     } catch (err) {
       showNotification(`Action failed: ${err.message}`, 'error');
+    } finally {
+      setModalSubmitting(false);
     }
   };
 
-  const handleStatusUpdate = async (bookingId, newStatus) => {
+  const handleStartInTransit = async (bookingId) => {
     if (!isProviderVerified) {
       showNotification('Please verify both your email and phone number before updating task status.', 'error');
       return;
     }
+    setActionLoadingId(bookingId);
     try {
-      await api.provider.updateStatus(bookingId, newStatus);
-      showNotification(`Status updated to ${newStatus}.`);
-      loadProviderDashboard();
+      await api.provider.updateStatus(bookingId, 'IN_TRANSIT');
+      showNotification('Task status updated to In-Transit.');
+      await loadProviderDashboard(false);
     } catch (err) {
       showNotification(`Action failed: ${err.message}`, 'error');
+    } finally {
+      setActionLoadingId(null);
     }
   };
 
-  const handleCollectCash = async (jobOrId) => {
-    const job = typeof jobOrId === 'object' ? jobOrId : assignedBookings.find(b => b.id === jobOrId);
-    
-    // If work is not completed, pop up the payment restriction modal directly!
+  const handleMarkCompleted = async (bookingId) => {
+    if (!isProviderVerified) {
+      showNotification('Please verify both your email and phone number before updating task status.', 'error');
+      return;
+    }
+    setActionLoadingId(bookingId);
+    try {
+      await api.provider.updateStatus(bookingId, 'COMPLETED');
+      showNotification('Task marked as Completed. You can now collect cash if payment is pending.');
+      await loadProviderDashboard(false);
+    } catch (err) {
+      showNotification(`Action failed: ${err.message}`, 'error');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleCollectCashClick = (job) => {
+    // If work is not completed, show the payment restriction modal
     if (job && job.status !== 'COMPLETED') {
       setPaymentRestrictedBooking(job);
       setShowPaymentModal(true);
       return;
     }
 
-    const bookingId = job ? job.id : jobOrId;
-    if (!window.confirm('Confirm that you have collected the cash payment from the customer?')) return;
+    // Otherwise open the proper Collect Cash modal
+    setCollectCashBooking(job);
+    setShowCollectCashModal(true);
+  };
+
+  const handleConfirmCollectCash = async (bookingId) => {
+    setModalSubmitting(true);
     try {
       await api.provider.markAfterServicePaymentReceived(bookingId);
       showNotification('Cash payment recorded successfully.');
-      loadProviderDashboard();
+      setShowCollectCashModal(false);
+      setCollectCashBooking(null);
+      await loadProviderDashboard(false);
     } catch (err) {
       if (err.message && (err.message.includes('completed') || err.message.includes('done') || err.message.includes('status'))) {
-        setPaymentRestrictedBooking(job || { id: bookingId, status: 'IN_PROGRESS' });
+        setShowCollectCashModal(false);
+        setPaymentRestrictedBooking(collectCashBooking || { id: bookingId, status: 'IN_PROGRESS' });
         setShowPaymentModal(true);
       } else {
         showNotification(`Failed to record payment: ${err.message}`, 'error');
       }
+    } finally {
+      setModalSubmitting(false);
     }
   };
 
@@ -243,8 +304,14 @@ export default function ProviderDashboard() {
     if (!booking) return;
     try {
       await api.provider.updateStatus(booking.id, 'COMPLETED');
-      showNotification(`Job #${String(booking.id).slice(-6)} marked as COMPLETED. You can now collect payment.`);
-      loadProviderDashboard();
+      showNotification(`Job #${String(booking.id).slice(-6)} marked as COMPLETED.`);
+      await loadProviderDashboard(false);
+      
+      // Auto open collect cash modal if it is after service cash
+      if (booking.paymentMethod === 'AFTER_SERVICE' && booking.paymentStatus !== 'PAID') {
+        setCollectCashBooking({ ...booking, status: 'COMPLETED' });
+        setShowCollectCashModal(true);
+      }
     } catch (err) {
       showNotification(`Failed to complete job: ${err.message}`, 'error');
     }
@@ -282,7 +349,7 @@ export default function ProviderDashboard() {
         bio: editBio
       });
       showNotification('Profile updated successfully.');
-      loadProviderDashboard();
+      loadProviderDashboard(false);
     } catch (err) {
       showNotification(`Failed to update profile: ${err.message}`, 'error');
     } finally {
@@ -380,6 +447,178 @@ export default function ProviderDashboard() {
     window.open(`https://www.google.com/maps/dir/?api=1&destination=${dest}`, '_blank');
   };
 
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'COMPLETED':
+        return <span className="badge badge-completed"><span className="badge-dot" /> COMPLETED</span>;
+      case 'IN_TRANSIT':
+        return <span className="badge badge-inprogress"><span className="badge-dot" /> IN-TRANSIT</span>;
+      case 'IN_PROGRESS':
+        return <span className="badge badge-inprogress"><span className="badge-dot" /> IN PROGRESS</span>;
+      case 'ACCEPTED':
+        return <span className="badge badge-accepted"><span className="badge-dot" /> ACCEPTED</span>;
+      case 'ASSIGNED':
+        return <span className="badge badge-assigned"><span className="badge-dot" /> ASSIGNED</span>;
+      case 'CANCELLED':
+      case 'REJECTED':
+        return <span className="badge badge-cancelled"><span className="badge-dot" /> {status}</span>;
+      default:
+        return <span className="badge badge-pending">{status}</span>;
+    }
+  };
+
+  // Reusable booking card component
+  const renderJobCard = (job) => {
+    const isActionLoading = actionLoadingId === job.id;
+
+    return (
+      <div key={job.id} className="panel" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                {job.dropAddress && <Truck size={15} color="var(--primary)" />}
+                <h3 style={{ color: 'var(--text-main)', fontSize: '0.975rem', fontWeight: 600, margin: 0 }}>
+                  {job.serviceName}
+                </h3>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                  #{String(job.id).slice(-6)}
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.35rem', flexWrap: 'wrap' }}>
+                {getStatusBadge(job.status)}
+                <span className={`badge ${job.paymentStatus === 'PAID' ? 'badge-completed' : 'badge-pending'}`}>
+                  {job.paymentStatus === 'PAID' ? 'Payment Completed' : 'Payment Pending'}
+                </span>
+              </div>
+            </div>
+
+            <div style={{ textAlign: 'right' }}>
+              <span style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '1.15rem', fontFeatureSettings: 'tnum' }}>
+                ₹{job.finalAmount}
+              </span>
+              <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
+                {job.paymentMethod === 'AFTER_SERVICE' ? 'Cash on Delivery' : 'Online Gateway'}
+              </div>
+            </div>
+          </div>
+
+          {/* Customer & Location details */}
+          <div style={{ background: 'var(--bg-subtle)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', margin: '0.75rem 0' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div style={{ fontSize: '0.8125rem', color: 'var(--text-main)' }}>
+                Customer: <strong>{job.customerName || 'Customer'}</strong> • <span>{job.customerPhone || 'No Phone'}</span>
+              </div>
+              <button
+                onClick={() => openCustomerDirections(job)}
+                className="btn btn-secondary btn-sm"
+                style={{ fontSize: '0.75rem', padding: '0.2rem 0.45rem' }}
+              >
+                <Navigation size={12} />
+                <span>Get Directions</span>
+              </button>
+            </div>
+
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              Address: <span style={{ color: 'var(--text-main)' }}>{job.address}, {job.city} - {job.pincode}</span>
+            </div>
+
+            {job.dropAddress && (
+              <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ fontSize: '0.75rem' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Drop-off: </span>
+                  <strong style={{ color: 'var(--text-main)' }}>{job.dropAddress}, {job.dropCity}</strong>
+                </div>
+                <button
+                  onClick={() => openDropDirections(job)}
+                  className="btn btn-secondary btn-sm"
+                  style={{ fontSize: '0.75rem', padding: '0.15rem 0.4rem' }}
+                >
+                  <Navigation size={12} />
+                  <span>Drop Route</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Action Bar */}
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)' }}>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              Date: <strong>{job.bookingDate} at {formatLocalTime(job.startTime)}</strong>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              {/* ASSIGNED status actions: Accept or Reject */}
+              {job.status === 'ASSIGNED' && (
+                <>
+                  <button 
+                    onClick={() => handleAcceptJob(job.id)} 
+                    className="btn btn-primary btn-sm"
+                    disabled={isActionLoading}
+                  >
+                    {isActionLoading ? 'Accepting...' : 'Accept Job'}
+                  </button>
+                  <button 
+                    onClick={() => handleRejectClick(job)} 
+                    className="btn btn-danger btn-sm"
+                    disabled={isActionLoading}
+                  >
+                    Reject
+                  </button>
+                </>
+              )}
+
+              {/* ACCEPTED status actions: Start In-Transit */}
+              {job.status === 'ACCEPTED' && (
+                <button 
+                  onClick={() => handleStartInTransit(job.id)} 
+                  className="btn btn-primary btn-sm"
+                  disabled={isActionLoading}
+                >
+                  {isActionLoading ? 'Updating...' : 'In-Transit'}
+                </button>
+              )}
+
+              {/* IN_TRANSIT or IN_PROGRESS status actions: Mark as Completed */}
+              {(job.status === 'IN_TRANSIT' || job.status === 'IN_PROGRESS') && (
+                <button 
+                  onClick={() => handleMarkCompleted(job.id)} 
+                  className="btn btn-success btn-sm"
+                  disabled={isActionLoading}
+                >
+                  {isActionLoading ? 'Completing...' : 'Mark as Completed'}
+                </button>
+              )}
+
+              {/* COMPLETED status actions: Collect Cash if Cash on Delivery & Pending */}
+              {job.status === 'COMPLETED' && job.paymentMethod === 'AFTER_SERVICE' && job.paymentStatus !== 'PAID' && (
+                <button 
+                  onClick={() => handleCollectCashClick(job)} 
+                  className="btn btn-success btn-sm"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                >
+                  <DollarSign size={14} />
+                  <span>Collect Cash</span>
+                </button>
+              )}
+
+              {/* COMPLETED with Paid */}
+              {job.status === 'COMPLETED' && job.paymentStatus === 'PAID' && (
+                <span className="badge badge-completed" style={{ fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <Check size={12} />
+                  <span>Paid</span>
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="enterprise-layout">
@@ -440,6 +679,22 @@ export default function ProviderDashboard() {
           >
             <Briefcase size={16} />
             <span>My Bookings ({assignedBookings.length})</span>
+          </button>
+
+          <button 
+            className={`sidebar-item ${activeTab === 'in-transit' ? 'active' : ''}`}
+            onClick={() => setActiveTab('in-transit')}
+          >
+            <Navigation size={16} />
+            <span>In-Transit ({inTransitBookings.length})</span>
+          </button>
+
+          <button 
+            className={`sidebar-item ${activeTab === 'completed' ? 'active' : ''}`}
+            onClick={() => setActiveTab('completed')}
+          >
+            <CheckCircle2 size={16} />
+            <span>Completed ({completedBookings.length})</span>
           </button>
 
           {isLogisticsPartner && (
@@ -570,7 +825,7 @@ export default function ProviderDashboard() {
             <h1>Partner Console</h1>
             <p>Live job dispatch, fleet status, and schedule management.</p>
           </div>
-          <button onClick={loadProviderDashboard} className="btn btn-secondary btn-sm">
+          <button onClick={() => loadProviderDashboard(false)} className="btn btn-secondary btn-sm">
             <RefreshCw size={13} />
             <span>Refresh Data</span>
           </button>
@@ -665,8 +920,13 @@ export default function ProviderDashboard() {
                               ₹{job.finalAmount}
                             </span>
                             <div>
-                              <button onClick={() => handleClaimTask(job.id)} className="btn btn-primary btn-sm" style={{ marginTop: '0.25rem' }}>
-                                Claim Job
+                              <button 
+                                onClick={() => handleClaimTask(job.id)} 
+                                className="btn btn-primary btn-sm" 
+                                style={{ marginTop: '0.25rem' }}
+                                disabled={actionLoadingId === job.id}
+                              >
+                                {actionLoadingId === job.id ? 'Claiming...' : 'Claim Job'}
                               </button>
                             </div>
                           </div>
@@ -713,7 +973,7 @@ export default function ProviderDashboard() {
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 2: MY BOOKINGS (Assigned Tasks)                                       */}
+        {/* TAB 2: MY BOOKINGS (All Assigned Tasks)                                   */}
         {/* ========================================================================= */}
         {activeTab === 'bookings' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -737,121 +997,7 @@ export default function ProviderDashboard() {
             ) : (
               <div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1rem' }}>
-                  {assignedBookings.slice((bookingsPage - 1) * itemsPerPage, bookingsPage * itemsPerPage).map((job) => (
-                    <div key={job.id} className="panel" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
-                          <div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                              {job.dropAddress && <Truck size={15} color="var(--primary)" />}
-                              <h3 style={{ color: 'var(--text-main)', fontSize: '0.975rem', fontWeight: 600, margin: 0 }}>
-                                {job.serviceName}
-                              </h3>
-                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                                #{String(job.id).slice(-6)}
-                              </span>
-                            </div>
-
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.35rem', flexWrap: 'wrap' }}>
-                              <span className={`badge ${job.status === 'COMPLETED' ? 'badge-completed' : job.status === 'IN_PROGRESS' ? 'badge-inprogress' : 'badge-assigned'}`}>
-                                {job.status}
-                              </span>
-                              <span className={`badge ${job.paymentStatus === 'PAID' ? 'badge-completed' : 'badge-pending'}`}>
-                                {job.paymentStatus === 'PAID' ? 'Payment Completed' : 'Payment Pending'}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div style={{ textAlign: 'right' }}>
-                            <span style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '1.15rem', fontFeatureSettings: 'tnum' }}>
-                              ₹{job.finalAmount}
-                            </span>
-                            <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
-                              {job.paymentMethod === 'AFTER_SERVICE' ? 'Cash on Delivery' : 'Online Gateway'}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Customer & Location details */}
-                        <div style={{ background: 'var(--bg-subtle)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', margin: '0.75rem 0' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                            <div style={{ fontSize: '0.8125rem', color: 'var(--text-main)' }}>
-                              Customer: <strong>{job.customerName || 'Customer'}</strong> • <span>{job.customerPhone || 'No Phone'}</span>
-                            </div>
-                            <button
-                              onClick={() => openCustomerDirections(job)}
-                              className="btn btn-secondary btn-sm"
-                              style={{ fontSize: '0.75rem', padding: '0.2rem 0.45rem' }}
-                            >
-                              <Navigation size={12} />
-                              <span>Get Directions</span>
-                            </button>
-                          </div>
-
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                            Address: <span style={{ color: 'var(--text-main)' }}>{job.address}, {job.city} - {job.pincode}</span>
-                          </div>
-
-                          {job.dropAddress && (
-                            <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <div style={{ fontSize: '0.75rem' }}>
-                                <span style={{ color: 'var(--text-muted)' }}>Drop-off: </span>
-                                <strong style={{ color: 'var(--text-main)' }}>{job.dropAddress}, {job.dropCity}</strong>
-                              </div>
-                              <button
-                                onClick={() => openDropDirections(job)}
-                                className="btn btn-secondary btn-sm"
-                                style={{ fontSize: '0.75rem', padding: '0.15rem 0.4rem' }}
-                              >
-                                <Navigation size={12} />
-                                <span>Drop Route</span>
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Action Bar */}
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)' }}>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                            Date: <strong>{job.bookingDate} at {formatLocalTime(job.startTime)}</strong>
-                          </div>
-
-                          <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-                            {job.status === 'ASSIGNED' && (
-                              <>
-                                <button onClick={() => handleAcceptJob(job.id)} className="btn btn-primary btn-sm">
-                                  Accept Job
-                                </button>
-                                <button onClick={() => handleRejectJob(job.id)} className="btn btn-danger btn-sm">
-                                  Reject
-                                </button>
-                              </>
-                            )}
-
-                            {job.status === 'ACCEPTED' && (
-                              <button onClick={() => handleStatusUpdate(job.id, 'IN_PROGRESS')} className="btn btn-primary btn-sm">
-                                Start Service / Transit
-                              </button>
-                            )}
-
-                            {job.status === 'IN_PROGRESS' && (
-                              <button onClick={() => handleStatusUpdate(job.id, 'COMPLETED')} className="btn btn-success btn-sm">
-                                Mark as Completed
-                              </button>
-                            )}
-
-                            {job.paymentStatus === 'PENDING' && job.paymentMethod === 'AFTER_SERVICE' && (
-                              <button onClick={() => handleCollectCash(job)} className="btn btn-secondary btn-sm" style={{ color: 'var(--success)' }}>
-                                Collect Cash
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                  {assignedBookings.slice((bookingsPage - 1) * itemsPerPage, bookingsPage * itemsPerPage).map(renderJobCard)}
                 </div>
                 <Pagination
                   currentPage={bookingsPage}
@@ -865,7 +1011,93 @@ export default function ProviderDashboard() {
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 3: FLEET MANAGER (Logistics Vehicles)                                 */}
+        {/* TAB 3: IN-TRANSIT TASKS                                                   */}
+        {/* ========================================================================= */}
+        {activeTab === 'in-transit' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>
+                  In-Transit & Ongoing Jobs
+                </h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.2rem' }}>
+                  Tasks currently in progress or on the road. Mark them as completed when work is finished.
+                </p>
+              </div>
+              <span className="badge badge-inprogress">{inTransitBookings.length} Active</span>
+            </div>
+
+            {inTransitBookings.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-state-icon">
+                  <Navigation size={20} />
+                </div>
+                <h3 className="empty-state-title">No tasks in-transit</h3>
+                <p className="empty-state-description">
+                  You currently have no tasks marked as In-Transit. Accept an assigned task and click "In-Transit" to begin.
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1rem' }}>
+                  {inTransitBookings.slice((inTransitPage - 1) * itemsPerPage, inTransitPage * itemsPerPage).map(renderJobCard)}
+                </div>
+                <Pagination
+                  currentPage={inTransitPage}
+                  totalItems={inTransitBookings.length}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={setInTransitPage}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB 4: COMPLETED TASKS                                                    */}
+        {/* ========================================================================= */}
+        {activeTab === 'completed' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>
+                  Completed Bookings & Trip History
+                </h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.2rem' }}>
+                  Review your completed jobs and collect outstanding cash payments.
+                </p>
+              </div>
+              <span className="badge badge-completed">{completedBookings.length} Completed</span>
+            </div>
+
+            {completedBookings.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-state-icon">
+                  <CheckCircle2 size={20} />
+                </div>
+                <h3 className="empty-state-title">No completed bookings yet</h3>
+                <p className="empty-state-description">
+                  Tasks you complete will be archived here for record keeping and cash collection.
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1rem' }}>
+                  {completedBookings.slice((completedPage - 1) * itemsPerPage, completedPage * itemsPerPage).map(renderJobCard)}
+                </div>
+                <Pagination
+                  currentPage={completedPage}
+                  totalItems={completedBookings.length}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={setCompletedPage}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB 5: FLEET MANAGER (Logistics Vehicles)                                 */}
         {/* ========================================================================= */}
         {activeTab === 'fleet' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -1042,7 +1274,7 @@ export default function ProviderDashboard() {
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 4: SCHEDULE & AVAILABILITY SLOTS                                      */}
+        {/* TAB 6: SCHEDULE & AVAILABILITY SLOTS                                      */}
         {/* ========================================================================= */}
         {activeTab === 'schedule' && (
           <div className="grid-cols-2" style={{ gap: '1.5rem', alignItems: 'flex-start' }}>
@@ -1141,7 +1373,7 @@ export default function ProviderDashboard() {
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 5: PROFILE & CATEGORY SETTINGS                                        */}
+        {/* TAB 7: PROFILE & CATEGORY SETTINGS                                        */}
         {/* ========================================================================= */}
         {activeTab === 'profile' && (
           <div className="grid-cols-2" style={{ gap: '1.5rem', alignItems: 'flex-start' }}>
@@ -1266,14 +1498,31 @@ export default function ProviderDashboard() {
         )}
       </main>
 
-      {/* Pop-up Modal for Payment Collection Restriction */}
+      {/* Pop-up Modal for Payment Collection Restriction (When attempting before work completion) */}
       <PaymentRestrictionModal
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
         booking={paymentRestrictedBooking}
         onCompleteJob={handleCompleteJobFromModal}
       />
+
+      {/* Pop-up Modal for Collect Cash Confirmation */}
+      <CollectCashModal
+        isOpen={showCollectCashModal}
+        onClose={() => setShowCollectCashModal(false)}
+        booking={collectCashBooking}
+        onConfirm={handleConfirmCollectCash}
+        loading={modalSubmitting}
+      />
+
+      {/* Pop-up Modal for Reject Task Confirmation */}
+      <RejectTaskModal
+        isOpen={showRejectModal}
+        onClose={() => setShowRejectModal(false)}
+        booking={rejectingBooking}
+        onConfirm={handleConfirmReject}
+        loading={modalSubmitting}
+      />
     </div>
   );
 }
-

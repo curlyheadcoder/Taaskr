@@ -133,7 +133,7 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
     private int getStatusPriority(BookingStatus status) {
         if (status == null) return 2;
         return switch (status) {
-            case IN_PROGRESS -> 1;
+            case IN_PROGRESS, IN_TRANSIT -> 1;
             case PENDING, ASSIGNED, ACCEPTED -> 2;
             case COMPLETED -> 3;
             case CANCELLED, REJECTED -> 4;
@@ -286,10 +286,16 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
     }
 
     private boolean isValidTransition(BookingStatus current, BookingStatus target){
-        if(current == BookingStatus.ACCEPTED && target == BookingStatus.IN_PROGRESS){
+        if(current == BookingStatus.ACCEPTED && (target == BookingStatus.IN_PROGRESS || target == BookingStatus.IN_TRANSIT)){
             return true;
         }
-        return current == BookingStatus.IN_PROGRESS && target == BookingStatus.COMPLETED;
+        if((current == BookingStatus.IN_PROGRESS || current == BookingStatus.IN_TRANSIT) && target == BookingStatus.COMPLETED){
+            return true;
+        }
+        if(current == BookingStatus.ACCEPTED && target == BookingStatus.COMPLETED){
+            return true;
+        }
+        return false;
     }
 
     private ProviderProfile getApprovedProviderByEmail(String providerEmail) {

@@ -450,7 +450,7 @@ public class BookingServiceImpl implements BookingService {
 
                     long workload = bookingRepository.countByProviderIdAndStatusIn(
                             provider.getId(),
-                            List.of(BookingStatus.ASSIGNED, BookingStatus.ACCEPTED, BookingStatus.IN_PROGRESS)
+                            List.of(BookingStatus.ASSIGNED, BookingStatus.ACCEPTED, BookingStatus.IN_PROGRESS, BookingStatus.IN_TRANSIT)
                     );
 
                     return new ProviderCandidate(provider, slot, workload);
