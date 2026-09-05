@@ -215,6 +215,278 @@ const canonicalizeServiceName = (rawName) => {
 
 
 
+const CANONICAL_CATEGORIES = [
+  { 
+    id: 'appliances_electrical', 
+    name: 'Appliances & Electrical',
+    matcher: (cName, sName) => {
+      const s = (sName || '').toLowerCase();
+      if (s.includes('switch') || s.includes('wire') || s.includes('mcb') || s.includes('fan') || 
+          s.includes('ac ') || s.includes('air condition') || s.includes('ro ') || s.includes('purifier') || 
+          s.includes('geyser') || s.includes('water heater') || s.includes('inverter') || 
+          s.includes('microwave') || s.includes('refrigerator') || s.includes('washing machine')) {
+        return true;
+      }
+      const c = (cName || '').toLowerCase();
+      return (c.includes('appliance') || c.includes('electric')) && 
+             !s.includes('tap') && !s.includes('pipe') && !s.includes('drain') && !s.includes('clean');
+    }
+  },
+  { 
+    id: 'plumbing_cleaning', 
+    name: 'Plumbing & Cleaning',
+    matcher: (cName, sName) => {
+      const s = (sName || '').toLowerCase();
+      // Strictly prevent electrical items from matching here
+      if (s.includes('switch') || s.includes('wire') || s.includes('mcb') || s.includes('fan') || 
+          s.includes('ac ') || s.includes('air condition') || s.includes('ro ') || s.includes('purifier') || 
+          s.includes('geyser') || s.includes('inverter') || s.includes('microwave') || 
+          s.includes('refrigerator') || s.includes('washing machine')) {
+        return false;
+      }
+      if (s.includes('tap') || s.includes('pipe') || s.includes('drain') || s.includes('leak') || 
+          s.includes('bathroom') || s.includes('clean') || s.includes('sofa') || s.includes('carpet') || s.includes('chimney')) {
+        return true;
+      }
+      const c = (cName || '').toLowerCase();
+      return (c.includes('plumb') || c.includes('clean')) && !c.includes('pest');
+    }
+  },
+  { 
+    id: 'pest_control', 
+    name: 'Pest Control',
+    matcher: (cName, sName) => {
+      const s = (sName || '').toLowerCase();
+      if (s.includes('pest') || s.includes('cockroach') || s.includes('termite') || 
+          s.includes('bed bug') || s.includes('mosquito') || s.includes('insect')) {
+        return true;
+      }
+      const c = (cName || '').toLowerCase();
+      return c.includes('pest');
+    }
+  },
+  { 
+    id: 'salon_wellness', 
+    name: 'Salon & Massage / Wellness',
+    matcher: (cName, sName) => {
+      const s = (sName || '').toLowerCase();
+      if (s.includes('haircut') || s.includes('beard') || s.includes('spa') || s.includes('grooming') || 
+          s.includes('facial') || s.includes('manicure') || s.includes('pedicure') || s.includes('waxing') || 
+          s.includes('makeup') || s.includes('bridal') || s.includes('massage') || s.includes('therapy')) {
+        return true;
+      }
+      const c = (cName || '').toLowerCase();
+      return c.includes('salon') || c.includes('massage') || c.includes('wellness') || c.includes('beauty');
+    }
+  },
+  { 
+    id: 'civil_maintenance', 
+    name: 'Civil & Property Maintenance',
+    matcher: (cName, sName) => {
+      const s = (sName || '').toLowerCase();
+      if (s.includes('carpenter') || s.includes('carpentry') || s.includes('woodwork') || 
+          s.includes('furniture assembly') || s.includes('drilling') || s.includes('hanging') || 
+          s.includes('painting') || s.includes('mason') || s.includes('waterproof') || 
+          s.includes('tiling') || s.includes('flooring') || s.includes('roof') || s.includes('renovat')) {
+        return true;
+      }
+      const c = (cName || '').toLowerCase();
+      return c.includes('civil') || c.includes('property');
+    }
+  },
+  { 
+    id: 'tech_automation', 
+    name: 'Tech & Home Automation',
+    matcher: (cName, sName) => {
+      const s = (sName || '').toLowerCase();
+      if (s.includes('laptop') || s.includes('pc ') || s.includes('computer') || s.includes('wi-fi') || 
+          s.includes('router') || s.includes('mesh') || s.includes('smart tv') || s.includes('printer')) {
+        return true;
+      }
+      const c = (cName || '').toLowerCase();
+      return c.includes('tech') || c.includes('automation');
+    }
+  },
+  { 
+    id: 'vehicle_autocare', 
+    name: 'Vehicle & Auto Care',
+    matcher: (cName, sName) => {
+      const s = (sName || '').toLowerCase();
+      if (s.includes('car foam') || s.includes('bike foam') || s.includes('detailing') || 
+          s.includes('car wash') || s.includes('bike wash') || s.includes('jump start') || s.includes('battery jump')) {
+        return true;
+      }
+      const c = (cName || '').toLowerCase();
+      return c.includes('auto') || (c.includes('vehicle') && !c.includes('on-demand vehicle'));
+    }
+  },
+  { 
+    id: 'home_help', 
+    name: 'Home Help & Errand Services',
+    matcher: (cName, sName) => {
+      const s = (sName || '').toLowerCase();
+      if (s.includes('maid') || s.includes('domestic helper') || s.includes('cook') || s.includes('chef') || 
+          s.includes('laundry') || s.includes('steam ironing') || s.includes('medicine') || s.includes('grocery') || 
+          s.includes('queue') || s.includes('errand')) {
+        return true;
+      }
+      const c = (cName || '').toLowerCase();
+      return c.includes('home help') || c.includes('errand');
+    }
+  },
+  { 
+    id: 'security_services', 
+    name: 'Security Services',
+    matcher: (cName, sName) => {
+      const s = (sName || '').toLowerCase();
+      if (s.includes('cctv') || s.includes('smart lock') || s.includes('security guard') || s.includes('guard') || 
+          s.includes('doorbell') || s.includes('camera') || s.includes('surveillance')) {
+        return true;
+      }
+      const c = (cName || '').toLowerCase();
+      return c.includes('security');
+    }
+  },
+  { 
+    id: 'diagnostic_healthcare', 
+    name: 'Diagnostic & Healthcare Services',
+    matcher: (cName, sName) => {
+      const s = (sName || '').toLowerCase();
+      if (s.includes('blood') || s.includes('doctor') || s.includes('nurse') || s.includes('compounder') || 
+          s.includes('sample') || s.includes('checkup') || s.includes('diagnostic') || s.includes('phlebotomy') || 
+          s.includes('elderly assistance') || s.includes('hospital escort')) {
+        return true;
+      }
+      const c = (cName || '').toLowerCase();
+      return c.includes('diagnostic') || c.includes('health');
+    }
+  },
+  { 
+    id: 'logistics', 
+    name: 'Logistics',
+    matcher: (cName, sName) => {
+      const s = (sName || '').toLowerCase();
+      if (s.includes('truck') || s.includes('tempo') || s.includes('courier') || s.includes('cargo') || 
+          s.includes('transport') || s.includes('moving') || s.includes('shifting') || s.includes('furniture moving') || 
+          s.includes('electric bike') || s.includes('petrol bike') || s.includes('rickshaw')) {
+        return true;
+      }
+      const c = (cName || '').toLowerCase();
+      return c.includes('logistics') || c.includes('on-demand vehicle');
+    }
+  }
+];
+
+const mapServiceToCanonical = (service, rawCategories = []) => {
+  if (!service) return null;
+  const canonicalName = canonicalizeServiceName(service.name);
+  if (!canonicalName) return null;
+
+  const rawCat = (rawCategories || []).find(c => c && c.id === service.categoryId);
+  const catName = rawCat?.name || service.categoryName || '';
+
+  const serviceWithCanonicalName = {
+    ...service,
+    name: canonicalName
+  };
+  
+  for (const canon of CANONICAL_CATEGORIES) {
+    if (canon.matcher(catName, canonicalName)) {
+      return {
+        ...serviceWithCanonicalName,
+        canonicalCategoryId: canon.id,
+        canonicalCategoryName: canon.name
+      };
+    }
+  }
+
+  return {
+    ...serviceWithCanonicalName,
+    canonicalCategoryId: 'appliances_electrical',
+    canonicalCategoryName: 'Appliances & Electrical'
+  };
+};
+
+const DEFAULT_SERVICES = [
+  // Appliances & Electrical
+  { id: 1, name: 'AC Repair & Service', description: 'Comprehensive diagnostics, coil cleaning, and cooling optimization.', price: 699, pricingType: 'FIXED', categoryId: 1, active: true },
+  { id: 2, name: 'RO Water Purifier Service', description: 'Filter replacement, membrane inspection, and complete purification check.', price: 499, pricingType: 'FIXED', categoryId: 1, active: true },
+  { id: 3, name: 'Switchboard & Wiring Repair', description: 'Quick inspection and repair of loose wiring, burnt sockets, and tripped breakers.', price: 349, pricingType: 'FIXED', categoryId: 1, active: true },
+  { id: 4, name: 'Ceiling & Exhaust Fan Repair', description: 'Bearing replacement, speed regulator setup, and quiet motor tuning.', price: 299, pricingType: 'FIXED', categoryId: 1, active: true },
+  { id: 5, name: 'Geyser & Water Heater Servicing', description: 'Element descaling, thermostat inspection, and leak repairs for storage/instant geysers.', price: 449, pricingType: 'FIXED', categoryId: 1, active: true },
+  { id: 6, name: 'Inverter & Battery Servicing', description: 'Battery distilled water top-up, terminal desulfation, and inverter load testing.', price: 349, pricingType: 'FIXED', categoryId: 1, active: true },
+  { id: 7, name: 'Microwave & OTG Repair', description: 'Magnetron check, high-voltage fuse change, and rotating plate motor repair.', price: 399, pricingType: 'FIXED', categoryId: 1, active: true },
+  { id: 8, name: 'Refrigerator Repair', description: 'Compressor troubleshooting, gas charge, and cooling thermostat repair.', price: 599, pricingType: 'FIXED', categoryId: 1, active: true },
+  { id: 9, name: 'Washing Machine Repair', description: 'Drum balance, drain pump, motor belt, and PCB diagnostic.', price: 599, pricingType: 'FIXED', categoryId: 1, active: true },
+
+  // Plumbing & Cleaning
+  { id: 10, name: 'Tap Leakage & Valve Repair', description: 'Fix dripping faucets, replace internal washers, and ensure seamless water pressure.', price: 299, pricingType: 'FIXED', categoryId: 3, active: true },
+  { id: 11, name: 'Pipe Leakage Fix', description: 'Detect and repair concealed or open pipe leakages.', price: 499, pricingType: 'FIXED', categoryId: 3, active: true },
+  { id: 12, name: 'Drain Blockage & Clog Clearance', description: 'Mechanical spring clearing for clogged kitchen sinks, washbasins, and bathroom drain traps.', price: 399, pricingType: 'FIXED', categoryId: 3, active: true },
+  { id: 13, name: 'Kitchen Deep Cleaning & Chimney Degreasing', description: 'Thorough degreasing of chimney filters, gas stove scrub, and kitchen oil stain removal.', price: 799, pricingType: 'FIXED', categoryId: 3, active: true },
+  { id: 14, name: 'Sofa & Carpet Shampooing', description: 'High-suction wet extraction shampooing for fabric sofas, cushions, and floor carpets.', price: 699, pricingType: 'FIXED', categoryId: 3, active: true },
+  { id: 15, name: 'Bathroom Deep Cleaning & Sanitization', description: 'Deep tile scrub, lime stain removal, and sanitaryware disinfection.', price: 399, pricingType: 'FIXED', categoryId: 3, active: true },
+  { id: 16, name: 'Full Home Cleaning', description: 'Complete multi-room deep cleaning, floor scrubbing, and dusting.', price: 1499, pricingType: 'FIXED', categoryId: 3, active: true },
+
+  // Pest Control
+  { id: 17, name: 'General Pest & Cockroach Control', description: 'Odorless herbal gel baiting and spray targeting cockroaches, ants, and silverfish with 90-day warranty.', price: 899, pricingType: 'FIXED', categoryId: 16, active: true },
+  { id: 18, name: 'Termite & Wood Borer Treatment', description: 'Chemical barrier drill-and-fill treatment protecting wooden structures against subterranean termites.', price: 1899, pricingType: 'FIXED', categoryId: 16, active: true },
+  { id: 19, name: 'Bed Bug Eradication Treatment', description: 'Two-round high-potency chemical spray treatment targeting mattress seams and sofa crevices.', price: 1199, pricingType: 'FIXED', categoryId: 16, active: true },
+  { id: 20, name: 'Mosquito & Flying Insect Control', description: 'Cold-fogging and residual wall misting to eliminate adult mosquitoes and larvae.', price: 799, pricingType: 'FIXED', categoryId: 16, active: true },
+
+  // Salon & Massage / Wellness (Unisex)
+  { id: 21, name: "Men's Haircut & Beard Styling", description: 'Doorstep hygienic haircut, beard trimming, styling, and disposable kit protocol.', price: 349, pricingType: 'FIXED', categoryId: 6, active: true },
+  { id: 22, name: "Women's Haircut & Hair Spa", description: 'Professional precision haircut, deep conditioning hair spa, and blowout styling at home.', price: 699, pricingType: 'FIXED', categoryId: 6, active: true },
+  { id: 23, name: 'At-Home Manicure & Pedicure', description: 'Relaxing cuticle care, scrub, foot massage, and polish using sterile tools.', price: 599, pricingType: 'FIXED', categoryId: 6, active: true },
+  { id: 24, name: 'Full Arms & Legs Waxing', description: 'Hygienic RICA / honey waxing with post-wax soothing lotion application.', price: 499, pricingType: 'FIXED', categoryId: 6, active: true },
+  { id: 25, name: 'Bridal & Party Makeup at Home', description: 'HD glam and party makeover by certified makeup artists using premium cosmetics.', price: 1499, pricingType: 'FIXED', categoryId: 6, active: true },
+  { id: 26, name: 'At-Home Facial & Skin Glow', description: 'Deep pore cleansing, tan removal scrub, steam, and herbal face pack for all skin types.', price: 799, pricingType: 'FIXED', categoryId: 6, active: true },
+  { id: 27, name: 'Head, Neck & Shoulder Massage', description: 'Stress-relief acupressure therapy using soothing warm herbal oils.', price: 499, pricingType: 'FIXED', categoryId: 6, active: true },
+  { id: 28, name: 'Full Body Stress Relief Therapy', description: 'Rejuvenating full body Swedish / Ayurvedic oil massage by certified wellness therapists.', price: 1299, pricingType: 'FIXED', categoryId: 6, active: true },
+
+  // Civil & Property Maintenance
+  { id: 29, name: 'Carpentry & Furniture Repair', description: 'Fixing misaligned cabinet hinges, drawer channels, hydraulic bed lifts, and wooden doors.', price: 399, pricingType: 'FIXED', categoryId: 2, active: true },
+  { id: 30, name: 'Furniture Assembly & Flatpack Setup', description: 'Assembly of flatpack wardrobes, beds, TV units, and study desks from IKEA/Amazon/Pepperfry.', price: 499, pricingType: 'FIXED', categoryId: 2, active: true },
+  { id: 31, name: 'Drilling, Hanging & Wall Mounting', description: 'Precision hammer-drilling for wall art, mirrors, curtain rods, and bathroom towel racks.', price: 249, pricingType: 'FIXED', categoryId: 2, active: true },
+  { id: 32, name: 'Interior Wall Painting & Touch-up', description: 'Putty filling, primer, and premium acrylic emulsion roller painting for rooms or accent walls.', price: 1499, pricingType: 'FIXED', categoryId: 2, active: true },
+
+  // Tech & Home Automation
+  { id: 33, name: 'Laptop & PC Diagnostics / OS Setup', description: 'RAM/SSD upgrades, OS installation, virus cleanup, and thermal paste replacement.', price: 499, pricingType: 'FIXED', categoryId: 33, active: true },
+  { id: 34, name: 'Wi-Fi Router & Mesh Network Setup', description: 'High-speed fiber router installation, dead zone mesh repeater config, and security tuning.', price: 399, pricingType: 'FIXED', categoryId: 33, active: true },
+  { id: 35, name: 'Smart TV & Home Theater Wall Setup', description: 'Wall bracket mounting for 32-75 inch Smart TVs, soundbar setup, and cable concealment.', price: 599, pricingType: 'FIXED', categoryId: 33, active: true },
+  { id: 36, name: 'Printer Setup & Troubleshooting', description: 'Driver installation, wireless network printing setup, and paper feed troubleshooting.', price: 349, pricingType: 'FIXED', categoryId: 33, active: true },
+
+  // Vehicle & Auto Care
+  { id: 37, name: 'Doorstep Eco Car Foam Wash & Vacuum', description: 'Pressure foam wash, tire shine, and interior carpet/seat high-suction vacuuming at your parking spot.', price: 499, pricingType: 'FIXED', categoryId: 37, active: true },
+  { id: 38, name: 'Doorstep Bike Foam Wash & Chain Lube', description: 'Two-wheeler pressure foam wash, degreasing, and synthetic chain lubrication.', price: 249, pricingType: 'FIXED', categoryId: 37, active: true },
+  { id: 39, name: 'Deep Car Interior Detailing & Polishing', description: 'Fabric shampooing, leather conditioning, dashboard polish, and AC vent steam sanitization.', price: 1199, pricingType: 'FIXED', categoryId: 37, active: true },
+  { id: 40, name: 'Car Battery Jump Start Assistance', description: '15-minute emergency roadside/home jumper cable restart and battery alternator check.', price: 349, pricingType: 'FIXED', categoryId: 37, active: true },
+
+  // Home Help & Errand Services
+  { id: 41, name: 'Daily Domestic Helper / Maid on Demand', description: 'Verified on-demand helper for sweeping, mopping, utensil cleaning, and kitchen surface wipe-down.', price: 399, pricingType: 'FIXED', categoryId: 41, active: true },
+  { id: 42, name: 'Home Chef & Daily Cook on Demand', description: 'Freshly prepared home-style vegetarian / non-vegetarian meals cooked at your kitchen.', price: 499, pricingType: 'FIXED', categoryId: 41, active: true },
+  { id: 43, name: 'Doorstep Laundry & Steam Ironing', description: 'Clothes wash, gentle fabric dry, and crisp wrinkle-free steam press pickup & drop.', price: 299, pricingType: 'FIXED', categoryId: 41, active: true },
+  { id: 44, name: 'Urgent Medicine & Prescription Delivery', description: 'Fast doorstep pickup of emergency medications from authorized local pharmacies.', price: 149, pricingType: 'FIXED', categoryId: 41, active: true },
+  { id: 45, name: 'Local Grocery & Market Pickup Delivery', description: 'Handpicked vegetables, fruits, and groceries purchased and delivered from nearby markets.', price: 199, pricingType: 'FIXED', categoryId: 41, active: true },
+  { id: 46, name: 'Personal Errand & Queue Assistance', description: 'On-demand assistant for document submission, standing in billing queues, and municipal errands.', price: 249, pricingType: 'FIXED', categoryId: 41, active: true },
+
+  // Security Services
+  { id: 47, name: 'CCTV Installation & Setup', description: 'HD camera mounting, DVR configuration, and mobile live-view setup.', price: 1199, pricingType: 'FIXED', categoryId: 7, active: true },
+  { id: 48, name: 'Smart Lock Installation', description: 'Install and set up a biometric fingerprint and digital keypad smart lock.', price: 799, pricingType: 'FIXED', categoryId: 7, active: true },
+  { id: 49, name: 'Security Guard Service', description: 'Professional, verified security guard shift for residential societies and commercial premises.', price: 1499, pricingType: 'FIXED', categoryId: 7, active: true },
+
+  // Diagnostic & Healthcare Services
+  { id: 50, name: 'Blood Test & Sample Collection', description: 'Hygienic at-home phlebotomy with certified NABL accredited lab processing.', price: 499, pricingType: 'FIXED', categoryId: 4, active: true },
+  { id: 51, name: 'Full Body Health Checkup', description: 'Comprehensive full body preventive health screening covering 60+ vital parameters.', price: 1999, pricingType: 'FIXED', categoryId: 4, active: true },
+  { id: 52, name: 'Compounder on Call', description: 'Healthcare assistance for basic patient care, IV infusion, dressing, and prescribed medication support.', price: 599, pricingType: 'FIXED', categoryId: 4, active: true },
+  { id: 53, name: 'Elderly Assistance & Hospital Escort', description: 'Companion escort for senior citizens to doctor appointments, mobility aid, and clinic visits.', price: 799, pricingType: 'FIXED', categoryId: 4, active: true },
+
+  // Logistics
+  { id: 54, name: 'Mini Truck Goods Transport', description: 'Reliable intra-city tempo transport for furniture, equipment, and shifting.', price: 250, pricingType: 'PER_KM', categoryId: 5, active: true },
+  { id: 55, name: 'Electric Bike Express Courier', description: 'Fast eco-friendly two-wheeler for small parcels and urgent documents.', price: 40, pricingType: 'PER_KM', categoryId: 5, active: true },
+  { id: 56, name: 'Heavy Truck Commercial Freight', description: 'Heavy-duty commercial vehicle for heavy machinery and bulk items.', price: 1200, pricingType: 'PER_KM', categoryId: 5, active: true }
+];
+
 // Helper to strictly sanitize and deduplicate catalog items
 const cleanAndDeduplicateCatalog = (servicesList) => {
   if (!Array.isArray(servicesList)) return [];
