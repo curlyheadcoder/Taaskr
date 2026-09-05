@@ -820,9 +820,30 @@ body:not(.dark) .hero-section {
   font-size: clamp(2.4rem, 4.2vw, 3.6rem);
   font-weight: 800;
   color: var(--text-main);
-  line-height: 1.1;
+  line-height: 1.15;
   margin-bottom: 1.25rem;
   letter-spacing: -0.035em;
+  position: relative;
+  z-index: 10;
+}
+
+.hero-gradient-text {
+  display: inline-block;
+  font-weight: 800;
+  color: var(--primary);
+  background-image: var(--hero-gradient, linear-gradient(135deg, #0284C7 0%, #2563EB 100%));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: color 0.6s ease, filter 0.6s ease;
+}
+
+body.dark .hero-gradient-text {
+  filter: drop-shadow(0 2px 14px rgba(56, 189, 248, 0.35));
+}
+
+body:not(.dark) .hero-gradient-text {
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.05));
 }
 
 .hero-desc {
@@ -831,6 +852,8 @@ body:not(.dark) .hero-section {
   margin-bottom: 2.25rem;
   line-height: 1.6;
   max-width: 520px;
+  position: relative;
+  z-index: 10;
 }
 
 .hero-pill-tag {
@@ -1645,7 +1668,7 @@ body.dark .service-card:hover {
   inset: 0;
   overflow: hidden;
   pointer-events: none;
-  z-index: 2;
+  z-index: 1;
 }
 
 .hero-physics-tile {
@@ -1667,13 +1690,15 @@ body.dark .service-card:hover {
   will-change: transform;
   backdrop-filter: blur(10px);
   transition: border-color 0.4s ease, box-shadow 0.4s ease, opacity 0.3s ease, transform 0.2s ease;
-  opacity: 0.45;
+  opacity: 0.32;
+  z-index: 1;
   user-select: none;
 }
 
-[data-theme='light'] .hero-physics-tile {
-  opacity: 0.38;
-  background: rgba(255, 255, 255, 0.9);
+[data-theme='light'] .hero-physics-tile,
+body:not(.dark) .hero-physics-tile {
+  opacity: 0.26;
+  background: rgba(255, 255, 255, 0.88);
 }
 
 .hero-physics-tile:hover {

@@ -555,10 +555,10 @@ const BOUNCING_PHYSICS_CATEGORIES = [
     color: '#F43F5E',
     glow: 'rgba(244, 63, 94, 0.4)',
     accentBg: 'linear-gradient(135deg, #F43F5E 0%, #BE123C 100%)',
-    startX: 0.12,
-    startY: 0.18,
-    vx: 0.28,
-    vy: 0.22
+    startX: 0.05,
+    startY: 0.08,
+    vx: 0.24,
+    vy: 0.20
   },
   {
     id: 'appliances_electrical',
@@ -568,10 +568,10 @@ const BOUNCING_PHYSICS_CATEGORIES = [
     color: '#F59E0B',
     glow: 'rgba(245, 158, 11, 0.4)',
     accentBg: 'linear-gradient(135deg, #F59E0B 0%, #EA580C 100%)',
-    startX: 0.68,
-    startY: 0.22,
-    vx: -0.24,
-    vy: 0.30
+    startX: 0.82,
+    startY: 0.12,
+    vx: -0.22,
+    vy: 0.26
   },
   {
     id: 'logistics',
@@ -581,10 +581,10 @@ const BOUNCING_PHYSICS_CATEGORIES = [
     color: '#3B82F6',
     glow: 'rgba(59, 130, 246, 0.4)',
     accentBg: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
-    startX: 0.25,
-    startY: 0.65,
-    vx: 0.32,
-    vy: -0.26
+    startX: 0.06,
+    startY: 0.78,
+    vx: 0.26,
+    vy: -0.20
   },
   {
     id: 'salon_wellness',
@@ -594,10 +594,10 @@ const BOUNCING_PHYSICS_CATEGORIES = [
     color: '#A855F7',
     glow: 'rgba(168, 85, 247, 0.4)',
     accentBg: 'linear-gradient(135deg, #A855F7 0%, #EC4899 100%)',
-    startX: 0.78,
-    startY: 0.68,
-    vx: -0.26,
-    vy: -0.22
+    startX: 0.84,
+    startY: 0.76,
+    vx: -0.22,
+    vy: -0.24
   },
   {
     id: 'plumbing_cleaning',
@@ -607,10 +607,10 @@ const BOUNCING_PHYSICS_CATEGORIES = [
     color: '#06B6D4',
     glow: 'rgba(6, 182, 212, 0.4)',
     accentBg: 'linear-gradient(135deg, #06B6D4 0%, #0D9488 100%)',
-    startX: 0.45,
-    startY: 0.12,
-    vx: -0.20,
-    vy: 0.26
+    startX: 0.42,
+    startY: 0.04,
+    vx: -0.18,
+    vy: 0.22
   },
   {
     id: 'civil_maintenance',
@@ -620,10 +620,10 @@ const BOUNCING_PHYSICS_CATEGORIES = [
     color: '#F97316',
     glow: 'rgba(249, 115, 22, 0.4)',
     accentBg: 'linear-gradient(135deg, #F97316 0%, #C2410C 100%)',
-    startX: 0.55,
-    startY: 0.75,
-    vx: 0.22,
-    vy: -0.28
+    startX: 0.54,
+    startY: 0.86,
+    vx: 0.20,
+    vy: -0.24
   }
 ];
 
@@ -672,6 +672,7 @@ function BouncingHeroPhysics({ onWallHit, onSelectCategory }) {
       const maxY = Math.max(10, rect.height - tileHeight);
       const now = performance.now();
 
+      // 1. Move and check wall bounces
       state.forEach((tile, index) => {
         tile.x += tile.vx;
         tile.y += tile.vy;
@@ -712,6 +713,40 @@ function BouncingHeroPhysics({ onWallHit, onSelectCategory }) {
           }
         }
       });
+
+      // 2. Tile-to-Tile Collision Avoidance (prevent overlapping)
+      const numTiles = state.length;
+      for (let i = 0; i < numTiles; i++) {
+        for (let j = i + 1; j < numTiles; j++) {
+          const t1 = state[i];
+          const t2 = state[j];
+          const dx = (t2.x + tileWidth / 2) - (t1.x + tileWidth / 2);
+          const dy = (t2.y + tileHeight / 2) - (t1.y + tileHeight / 2);
+          const distSq = dx * dx + dy * dy;
+          const minDist = 185; // safe distance between tile centers
+          if (distSq < minDist * minDist && distSq > 0) {
+            const dist = Math.sqrt(distSq);
+            const nx = dx / dist;
+            const ny = dy / dist;
+
+            // Simple elastic separation
+            const overlap = (minDist - dist) * 0.5;
+            t1.x -= nx * overlap;
+            t1.y -= ny * overlap;
+            t2.x += nx * overlap;
+            t2.y += ny * overlap;
+
+            // Reflect velocities along normal
+            const kx = t1.vx - t2.vx;
+            const ky = t1.vy - t2.vy;
+            const p = 2 * (nx * kx + ny * ky) / 2;
+            t1.vx -= p * nx * 0.5;
+            t1.vy -= p * ny * 0.5;
+            t2.vx += p * nx * 0.5;
+            t2.vy += p * ny * 0.5;
+          }
+        }
+      }
 
       animId = requestAnimationFrame(step);
     };
@@ -796,7 +831,7 @@ export default function Home() {
     setAmbientHeroColor({
       primary: tile.color,
       glow: tile.glow,
-      gradient: `linear-gradient(135deg, ${tile.color} 0%, #38bdf8 100%)`,
+      gradient: `linear-gradient(135deg, ${tile.color} 0%, #2563EB 50%, #0284C7 100%)`,
       orb1: `radial-gradient(circle, ${tile.glow} 0%, transparent 70%)`,
       orb2: `radial-gradient(circle, ${tile.glow} 0%, transparent 70%)`,
       badgeColor: tile.color
@@ -2147,13 +2182,16 @@ const EXACT_SERVICE_IMAGES = {
 
           <h1 className="hero-title" style={{ maxWidth: '820px', margin: '0 auto 1.25rem auto' }}>
             On-Demand Services.<br />
-            <span style={{
-              background: ambientHeroColor.gradient,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              display: 'inline-block',
-              transition: 'all 1.8s cubic-bezier(0.4, 0, 0.2, 1)'
-            }}>
+            <span
+              className="hero-gradient-text"
+              style={{
+                backgroundImage: ambientHeroColor.gradient || 'linear-gradient(135deg, #0284C7 0%, #2563EB 100%)',
+                color: ambientHeroColor.badgeColor || 'var(--primary)',
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}
+            >
               Engineered for Speed.
             </span>
           </h1>

@@ -6,14 +6,12 @@ import {
   MapPin, Search, ChevronDown, Bot, Navigation, X, Check, ArrowRight, Command, AlertCircle
 } from 'lucide-react';
 
-const POPULAR_LOCATIONS = [
-  { city: 'Indore', pincode: '452001', area: 'Vijay Nagar & Palasia' },
-  { city: 'Bhopal', pincode: '462001', area: 'MP Nagar & Arera' },
-  { city: 'Mumbai', pincode: '400001', area: 'South Mumbai & Andheri' },
-  { city: 'Delhi', pincode: '110001', area: 'Connaught Place & South Ext' },
-  { city: 'Bengaluru', pincode: '560001', area: 'Koramangala & Indiranagar' },
-  { city: 'Pune', pincode: '411001', area: 'Kothrud & Hinjewadi' },
-  { city: 'Hyderabad', pincode: '500001', area: 'Banjara Hills & Hitech' }
+const ACTIVE_CITY = { city: 'Indore', area: 'Indore Metro (All Service Zones)', status: 'ACTIVE' };
+const COMING_SOON_CITIES = [
+  { city: 'Bhopal', area: 'MP Nagar & Arera Colony' },
+  { city: 'Ujjain', area: 'Freeganj & Mahakal Zone' },
+  { city: 'Gwalior', area: 'City Centre & Lashkar' },
+  { city: 'Jabalpur', area: 'Wright Town & Civil Lines' }
 ];
 
 export default function Navbar() {
@@ -24,17 +22,15 @@ export default function Navbar() {
 
   // Location Selector State
   const [locationOpen, setLocationOpen] = useState(false);
+  const [locationToast, setLocationToast] = useState('');
   const [currentLocation, setCurrentLocation] = useState(() => {
     try {
       const saved = localStorage.getItem('taaskr_location');
-      return saved ? JSON.parse(saved) : { city: 'Select Location', pincode: '', area: 'All Service Zones' };
+      return saved ? JSON.parse(saved) : ACTIVE_CITY;
     } catch (e) {
-      return { city: 'Select Location', pincode: '', area: 'All Service Zones' };
+      return ACTIVE_CITY;
     }
   });
-  const [customCity, setCustomCity] = useState('');
-  const [customPincode, setCustomPincode] = useState('');
-  const [locDetecting, setLocDetecting] = useState(false);
   const locationDropdownRef = useRef(null);
 
   // Global Search State
@@ -56,7 +52,7 @@ export default function Navbar() {
     }
   }, [isDark]);
 
-  // Keyboard shortcut (Ctrl+K / Cmd+K / /) to focus search
+  // Keyboard shortcut (Ctrl+K / Cmd+K) to focus search
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
@@ -105,7 +101,7 @@ export default function Navbar() {
       const fullText = `${sName} ${catName} ${sDesc}`;
       return qTokens.every(token => fullText.includes(token));
     });
-    setSearchResults(results.slice(0, 6));
+    setSearchResults(results.slice(0, 8));
   }, [searchQuery, allServices, categories]);
 
   // Close dropdowns on outside click
@@ -166,54 +162,11 @@ export default function Navbar() {
     setLocationOpen(false);
   };
 
-  const handleApplyCustomLocation = (e) => {
-    e.preventDefault();
-    if (!customCity.trim()) return;
-    const loc = {
-      city: customCity.trim(),
-      pincode: customPincode.trim() || '452001',
-      area: `${customCity.trim()} Area`
-    };
-    handleSelectLocation(loc);
-    setCustomCity('');
-    setCustomPincode('');
-  };
-
-  const handleDetectLocation = () => {
-    if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser.');
-      return;
-    }
-    setLocDetecting(true);
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`);
-          const data = await res.json();
-          const addr = data.address || {};
-          const city = addr.city || addr.town || addr.state_district || addr.state || 'Indore';
-          const pincode = addr.postcode || '452001';
-          const area = addr.suburb || addr.neighbourhood || addr.road || `${city} Central`;
-          handleSelectLocation({ city, pincode, area });
-        } catch (e) {
-          handleSelectLocation({ city: 'Indore', pincode: '452001', area: 'Current Location' });
-        } finally {
-          setLocDetecting(false);
-        }
-      },
-      () => {
-        alert('Could not detect location. Please select a city manually.');
-        setLocDetecting(false);
-      }
-    );
-  };
-
-  const handleTriggerTaaskyWithPrompt = (promptText) => {
-    setSearchOpen(false);
-    setSearchQuery('');
-    window.dispatchEvent(new CustomEvent('open_taasky_with_prompt', { detail: { prompt: promptText } }));
+  const handleComingSoonClick = (cityName) => {
+    setLocationToast(`Launching soon in ${cityName}! Currently serving all Indore zones.`);
+    setTimeout(() => {
+      setLocationToast('');
+    }, 3500);
   };
 
   const isCustomerView = !user || user.role === 'USER';
@@ -265,12 +218,12 @@ export default function Navbar() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.4rem',
-                padding: '0.35rem 0.65rem',
+                padding: '0.35rem 0.75rem',
                 borderRadius: '8px',
                 border: '1px solid var(--border-light)',
                 backgroundColor: locationOpen ? 'var(--icon-container)' : 'var(--bg-card)',
                 color: 'var(--text-main)',
-                fontSize: '0.8rem',
+                fontSize: '0.82rem',
                 fontWeight: 600,
                 cursor: 'pointer',
                 transition: 'var(--transition-fast)'
@@ -278,7 +231,7 @@ export default function Navbar() {
             >
               <MapPin size={14} color="var(--primary)" />
               <span style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {currentLocation.pincode ? `${currentLocation.city} • ${currentLocation.pincode}` : (currentLocation.city || 'Select Location')}
+                {currentLocation.city || 'Indore'}
               </span>
               <ChevronDown size={13} style={{ opacity: 0.7, transform: locationOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
             </button>
@@ -289,18 +242,18 @@ export default function Navbar() {
                 position: 'absolute',
                 top: 'calc(100% + 8px)',
                 left: 0,
-                width: '300px',
+                width: '320px',
                 backgroundColor: 'var(--bg-card)',
                 border: '1px solid var(--border-light)',
-                borderRadius: '12px',
-                boxShadow: 'var(--shadow-lg)',
-                padding: '0.85rem',
+                borderRadius: '14px',
+                boxShadow: 'var(--shadow-xl)',
+                padding: '1rem',
                 zIndex: 100,
                 animation: 'fadeIn 0.15s ease'
               }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                   <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                    Select Service City
+                    Service Locations
                   </span>
                   <button 
                     onClick={() => setLocationOpen(false)}
@@ -310,107 +263,111 @@ export default function Navbar() {
                   </button>
                 </div>
 
-                {/* GPS Auto Detect */}
-                <button
-                  type="button"
-                  onClick={handleDetectLocation}
-                  disabled={locDetecting}
-                  style={{
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.45rem',
-                    padding: '0.5rem',
-                    marginBottom: '0.75rem',
+                {locationToast && (
+                  <div style={{
+                    padding: '0.45rem 0.65rem',
                     borderRadius: '8px',
-                    border: '1px dashed var(--primary)',
-                    backgroundColor: 'var(--primary-subtle)',
-                    color: 'var(--primary)',
+                    backgroundColor: 'rgba(245, 158, 11, 0.12)',
+                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                    color: '#D97706',
+                    fontSize: '0.75rem',
                     fontWeight: 600,
-                    fontSize: '0.8rem',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <Navigation size={14} className={locDetecting ? 'animate-spin' : ''} />
-                  <span>{locDetecting ? 'Detecting Location...' : 'Use Current GPS Location'}</span>
-                </button>
+                    marginBottom: '0.75rem',
+                    lineHeight: 1.35
+                  }}>
+                    {locationToast}
+                  </div>
+                )}
 
-                {/* Popular Cities List */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', maxHeight: '180px', overflowY: 'auto', marginBottom: '0.75rem' }}>
-                  {POPULAR_LOCATIONS.map((loc) => {
-                    const isSelected = currentLocation.city.toLowerCase() === loc.city.toLowerCase();
-                    return (
-                      <button
-                        key={loc.city}
-                        onClick={() => handleSelectLocation(loc)}
+                {/* Active Operating City: Indore */}
+                <div style={{ marginBottom: '1rem' }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.35rem', textTransform: 'uppercase' }}>
+                    Currently Live
+                  </div>
+                  <button
+                    onClick={() => handleSelectLocation(ACTIVE_CITY)}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '0.65rem 0.8rem',
+                      borderRadius: '10px',
+                      border: '1.5px solid var(--primary)',
+                      background: 'var(--primary-subtle)',
+                      color: 'var(--text-main)',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                        <span>Indore</span>
+                        <span style={{
+                          fontSize: '0.65rem',
+                          padding: '0.1rem 0.45rem',
+                          borderRadius: '999px',
+                          backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                          color: '#10B981',
+                          fontWeight: 700
+                        }}>
+                          ● Active Hub
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
+                        Live Dispatch across all Metro Zones
+                      </div>
+                    </div>
+                    <Check size={16} color="var(--primary)" />
+                  </button>
+                </div>
+
+                {/* Coming Soon Cities: Bhopal, Ujjain, Gwalior, Jabalpur */}
+                <div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.45rem', textTransform: 'uppercase' }}>
+                    Expanding Soon
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                    {COMING_SOON_CITIES.map((item) => (
+                      <div
+                        key={item.city}
+                        onClick={() => handleComingSoonClick(item.city)}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
-                          padding: '0.45rem 0.6rem',
-                          borderRadius: '6px',
-                          border: 'none',
-                          background: isSelected ? 'var(--icon-container)' : 'transparent',
-                          color: isSelected ? 'var(--secondary-accent)' : 'var(--text-main)',
-                          textAlign: 'left',
+                          padding: '0.5rem 0.75rem',
+                          borderRadius: '8px',
+                          border: '1px solid var(--border-light)',
+                          backgroundColor: 'var(--bg-subtle)',
                           cursor: 'pointer',
-                          fontSize: '0.8rem',
                           transition: 'background 0.15s'
                         }}
                       >
                         <div>
-                          <div style={{ fontWeight: 600 }}>{loc.city} <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>({loc.pincode})</span></div>
-                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{loc.area}</div>
+                          <div style={{ fontWeight: 600, fontSize: '0.8rem', color: 'var(--text-main)' }}>
+                            {item.city}
+                          </div>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
+                            {item.area}
+                          </div>
                         </div>
-                        {isSelected && <Check size={14} color="var(--primary)" />}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Custom Input */}
-                <form onSubmit={handleApplyCustomLocation} style={{ borderTop: '1px solid var(--border-light)', paddingTop: '0.65rem' }}>
-                  <div style={{ display: 'flex', gap: '0.4rem' }}>
-                    <input
-                      type="text"
-                      placeholder="Other City"
-                      value={customCity}
-                      onChange={(e) => setCustomCity(e.target.value)}
-                      style={{
-                        flex: 2,
-                        padding: '0.4rem 0.6rem',
-                        fontSize: '0.78rem',
-                        borderRadius: '6px',
-                        border: '1px solid var(--border-light)',
-                        backgroundColor: 'var(--bg-subtle)',
-                        color: 'var(--text-main)'
-                      }}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Pincode"
-                      value={customPincode}
-                      onChange={(e) => setCustomPincode(e.target.value)}
-                      style={{
-                        flex: 1,
-                        padding: '0.4rem 0.5rem',
-                        fontSize: '0.78rem',
-                        borderRadius: '6px',
-                        border: '1px solid var(--border-light)',
-                        backgroundColor: 'var(--bg-subtle)',
-                        color: 'var(--text-main)'
-                      }}
-                    />
-                    <button
-                      type="submit"
-                      className="btn btn-primary btn-sm"
-                      style={{ padding: '0.4rem 0.6rem', fontSize: '0.78rem' }}
-                    >
-                      Set
-                    </button>
+                        <span style={{
+                          fontSize: '0.65rem',
+                          fontWeight: 700,
+                          padding: '0.15rem 0.5rem',
+                          borderRadius: '999px',
+                          backgroundColor: 'rgba(245, 158, 11, 0.12)',
+                          color: '#F59E0B',
+                          border: '1px solid rgba(245, 158, 11, 0.25)'
+                        }}>
+                          Coming Soon
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                </form>
+                </div>
               </div>
             )}
           </div>
@@ -418,49 +375,26 @@ export default function Navbar() {
 
         {/* Workspace Navigation Links */}
         <nav style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
-          {isCustomerView && (
-            <>
-              <Link 
-                to="/" 
-                style={{
-                  padding: '0.45rem 0.75rem',
-                  borderRadius: '8px',
-                  fontSize: '0.85rem',
-                  fontWeight: location.pathname === '/' ? 600 : 500,
-                  color: location.pathname === '/' ? 'var(--secondary-accent)' : 'var(--text-secondary)',
-                  backgroundColor: location.pathname === '/' ? 'var(--icon-container)' : 'transparent',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  textDecoration: 'none',
-                  transition: 'var(--transition-fast)'
-                }}
-              >
-                <Grid size={15} />
-                <span>Services</span>
-              </Link>
-              {user && (
-                <Link 
-                  to="/bookings" 
-                  style={{
-                    padding: '0.45rem 0.75rem',
-                    borderRadius: '8px',
-                    fontSize: '0.85rem',
-                    fontWeight: location.pathname === '/bookings' ? 600 : 500,
-                    color: location.pathname === '/bookings' ? 'var(--secondary-accent)' : 'var(--text-secondary)',
-                    backgroundColor: location.pathname === '/bookings' ? 'var(--icon-container)' : 'transparent',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                    textDecoration: 'none',
-                    transition: 'var(--transition-fast)'
-                  }}
-                >
-                  <Calendar size={15} />
-                  <span>My Bookings</span>
-                </Link>
-              )}
-            </>
+          {isCustomerView && user && (
+            <Link 
+              to="/bookings" 
+              style={{
+                padding: '0.45rem 0.75rem',
+                borderRadius: '8px',
+                fontSize: '0.85rem',
+                fontWeight: location.pathname === '/bookings' ? 600 : 500,
+                color: location.pathname === '/bookings' ? 'var(--secondary-accent)' : 'var(--text-secondary)',
+                backgroundColor: location.pathname === '/bookings' ? 'var(--icon-container)' : 'transparent',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                textDecoration: 'none',
+                transition: 'var(--transition-fast)'
+              }}
+            >
+              <Calendar size={15} />
+              <span>My Bookings</span>
+            </Link>
           )}
 
           {user && user.role === 'ADMIN' && (
@@ -487,7 +421,7 @@ export default function Navbar() {
         </nav>
       </div>
 
-      {/* Center Section: Provider Console (Provider View) or Compact Global Service Search (User / Guest Only) */}
+      {/* Center Section: Provider Console (Provider View) or Spacious Global Service Search (User / Guest Only) */}
       {user && user.role === 'PROVIDER' ? (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
           <Link
@@ -510,25 +444,25 @@ export default function Navbar() {
           </Link>
         </div>
       ) : isCustomerView ? (
-        <div ref={searchContainerRef} style={{ position: 'relative', flex: '0 1 240px', maxWidth: '260px' }}>
+        <div ref={searchContainerRef} style={{ position: 'relative', flex: '0 1 320px', maxWidth: '380px' }}>
           <div style={{
             position: 'relative',
             display: 'flex',
             alignItems: 'center',
             backgroundColor: searchOpen ? 'var(--bg-card)' : 'var(--bg-subtle)',
-            borderRadius: '8px',
-            border: searchOpen ? '1px solid var(--primary)' : '1px solid var(--border-light)',
-            boxShadow: searchOpen ? '0 0 0 2px var(--primary-subtle)' : 'none',
-            transition: 'var(--transition-fast)'
+            borderRadius: '999px',
+            border: searchOpen ? '1.5px solid var(--primary)' : '1px solid var(--border-light)',
+            boxShadow: searchOpen ? '0 0 0 3px var(--primary-subtle)' : 'none',
+            transition: 'all 0.2s ease'
           }}>
             <Search 
-              size={13} 
-              style={{ position: 'absolute', left: '0.65rem', color: searchOpen ? 'var(--primary)' : 'var(--text-muted)', pointerEvents: 'none' }} 
+              size={14} 
+              style={{ position: 'absolute', left: '0.85rem', color: searchOpen ? 'var(--primary)' : 'var(--text-muted)', pointerEvents: 'none' }} 
             />
             <input
               ref={searchInputRef}
               type="text"
-              placeholder="Search services..."
+              placeholder="Search services (e.g. AC Repair, Cleaning)..."
               value={searchQuery}
               onFocus={() => setSearchOpen(true)}
               onChange={(e) => {
@@ -540,9 +474,9 @@ export default function Navbar() {
               }}
               style={{
                 width: '100%',
-                padding: '0.35rem 1.75rem 0.35rem 1.9rem',
+                padding: '0.45rem 2rem 0.45rem 2.2rem',
                 fontSize: '0.8125rem',
-                borderRadius: '8px',
+                borderRadius: '999px',
                 border: 'none',
                 backgroundColor: 'transparent',
                 color: 'var(--text-main)',
@@ -559,7 +493,7 @@ export default function Navbar() {
                 }}
                 style={{
                   position: 'absolute',
-                  right: '0.45rem',
+                  right: '0.65rem',
                   background: 'none',
                   border: 'none',
                   color: 'var(--text-muted)',
@@ -569,40 +503,45 @@ export default function Navbar() {
                   alignItems: 'center'
                 }}
               >
-                <X size={13} />
+                <X size={14} />
               </button>
             )}
           </div>
 
-          {/* Search Results Dropdown */}
+          {/* Spacious Responsive Search Results Tile Dropdown */}
           {searchOpen && searchQuery.trim().length > 0 && (
             <div style={{
               position: 'absolute',
-              top: 'calc(100% + 6px)',
-              left: 0,
+              top: 'calc(100% + 8px)',
               right: 0,
+              width: 'min(640px, 92vw)',
               backgroundColor: 'var(--bg-card)',
               border: '1px solid var(--border-light)',
-              borderRadius: '12px',
-              boxShadow: 'var(--shadow-xl)',
-              padding: '0.65rem',
+              borderRadius: '16px',
+              boxShadow: '0 20px 45px rgba(0, 0, 0, 0.25)',
+              padding: '1rem',
               zIndex: 100,
-              maxHeight: '380px',
+              maxHeight: '440px',
               overflowY: 'auto',
               animation: 'fadeIn 0.15s ease'
             }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', paddingBottom: '0.45rem', borderBottom: '1px solid var(--border-light)' }}>
+                <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Matching Services ({searchResults.length})
+                </span>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Click tile to view details</span>
+              </div>
+
               {searchResults.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.2rem 0.4rem' }}>
-                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                      Available Services ({searchResults.length})
-                    </span>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Press ↵ to select</span>
-                  </div>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                  gap: '0.65rem'
+                }}>
                   {searchResults.map((srv) => {
                     const cat = categories.find(c => c.id === srv.categoryId);
                     return (
-                      <button
+                      <div
                         key={srv.id}
                         onClick={() => {
                           setSearchOpen(false);
@@ -611,89 +550,58 @@ export default function Navbar() {
                         style={{
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'space-between',
-                          padding: '0.6rem 0.75rem',
-                          borderRadius: '8px',
-                          border: '1px solid transparent',
+                          gap: '0.75rem',
+                          padding: '0.65rem 0.75rem',
+                          borderRadius: '10px',
+                          border: '1px solid var(--border-light)',
                           backgroundColor: 'var(--bg-subtle)',
-                          color: 'var(--text-main)',
-                          textAlign: 'left',
                           cursor: 'pointer',
-                          transition: 'var(--transition-fast)'
+                          transition: 'all 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.borderColor = 'var(--primary)';
-                          e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                          e.currentTarget.style.transform = 'translateY(-1px)';
+                          e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.08)';
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.borderColor = 'transparent';
-                          e.currentTarget.style.backgroundColor = 'var(--bg-subtle)';
+                          e.currentTarget.style.borderColor = 'var(--border-light)';
+                          e.currentTarget.style.transform = 'none';
+                          e.currentTarget.style.boxShadow = 'none';
                         }}
                       >
-                        <div style={{ flex: 1, minWidth: 0, paddingRight: '0.75rem' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.15rem' }}>
-                            <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{srv.name}</span>
-                            {cat && (
-                              <span style={{
-                                fontSize: '0.68rem',
-                                padding: '0.1rem 0.4rem',
-                                borderRadius: '4px',
-                                backgroundColor: 'var(--icon-container)',
-                                color: 'var(--secondary-accent)',
-                                fontWeight: 600
-                              }}>
-                                {cat.name}
-                              </span>
-                            )}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {srv.name}
                           </div>
-                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {srv.description}
-                          </div>
-                        </div>
-                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                          <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--primary)' }}>
+                          {cat && (
+                            <div style={{
+                              fontSize: '0.68rem',
+                              color: 'var(--secondary-accent)',
+                              fontWeight: 600,
+                              marginTop: '0.1rem'
+                            }}>
+                              {cat.name}
+                            </div>
+                          )}
+                          <div style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--primary)', marginTop: '0.2rem' }}>
                             ₹{srv.basePrice || srv.price}
-                          </span>
+                          </div>
                         </div>
-                      </button>
+                        <ArrowRight size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                      </div>
                     );
                   })}
                 </div>
               ) : (
-                <div style={{ padding: '0.85rem 0.5rem', textAlign: 'center' }}>
-                  <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', margin: '0 0 0.5rem' }}>
-                    No exact services found matching "{searchQuery}"
+                <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                  <p style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.25rem', color: 'var(--text-main)' }}>
+                    No services found matching "{searchQuery}"
+                  </p>
+                  <p style={{ fontSize: '0.75rem' }}>
+                    Try searching for keywords like AC, Cleaning, Plumbing, Electrician, or Shifting.
                   </p>
                 </div>
               )}
-
-              {/* Smart Taasky Recommendation Trigger */}
-              <div style={{ borderTop: '1px solid var(--border-light)', marginTop: '0.5rem', paddingTop: '0.5rem' }}>
-                <button
-                  type="button"
-                  onClick={() => handleTriggerTaaskyWithPrompt(searchQuery)}
-                  style={{
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '0.5rem 0.75rem',
-                    borderRadius: '8px',
-                    border: '1px solid var(--primary)',
-                    backgroundColor: 'var(--primary-subtle)',
-                    color: 'var(--primary)',
-                    fontWeight: 600,
-                    fontSize: '0.8rem',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <Bot size={14} />
-                    <span>Ask Taasky Assistant: "{searchQuery}"</span>
-                  </div>
-                  <ArrowRight size={14} />
-                </button>
-              </div>
             </div>
           )}
         </div>
