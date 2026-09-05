@@ -839,7 +839,6 @@ body.dark .hero-content-glass {
 .hero-title {
   font-size: clamp(2.5rem, 4.5vw, 3.85rem);
   font-weight: 850;
-  color: var(--text-main);
   line-height: 1.15;
   margin-bottom: 1.25rem;
   letter-spacing: -0.035em;
@@ -848,37 +847,41 @@ body.dark .hero-content-glass {
 }
 
 body.dark .hero-title {
-  color: #FFFFFF;
+  color: #FFFFFF !important;
   text-shadow: 0 2px 24px rgba(0, 0, 0, 0.7);
 }
 
 body:not(.dark) .hero-title {
-  color: #0F172A;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
+  color: #0F172A !important;
+  text-shadow: none;
 }
 
 .hero-gradient-text {
   display: inline-block;
   font-weight: 850;
-  color: var(--primary);
-  background-image: var(--hero-gradient, linear-gradient(135deg, #1E40AF 0%, #2563EB 50%, #7C3AED 100%));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
   transition: color 0.6s ease, filter 0.6s ease;
 }
 
 body.dark .hero-gradient-text {
+  background: linear-gradient(135deg, #38BDF8 0%, #818CF8 50%, #C084FC 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #38BDF8;
   filter: drop-shadow(0 2px 18px rgba(56, 189, 248, 0.45));
 }
 
 body:not(.dark) .hero-gradient-text {
-  filter: drop-shadow(0 1px 1px rgba(30, 64, 175, 0.15));
+  background: linear-gradient(135deg, #091E42 0%, #172B4D 35%, #1E40AF 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #0F172A;
+  filter: none !important;
 }
 
 .hero-desc {
   font-size: 1.075rem;
-  font-weight: 500;
   margin-bottom: 2.25rem;
   line-height: 1.65;
   max-width: 660px;
@@ -889,28 +892,61 @@ body:not(.dark) .hero-gradient-text {
 }
 
 body.dark .hero-desc {
-  color: #CBD5E1;
+  color: #E2E8F0 !important;
+  font-weight: 450;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
 body:not(.dark) .hero-desc {
-  color: #334155;
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.6);
+  color: #1E293B !important;
+  font-weight: 550;
+  text-shadow: none;
 }
 
 .hero-pill-tag {
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
-  background: var(--primary-subtle);
-  border: 1px solid var(--border-light);
   border-radius: 9999px;
   padding: 0.35rem 0.95rem;
   margin-bottom: 1.35rem;
-  color: var(--primary);
   font-size: 0.8125rem;
-  font-weight: 700;
+  font-weight: 750;
   letter-spacing: 0.02em;
+}
+
+body.dark .hero-pill-tag {
+  background: var(--primary-subtle);
+  border: 1px solid var(--border-light);
+  color: var(--primary);
+}
+
+body:not(.dark) .hero-pill-tag {
+  background: #EEF2FF;
+  border: 1px solid #C7D2FE;
+  color: #3730A3;
+}
+
+body.dark .hero-highlight-pill {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+body:not(.dark) .hero-highlight-pill {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+body.dark .hero-highlight-text {
+  color: #38BDF8 !important;
+  font-weight: 800;
+}
+
+body:not(.dark) .hero-highlight-text {
+  color: #1D4ED8 !important;
+  font-weight: 800;
 }
 
 .telemetry-card {

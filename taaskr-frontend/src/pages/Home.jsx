@@ -2263,30 +2263,18 @@ const EXACT_SERVICE_IMAGES = {
 
             <h1 className="hero-title" style={{ maxWidth: '820px', margin: '0 auto 1.25rem auto' }}>
               On-Demand Services.<br />
-              <span
-                className="hero-gradient-text"
-                style={{
-                  backgroundImage: ambientHeroColor.gradient || 'linear-gradient(135deg, #1E40AF 0%, #2563EB 50%, #7C3AED 100%)',
-                  color: ambientHeroColor.badgeColor || '#1E40AF',
-                  WebkitBackgroundClip: 'text',
-                  backgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}
-              >
+              <span className="hero-gradient-text">
                 Engineered for Speed.
               </span>
             </h1>
 
           {/* Dynamic Live Cycling Service Highlight Pill */}
-          <div style={{
+          <div className="hero-highlight-pill" style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '0.6rem',
             padding: '0.45rem 1.15rem',
             borderRadius: '999px',
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border-light)',
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)',
             marginBottom: '1.25rem'
           }}>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>
@@ -2294,14 +2282,7 @@ const EXACT_SERVICE_IMAGES = {
             </span>
             <span
               key={highlightIndex}
-              className="animate-fade-in"
-              style={{
-                fontSize: '0.875rem',
-                fontWeight: 700,
-                color: ambientHeroColor.badgeColor || 'var(--primary)',
-                display: 'inline-block',
-                transition: 'color 1.5s ease'
-              }}
+              className="hero-highlight-text animate-fade-in"
             >
               {ROTATING_HIGHLIGHTS[highlightIndex]}?
             </span>
