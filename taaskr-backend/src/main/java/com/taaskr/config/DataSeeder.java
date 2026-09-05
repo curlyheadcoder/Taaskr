@@ -111,26 +111,22 @@ public class DataSeeder {
         ServiceCategory vehicleCategory = seedCategory(categoryRepository, "On-Demand Vehicle", "Intra-city on-demand goods transport and vehicle with driver service.");
 
         // 1. Plumbing & Cleaning
-        seedService(serviceRepository, "Tap Repair", "Fix leaking or damaged taps and replace worn washers", new BigDecimal("299.00"), 60, plumbingCleaning);
+        seedService(serviceRepository, "Tap Leakage & Valve Repair", "Fix leaking or damaged taps and replace worn washers", new BigDecimal("299.00"), 60, plumbingCleaning);
         seedService(serviceRepository, "Pipe Leakage Fix", "Detect and repair concealed or open pipe leakages", new BigDecimal("499.00"), 90, plumbingCleaning);
         seedService(serviceRepository, "Drain Blockage & Clog Clearance", "Mechanical spring clearing for clogged kitchen sinks, washbasins, and bathroom drain traps", new BigDecimal("399.00"), 60, plumbingCleaning);
-        seedService(serviceRepository, "Bathroom Cleaning", "Deep tile scrub, lime stain removal, and sanitaryware disinfection", new BigDecimal("399.00"), 90, plumbingCleaning);
+        seedService(serviceRepository, "Bathroom Deep Cleaning & Sanitization", "Deep tile scrub, lime stain removal, and sanitaryware disinfection", new BigDecimal("399.00"), 90, plumbingCleaning);
         seedService(serviceRepository, "Kitchen Deep Cleaning & Chimney Degreasing", "Thorough degreasing of chimney filters, gas stove scrub, and kitchen oil stain removal", new BigDecimal("799.00"), 120, plumbingCleaning);
         seedService(serviceRepository, "Sofa & Carpet Shampooing", "High-suction wet extraction shampooing for fabric sofas, cushions, and floor carpets", new BigDecimal("699.00"), 90, plumbingCleaning);
         seedService(serviceRepository, "Full Home Cleaning", "Complete multi-room deep cleaning, floor scrubbing, and dusting", new BigDecimal("1499.00"), 240, plumbingCleaning);
         
         // 2. Appliances & Electrical
-        seedService(serviceRepository, "Switch Board Repair", "Repair or replace faulty switch boards, tripped MCBs, and wiring", new BigDecimal("349.00"), 60, appliancesElectrical);
-        seedService(serviceRepository, "Fan Repair", "Ceiling and exhaust fan motor, capacitor, and regulator repair", new BigDecimal("299.00"), 60, appliancesElectrical);
+        seedService(serviceRepository, "Switchboard & Wiring Repair", "Repair or replace faulty switch boards, tripped MCBs, and wiring", new BigDecimal("349.00"), 60, appliancesElectrical);
+        seedService(serviceRepository, "Ceiling & Exhaust Fan Repair", "Ceiling and exhaust fan motor, capacitor, and regulator repair", new BigDecimal("299.00"), 60, appliancesElectrical);
         seedService(serviceRepository, "Geyser & Water Heater Servicing", "Element descaling, thermostat inspection, and leak repairs for storage/instant geysers", new BigDecimal("449.00"), 60, appliancesElectrical);
         seedService(serviceRepository, "Inverter & Battery Servicing", "Battery distilled water top-up, terminal desulfation, and inverter load testing", new BigDecimal("349.00"), 45, appliancesElectrical);
         seedService(serviceRepository, "Microwave & OTG Repair", "Magnetron check, high-voltage fuse change, and rotating plate motor repair", new BigDecimal("399.00"), 60, appliancesElectrical);
-        seedService(serviceRepository, "RO Repair", "Reverse Osmosis water purifier pump and membrane troubleshooting", new BigDecimal("499.00"), 90, appliancesElectrical);
-        seedService(serviceRepository, "RO Installation", "RO water purifier wall mounting and plumbing connection", new BigDecimal("399.00"), 60, appliancesElectrical);
-        seedService(serviceRepository, "RO Maintenance", "Routine RO filter cartridge change and TDS balance check", new BigDecimal("599.00"), 90, appliancesElectrical);
-        seedService(serviceRepository, "AC Repair", "Air conditioner cooling diagnostics, gas leak check, and coil cleaning", new BigDecimal("699.00"), 120, appliancesElectrical);
-        seedService(serviceRepository, "AC Installation", "Air conditioner indoor/outdoor unit bracket mounting and copper piping setup", new BigDecimal("1499.00"), 180, appliancesElectrical);
-        seedService(serviceRepository, "AC Maintenance", "Routine seasonal AC foam wash, filter cleaning, and pressure tuning", new BigDecimal("599.00"), 90, appliancesElectrical);
+        seedService(serviceRepository, "RO Water Purifier Service", "Reverse Osmosis water purifier pump, filter change, and TDS calibration", new BigDecimal("499.00"), 90, appliancesElectrical);
+        seedService(serviceRepository, "AC Repair & Service", "Air conditioner cooling diagnostics, gas leak check, and coil cleaning", new BigDecimal("699.00"), 120, appliancesElectrical);
         seedService(serviceRepository, "Refrigerator Repair", "Single/double door refrigerator cooling, compressor, and defrost repair", new BigDecimal("599.00"), 90, appliancesElectrical);
         seedService(serviceRepository, "Washing Machine Repair", "Automatic/semi-automatic washing machine drum, drain pump, and PCB servicing", new BigDecimal("599.00"), 90, appliancesElectrical);
 
@@ -269,15 +265,19 @@ public class DataSeeder {
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "plumber@taaskr.com", 4.5, 60, 6, "Experienced plumber",
-                serviceRepository, List.of("Tap Repair", "Pipe Leakage Fix"));
+                serviceRepository, List.of("Tap Leakage & Valve Repair", "Pipe Leakage Fix", "Drain Blockage & Clog Clearance"));
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "appliance@taaskr.com", 4.7, 85, 7, "Multi-brand appliance repair expert",
-                serviceRepository, List.of("Refrigerator Repair", "Washing Machine Repair", "RO Repair"));
+                serviceRepository, List.of("Refrigerator Repair", "Washing Machine Repair", "RO Water Purifier Service", "AC Repair & Service", "Switchboard & Wiring Repair"));
+
+        setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
+                "electrician@taaskr.com", 4.8, 95, 8, "Licensed electrician for wiring, switches, and fans",
+                serviceRepository, List.of("Switchboard & Wiring Repair", "Ceiling & Exhaust Fan Repair", "Inverter & Battery Servicing", "Geyser & Water Heater Servicing"));
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "provider@taaskr.com", 4.7, 12, 3, "Experienced home service professional",
-                serviceRepository, List.of("Tap Repair", "Bathroom Cleaning", "Full Home Cleaning"));
+                serviceRepository, List.of("Tap Leakage & Valve Repair", "Bathroom Deep Cleaning & Sanitization", "Full Home Cleaning", "Sofa & Carpet Shampooing"));
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "salon@taaskr.com", 4.9, 150, 7, "Certified unisex salon, bridal makeup, and relaxation therapist",
