@@ -529,7 +529,7 @@ export default function Home() {
     }));
   });
   const [services, setServices] = useState(INITIAL_SERVICES);
-  const [selectedCategory, setSelectedCategory] = useState('appliances_electrical');
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [currentLocation, setCurrentLocation] = useState(() => {
@@ -673,228 +673,211 @@ export default function Home() {
 
   const filteredServices = (services || []).filter(service => {
     if (!service) return false;
-    const matchesCategory = selectedCategory 
-      ? (service.canonicalCategoryId === selectedCategory || service.categoryId === selectedCategory) 
-      : true;
-    const matchesSearch = searchQuery.trim() === '' || doesServiceMatch(service, searchQuery);
-    return matchesCategory && matchesSearch;
+    const hasSearch = searchQuery.trim() !== '';
+    if (hasSearch) {
+      const matchesSearch = doesServiceMatch(service, searchQuery);
+      if (selectedCategory) {
+        const matchesCategory = (service.canonicalCategoryId === selectedCategory || service.categoryId === selectedCategory);
+        return matchesSearch && matchesCategory;
+      }
+      return matchesSearch;
+    }
+    if (!selectedCategory) {
+      return false;
+    }
+    return (service.canonicalCategoryId === selectedCategory || service.categoryId === selectedCategory);
   });
 
   const getCategoryTheme = (categoryIdentifier) => {
-    const key = (categoryIdentifier || '').toLowerCase();
+    const key = (categoryIdentifier || '').toLowerCase().trim();
     
     // 1. Appliances & Electrical
-    if (key.includes('appliances_electrical') || key.includes('electric') || key.includes('appliance') || key.includes('wire') || key.includes('switch') || key.includes('power') || key.includes('fan') || key.includes('ac ') || key.includes('geyser') || key.includes('inverter') || key.includes('microwave') || key.includes('purifier')) {
+    if (key === 'appliances_electrical' || key.includes('appliance') || key.includes('electric') || key.includes('wire') || key.includes('switch') || key.includes('fan') || key.includes('geyser') || key.includes('inverter') || key.includes('microwave') || key.includes('purifier')) {
       return {
-        icon: <Zap size={28} strokeWidth={2.4} />,
+        icon: <Zap size={22} strokeWidth={2} />,
         image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=400&q=80',
-        primary: '#F59E0B',
-        secondary: '#EF4444',
-        tertiary: '#FBBF24',
-        accentBg: 'linear-gradient(135deg, #F59E0B 0%, #EA580C 50%, #EF4444 100%)',
-        shadow1: 'rgba(245, 158, 11, 0.42)',
-        shadow2: 'rgba(239, 68, 68, 0.32)',
-        shadow3: 'rgba(251, 191, 36, 0.28)',
-        glow: 'rgba(245, 158, 11, 0.55)',
-        badgeBg: 'rgba(245, 158, 11, 0.2)',
-        badgeColor: '#FDE047'
+        primary: '#0284C7',
+        color: '#0284C7',
+        iconBg: 'rgba(2, 132, 199, 0.08)',
+        iconColor: '#0284C7',
+        bg: 'rgba(2, 132, 199, 0.08)',
+        shadow1: 'rgba(2, 132, 199, 0.25)',
+        shadow2: 'rgba(2, 132, 199, 0.15)',
+        shadow3: 'rgba(2, 132, 199, 0.1)'
       };
     }
 
     // 2. Plumbing & Cleaning
-    if ((key.includes('plumbing_cleaning') || key.includes('plumb') || key.includes('clean') || key.includes('water') || key.includes('pipe') || key.includes('drain') || key.includes('wash') || key.includes('tap') || key.includes('carpet') || key.includes('sofa') || key.includes('chimney')) && !key.includes('pest') && !key.includes('car') && !key.includes('bike')) {
+    if (key === 'plumbing_cleaning' || ((key.includes('plumb') || key.includes('clean') || key.includes('drain') || key.includes('tap') || key.includes('carpet') || key.includes('sofa') || key.includes('chimney')) && !key.includes('pest'))) {
       return {
-        icon: <Droplets size={28} strokeWidth={2.4} />,
+        icon: <Droplets size={22} strokeWidth={2} />,
         image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80',
-        primary: '#06B6D4',
-        secondary: '#10B981',
-        tertiary: '#2563EB',
-        accentBg: 'linear-gradient(135deg, #06B6D4 0%, #059669 50%, #2563EB 100%)',
-        shadow1: 'rgba(6, 182, 212, 0.42)',
-        shadow2: 'rgba(16, 185, 129, 0.32)',
-        shadow3: 'rgba(37, 99, 235, 0.28)',
-        glow: 'rgba(6, 182, 212, 0.55)',
-        badgeBg: 'rgba(6, 182, 212, 0.2)',
-        badgeColor: '#67E8F9'
+        primary: '#0891B2',
+        color: '#0891B2',
+        iconBg: 'rgba(8, 145, 178, 0.08)',
+        iconColor: '#0891B2',
+        bg: 'rgba(8, 145, 178, 0.08)',
+        shadow1: 'rgba(8, 145, 178, 0.25)',
+        shadow2: 'rgba(8, 145, 178, 0.15)',
+        shadow3: 'rgba(8, 145, 178, 0.1)'
       };
     }
 
     // 3. Pest Control
-    if (key.includes('pest') || key.includes('cockroach') || key.includes('termite') || key.includes('bed bug') || key.includes('mosquito')) {
+    if (key === 'pest_control' || key.includes('pest') || key.includes('cockroach') || key.includes('termite') || key.includes('bed bug') || key.includes('mosquito')) {
       return {
-        icon: <Bug size={28} strokeWidth={2.4} />,
+        icon: <Bug size={22} strokeWidth={2} />,
         image: 'https://images.unsplash.com/photo-1587293852726-70cdb56c2866?auto=format&fit=crop&w=400&q=80',
-        primary: '#10B981',
-        secondary: '#84CC16',
-        tertiary: '#059669',
-        accentBg: 'linear-gradient(135deg, #10B981 0%, #059669 50%, #84CC16 100%)',
-        shadow1: 'rgba(16, 185, 129, 0.42)',
-        shadow2: 'rgba(132, 204, 22, 0.32)',
-        shadow3: 'rgba(5, 150, 105, 0.28)',
-        glow: 'rgba(16, 185, 129, 0.55)',
-        badgeBg: 'rgba(16, 185, 129, 0.2)',
-        badgeColor: '#A7F3D0'
+        primary: '#059669',
+        color: '#059669',
+        iconBg: 'rgba(5, 150, 105, 0.08)',
+        iconColor: '#059669',
+        bg: 'rgba(5, 150, 105, 0.08)',
+        shadow1: 'rgba(5, 150, 105, 0.25)',
+        shadow2: 'rgba(5, 150, 105, 0.15)',
+        shadow3: 'rgba(5, 150, 105, 0.1)'
       };
     }
 
     // 4. Salon & Massage / Wellness (Unisex)
-    if (key.includes('salon_wellness') || key.includes('salon') || key.includes('massage') || key.includes('wellness') || key.includes('beauty') || key.includes('hair') || key.includes('spa') || key.includes('facial') || key.includes('makeup') || key.includes('waxing') || key.includes('grooming')) {
+    if (key === 'salon_wellness' || key.includes('salon') || key.includes('massage') || key.includes('wellness') || key.includes('hair') || key.includes('spa') || key.includes('facial') || key.includes('makeup') || key.includes('waxing') || key.includes('grooming')) {
       return {
-        icon: <Sparkles size={28} strokeWidth={2.4} />,
+        icon: <Scissors size={22} strokeWidth={2} />,
         image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80',
-        primary: '#EC4899',
-        secondary: '#A855F7',
-        tertiary: '#F43F5E',
-        accentBg: 'linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #F43F5E 100%)',
-        shadow1: 'rgba(236, 72, 153, 0.42)',
-        shadow2: 'rgba(168, 85, 247, 0.32)',
-        shadow3: 'rgba(244, 63, 94, 0.28)',
-        glow: 'rgba(236, 72, 153, 0.55)',
-        badgeBg: 'rgba(236, 72, 153, 0.2)',
-        badgeColor: '#FBCFE8'
+        primary: '#7C3AED',
+        color: '#7C3AED',
+        iconBg: 'rgba(124, 58, 237, 0.08)',
+        iconColor: '#7C3AED',
+        bg: 'rgba(124, 58, 237, 0.08)',
+        shadow1: 'rgba(124, 58, 237, 0.25)',
+        shadow2: 'rgba(124, 58, 237, 0.15)',
+        shadow3: 'rgba(124, 58, 237, 0.1)'
       };
     }
 
     // 5. Civil & Property Maintenance
-    if (key.includes('civil_maintenance') || key.includes('civil') || key.includes('property') || key.includes('carpenter') || key.includes('wood') || key.includes('drilling') || key.includes('mason') || key.includes('roof') || key.includes('floor') || key.includes('paint')) {
+    if (key === 'civil_maintenance' || key.includes('civil') || key.includes('property') || key.includes('carpenter') || key.includes('wood') || key.includes('drilling') || key.includes('mason') || key.includes('roof') || key.includes('floor') || key.includes('paint')) {
       return {
-        icon: <Hammer size={28} strokeWidth={2.4} />,
+        icon: <Hammer size={22} strokeWidth={2} />,
         image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=400&q=80',
-        primary: '#EA580C',
-        secondary: '#F59E0B',
-        tertiary: '#E11D48',
-        accentBg: 'linear-gradient(135deg, #EA580C 0%, #C2410C 50%, #F59E0B 100%)',
-        shadow1: 'rgba(234, 88, 12, 0.42)',
-        shadow2: 'rgba(245, 158, 11, 0.32)',
-        shadow3: 'rgba(225, 29, 72, 0.28)',
-        glow: 'rgba(234, 88, 12, 0.55)',
-        badgeBg: 'rgba(234, 88, 12, 0.2)',
-        badgeColor: '#FDBA74'
+        primary: '#D97706',
+        color: '#D97706',
+        iconBg: 'rgba(217, 119, 6, 0.08)',
+        iconColor: '#D97706',
+        bg: 'rgba(217, 119, 6, 0.08)',
+        shadow1: 'rgba(217, 119, 6, 0.25)',
+        shadow2: 'rgba(217, 119, 6, 0.15)',
+        shadow3: 'rgba(217, 119, 6, 0.1)'
       };
     }
 
     // 6. Tech & Home Automation
-    if (key.includes('tech') || key.includes('automation') || key.includes('laptop') || key.includes('computer') || key.includes('router') || key.includes('wifi') || key.includes('printer')) {
+    if (key === 'tech_automation' || key.includes('tech') || key.includes('automation') || key.includes('laptop') || key.includes('computer') || key.includes('router') || key.includes('wifi') || key.includes('printer')) {
       return {
-        icon: <Laptop size={28} strokeWidth={2.4} />,
+        icon: <Laptop size={22} strokeWidth={2} />,
         image: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=400&q=80',
-        primary: '#6366F1',
-        secondary: '#38BDF8',
-        tertiary: '#8B5CF6',
-        accentBg: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 50%, #38BDF8 100%)',
-        shadow1: 'rgba(99, 102, 241, 0.42)',
-        shadow2: 'rgba(56, 189, 248, 0.32)',
-        shadow3: 'rgba(139, 92, 246, 0.28)',
-        glow: 'rgba(99, 102, 241, 0.55)',
-        badgeBg: 'rgba(99, 102, 241, 0.2)',
-        badgeColor: '#C7D2FE'
+        primary: '#4F46E5',
+        color: '#4F46E5',
+        iconBg: 'rgba(79, 70, 229, 0.08)',
+        iconColor: '#4F46E5',
+        bg: 'rgba(79, 70, 229, 0.08)',
+        shadow1: 'rgba(79, 70, 229, 0.25)',
+        shadow2: 'rgba(79, 70, 229, 0.15)',
+        shadow3: 'rgba(79, 70, 229, 0.1)'
       };
     }
 
     // 7. Vehicle & Auto Care
-    if (key.includes('vehicle_autocare') || key.includes('auto') || key.includes('car') || key.includes('bike wash') || key.includes('detailing') || key.includes('jump start')) {
+    if (key === 'vehicle_autocare' || key.includes('vehicle') || key.includes('auto care') || key.includes('car wash') || key.includes('bike wash') || key.includes('jump start') || key.includes('detailing')) {
       return {
-        icon: <Car size={28} strokeWidth={2.4} />,
+        icon: <Car size={22} strokeWidth={2} />,
         image: 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=400&q=80',
-        primary: '#0284C7',
-        secondary: '#38BDF8',
-        tertiary: '#2563EB',
-        accentBg: 'linear-gradient(135deg, #0284C7 0%, #0369A1 50%, #38BDF8 100%)',
-        shadow1: 'rgba(2, 132, 199, 0.42)',
-        shadow2: 'rgba(56, 189, 248, 0.32)',
-        shadow3: 'rgba(37, 99, 235, 0.28)',
-        glow: 'rgba(2, 132, 199, 0.55)',
-        badgeBg: 'rgba(2, 132, 199, 0.2)',
-        badgeColor: '#BAE6FD'
+        primary: '#2563EB',
+        color: '#2563EB',
+        iconBg: 'rgba(37, 99, 235, 0.08)',
+        iconColor: '#2563EB',
+        bg: 'rgba(37, 99, 235, 0.08)',
+        shadow1: 'rgba(37, 99, 235, 0.25)',
+        shadow2: 'rgba(37, 99, 235, 0.15)',
+        shadow3: 'rgba(37, 99, 235, 0.1)'
       };
     }
 
     // 8. Home Help & Errand Services
-    if (key.includes('home_help') || key.includes('help') || key.includes('errand') || key.includes('maid') || key.includes('cook') || key.includes('chef') || key.includes('laundry') || key.includes('grocery') || key.includes('medicine')) {
+    if (key === 'home_help' || key.includes('home help') || key.includes('errand') || key.includes('maid') || key.includes('cook') || key.includes('chef') || key.includes('laundry') || key.includes('grocery') || key.includes('queue')) {
       return {
-        icon: <HeartPulse size={28} strokeWidth={2.4} />,
+        icon: <Clock size={22} strokeWidth={2} />,
         image: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=400&q=80',
-        primary: '#14B8A6',
-        secondary: '#F43F5E',
-        tertiary: '#06B6D4',
-        accentBg: 'linear-gradient(135deg, #14B8A6 0%, #0D9488 50%, #F43F5E 100%)',
-        shadow1: 'rgba(20, 184, 166, 0.42)',
-        shadow2: 'rgba(244, 63, 94, 0.32)',
-        shadow3: 'rgba(6, 182, 212, 0.28)',
-        glow: 'rgba(20, 184, 166, 0.55)',
-        badgeBg: 'rgba(20, 184, 166, 0.2)',
-        badgeColor: '#99F6E4'
+        primary: '#0D9488',
+        color: '#0D9488',
+        iconBg: 'rgba(13, 148, 136, 0.08)',
+        iconColor: '#0D9488',
+        bg: 'rgba(13, 148, 136, 0.08)',
+        shadow1: 'rgba(13, 148, 136, 0.25)',
+        shadow2: 'rgba(13, 148, 136, 0.15)',
+        shadow3: 'rgba(13, 148, 136, 0.1)'
       };
     }
 
     // 9. Security Services
-    if (key.includes('security') || key.includes('guard') || key.includes('cctv') || key.includes('lock')) {
+    if (key === 'security_services' || key.includes('security') || key.includes('guard') || key.includes('cctv') || key.includes('lock')) {
       return {
-        icon: <ShieldCheck size={28} strokeWidth={2.4} />,
+        icon: <ShieldCheck size={22} strokeWidth={2} />,
         image: 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=400&q=80',
-        primary: '#8B5CF6',
-        secondary: '#EC4899',
-        tertiary: '#6366F1',
-        accentBg: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 50%, #EC4899 100%)',
-        shadow1: 'rgba(139, 92, 246, 0.42)',
-        shadow2: 'rgba(236, 72, 153, 0.32)',
-        shadow3: 'rgba(99, 102, 241, 0.28)',
-        glow: 'rgba(139, 92, 246, 0.55)',
-        badgeBg: 'rgba(139, 92, 246, 0.2)',
-        badgeColor: '#C4B5FD'
+        primary: '#475569',
+        color: '#475569',
+        iconBg: 'rgba(71, 85, 105, 0.08)',
+        iconColor: '#475569',
+        bg: 'rgba(71, 85, 105, 0.08)',
+        shadow1: 'rgba(71, 85, 105, 0.25)',
+        shadow2: 'rgba(71, 85, 105, 0.15)',
+        shadow3: 'rgba(71, 85, 105, 0.1)'
       };
     }
 
     // 10. Diagnostic & Healthcare Services
-    if (key.includes('diagnostic_healthcare') || key.includes('diagnostic') || key.includes('health') || key.includes('patholog') || key.includes('blood') || key.includes('doctor') || key.includes('care') || key.includes('medic') || key.includes('test') || key.includes('elderly')) {
+    if (key === 'diagnostic_healthcare' || key.includes('diagnostic') || key.includes('health') || key.includes('blood') || key.includes('doctor') || key.includes('nurse') || key.includes('checkup') || key.includes('phlebotomy') || key.includes('compounder') || key.includes('elderly')) {
       return {
-        icon: <Activity size={28} strokeWidth={2.4} />,
+        icon: <HeartPulse size={22} strokeWidth={2} />,
         image: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=400&q=80',
-        primary: '#F43F5E',
-        secondary: '#14B8A6',
-        tertiary: '#A855F7',
-        accentBg: 'linear-gradient(135deg, #F43F5E 0%, #BE123C 50%, #14B8A6 100%)',
-        shadow1: 'rgba(244, 63, 94, 0.42)',
-        shadow2: 'rgba(20, 184, 166, 0.32)',
-        shadow3: 'rgba(168, 85, 247, 0.28)',
-        glow: 'rgba(244, 63, 94, 0.55)',
-        badgeBg: 'rgba(244, 63, 94, 0.2)',
-        badgeColor: '#FDA4AF'
+        primary: '#E11D48',
+        color: '#E11D48',
+        iconBg: 'rgba(225, 29, 72, 0.08)',
+        iconColor: '#E11D48',
+        bg: 'rgba(225, 29, 72, 0.08)',
+        shadow1: 'rgba(225, 29, 72, 0.25)',
+        shadow2: 'rgba(225, 29, 72, 0.15)',
+        shadow3: 'rgba(225, 29, 72, 0.1)'
       };
     }
 
-    // 11. Logistics & Freight
-    if (key.includes('logistics') || key.includes('mov') || key.includes('vehicle') || key.includes('transport') || key.includes('truck') || key.includes('cargo') || key.includes('courier') || key.includes('freight')) {
+    // 11. Logistics
+    if (key === 'logistics' || key.includes('logistics') || key.includes('truck') || key.includes('tempo') || key.includes('courier') || key.includes('cargo') || key.includes('freight')) {
       return {
-        icon: <Truck size={28} strokeWidth={2.4} />,
+        icon: <Truck size={22} strokeWidth={2} />,
         image: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=400&q=80',
-        primary: '#3B82F6',
-        secondary: '#8B5CF6',
-        tertiary: '#06B6D4',
-        accentBg: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 50%, #8B5CF6 100%)',
-        shadow1: 'rgba(59, 130, 246, 0.42)',
-        shadow2: 'rgba(139, 92, 246, 0.32)',
-        shadow3: 'rgba(6, 182, 212, 0.28)',
-        glow: 'rgba(59, 130, 246, 0.55)',
-        badgeBg: 'rgba(59, 130, 246, 0.2)',
-        badgeColor: '#93C5FD'
+        primary: '#0284C7',
+        color: '#0284C7',
+        iconBg: 'rgba(2, 132, 199, 0.08)',
+        iconColor: '#0284C7',
+        bg: 'rgba(2, 132, 199, 0.08)',
+        shadow1: 'rgba(2, 132, 199, 0.25)',
+        shadow2: 'rgba(2, 132, 199, 0.15)',
+        shadow3: 'rgba(2, 132, 199, 0.1)'
       };
     }
 
-    // Default
     return {
-      icon: <LayoutList size={28} strokeWidth={2.4} />,
+      icon: <Sparkles size={22} strokeWidth={2} />,
       image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80',
-      primary: '#6366F1',
-      secondary: '#EC4899',
-      tertiary: '#38BDF8',
-      accentBg: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 50%, #EC4899 100%)',
-      shadow1: 'rgba(99, 102, 241, 0.42)',
-      shadow2: 'rgba(236, 72, 153, 0.32)',
-      shadow3: 'rgba(56, 189, 248, 0.28)',
-      glow: 'rgba(99, 102, 241, 0.55)',
-      badgeBg: 'rgba(99, 102, 241, 0.2)',
-      badgeColor: '#C7D2FE'
+      primary: '#0284C7',
+      color: '#0284C7',
+      iconBg: 'rgba(2, 132, 199, 0.08)',
+      iconColor: '#0284C7',
+      bg: 'rgba(2, 132, 199, 0.08)',
+      shadow1: 'rgba(2, 132, 199, 0.25)',
+      shadow2: 'rgba(2, 132, 199, 0.15)',
+      shadow3: 'rgba(2, 132, 199, 0.1)'
     };
   };
 
@@ -1973,7 +1956,7 @@ const EXACT_SERVICE_IMAGES = {
           </p>
         </div>
 
-        {/* Category Header (Explore All Services button removed) */}
+        {/* Category Header */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -1987,39 +1970,35 @@ const EXACT_SERVICE_IMAGES = {
               Service Categories
             </h3>
             <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '0.2rem', marginBottom: 0 }}>
-              Selected category: <strong style={{ color: 'var(--primary)' }}>{categories.find(c => c.id === selectedCategory)?.name || 'Appliances & Electrical'}</strong>
+              {selectedCategory ? (
+                <>Selected category: <strong style={{ color: 'var(--primary)' }}>{categories.find(c => c.id === selectedCategory)?.name}</strong></>
+              ) : (
+                <span>Click on any category tile below to view its available services</span>
+              )}
             </p>
           </div>
         </div>
 
-        {/* Enlarged Category Tiles Grid */}
-        <div style={{ marginBottom: '2.75rem' }}>
+        {/* Clean Category Tiles Grid */}
+        <div style={{ marginBottom: '2.5rem' }}>
           <div className="category-tiles-grid">
             {(categories || []).map((cat) => {
               if (!cat) return null;
               const isSelected = selectedCategory === cat.id;
-              const theme = getCategoryTheme(cat.name);
+              const theme = getCategoryTheme(cat.id || cat.name);
               const catServiceCount = (services || []).filter(s => s && (s.canonicalCategoryId === cat.id || s.categoryId === cat.id)).length;
               return (
                 <button
                   key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
+                  type="button"
+                  onClick={() => setSelectedCategory(prev => prev === cat.id ? null : cat.id)}
                   className={`category-tile ${isSelected ? 'active' : ''}`}
-                  style={{
-                    '--tile-color': theme.primary,
-                    '--tile-secondary': theme.secondary,
-                    '--tile-tertiary': theme.tertiary,
-                    '--tile-shadow-1': theme.shadow1,
-                    '--tile-shadow-2': theme.shadow2,
-                    '--tile-shadow-3': theme.shadow3,
-                    '--tile-accent': theme.accentBg
-                  }}
                 >
                   <div
                     className="cat-icon-badge"
                     style={{
-                      background: theme.accentBg,
-                      color: '#FFFFFF'
+                      backgroundColor: isSelected ? 'rgba(2, 132, 199, 0.12)' : theme.iconBg,
+                      color: isSelected ? '#0284C7' : theme.iconColor
                     }}
                   >
                     {theme.icon}
@@ -2030,9 +2009,6 @@ const EXACT_SERVICE_IMAGES = {
                   <div className="cat-count-badge">
                     {catServiceCount} {catServiceCount === 1 ? 'service' : 'services'}
                   </div>
-                  {isSelected && (
-                    <div className="cat-active-indicator" style={{ backgroundColor: theme.primary, boxShadow: `0 0 12px ${theme.primary}` }} />
-                  )}
                 </button>
               );
             })}
@@ -2040,14 +2016,34 @@ const EXACT_SERVICE_IMAGES = {
         </div>
 
         {/* Dynamic Services Grid Header */}
-        <div id="services-catalog-grid-top" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', scrollMarginTop: '100px' }}>
-          <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', fontWeight: 700 }}>
-            Showing {filteredServices.length} {filteredServices.length === 1 ? 'service' : 'services'} in {categories.find(c => c.id === selectedCategory)?.name || 'Selected Category'}
-          </h3>
-        </div>
+        {selectedCategory ? (
+          <div id="services-catalog-grid-top" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', scrollMarginTop: '100px' }}>
+            <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', fontWeight: 700 }}>
+              Showing {filteredServices.length} {filteredServices.length === 1 ? 'service' : 'services'} in {categories.find(c => c.id === selectedCategory)?.name || 'Selected Category'}
+            </h3>
+          </div>
+        ) : searchQuery.trim() !== '' ? (
+          <div id="services-catalog-grid-top" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', scrollMarginTop: '100px' }}>
+            <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', fontWeight: 700 }}>
+              Search results for "{searchQuery}" ({filteredServices.length} {filteredServices.length === 1 ? 'service' : 'services'})
+            </h3>
+          </div>
+        ) : null}
 
         {/* Services Grid with Dynamic Hover */}
-        {loading ? (
+        {!selectedCategory && searchQuery.trim() === '' ? (
+          <div className="empty-state" style={{ padding: '3.5rem 1.5rem', background: 'var(--bg-card)', border: '1px dashed var(--border-light)', borderRadius: '16px', textAlign: 'center' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: 'rgba(56, 189, 248, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto', color: 'var(--primary)' }}>
+              <Sparkles size={28} />
+            </div>
+            <h3 className="empty-state-title" style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.4rem' }}>
+              Select a Category to View Services
+            </h3>
+            <p className="empty-state-description" style={{ fontSize: '0.875rem', color: 'var(--text-muted)', maxWidth: '440px', margin: '0 auto' }}>
+              Click on any service category tile above to view available verified professionals, transparent pricing, and instant booking options.
+            </p>
+          </div>
+        ) : loading ? (
           <div className="grid-cols-4">
             {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
               <div key={n} className="panel" style={{ height: '220px', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
