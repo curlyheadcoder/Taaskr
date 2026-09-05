@@ -1979,14 +1979,13 @@ const EXACT_SERVICE_IMAGES = {
           </div>
         </div>
 
-        {/* Clean Category Tiles Grid */}
+        {/* Clean Responsive Category Tiles Grid */}
         <div style={{ marginBottom: '2.5rem' }}>
           <div className="category-tiles-grid">
             {(categories || []).map((cat) => {
               if (!cat) return null;
               const isSelected = selectedCategory === cat.id;
               const theme = getCategoryTheme(cat.id || cat.name);
-              const catServiceCount = (services || []).filter(s => s && (s.canonicalCategoryId === cat.id || s.categoryId === cat.id)).length;
               return (
                 <button
                   key={cat.id}
@@ -1997,7 +1996,7 @@ const EXACT_SERVICE_IMAGES = {
                   <div
                     className="cat-icon-badge"
                     style={{
-                      backgroundColor: isSelected ? 'rgba(2, 132, 199, 0.12)' : theme.iconBg,
+                      backgroundColor: isSelected ? 'rgba(2, 132, 199, 0.14)' : theme.iconBg,
                       color: isSelected ? '#0284C7' : theme.iconColor
                     }}
                   >
@@ -2005,9 +2004,6 @@ const EXACT_SERVICE_IMAGES = {
                   </div>
                   <div className="category-tile-title">
                     {cat.name || 'Category'}
-                  </div>
-                  <div className="cat-count-badge">
-                    {catServiceCount} {catServiceCount === 1 ? 'service' : 'services'}
                   </div>
                 </button>
               );
