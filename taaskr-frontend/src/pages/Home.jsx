@@ -49,10 +49,12 @@ export default function Home() {
           api.catalog.getCategories(),
           api.catalog.getServices()
         ]);
-        setCategories(cats.filter(c => c.active !== false));
-        setServices(servs.filter(s => s.active !== false));
+        setCategories(Array.isArray(cats) ? cats.filter(c => c && c.active !== false) : []);
+        setServices(Array.isArray(servs) ? servs.filter(s => s && s.active !== false) : []);
       } catch (err) {
         console.error('Error loading catalog:', err);
+        setCategories([]);
+        setServices([]);
       } finally {
         setLoading(false);
       }
@@ -62,9 +64,10 @@ export default function Home() {
 
   // Comprehensive multi-token search matcher across service name, description, category name, and keywords
   const doesServiceMatch = (service, query) => {
+    if (!service) return false;
     if (!query || !query.trim()) return true;
     const qTokens = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
-    const cat = categories.find(c => c.id === service.categoryId);
+    const cat = categories.find(c => c && c.id === service.categoryId);
     const catName = (cat?.name || '').toLowerCase();
     const sName = (service.name || '').toLowerCase();
     const sDesc = (service.description || '').toLowerCase();
@@ -76,9 +79,10 @@ export default function Home() {
   // Dropdown searches globally across all services
   const searchDropdownResults = searchQuery.trim() === ''
     ? []
-    : services.filter(service => doesServiceMatch(service, searchQuery));
+    : (services || []).filter(service => doesServiceMatch(service, searchQuery));
 
-  const filteredServices = services.filter(service => {
+  const filteredServices = (services || []).filter(service => {
+    if (!service) return false;
     const matchesCategory = selectedCategory ? service.categoryId === selectedCategory : true;
     const matchesSearch = searchQuery.trim() === '' || doesServiceMatch(service, searchQuery);
     return matchesCategory && matchesSearch;
@@ -545,10 +549,11 @@ export default function Home() {
         {/* Enlarged Category Tiles Grid */}
         <div style={{ marginBottom: '2.75rem' }}>
           <div className="category-tiles-grid">
-            {categories.map((cat) => {
+            {(categories || []).map((cat) => {
+              if (!cat) return null;
               const isSelected = selectedCategory === cat.id;
               const theme = getCategoryTheme(cat.name);
-              const catServiceCount = services.filter(s => s.categoryId === cat.id).length;
+              const catServiceCount = (services || []).filter(s => s && s.categoryId === cat.id).length;
               return (
                 <button
                   key={cat.id}
@@ -573,13 +578,17 @@ export default function Home() {
                   >
                     <img
                       src={theme.image}
-                      alt={cat.name}
+                      alt={cat.name || 'Category'}
                       className="cat-thumb-img"
                       loading="lazy"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80';
+                      }}
                     />
                   </div>
                   <div className="category-tile-title">
-                    {cat.name}
+                    {cat.name || 'Category'}
                   </div>
                   <div className="cat-count-badge">
                     {catServiceCount} {catServiceCount === 1 ? 'service' : 'services'}
@@ -632,9 +641,11 @@ export default function Home() {
           <div>
             <div className="grid-cols-4">
               {filteredServices.slice((servicesPage - 1) * servicesPerPage, servicesPage * servicesPerPage).map((service) => {
-                const cat = categories.find(c => c.id === service.categoryId);
+                if (!service) return null;
+                const cat = categories.find(c => c && c.id === service.categoryId);
                 const config = getServiceConfig(service.name, cat?.name);
                 const priceUnit = service.pricingType === 'HOURLY' ? '/ hr' : service.pricingType === 'PER_KM' ? '/ km' : '';
+                const descText = service.description || 'Verified, professional on-demand home and maintenance service.';
 
                 return (
                   <div
@@ -653,14 +664,18 @@ export default function Home() {
                     <div className="service-card-image-box">
                       <img
                         src={config.image}
-                        alt={service.name}
+                        alt={service.name || 'Service'}
                         className="service-card-img"
                         loading="lazy"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80';
+                        }}
                       />
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
-                      <h3 className="service-card-title">{service.name}</h3>
+                      <h3 className="service-card-title">{service.name || 'Service'}</h3>
                     </div>
 
                     {cat && (
@@ -670,9 +685,7 @@ export default function Home() {
                     )}
 
                     <p className="service-card-desc">
-                      {service.description.length > 85 
-                        ? service.description.substring(0, 85) + '...' 
-                        : service.description}
+                      {descText.length > 85 ? descText.substring(0, 85) + '...' : descText}
                     </p>
 
                     <div className="service-card-footer">
@@ -681,7 +694,7 @@ export default function Home() {
                           Starting from
                         </div>
                         <span className="service-price">
-                          ₹{service.price} {priceUnit}
+                          ₹{service.price ?? 0} {priceUnit}
                         </span>
                       </div>
                       
