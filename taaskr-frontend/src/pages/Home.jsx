@@ -485,10 +485,12 @@ const EXACT_SERVICE_IMAGES = {
   'mini truck': 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=600&q=80',
   'mini truck (tata ace)': 'https://images.unsplash.com/photo-1592838064575-70ed626d3a0e?auto=format&fit=crop&w=600&q=80',
   'retail store delivery': 'https://images.unsplash.com/photo-1586528116024-e1b1d7d0a2ec?auto=format&fit=crop&w=600&q=80',
-  'chilled & perishable goods': 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=600&q=80',
   'truck': 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80',
   'truck (14ft / 17ft)': 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80',
-  'furniture moving': 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=600&q=80',
+  'furniture moving': '/furniture-moving.jpg',
+  'furniture shifting': '/furniture-moving.jpg',
+  'furniture transport': '/furniture-moving.jpg',
+  'house shifting & furniture': '/furniture-moving.jpg',
   'heavy truck': 'https://images.unsplash.com/photo-1501700493788-fa1a4fc9fe62?auto=format&fit=crop&w=600&q=80'
 };
 
@@ -503,7 +505,9 @@ const EXACT_SERVICE_IMAGES = {
 
     // 2. Intelligent keyword fallback if exact name not in map
     if (!serviceImage) {
-      if (name.includes('ac ') || name.includes('air condition') || name.includes('cooling') || name.includes('hvac')) {
+      if (name.includes('furniture') || name.includes('sofa') || name.includes('shifting') || name.includes('relocation') || name.includes('movers') || name.includes('packers')) {
+        serviceImage = '/furniture-moving.jpg';
+      } else if (name.includes('ac ') || name.includes('air condition') || name.includes('cooling') || name.includes('hvac')) {
         serviceImage = 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=600&q=80';
       } else if (name.includes('switch') || name.includes('wire') || name.includes('electric') || name.includes('inverter') || name.includes('fuse') || name.includes('mcb')) {
         serviceImage = 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80';
@@ -537,7 +541,7 @@ const EXACT_SERVICE_IMAGES = {
         serviceImage = 'https://images.unsplash.com/photo-1581568736305-49a04e012c13?auto=format&fit=crop&w=600&q=80';
       } else if (name.includes('lock') || name.includes('doorbell') || name.includes('key')) {
         serviceImage = 'https://images.unsplash.com/photo-1558089687-f282ffcbc126?auto=format&fit=crop&w=600&q=80';
-      } else if (name.includes('carpent') || name.includes('wood') || name.includes('cabinet') || name.includes('furniture')) {
+      } else if (name.includes('carpent') || name.includes('wood') || name.includes('cabinet')) {
         serviceImage = 'https://images.unsplash.com/photo-1502005229762-ee1b2b8ab98f?auto=format&fit=crop&w=600&q=80';
       } else if (name.includes('waterproof')) {
         serviceImage = 'https://images.unsplash.com/photo-1674485169641-bcb2bf6f1df9?auto=format&fit=crop&w=600&q=80';
