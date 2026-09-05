@@ -11,28 +11,25 @@ import {
 } from 'lucide-react';
 
 const DEFAULT_CATEGORIES = [
-  { id: 1, name: 'Appliances', active: true },
+  { id: 1, name: 'Appliances & Electrical', active: true },
   { id: 2, name: 'Civil & Property Maintenance', active: true },
-  { id: 3, name: 'Cleaning', active: true },
-  { id: 4, name: 'Diagnostic Services', active: true },
-  { id: 5, name: 'Electrical', active: true },
-  { id: 6, name: 'Healthcare Services', active: true },
-  { id: 7, name: 'Logistics', active: true },
-  { id: 8, name: "Men's Salon & Massage", active: true },
-  { id: 9, name: 'Plumbing', active: true },
-  { id: 10, name: 'Security Services', active: true }
+  { id: 3, name: 'Plumbing & Cleaning', active: true },
+  { id: 4, name: 'Diagnostic & Healthcare Services', active: true },
+  { id: 5, name: 'Logistics', active: true },
+  { id: 6, name: "Men's Salon & Massage", active: true },
+  { id: 7, name: 'Security Services', active: true }
 ];
 
 const DEFAULT_SERVICES = [
   { id: 1, name: 'AC Repair & Service', description: 'Comprehensive diagnostics, coil cleaning, and cooling optimization.', price: 699, pricingType: 'FIXED', categoryId: 1, active: true },
   { id: 2, name: 'RO Water Purifier Service', description: 'Filter replacement, membrane inspection, and complete purification check.', price: 499, pricingType: 'FIXED', categoryId: 1, active: true },
-  { id: 3, name: 'Switchboard & Wiring Repair', description: 'Quick inspection and repair of loose wiring, burnt sockets, and tripped breakers.', price: 349, pricingType: 'FIXED', categoryId: 5, active: true },
-  { id: 4, name: 'Ceiling & Exhaust Fan Repair', description: 'Bearing replacement, speed regulator setup, and quiet motor tuning.', price: 299, pricingType: 'FIXED', categoryId: 5, active: true },
-  { id: 5, name: 'Tap Leakage & Valve Repair', description: 'Fix dripping faucets, replace internal washers, and ensure seamless water pressure.', price: 299, pricingType: 'FIXED', categoryId: 9, active: true },
+  { id: 3, name: 'Switchboard & Wiring Repair', description: 'Quick inspection and repair of loose wiring, burnt sockets, and tripped breakers.', price: 349, pricingType: 'FIXED', categoryId: 1, active: true },
+  { id: 4, name: 'Ceiling & Exhaust Fan Repair', description: 'Bearing replacement, speed regulator setup, and quiet motor tuning.', price: 299, pricingType: 'FIXED', categoryId: 1, active: true },
+  { id: 5, name: 'Tap Leakage & Valve Repair', description: 'Fix dripping faucets, replace internal washers, and ensure seamless water pressure.', price: 299, pricingType: 'FIXED', categoryId: 3, active: true },
   { id: 6, name: 'Deep Home & Bathroom Cleaning', description: 'Intensive stain removal, floor sanitization, and eco-friendly disinfection.', price: 1499, pricingType: 'FIXED', categoryId: 3, active: true },
   { id: 7, name: 'Blood Test & Sample Collection', description: 'Hygienic at-home phlebotomy with certified NABL accredited lab processing.', price: 499, pricingType: 'FIXED', categoryId: 4, active: true },
-  { id: 8, name: 'CCTV Installation & Setup', description: 'HD camera mounting, DVR configuration, and mobile live-view setup.', price: 1199, pricingType: 'FIXED', categoryId: 10, active: true },
-  { id: 9, name: 'Mini Truck Goods Transport', description: 'Reliable intra-city tempo transport for furniture, equipment, and shifting.', price: 250, pricingType: 'PER_KM', categoryId: 7, active: true },
+  { id: 8, name: 'CCTV Installation & Setup', description: 'HD camera mounting, DVR configuration, and mobile live-view setup.', price: 1199, pricingType: 'FIXED', categoryId: 7, active: true },
+  { id: 9, name: 'Mini Truck Goods Transport', description: 'Reliable intra-city tempo transport for furniture, equipment, and shifting.', price: 250, pricingType: 'PER_KM', categoryId: 5, active: true },
   { id: 10, name: 'General Civil & Wall Repair', description: 'Minor masonry, plaster patching, and tile touch-ups by verified masons.', price: 799, pricingType: 'FIXED', categoryId: 2, active: true }
 ];
 
@@ -160,8 +157,8 @@ export default function Home() {
   const getCategoryTheme = (categoryName) => {
     const cat = (categoryName || '').toLowerCase();
     
-    // 1. Electrical & Power
-    if (cat.includes('electric') || cat.includes('wire') || cat.includes('switch') || cat.includes('power')) {
+    // 1. Appliances & Electrical
+    if (cat.includes('electric') || cat.includes('appliance') || cat.includes('wire') || cat.includes('switch') || cat.includes('power') || cat.includes('fan') || cat.includes('ac')) {
       return {
         icon: <Zap size={28} strokeWidth={2.4} />,
         image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=400&q=80',
@@ -178,75 +175,39 @@ export default function Home() {
       };
     }
 
-    // 2. Plumbing & Water Works
-    if (cat.includes('plumb') || cat.includes('water') || cat.includes('pipe') || cat.includes('drain')) {
+    // 2. Plumbing & Cleaning
+    if (cat.includes('plumb') || cat.includes('clean') || cat.includes('water') || cat.includes('pipe') || cat.includes('drain') || cat.includes('wash') || cat.includes('tap')) {
       return {
         icon: <Droplets size={28} strokeWidth={2.4} />,
-        image: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=400&q=80',
+        image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80',
         primary: '#06B6D4',
-        secondary: '#2563EB',
-        tertiary: '#10B981',
-        accentBg: 'linear-gradient(135deg, #06B6D4 0%, #0284C7 50%, #2563EB 100%)',
+        secondary: '#10B981',
+        tertiary: '#2563EB',
+        accentBg: 'linear-gradient(135deg, #06B6D4 0%, #059669 50%, #2563EB 100%)',
         shadow1: 'rgba(6, 182, 212, 0.42)',
-        shadow2: 'rgba(37, 99, 235, 0.32)',
-        shadow3: 'rgba(16, 185, 129, 0.28)',
+        shadow2: 'rgba(16, 185, 129, 0.32)',
+        shadow3: 'rgba(37, 99, 235, 0.28)',
         glow: 'rgba(6, 182, 212, 0.55)',
         badgeBg: 'rgba(6, 182, 212, 0.2)',
         badgeColor: '#67E8F9'
       };
     }
 
-    // 3. Cleaning & Housekeeping
-    if (cat.includes('clean')) {
-      return {
-        icon: <Sparkles size={28} strokeWidth={2.4} />,
-        image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80',
-        primary: '#10B981',
-        secondary: '#06B6D4',
-        tertiary: '#3B82F6',
-        accentBg: 'linear-gradient(135deg, #10B981 0%, #059669 50%, #06B6D4 100%)',
-        shadow1: 'rgba(16, 185, 129, 0.42)',
-        shadow2: 'rgba(6, 182, 212, 0.32)',
-        shadow3: 'rgba(59, 130, 246, 0.28)',
-        glow: 'rgba(16, 185, 129, 0.55)',
-        badgeBg: 'rgba(16, 185, 129, 0.2)',
-        badgeColor: '#6EE7B7'
-      };
-    }
-
-    // 4. Diagnostic & Health Labs
-    if (cat.includes('diagnostic') || cat.includes('patholog') || cat.includes('blood') || cat.includes('test')) {
+    // 3. Diagnostic & Healthcare Services
+    if (cat.includes('diagnostic') || cat.includes('health') || cat.includes('patholog') || cat.includes('blood') || cat.includes('doctor') || cat.includes('care') || cat.includes('medic') || cat.includes('test')) {
       return {
         icon: <Activity size={28} strokeWidth={2.4} />,
         image: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=400&q=80',
         primary: '#F43F5E',
-        secondary: '#A855F7',
-        tertiary: '#EC4899',
-        accentBg: 'linear-gradient(135deg, #F43F5E 0%, #BE123C 50%, #A855F7 100%)',
+        secondary: '#14B8A6',
+        tertiary: '#A855F7',
+        accentBg: 'linear-gradient(135deg, #F43F5E 0%, #BE123C 50%, #14B8A6 100%)',
         shadow1: 'rgba(244, 63, 94, 0.42)',
-        shadow2: 'rgba(168, 85, 247, 0.32)',
-        shadow3: 'rgba(236, 72, 153, 0.28)',
+        shadow2: 'rgba(20, 184, 166, 0.32)',
+        shadow3: 'rgba(168, 85, 247, 0.28)',
         glow: 'rgba(244, 63, 94, 0.55)',
         badgeBg: 'rgba(244, 63, 94, 0.2)',
         badgeColor: '#FDA4AF'
-      };
-    }
-
-    // 5. Healthcare Services
-    if (cat.includes('health') || cat.includes('care') || cat.includes('doctor') || cat.includes('nurse')) {
-      return {
-        icon: <Stethoscope size={28} strokeWidth={2.4} />,
-        image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=400&q=80',
-        primary: '#14B8A6',
-        secondary: '#10B981',
-        tertiary: '#0284C7',
-        accentBg: 'linear-gradient(135deg, #14B8A6 0%, #0D9488 50%, #10B981 100%)',
-        shadow1: 'rgba(20, 184, 166, 0.42)',
-        shadow2: 'rgba(16, 185, 129, 0.32)',
-        shadow3: 'rgba(2, 132, 199, 0.28)',
-        glow: 'rgba(20, 184, 166, 0.55)',
-        badgeBg: 'rgba(20, 184, 166, 0.2)',
-        badgeColor: '#5EEAD4'
       };
     }
 

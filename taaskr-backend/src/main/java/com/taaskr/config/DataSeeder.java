@@ -91,33 +91,29 @@ public class DataSeeder {
     }
 
     private void seedCatalog(ServiceCategoryRepository categoryRepository, ServiceRepository serviceRepository) {
-        ServiceCategory plumbing = seedCategory(categoryRepository, "Plumbing", "Home plumbing repair and installation services");
-        ServiceCategory cleaning = seedCategory(categoryRepository, "Cleaning", "Home and deep cleaning services");
-        ServiceCategory electrical = seedCategory(categoryRepository, "Electrical", "Electrical repair and fitting services");
-        ServiceCategory appliances = seedCategory(categoryRepository, "Appliances", "Home appliance repair and maintenance");
+        ServiceCategory plumbingCleaning = seedCategory(categoryRepository, "Plumbing & Cleaning", "Home plumbing repairs, pipe leakage fixes, and deep home cleaning services");
+        ServiceCategory appliancesElectrical = seedCategory(categoryRepository, "Appliances & Electrical", "Home appliance repair, AC maintenance, and electrical wiring services");
         ServiceCategory security = seedCategory(categoryRepository, "Security Services", "Home security installation and protection services");
+        ServiceCategory diagnosticHealthcare = seedCategory(categoryRepository, "Diagnostic & Healthcare Services", "Doorstep diagnostic tests, health checkups, and patient care assistance");
+        ServiceCategory civil = seedCategory(categoryRepository, "Civil & Property Maintenance", "Construction, renovation, repair, and property maintenance services.");
 
-        // Plumbing
-        seedService(serviceRepository, "Tap Repair", "Fix leaking or damaged taps", new BigDecimal("299.00"), 60, plumbing);
-        seedService(serviceRepository, "Pipe Leakage Fix", "Detect and repair minor pipe leakage", new BigDecimal("499.00"), 90, plumbing);
+        // Plumbing & Cleaning
+        seedService(serviceRepository, "Tap Repair", "Fix leaking or damaged taps", new BigDecimal("299.00"), 60, plumbingCleaning);
+        seedService(serviceRepository, "Pipe Leakage Fix", "Detect and repair minor pipe leakage", new BigDecimal("499.00"), 90, plumbingCleaning);
+        seedService(serviceRepository, "Bathroom Cleaning", "Deep clean bathroom and fittings", new BigDecimal("399.00"), 90, plumbingCleaning);
+        seedService(serviceRepository, "Full Home Cleaning", "General home cleaning service", new BigDecimal("1499.00"), 240, plumbingCleaning);
         
-        // Cleaning
-        seedService(serviceRepository, "Bathroom Cleaning", "Deep clean bathroom and fittings", new BigDecimal("399.00"), 90, cleaning);
-        seedService(serviceRepository, "Full Home Cleaning", "General home cleaning service", new BigDecimal("1499.00"), 240, cleaning);
-        
-        // Electrical
-        seedService(serviceRepository, "Switch Board Repair", "Repair or replace faulty switch boards", new BigDecimal("349.00"), 60, electrical);
-        seedService(serviceRepository, "Fan Repair", "Ceiling and exhaust fan repair", new BigDecimal("299.00"), 60, electrical);
-        
-        // Appliances
-        seedService(serviceRepository, "RO Repair", "Reverse Osmosis water purifier repair", new BigDecimal("499.00"), 90, appliances);
-        seedService(serviceRepository, "RO Installation", "RO water purifier installation", new BigDecimal("399.00"), 60, appliances);
-        seedService(serviceRepository, "RO Maintenance", "Routine RO maintenance and filter change", new BigDecimal("599.00"), 90, appliances);
-        seedService(serviceRepository, "AC Repair", "Air conditioner repair service", new BigDecimal("699.00"), 120, appliances);
-        seedService(serviceRepository, "AC Installation", "Air conditioner installation service", new BigDecimal("1499.00"), 180, appliances);
-        seedService(serviceRepository, "AC Maintenance", "Routine AC servicing and cleaning", new BigDecimal("599.00"), 90, appliances);
-        seedService(serviceRepository, "Refrigerator Repair", "Refrigerator repair and maintenance", new BigDecimal("599.00"), 90, appliances);
-        seedService(serviceRepository, "Washing Machine Repair", "Washing machine repair service", new BigDecimal("599.00"), 90, appliances);
+        // Appliances & Electrical
+        seedService(serviceRepository, "Switch Board Repair", "Repair or replace faulty switch boards", new BigDecimal("349.00"), 60, appliancesElectrical);
+        seedService(serviceRepository, "Fan Repair", "Ceiling and exhaust fan repair", new BigDecimal("299.00"), 60, appliancesElectrical);
+        seedService(serviceRepository, "RO Repair", "Reverse Osmosis water purifier repair", new BigDecimal("499.00"), 90, appliancesElectrical);
+        seedService(serviceRepository, "RO Installation", "RO water purifier installation", new BigDecimal("399.00"), 60, appliancesElectrical);
+        seedService(serviceRepository, "RO Maintenance", "Routine RO maintenance and filter change", new BigDecimal("599.00"), 90, appliancesElectrical);
+        seedService(serviceRepository, "AC Repair", "Air conditioner repair service", new BigDecimal("699.00"), 120, appliancesElectrical);
+        seedService(serviceRepository, "AC Installation", "Air conditioner installation service", new BigDecimal("1499.00"), 180, appliancesElectrical);
+        seedService(serviceRepository, "AC Maintenance", "Routine AC servicing and cleaning", new BigDecimal("599.00"), 90, appliancesElectrical);
+        seedService(serviceRepository, "Refrigerator Repair", "Refrigerator repair and maintenance", new BigDecimal("599.00"), 90, appliancesElectrical);
+        seedService(serviceRepository, "Washing Machine Repair", "Washing machine repair service", new BigDecimal("599.00"), 90, appliancesElectrical);
 
         // Security Services
         seedService(serviceRepository, "CCTV Installation", "Install and configure CCTV cameras for your home", new BigDecimal("1199.00"), 120, security);
@@ -125,17 +121,11 @@ public class DataSeeder {
         seedService(serviceRepository, "Video Doorbell Installation", "Install and configure a video doorbell", new BigDecimal("899.00"), 90, security);
         seedService(serviceRepository, "Security Guard Service", "Professional security guard service for your premises", new BigDecimal("1499.00"), 480, security);
 
-        ServiceCategory diagnostic = seedCategory(categoryRepository, "Diagnostic Services", "Convenient diagnostic tests and sample collection at your doorstep.");
-        ServiceCategory healthcare = seedCategory(categoryRepository, "Healthcare Services", "At-home healthcare assistance and basic patient care services.");
-        ServiceCategory civil = seedCategory(categoryRepository, "Civil & Property Maintenance", "Construction, renovation, repair, and property maintenance services.");
-
-        // Diagnostic Services
-        seedService(serviceRepository, "Blood Test & Sample Collection", "At-home blood test and sample collection", new BigDecimal("499.00"), 30, diagnostic);
-        seedService(serviceRepository, "Full Body Health Checkup", "Comprehensive full body checkup package", new BigDecimal("1999.00"), 60, diagnostic);
-        seedService(serviceRepository, "Home Diagnostic Test", "Various home diagnostic tests and screenings", new BigDecimal("999.00"), 45, diagnostic);
-
-        // Healthcare Services
-        seedService(serviceRepository, "Compounder on Call", "Healthcare assistance for basic patient care and prescribed medication support at home.", new BigDecimal("599.00"), 60, healthcare);
+        // Diagnostic & Healthcare Services
+        seedService(serviceRepository, "Blood Test & Sample Collection", "At-home blood test and sample collection", new BigDecimal("499.00"), 30, diagnosticHealthcare);
+        seedService(serviceRepository, "Full Body Health Checkup", "Comprehensive full body checkup package", new BigDecimal("1999.00"), 60, diagnosticHealthcare);
+        seedService(serviceRepository, "Home Diagnostic Test", "Various home diagnostic tests and screenings", new BigDecimal("999.00"), 45, diagnosticHealthcare);
+        seedService(serviceRepository, "Compounder on Call", "Healthcare assistance for basic patient care and prescribed medication support at home.", new BigDecimal("599.00"), 60, diagnosticHealthcare);
 
         // Civil & Property Maintenance
         seedService(serviceRepository, "Masonry & Brickwork", "Professional masonry and brickwork services", new BigDecimal("899.00"), 240, civil);
