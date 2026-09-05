@@ -374,34 +374,84 @@ export default function Home() {
     const cat = (categoryName || '').toLowerCase();
     const theme = getCategoryTheme(cat);
     
-    // Select real, high-resolution stock photo matching the specific service
-    let serviceImage = theme.image;
-    if (name.includes('ac install') || name.includes('ac repair') || name.includes('ac service') || name.includes('air condition') || name.includes('gas refill')) {
+    // Urban Company-aligned accurate service photography
+    let serviceImage = 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80';
+
+    // 1. AC & HVAC Services
+    if (name.includes('ac install') || name.includes('ac repair') || name.includes('ac service') || name.includes('air condition') || name.includes('gas refill') || name.includes('ac maintenance')) {
       serviceImage = 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('fan') || name.includes('switch') || name.includes('wire') || name.includes('inverter') || name.includes('fuse') || name.includes('electric')) {
+    } 
+    // 2. Electrical Services
+    else if (name.includes('switch') || name.includes('board') || name.includes('wire') || name.includes('inverter') || name.includes('fuse') || name.includes('electric') || name.includes('mcb') || name.includes('short circuit')) {
       serviceImage = 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('tap') || name.includes('leak') || name.includes('pipe') || name.includes('drain') || name.includes('plumb') || name.includes('tank')) {
+    } else if (name.includes('fan')) {
+      serviceImage = 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80';
+    }
+    // 3. Plumbing & Water Works
+    else if (name.includes('tap') || name.includes('faucet') || name.includes('leak') || name.includes('valve') || name.includes('basin') || name.includes('sink')) {
       serviceImage = 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=600&q=80';
+    } else if (name.includes('pipe') || name.includes('drain') || name.includes('plumb') || name.includes('tank') || name.includes('flush')) {
+      serviceImage = 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80';
+    }
+    // 4. Water Purifiers (RO)
+    else if (name.includes('ro ') || name.includes('water purifier') || name.includes('filter')) {
+      serviceImage = 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=600&q=80';
+    }
+    // 5. Cleaning & Sanitization
+    else if (name.includes('bathroom clean') || name.includes('toilet')) {
+      serviceImage = 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80';
     } else if (name.includes('sofa') || name.includes('carpet') || name.includes('curtain') || name.includes('mattress')) {
       serviceImage = 'https://images.unsplash.com/photo-1558317374-067fb5f30001?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('house clean') || name.includes('home clean') || name.includes('deep clean') || name.includes('kitchen clean') || name.includes('bathroom clean')) {
+    } else if (name.includes('house clean') || name.includes('home clean') || name.includes('deep clean') || name.includes('kitchen')) {
       serviceImage = 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('blood') || name.includes('cbc') || name.includes('thyroid') || name.includes('test') || name.includes('lab') || name.includes('checkup')) {
+    }
+    // 6. Medical Diagnostics & Lab Tests
+    else if (name.includes('blood') || name.includes('cbc') || name.includes('thyroid') || name.includes('sample') || name.includes('lab') || name.includes('diagnostic')) {
       serviceImage = 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('physician') || name.includes('doctor') || name.includes('nurse') || name.includes('physiotherapy') || name.includes('consultation')) {
+    } else if (name.includes('checkup') || name.includes('body health')) {
       serviceImage = 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('hair') || name.includes('beard') || name.includes('massage') || name.includes('facial') || name.includes('spa') || name.includes('grooming')) {
+    }
+    // 7. Healthcare Assistance
+    else if (name.includes('compounder') || name.includes('nurse') || name.includes('doctor') || name.includes('physiotherapy') || name.includes('consultation')) {
+      serviceImage = 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=600&q=80';
+    }
+    // 8. Men's Salon & Massage
+    else if (name.includes('massage') || name.includes('spa') || name.includes('head')) {
+      serviceImage = 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80';
+    } else if (name.includes('beard') || name.includes('shave')) {
+      serviceImage = 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=600&q=80';
+    } else if (name.includes('hair') || name.includes('salon') || name.includes('barber') || name.includes('grooming')) {
       serviceImage = 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('truck') || name.includes('courier') || name.includes('tempo') || name.includes('cargo') || name.includes('freight') || name.includes('logistics')) {
-      serviceImage = 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('cctv') || name.includes('guard') || name.includes('security') || name.includes('alarm') || name.includes('camera')) {
+    }
+    // 9. Security Services
+    else if (name.includes('cctv') || name.includes('camera') || name.includes('surveillance')) {
       serviceImage = 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('paint') || name.includes('wall') || name.includes('waterproof')) {
+    } else if (name.includes('lock') || name.includes('doorbell')) {
+      serviceImage = 'https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&w=600&q=80';
+    } else if (name.includes('guard') || name.includes('security')) {
+      serviceImage = 'https://images.unsplash.com/photo-1582139329536-e7284fece509?auto=format&fit=crop&w=600&q=80';
+    }
+    // 10. Logistics, Courier & Vehicles
+    else if (name.includes('bike') || name.includes('courier') || name.includes('two wheeler')) {
+      serviceImage = 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=600&q=80';
+    } else if (name.includes('mini truck') || name.includes('tempo') || name.includes('loading') || name.includes('rickshaw')) {
+      serviceImage = 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80';
+    } else if (name.includes('truck') || name.includes('cargo') || name.includes('freight') || name.includes('logistics')) {
+      serviceImage = 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80';
+    }
+    // 11. Civil & Property Maintenance
+    else if (name.includes('waterproof') || name.includes('paint') || name.includes('wall')) {
       serviceImage = 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('mason') || name.includes('tile') || name.includes('civil') || name.includes('construction') || name.includes('plaster')) {
+    } else if (name.includes('tile') || name.includes('floor')) {
+      serviceImage = 'https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?auto=format&fit=crop&w=600&q=80';
+    } else if (name.includes('renovation') || name.includes('remodel')) {
+      serviceImage = 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=600&q=80';
+    } else if (name.includes('mason') || name.includes('brick') || name.includes('civil') || name.includes('roof')) {
       serviceImage = 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80';
-    } else if (name.includes('appliance') || name.includes('washing') || name.includes('refrigerator') || name.includes('microwave') || name.includes('oven') || name.includes('geyser')) {
-      serviceImage = 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80';
+    }
+    // 12. Appliances
+    else if (name.includes('washing') || name.includes('refrigerator') || name.includes('microwave') || name.includes('oven') || name.includes('appliance')) {
+      serviceImage = 'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=600&q=80';
     }
 
     return {
@@ -600,19 +650,10 @@ export default function Home() {
                     className="cat-icon-badge"
                     style={{
                       background: theme.accentBg,
-                      boxShadow: `0 8px 20px -3px ${theme.shadow1}, 0 4px 12px ${theme.shadow2}`
+                      color: '#FFFFFF'
                     }}
                   >
-                    <img
-                      src={theme.image}
-                      alt={cat.name || 'Category'}
-                      className="cat-thumb-img"
-                      loading="lazy"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80';
-                      }}
-                    />
+                    {theme.icon}
                   </div>
                   <div className="category-tile-title">
                     {cat.name || 'Category'}

@@ -43,23 +43,23 @@ public class DataSeeder {
     }
 
     private void seedUsers(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        seedUser(userRepository, passwordEncoder, "Admin User", "admin@taaskr.com", "Admin@123", "9999999991", Role.ADMIN, "Indore", "452001");
-        seedUser(userRepository, passwordEncoder, "Regular User", "user@taaskr.com", "User@123", "9999999992", Role.USER, "Indore", "452001");
+        seedUser(userRepository, passwordEncoder, "Aarav Sharma", "admin@taaskr.com", "Admin@123", "9999999991", Role.ADMIN, "Indore", "452001");
+        seedUser(userRepository, passwordEncoder, "Rahul Verma", "user@taaskr.com", "User@123", "9999999992", Role.USER, "Indore", "452001");
         
-        // Seed multiple providers
-        seedUser(userRepository, passwordEncoder, "Provider User", "provider@taaskr.com", "Provider@123", "9999999993", Role.PROVIDER, "Indore", "452001");
-        seedUser(userRepository, passwordEncoder, "RO Expert 1", "ro@taaskr.com", "Provider@123", "9999999994", Role.PROVIDER, "Indore", "452001");
-        seedUser(userRepository, passwordEncoder, "AC Expert 1", "ac@taaskr.com", "Provider@123", "9999999995", Role.PROVIDER, "Indore", "452010");
-        seedUser(userRepository, passwordEncoder, "Electrician 1", "electrician@taaskr.com", "Provider@123", "9999999996", Role.PROVIDER, "Indore", "452001");
-        seedUser(userRepository, passwordEncoder, "Plumber 1", "plumber@taaskr.com", "Provider@123", "9999999997", Role.PROVIDER, "Indore", "452002");
-        seedUser(userRepository, passwordEncoder, "Home Appliance Expert", "appliance@taaskr.com", "Provider@123", "9999999998", Role.PROVIDER, "Indore", "452001");
-        seedUser(userRepository, passwordEncoder, "Security Systems Expert", "security@taaskr.com", "Provider@123", "8880000001", Role.PROVIDER, "Indore", "452001");
-        seedUser(userRepository, passwordEncoder, "Security Guard Agency", "guard@taaskr.com", "Provider@123", "8880000002", Role.PROVIDER, "Indore", "452001");
+        // Seed multiple verified Indian service providers & technicians
+        seedUser(userRepository, passwordEncoder, "Rajesh Patel", "provider@taaskr.com", "Provider@123", "9999999993", Role.PROVIDER, "Indore", "452001");
+        seedUser(userRepository, passwordEncoder, "Manoj Kumar (RO Specialist)", "ro@taaskr.com", "Provider@123", "9999999994", Role.PROVIDER, "Indore", "452001");
+        seedUser(userRepository, passwordEncoder, "Vikram Singh (HVAC Specialist)", "ac@taaskr.com", "Provider@123", "9999999995", Role.PROVIDER, "Indore", "452010");
+        seedUser(userRepository, passwordEncoder, "Amit Sharma (Master Electrician)", "electrician@taaskr.com", "Provider@123", "9999999996", Role.PROVIDER, "Indore", "452001");
+        seedUser(userRepository, passwordEncoder, "Dinesh Gupta (Senior Plumber)", "plumber@taaskr.com", "Provider@123", "9999999997", Role.PROVIDER, "Indore", "452002");
+        seedUser(userRepository, passwordEncoder, "Suresh Verma (Appliance Expert)", "appliance@taaskr.com", "Provider@123", "9999999998", Role.PROVIDER, "Indore", "452001");
+        seedUser(userRepository, passwordEncoder, "Ravi Shankar (CCTV & Security)", "security@taaskr.com", "Provider@123", "8880000001", Role.PROVIDER, "Indore", "452001");
+        seedUser(userRepository, passwordEncoder, "Devendra Rathore (Security Guard)", "guard@taaskr.com", "Provider@123", "8880000002", Role.PROVIDER, "Indore", "452001");
 
         // Dedicated Driver Providers
-        seedUser(userRepository, passwordEncoder, "Driver Ramesh (Mini Truck)", "driver.ramesh@taaskr.com", "Provider@123", "8880000003", Role.PROVIDER, "Indore", "452001");
-        seedUser(userRepository, passwordEncoder, "Driver Suresh (Loading 3W)", "driver.suresh@taaskr.com", "Provider@123", "8880000004", Role.PROVIDER, "Indore", "452001");
-        seedUser(userRepository, passwordEncoder, "Driver Ajay (E-Bike Courier)", "driver.ajay@taaskr.com", "Provider@123", "8880000005", Role.PROVIDER, "Indore", "452001");
+        seedUser(userRepository, passwordEncoder, "Ramesh Gurjar (Mini Truck Driver)", "driver.ramesh@taaskr.com", "Provider@123", "8880000003", Role.PROVIDER, "Indore", "452001");
+        seedUser(userRepository, passwordEncoder, "Suresh Yadav (3W Loading Driver)", "driver.suresh@taaskr.com", "Provider@123", "8880000004", Role.PROVIDER, "Indore", "452001");
+        seedUser(userRepository, passwordEncoder, "Ajay Rathore (Express Courier)", "driver.ajay@taaskr.com", "Provider@123", "8880000005", Role.PROVIDER, "Indore", "452001");
     }
 
     private User seedUser(UserRepository userRepository, PasswordEncoder passwordEncoder, String name, String email, String rawPassword, String phone, Role role, String city, String pincode) {
