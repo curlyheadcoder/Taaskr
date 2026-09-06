@@ -20,6 +20,8 @@ export default function Login() {
     setLoading(true);
     try {
       const res = await api.auth.login(email, password);
+      window.dispatchEvent(new Event('auth_change'));
+      window.dispatchEvent(new Event('storage'));
       if (res.role === 'ADMIN') {
         navigate('/admin');
       } else if (res.role === 'PROVIDER') {
@@ -28,10 +30,16 @@ export default function Login() {
         navigate('/');
       }
     } catch (err) {
-      setError(err.message || 'Authentication failed. Please verify your credentials.');
+      setError(err.message || 'Authentication failed. Please verify your credentials or register a new account.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleQuickLogin = (demoEmail, demoPass) => {
+    setEmail(demoEmail);
+    setPassword(demoPass);
+    setError('');
   };
 
   return (
@@ -44,12 +52,12 @@ export default function Login() {
       padding: '2rem 1rem'
     }}>
       <div className="panel animate-fade-in" style={{
-        maxWidth: '400px',
+        maxWidth: '420px',
         width: '100%',
         padding: '2rem'
       }}>
         {/* Brand Header */}
-        <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
           <div style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -134,7 +142,47 @@ export default function Login() {
           </button>
         </form>
 
-        <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.8125rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        {/* Quick Demo Logins for Testing / Investor Demos */}
+        <div style={{
+          marginTop: '1.25rem',
+          padding: '0.75rem',
+          background: 'var(--bg-subtle)',
+          borderRadius: 'var(--radius-sm)',
+          border: '1px solid var(--border-light)',
+          fontSize: '0.75rem'
+        }}>
+          <div style={{ color: 'var(--text-muted)', marginBottom: '0.4rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            Quick Demo Accounts
+          </div>
+          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => handleQuickLogin('provider@taaskr.com', 'Provider@123')}
+              className="btn btn-secondary btn-sm"
+              style={{ fontSize: '0.72rem', padding: '0.2rem 0.5rem' }}
+            >
+              Partner (Provider)
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickLogin('user@taaskr.com', 'User@123')}
+              className="btn btn-secondary btn-sm"
+              style={{ fontSize: '0.72rem', padding: '0.2rem 0.5rem' }}
+            >
+              Customer (User)
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickLogin('admin@taaskr.com', 'Admin@123')}
+              className="btn btn-secondary btn-sm"
+              style={{ fontSize: '0.72rem', padding: '0.2rem 0.5rem' }}
+            >
+              Admin
+            </button>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '1.25rem', textAlign: 'center', fontSize: '0.8125rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <div>
             <span style={{ color: 'var(--text-muted)' }}>Don't have an account? </span>
             <Link to="/register" style={{ color: 'var(--primary)', fontWeight: 600 }}>Create an account</Link>
