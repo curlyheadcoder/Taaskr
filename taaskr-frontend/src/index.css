@@ -1176,6 +1176,10 @@ body.dark .category-tile.active {
   font-weight: 700;
 }
 
+.category-tile:hover .category-tile-title {
+  color: var(--tile-primary, var(--primary));
+}
+
 .category-tile-title {
   font-weight: 600;
   font-size: 0.8125rem;
