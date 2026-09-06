@@ -920,26 +920,14 @@ body:not(.dark) .hero-pill-tag {
   color: #3730A3;
 }
 
-body.dark .hero-highlight-pill {
-  background: var(--bg-card);
-  border: 1px solid var(--border-light);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+.hero-highlight-pill {
+  transition: all 0.4s ease;
 }
 
-body:not(.dark) .hero-highlight-pill {
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-}
-
-body.dark .hero-highlight-text {
-  color: #38BDF8 !important;
+.hero-highlight-text {
+  color: var(--highlight-color, var(--primary));
   font-weight: 800;
-}
-
-body:not(.dark) .hero-highlight-text {
-  color: #1D4ED8 !important;
-  font-weight: 800;
+  transition: color 0.4s ease;
 }
 
 .telemetry-card {

@@ -2556,35 +2556,54 @@ const EXACT_SERVICE_IMAGES = {
             </h1>
 
           {/* Dynamic Live Cycling Service Highlight Pill Synchronized with Bouncing Tiles */}
-          <div className="hero-highlight-pill" style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.6rem',
-            padding: '0.45rem 1.15rem',
-            borderRadius: '999px',
-            border: `1.5px solid ${ambientHeroColor.badgeColor}40`,
-            boxShadow: `0 4px 18px ${ambientHeroColor.glow || 'rgba(0,0,0,0.06)'}`,
-            transition: 'border-color 0.4s ease, box-shadow 0.4s ease',
-            marginBottom: '1.25rem'
-          }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-              Need fast
-            </span>
-            <span
-              key={activeHighlightService}
-              className="hero-highlight-text animate-fade-in"
-              style={{
-                color: ambientHeroColor.badgeColor,
-                fontWeight: 800,
-                transition: 'color 0.4s ease'
-              }}
-            >
-              {activeHighlightService}?
-            </span>
-            <span style={{ fontSize: '0.72rem', padding: '0.12rem 0.45rem', borderRadius: '4px', backgroundColor: 'rgba(16, 185, 129, 0.12)', color: '#10B981', fontWeight: 600 }}>
-              Book in 60s
-            </span>
-          </div>
+          {(() => {
+            const activeHighlightTheme = getCategoryTheme(activeHighlightService);
+            return (
+              <div
+                className="hero-highlight-pill"
+                style={{
+                  '--highlight-color': activeHighlightTheme.primary,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.6rem',
+                  padding: '0.45rem 1.15rem',
+                  borderRadius: '999px',
+                  border: `1.5px solid ${activeHighlightTheme.primary}50`,
+                  backgroundColor: `${activeHighlightTheme.primary}12`,
+                  boxShadow: `0 4px 18px ${activeHighlightTheme.glow || 'rgba(0,0,0,0.06)'}`,
+                  transition: 'border-color 0.4s ease, background-color 0.4s ease, box-shadow 0.4s ease',
+                  marginBottom: '1.25rem'
+                }}
+              >
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+                  Need fast
+                </span>
+                <span
+                  key={activeHighlightService}
+                  className="hero-highlight-text animate-fade-in"
+                  style={{
+                    color: activeHighlightTheme.primary,
+                    fontWeight: 800,
+                    transition: 'color 0.4s ease'
+                  }}
+                >
+                  {activeHighlightService}?
+                </span>
+                <span style={{
+                  fontSize: '0.72rem',
+                  padding: '0.15rem 0.5rem',
+                  borderRadius: '4px',
+                  backgroundColor: `${activeHighlightTheme.primary}22`,
+                  color: activeHighlightTheme.primary,
+                  fontWeight: 700,
+                  border: `1px solid ${activeHighlightTheme.primary}40`,
+                  transition: 'all 0.4s ease'
+                }}>
+                  Book in 60s
+                </span>
+              </div>
+            );
+          })()}
 
           <p className="hero-desc" style={{ maxWidth: '680px', margin: '0 auto 2rem auto' }}>
             Book verified electricians, plumbers, cleaners, wellness therapists, and logistics specialists in minutes. Upfront pricing, vetted partners, and instant doorstep scheduling.
