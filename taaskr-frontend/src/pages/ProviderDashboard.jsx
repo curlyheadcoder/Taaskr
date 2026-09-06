@@ -12,7 +12,7 @@ import {
   Clock, Check, X, AlertCircle, Plus, Trash2, Edit2, Phone, Mail, 
   Star, Briefcase, Calendar, CheckSquare, Settings, User, RefreshCw,
   DollarSign, ExternalLink, Power, TrendingUp, BarChart3, PieChart,
-  PanelLeftClose, PanelLeftOpen, Wallet, Award, ArrowUpRight
+  PanelLeftClose, PanelLeftOpen, Wallet, Award, ArrowUpRight, Banknote, Play
 } from 'lucide-react';
 
 export default function ProviderDashboard() {
@@ -254,15 +254,19 @@ export default function ProviderDashboard() {
     }
   };
 
-  const handleStartInTransit = async (bookingId) => {
+  const handleStartInTransit = async (jobOrId) => {
+    const bookingId = typeof jobOrId === 'object' ? jobOrId.id : jobOrId;
+    const isVehicleJob = typeof jobOrId === 'object' ? Boolean(jobOrId.dropAddress) : false;
+    const targetStatus = isVehicleJob ? 'IN_TRANSIT' : 'IN_PROGRESS';
+
     if (!isProviderVerified) {
       showNotification('Please verify both your email and phone number before updating task status.', 'error');
       return;
     }
     setActionLoadingId(bookingId);
     try {
-      await api.provider.updateStatus(bookingId, 'IN_TRANSIT');
-      showNotification('Task status updated to In-Transit.');
+      await api.provider.updateStatus(bookingId, targetStatus);
+      showNotification(isVehicleJob ? 'Transit started. Task is now In-Transit.' : 'Work started. Task is now In-Progress (Working).');
       await loadProviderDashboard(false);
     } catch (err) {
       showNotification(`Action failed: ${err.message}`, 'error');
@@ -271,7 +275,10 @@ export default function ProviderDashboard() {
     }
   };
 
-  const handleMarkCompleted = async (bookingId) => {
+  const handleMarkCompleted = async (jobOrId) => {
+    const bookingId = typeof jobOrId === 'object' ? jobOrId.id : jobOrId;
+    const bookingObj = typeof jobOrId === 'object' ? jobOrId : [...assignedBookings, ...availableTasks].find(j => j.id === bookingId);
+
     if (!isProviderVerified) {
       showNotification('Please verify both your email and phone number before updating task status.', 'error');
       return;
@@ -279,8 +286,14 @@ export default function ProviderDashboard() {
     setActionLoadingId(bookingId);
     try {
       await api.provider.updateStatus(bookingId, 'COMPLETED');
-      showNotification('Task marked as Completed. You can now collect cash if payment is pending.');
+      showNotification('Task marked as Completed. Ready for payment collection.');
       await loadProviderDashboard(false);
+
+      // Auto-trigger Collect Cash modal if cash on delivery & payment pending
+      if (bookingObj && bookingObj.paymentMethod === 'AFTER_SERVICE' && bookingObj.paymentStatus !== 'PAID') {
+        setCollectCashBooking({ ...bookingObj, status: 'COMPLETED' });
+        setShowCollectCashModal(true);
+      }
     } catch (err) {
       showNotification(`Action failed: ${err.message}`, 'error');
     } finally {
@@ -473,9 +486,9 @@ export default function ProviderDashboard() {
       case 'COMPLETED':
         return <span className="badge badge-completed"><span className="badge-dot" /> COMPLETED</span>;
       case 'IN_TRANSIT':
-        return <span className="badge badge-inprogress"><span className="badge-dot" /> IN-TRANSIT</span>;
+        return <span className="badge badge-inprogress" style={{ backgroundColor: 'rgba(99, 102, 241, 0.15)', color: '#818cf8', borderColor: 'rgba(99, 102, 241, 0.3)' }}><span className="badge-dot" /> IN-TRANSIT (On the road)</span>;
       case 'IN_PROGRESS':
-        return <span className="badge badge-inprogress"><span className="badge-dot" /> IN PROGRESS</span>;
+        return <span className="badge badge-inprogress" style={{ backgroundColor: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24', borderColor: 'rgba(245, 158, 11, 0.3)' }}><span className="badge-dot" /> IN-PROGRESS (Working)</span>;
       case 'ACCEPTED':
         return <span className="badge badge-accepted"><span className="badge-dot" /> ACCEPTED</span>;
       case 'ASSIGNED':
@@ -593,7 +606,7 @@ export default function ProviderDashboard() {
             </div>
 
             <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
-              {/* ASSIGNED status actions: Accept or Reject */}
+              {/* Step 1: ASSIGNED -> Accept or Reject */}
               {job.status === 'ASSIGNED' && (
                 <>
                   <button 
@@ -613,45 +626,41 @@ export default function ProviderDashboard() {
                 </>
               )}
 
-              {/* ACCEPTED status actions: Start work or Mark Completed */}
+              {/* Step 2: ACCEPTED -> Start Work / Start Transit ONLY */}
               {job.status === 'ACCEPTED' && (
-                <>
-                  <button 
-                    onClick={() => handleStartInTransit(job.id)} 
-                    className="btn btn-primary btn-sm"
-                    disabled={isActionLoading}
-                  >
-                    {isActionLoading ? 'Starting...' : 'Start work'}
-                  </button>
-                  <button 
-                    onClick={() => handleMarkCompleted(job.id)} 
-                    className="btn btn-success btn-sm"
-                    disabled={isActionLoading}
-                  >
-                    {isActionLoading ? 'Completing...' : 'Mark as Completed'}
-                  </button>
-                </>
-              )}
-
-              {/* IN_TRANSIT or IN_PROGRESS status actions: Mark as Completed */}
-              {(job.status === 'IN_TRANSIT' || job.status === 'IN_PROGRESS') && (
                 <button 
-                  onClick={() => handleMarkCompleted(job.id)} 
-                  className="btn btn-success btn-sm"
+                  onClick={() => handleStartInTransit(job)} 
+                  className="btn btn-primary btn-sm"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600 }}
                   disabled={isActionLoading}
                 >
-                  {isActionLoading ? 'Completing...' : 'Mark as Completed'}
+                  <Play size={13} fill="currentColor" />
+                  <span>{isActionLoading ? 'Starting...' : (job.dropAddress ? 'Start Transit' : 'Start Work')}</span>
                 </button>
               )}
 
-              {/* COMPLETED status actions: Collect Cash if Cash on Delivery & Pending */}
+              {/* Step 3: IN_PROGRESS or IN_TRANSIT -> Mark as Completed */}
+              {(job.status === 'IN_TRANSIT' || job.status === 'IN_PROGRESS') && (
+                <button 
+                  onClick={() => handleMarkCompleted(job)} 
+                  className="btn btn-success btn-sm"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600 }}
+                  disabled={isActionLoading}
+                >
+                  <CheckCircle2 size={14} />
+                  <span>{isActionLoading ? 'Completing...' : 'Mark as Completed'}</span>
+                </button>
+              )}
+
+              {/* Step 4: COMPLETED with Cash on Delivery Pending -> Collect Cash */}
               {job.status === 'COMPLETED' && job.paymentMethod === 'AFTER_SERVICE' && job.paymentStatus !== 'PAID' && (
                 <button 
                   onClick={() => handleCollectCashClick(job)} 
                   className="btn btn-success btn-sm"
-                  style={{ fontWeight: 600 }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontWeight: 700, backgroundColor: '#10b981', borderColor: '#10b981' }}
                 >
-                  Collect Cash
+                  <Banknote size={15} />
+                  <span>Collect Cash (₹{job.finalAmount})</span>
                 </button>
               )}
 

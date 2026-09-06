@@ -292,9 +292,6 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
         if((current == BookingStatus.IN_PROGRESS || current == BookingStatus.IN_TRANSIT) && target == BookingStatus.COMPLETED){
             return true;
         }
-        if(current == BookingStatus.ACCEPTED && target == BookingStatus.COMPLETED){
-            return true;
-        }
         return false;
     }
 
