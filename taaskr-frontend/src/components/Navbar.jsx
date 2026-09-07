@@ -42,6 +42,23 @@ export default function Navbar() {
   const searchContainerRef = useRef(null);
   const searchInputRef = useRef(null);
 
+  // Provider Active Tab tracking
+  const [providerTab, setProviderTab] = useState('tasks');
+
+  useEffect(() => {
+    const handleTabChange = (e) => {
+      if (e.detail) {
+        setProviderTab(e.detail);
+      }
+    };
+    window.addEventListener('switch-provider-tab', handleTabChange);
+    window.addEventListener('provider-tab-changed', handleTabChange);
+    return () => {
+      window.removeEventListener('switch-provider-tab', handleTabChange);
+      window.removeEventListener('provider-tab-changed', handleTabChange);
+    };
+  }, []);
+
   useEffect(() => {
     if (isDark) {
       document.body.classList.add('dark');
@@ -427,9 +444,12 @@ export default function Navbar() {
         </div>
       ) : user && user.role === 'PROVIDER' ? (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.65rem', flex: 1 }}>
-          <Link
-            to="/provider"
+          <button
+            type="button"
             onClick={() => {
+              if (location.pathname !== '/provider') {
+                navigate('/provider');
+              }
               window.dispatchEvent(new CustomEvent('switch-provider-tab', { detail: 'tasks' }));
             }}
             style={{
@@ -437,22 +457,23 @@ export default function Navbar() {
               borderRadius: '24px',
               fontSize: '0.875rem',
               fontWeight: 600,
-              color: location.pathname === '/provider' ? '#38bdf8' : 'var(--text-main)',
-              backgroundColor: location.pathname === '/provider' ? 'rgba(56, 189, 248, 0.12)' : 'var(--bg-subtle)',
-              border: location.pathname === '/provider' ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid var(--border-light)',
-              textDecoration: 'none',
+              cursor: 'pointer',
+              color: (location.pathname === '/provider' && providerTab !== 'discussions') ? '#38bdf8' : 'var(--text-main)',
+              backgroundColor: (location.pathname === '/provider' && providerTab !== 'discussions') ? 'rgba(56, 189, 248, 0.12)' : 'var(--bg-subtle)',
+              border: (location.pathname === '/provider' && providerTab !== 'discussions') ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid var(--border-light)',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.45rem',
               letterSpacing: '0.01em',
               transition: 'all 0.2s ease',
-              boxShadow: location.pathname === '/provider' ? '0 0 12px rgba(56, 189, 248, 0.15)' : 'none'
+              boxShadow: (location.pathname === '/provider' && providerTab !== 'discussions') ? '0 0 12px rgba(56, 189, 248, 0.15)' : 'none'
             }}
           >
             <Briefcase size={15} />
             <span>Provider Console</span>
-          </Link>
+          </button>
           <button
+            type="button"
             onClick={() => {
               if (location.pathname !== '/provider') {
                 navigate('/provider');
@@ -464,15 +485,16 @@ export default function Navbar() {
               borderRadius: '24px',
               fontSize: '0.875rem',
               fontWeight: 600,
-              color: '#10B981',
-              backgroundColor: 'rgba(16, 185, 129, 0.1)',
-              border: '1px solid rgba(16, 185, 129, 0.35)',
               cursor: 'pointer',
+              color: (location.pathname === '/provider' && providerTab === 'discussions') ? '#38bdf8' : 'var(--text-main)',
+              backgroundColor: (location.pathname === '/provider' && providerTab === 'discussions') ? 'rgba(56, 189, 248, 0.12)' : 'var(--bg-subtle)',
+              border: (location.pathname === '/provider' && providerTab === 'discussions') ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid var(--border-light)',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.45rem',
+              letterSpacing: '0.01em',
               transition: 'all 0.2s ease',
-              boxShadow: 'none'
+              boxShadow: (location.pathname === '/provider' && providerTab === 'discussions') ? '0 0 12px rgba(56, 189, 248, 0.15)' : 'none'
             }}
           >
             <MessageSquare size={15} />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../services/api';
 import { formatLocalTime } from '../utils/time';
 import { sortBookingsByStatusPriority } from '../utils/sorting';
@@ -98,9 +98,34 @@ export default function AdminDashboard() {
     }
   };
 
+  const adminChatEndRef = useRef(null);
+
   useEffect(() => {
     loadAdminData();
   }, []);
+
+  // Live Auto-Poll Partner Discussions in Admin Panel every 3 seconds
+  useEffect(() => {
+    if (activeTab !== 'discussions') return;
+    const pollInterval = setInterval(async () => {
+      try {
+        const discussionsList = await api.admin.getDiscussions();
+        if (Array.isArray(discussionsList)) {
+          setDiscussions(discussionsList);
+        }
+      } catch (e) {
+        // silent background poll
+      }
+    }, 3000);
+    return () => clearInterval(pollInterval);
+  }, [activeTab]);
+
+  // Auto-scroll chat to latest message
+  useEffect(() => {
+    if (activeTab === 'discussions') {
+      adminChatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [discussions, selectedDiscussionId, activeTab]);
 
   // ----------------------------------------
   // CATEGORY OPERATIONS
@@ -655,6 +680,7 @@ export default function AdminDashboard() {
                       </div>
                     );
                   })}
+                  <div ref={adminChatEndRef} />
                 </div>
 
                 {/* Reply Box */}

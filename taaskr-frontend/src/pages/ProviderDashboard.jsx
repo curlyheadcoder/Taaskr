@@ -178,6 +178,8 @@ export default function ProviderDashboard() {
     }
   };
 
+  const chatEndRef = useRef(null);
+
   useEffect(() => {
     loadProviderDashboard(true);
 
@@ -189,6 +191,34 @@ export default function ProviderDashboard() {
     window.addEventListener('switch-provider-tab', handleSwitchTab);
     return () => window.removeEventListener('switch-provider-tab', handleSwitchTab);
   }, []);
+
+  // Broadcast tab changes to sync navbar pill styles
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('provider-tab-changed', { detail: activeTab }));
+  }, [activeTab]);
+
+  // Live Auto-Poll Discussion Messages every 3 seconds when chatting with admin
+  useEffect(() => {
+    if (activeTab !== 'discussions') return;
+    const pollInterval = setInterval(async () => {
+      try {
+        const discList = await api.provider.getDiscussions();
+        if (Array.isArray(discList)) {
+          setDiscussions(discList);
+        }
+      } catch (e) {
+        // silent background poll
+      }
+    }, 3000);
+    return () => clearInterval(pollInterval);
+  }, [activeTab]);
+
+  // Auto-scroll chat to latest message
+  useEffect(() => {
+    if (activeTab === 'discussions') {
+      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [discussions, selectedDiscussionId, activeTab]);
 
   const isProviderVerified = Boolean(userProfile?.emailVerified && userProfile?.phoneVerified);
 
@@ -995,20 +1025,6 @@ export default function ProviderDashboard() {
             <Settings size={16} />
             <span>Profile & Services</span>
           </button>
-
-          <button 
-            className={`sidebar-item ${activeTab === 'discussions' ? 'active' : ''}`}
-            onClick={() => setActiveTab('discussions')}
-            title="Connect with Admin"
-            style={{
-              marginTop: '0.5rem',
-              borderTop: '1px solid var(--border-subtle)',
-              paddingTop: '0.65rem'
-            }}
-          >
-            <MessageSquare size={16} color="var(--primary)" />
-            <span style={{ fontWeight: 600 }}>Connect with Admin ({discussions.length})</span>
-          </button>
         </nav>
       </aside>
 
@@ -1168,28 +1184,10 @@ export default function ProviderDashboard() {
             <h1>Provider Console</h1>
             <p>Live job dispatch, fleet status, and schedule management.</p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-            <button 
-              onClick={() => setActiveTab('discussions')} 
-              className="btn btn-sm"
-              style={{
-                backgroundColor: 'rgba(16, 185, 129, 0.12)',
-                color: '#10B981',
-                border: '1px solid rgba(16, 185, 129, 0.35)',
-                fontWeight: 600,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem'
-              }}
-            >
-              <MessageSquare size={14} />
-              <span>Connect with Admin ({discussions.length})</span>
-            </button>
-            <button onClick={() => loadProviderDashboard(false)} className="btn btn-secondary btn-sm">
-              <RefreshCw size={13} />
-              <span>Refresh Data</span>
-            </button>
-          </div>
+          <button onClick={() => loadProviderDashboard(false)} className="btn btn-secondary btn-sm">
+            <RefreshCw size={13} />
+            <span>Refresh Data</span>
+          </button>
         </div>
 
         {/* Key Metrics Strip */}
@@ -2421,6 +2419,7 @@ export default function ProviderDashboard() {
                           </div>
                         );
                       })}
+                      <div ref={chatEndRef} />
                     </div>
 
                     {/* Reply Input Box */}
