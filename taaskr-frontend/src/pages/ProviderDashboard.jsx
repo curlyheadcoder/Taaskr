@@ -178,7 +178,8 @@ export default function ProviderDashboard() {
     }
   };
 
-  const chatEndRef = useRef(null);
+  const providerChatContainerRef = useRef(null);
+  const prevProviderMsgCountRef = useRef(0);
 
   useEffect(() => {
     loadProviderDashboard(true);
@@ -213,12 +214,17 @@ export default function ProviderDashboard() {
     return () => clearInterval(pollInterval);
   }, [activeTab]);
 
-  // Auto-scroll chat to latest message
+  // Auto-scroll chat container strictly inside the chat box without scrolling the page window
   useEffect(() => {
-    if (activeTab === 'discussions') {
-      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (activeTab === 'discussions' && providerChatContainerRef.current) {
+      const activeDisc = discussions.find(d => d.id === selectedDiscussionId);
+      const currentCount = activeDisc?.messages?.length || 0;
+      if (currentCount !== prevProviderMsgCountRef.current) {
+        providerChatContainerRef.current.scrollTop = providerChatContainerRef.current.scrollHeight;
+        prevProviderMsgCountRef.current = currentCount;
+      }
     }
-  }, [discussions, selectedDiscussionId, activeTab]);
+  }, [selectedDiscussionId, discussions, activeTab]);
 
   const isProviderVerified = Boolean(userProfile?.emailVerified && userProfile?.phoneVerified);
 
@@ -2373,7 +2379,7 @@ export default function ProviderDashboard() {
                     </div>
 
                     {/* Chat Messages Timeline */}
-                    <div style={{ flex: 1, padding: '1.25rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem', background: 'var(--bg-main)' }}>
+                    <div ref={providerChatContainerRef} style={{ flex: 1, padding: '1.25rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem', background: 'var(--bg-main)' }}>
                       {(activeDisc.messages || []).map((msg) => {
                         const isMe = msg.senderRole === 'PROVIDER';
                         return (
@@ -2419,7 +2425,6 @@ export default function ProviderDashboard() {
                           </div>
                         );
                       })}
-                      <div ref={chatEndRef} />
                     </div>
 
                     {/* Reply Input Box */}

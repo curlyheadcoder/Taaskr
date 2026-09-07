@@ -98,7 +98,8 @@ export default function AdminDashboard() {
     }
   };
 
-  const adminChatEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+  const prevMsgCountRef = useRef(0);
 
   useEffect(() => {
     loadAdminData();
@@ -120,12 +121,16 @@ export default function AdminDashboard() {
     return () => clearInterval(pollInterval);
   }, [activeTab]);
 
-  // Auto-scroll chat to latest message
+  // Auto-scroll chat container strictly inside the chat box without scrolling the page window
   useEffect(() => {
-    if (activeTab === 'discussions') {
-      adminChatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (activeTab === 'discussions' && messagesContainerRef.current) {
+      const currentCount = activeDiscussion?.messages?.length || 0;
+      if (currentCount !== prevMsgCountRef.current) {
+        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+        prevMsgCountRef.current = currentCount;
+      }
     }
-  }, [discussions, selectedDiscussionId, activeTab]);
+  }, [activeDiscussion?.id, activeDiscussion?.messages?.length, activeTab]);
 
   // ----------------------------------------
   // CATEGORY OPERATIONS
@@ -644,7 +649,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Messages Thread */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div ref={messagesContainerRef} style={{ flex: 1, overflowY: 'auto', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {activeDiscussion.messages && activeDiscussion.messages.map((msg, idx) => {
                     const isAdmin = msg.senderRole === 'ADMIN';
                     return (
@@ -680,7 +685,6 @@ export default function AdminDashboard() {
                       </div>
                     );
                   })}
-                  <div ref={adminChatEndRef} />
                 </div>
 
                 {/* Reply Box */}
