@@ -59,6 +59,12 @@ public class ProviderController {
         return providerWorkflowService.claimTask(authentication.getName(), bookingId);
     }
 
+    @PutMapping("/bookings/{bookingId}/accept")
+    public ProviderBookingResponse acceptBooking(@PathVariable Long bookingId,
+                                                 Authentication authentication) {
+        return providerWorkflowService.acceptBooking(authentication.getName(), bookingId);
+    }
+
     @PutMapping("/bookings/{bookingId}/status")
     public ProviderBookingResponse updateBookingStatus(@PathVariable Long bookingId,
                                                        @Valid @RequestBody UpdateProviderBookingStatusRequest request,
