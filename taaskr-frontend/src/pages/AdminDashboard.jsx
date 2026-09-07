@@ -57,6 +57,14 @@ export default function AdminDashboard() {
   const [discussionFilter, setDiscussionFilter] = useState('ALL');
   const [submittingAdminReply, setSubmittingAdminReply] = useState(false);
 
+  const filteredDiscussions = discussions.filter(d => {
+    if (discussionFilter === 'ALL') return true;
+    return d.status === discussionFilter;
+  });
+
+  const activeDiscussion = discussions.find(d => d.id === selectedDiscussionId) 
+    || (filteredDiscussions.length > 0 ? filteredDiscussions[0] : null);
+
   // Category CRUD states
   const [catName, setCatName] = useState('');
   const [catDesc, setCatDesc] = useState('');
@@ -99,7 +107,12 @@ export default function AdminDashboard() {
   };
 
   const messagesContainerRef = useRef(null);
-  const prevMsgCountRef = useRef(0);
+
+  const scrollToChatBottom = () => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
+  };
 
   useEffect(() => {
     loadAdminData();
@@ -121,16 +134,13 @@ export default function AdminDashboard() {
     return () => clearInterval(pollInterval);
   }, [activeTab]);
 
-  // Auto-scroll chat container strictly inside the chat box without scrolling the page window
+  // Scroll chat box when opening/selecting a discussion thread
   useEffect(() => {
-    if (activeTab === 'discussions' && messagesContainerRef.current) {
-      const currentCount = activeDiscussion?.messages?.length || 0;
-      if (currentCount !== prevMsgCountRef.current) {
-        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-        prevMsgCountRef.current = currentCount;
-      }
+    if (activeTab === 'discussions' && selectedDiscussionId) {
+      const timer = setTimeout(scrollToChatBottom, 60);
+      return () => clearTimeout(timer);
     }
-  }, [activeDiscussion?.id, activeDiscussion?.messages?.length, activeTab]);
+  }, [selectedDiscussionId, activeTab]);
 
   // ----------------------------------------
   // CATEGORY OPERATIONS
@@ -229,6 +239,7 @@ export default function AdminDashboard() {
       const updated = await api.admin.replyDiscussion(selectedDiscussionId, adminReplyText);
       setDiscussions(prev => prev.map(d => d.id === updated.id ? updated : d));
       setAdminReplyText('');
+      setTimeout(scrollToChatBottom, 60);
     } catch (err) {
       alert(err.message || 'Failed to send reply to provider');
     } finally {
@@ -289,14 +300,6 @@ export default function AdminDashboard() {
   const totalRevenue = bookings
     .filter(b => b.paymentStatus === 'PAID')
     .reduce((acc, curr) => acc + (Number(curr.finalAmount) || 0), 0);
-
-  const filteredDiscussions = discussions.filter(d => {
-    if (discussionFilter === 'ALL') return true;
-    return d.status === discussionFilter;
-  });
-
-  const activeDiscussion = discussions.find(d => d.id === selectedDiscussionId) 
-    || (filteredDiscussions.length > 0 ? filteredDiscussions[0] : null);
 
   const pendingProviders = providers.filter(p => !p.approved);
   const approvedProviders = providers.filter(p => p.approved);

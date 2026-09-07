@@ -179,7 +179,12 @@ export default function ProviderDashboard() {
   };
 
   const providerChatContainerRef = useRef(null);
-  const prevProviderMsgCountRef = useRef(0);
+
+  const scrollProviderChatToBottom = () => {
+    if (providerChatContainerRef.current) {
+      providerChatContainerRef.current.scrollTop = providerChatContainerRef.current.scrollHeight;
+    }
+  };
 
   useEffect(() => {
     loadProviderDashboard(true);
@@ -214,17 +219,13 @@ export default function ProviderDashboard() {
     return () => clearInterval(pollInterval);
   }, [activeTab]);
 
-  // Auto-scroll chat container strictly inside the chat box without scrolling the page window
+  // Scroll chat box when opening/selecting a discussion thread
   useEffect(() => {
-    if (activeTab === 'discussions' && providerChatContainerRef.current) {
-      const activeDisc = discussions.find(d => d.id === selectedDiscussionId);
-      const currentCount = activeDisc?.messages?.length || 0;
-      if (currentCount !== prevProviderMsgCountRef.current) {
-        providerChatContainerRef.current.scrollTop = providerChatContainerRef.current.scrollHeight;
-        prevProviderMsgCountRef.current = currentCount;
-      }
+    if (activeTab === 'discussions' && selectedDiscussionId) {
+      const timer = setTimeout(scrollProviderChatToBottom, 60);
+      return () => clearTimeout(timer);
     }
-  }, [selectedDiscussionId, discussions, activeTab]);
+  }, [selectedDiscussionId, activeTab]);
 
   const isProviderVerified = Boolean(userProfile?.emailVerified && userProfile?.phoneVerified);
 
@@ -621,6 +622,7 @@ export default function ProviderDashboard() {
       setDiscussions(prev => prev.map(d => d.id === updated.id ? updated : d));
       setReplyMessage('');
       showNotification('Message sent to Admin');
+      setTimeout(scrollProviderChatToBottom, 60);
     } catch (err) {
       showNotification(err.message || 'Failed to send reply', 'error');
     } finally {
