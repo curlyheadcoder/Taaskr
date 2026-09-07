@@ -16,6 +16,10 @@ const CANONICAL_CATEGORIES = [
     id: 'appliances_electrical',
     name: 'Appliances & Electrical',
     matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase().trim();
+      if (c === 'appliances & electrical' || c === 'appliances' || c === 'electrical' || c === 'appliance' || c === 'electric') {
+        return true;
+      }
       const s = (sName || '').toLowerCase();
       if (s.includes('switch') || s.includes('wire') || s.includes('mcb') || s.includes('fan') ||
         s.includes('ac ') || s.includes('air condition') || s.includes('ro ') || s.includes('purifier') ||
@@ -23,7 +27,6 @@ const CANONICAL_CATEGORIES = [
         s.includes('microwave') || s.includes('refrigerator') || s.includes('washing machine')) {
         return true;
       }
-      const c = (cName || '').toLowerCase();
       return (c.includes('appliance') || c.includes('electric')) &&
         !s.includes('tap') && !s.includes('pipe') && !s.includes('drain') && !s.includes('clean');
     }
@@ -32,8 +35,11 @@ const CANONICAL_CATEGORIES = [
     id: 'plumbing_cleaning',
     name: 'Plumbing & Cleaning',
     matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase().trim();
+      if (c === 'plumbing & cleaning' || c === 'plumbing' || c === 'cleaning' || c === 'plumb' || c === 'clean') {
+        return true;
+      }
       const s = (sName || '').toLowerCase();
-      // Strictly prevent electrical items from matching here
       if (s.includes('switch') || s.includes('wire') || s.includes('mcb') || s.includes('fan') ||
         s.includes('ac ') || s.includes('air condition') || s.includes('ro ') || s.includes('purifier') ||
         s.includes('geyser') || s.includes('inverter') || s.includes('microwave') ||
@@ -44,7 +50,6 @@ const CANONICAL_CATEGORIES = [
         s.includes('bathroom') || s.includes('clean') || s.includes('sofa') || s.includes('carpet') || s.includes('chimney')) {
         return true;
       }
-      const c = (cName || '').toLowerCase();
       return (c.includes('plumb') || c.includes('clean')) && !c.includes('pest');
     }
   },
@@ -52,12 +57,13 @@ const CANONICAL_CATEGORIES = [
     id: 'pest_control',
     name: 'Pest Control',
     matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase().trim();
+      if (c === 'pest control' || c === 'pest') return true;
       const s = (sName || '').toLowerCase();
       if (s.includes('pest') || s.includes('cockroach') || s.includes('termite') ||
         s.includes('bed bug') || s.includes('mosquito') || s.includes('insect')) {
         return true;
       }
-      const c = (cName || '').toLowerCase();
       return c.includes('pest');
     }
   },
@@ -65,20 +71,27 @@ const CANONICAL_CATEGORIES = [
     id: 'salon_wellness',
     name: 'Salon & Massage / Wellness',
     matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase().trim();
+      if (c.includes('salon') || c.includes('massage') || c.includes('wellness') || c.includes('beauty') || c.includes('grooming')) {
+        return true;
+      }
       const s = (sName || '').toLowerCase();
       if (s.includes('haircut') || s.includes('beard') || s.includes('spa') || s.includes('grooming') ||
         s.includes('facial') || s.includes('manicure') || s.includes('pedicure') || s.includes('waxing') ||
         s.includes('makeup') || s.includes('bridal') || s.includes('massage') || s.includes('therapy')) {
         return true;
       }
-      const c = (cName || '').toLowerCase();
-      return c.includes('salon') || c.includes('massage') || c.includes('wellness') || c.includes('beauty');
+      return false;
     }
   },
   {
     id: 'civil_maintenance',
     name: 'Civil & Property Maintenance',
     matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase().trim();
+      if (c === 'civil & property maintenance' || c.includes('civil') || c.includes('property') || c.includes('carpentry') || c.includes('painting')) {
+        return true;
+      }
       const s = (sName || '').toLowerCase();
       if (s.includes('carpenter') || s.includes('carpentry') || s.includes('woodwork') ||
         s.includes('furniture assembly') || s.includes('flatpack') || s.includes('drilling') || s.includes('hanging') ||
@@ -86,89 +99,106 @@ const CANONICAL_CATEGORIES = [
         s.includes('tiling') || s.includes('flooring') || s.includes('roof') || s.includes('renovat') || s.includes('civil')) {
         return true;
       }
-      const c = (cName || '').toLowerCase();
-      return c.includes('civil') || c.includes('property');
+      return false;
     }
   },
   {
     id: 'tech_automation',
     name: 'Tech & Home Automation',
     matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase().trim();
+      if (c === 'tech & home automation' || c.includes('tech') || c.includes('automation')) {
+        return true;
+      }
       const s = (sName || '').toLowerCase();
       if (s.includes('laptop') || s.includes('pc ') || s.includes('computer') || s.includes('wi-fi') ||
         s.includes('router') || s.includes('mesh') || s.includes('smart tv') || s.includes('printer')) {
         return true;
       }
-      const c = (cName || '').toLowerCase();
-      return c.includes('tech') || c.includes('automation');
+      return false;
     }
   },
   {
     id: 'vehicle_autocare',
     name: 'Vehicle & Auto Care',
     matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase().trim();
+      if (c === 'vehicle & auto care' || c === 'auto care' || c === 'vehicle care' || (c.includes('auto') && !c.includes('automation')) || (c.includes('vehicle') && !c.includes('on-demand') && !c.includes('logistics') && !c.includes('transport'))) {
+        return true;
+      }
       const s = (sName || '').toLowerCase();
       if (s.includes('car foam') || s.includes('bike foam') || s.includes('detailing') ||
         s.includes('car wash') || s.includes('bike wash') || s.includes('jump start') || s.includes('battery jump')) {
         return true;
       }
-      const c = (cName || '').toLowerCase();
-      return c.includes('auto') || (c.includes('vehicle') && !c.includes('on-demand vehicle'));
+      return false;
     }
   },
   {
     id: 'home_help',
     name: 'Home Help & Errand Services',
     matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase().trim();
+      if (c === 'home help & errand services' || c.includes('home help') || c.includes('errand')) {
+        return true;
+      }
       const s = (sName || '').toLowerCase();
       if (s.includes('maid') || s.includes('domestic helper') || s.includes('cook') || s.includes('chef') ||
         s.includes('laundry') || s.includes('steam ironing') || s.includes('medicine') || s.includes('grocery') ||
         s.includes('queue') || s.includes('errand')) {
         return true;
       }
-      const c = (cName || '').toLowerCase();
-      return c.includes('home help') || c.includes('errand');
+      return false;
     }
   },
   {
     id: 'security_services',
     name: 'Security Services',
     matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase().trim();
+      if (c === 'security services' || c.includes('security')) {
+        return true;
+      }
       const s = (sName || '').toLowerCase();
       if (s.includes('cctv') || s.includes('smart lock') || s.includes('security guard') || s.includes('guard') ||
         s.includes('doorbell') || s.includes('camera') || s.includes('surveillance')) {
         return true;
       }
-      const c = (cName || '').toLowerCase();
-      return c.includes('security');
+      return false;
     }
   },
   {
     id: 'diagnostic_healthcare',
     name: 'Diagnostic & Healthcare Services',
     matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase().trim();
+      if (c === 'diagnostic & healthcare services' || c === 'diagnostic services' || c === 'healthcare services' || c.includes('diagnostic') || c.includes('health')) {
+        return true;
+      }
       const s = (sName || '').toLowerCase();
       if (s.includes('blood') || s.includes('doctor') || s.includes('nurse') || s.includes('compounder') ||
         s.includes('sample') || s.includes('checkup') || s.includes('diagnostic') || s.includes('phlebotomy') ||
         s.includes('elderly assistance') || s.includes('hospital escort')) {
         return true;
       }
-      const c = (cName || '').toLowerCase();
-      return c.includes('diagnostic') || c.includes('health');
+      return false;
     }
   },
   {
     id: 'logistics',
     name: 'Logistics',
     matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase().trim();
+      if (c === 'logistics' || c === 'on-demand vehicle' || c.includes('logistics') || c.includes('goods transport') || c.includes('on-demand vehicle')) {
+        return true;
+      }
       const s = (sName || '').toLowerCase();
       if (s.includes('truck') || s.includes('tempo') || s.includes('courier') || s.includes('cargo') ||
         s.includes('transport') || s.includes('moving') || s.includes('shifting') || s.includes('furniture moving') ||
         s.includes('electric bike') || s.includes('petrol bike') || s.includes('rickshaw') || s.includes('loading vehicle')) {
         return true;
       }
-      const c = (cName || '').toLowerCase();
-      return c.includes('logistics') || c.includes('on-demand vehicle');
+      return false;
     }
   }
 ];
@@ -1113,7 +1143,7 @@ export default function Home() {
             const mappedServices = rawServs.map(s => mapServiceToCanonical(s, rawCats)).filter(Boolean);
             setServices(mappedServices);
 
-            const dynamicCats = CANONICAL_CATEGORIES.map(canon => {
+            const canonicalCats = CANONICAL_CATEGORIES.map(canon => {
               const count = mappedServices.filter(s => s.canonicalCategoryId === canon.id).length;
               return {
                 id: canon.id,
@@ -1122,7 +1152,18 @@ export default function Home() {
                 active: true
               };
             });
-            setCategories(dynamicCats);
+
+            // If there are additional database categories created by admin not matching canonical ones, append them
+            const extraDbCats = rawCats
+              .filter(rc => rc.name && !CANONICAL_CATEGORIES.some(canon => canon.matcher(rc.name, '')))
+              .map(rc => ({
+                id: String(rc.id),
+                name: rc.name,
+                count: mappedServices.filter(s => String(s.categoryId) === String(rc.id) || s.canonicalCategoryId === String(rc.id)).length,
+                active: rc.active !== false
+              }));
+
+            setCategories([...canonicalCats, ...extraDbCats]);
           } else {
             setServices([]);
           }
@@ -1161,7 +1202,11 @@ export default function Home() {
     if (hasSearch) {
       const matchesSearch = doesServiceMatch(service, searchQuery);
       if (selectedCategory) {
-        const matchesCategory = (service.canonicalCategoryId === selectedCategory || service.categoryId === selectedCategory);
+        const matchesCategory = (
+          service.canonicalCategoryId === selectedCategory ||
+          service.categoryId === selectedCategory ||
+          String(service.categoryId) === String(selectedCategory)
+        );
         return matchesSearch && matchesCategory;
       }
       return matchesSearch;
@@ -1169,7 +1214,11 @@ export default function Home() {
     if (!selectedCategory) {
       return false;
     }
-    return (service.canonicalCategoryId === selectedCategory || service.categoryId === selectedCategory);
+    return (
+      service.canonicalCategoryId === selectedCategory ||
+      service.categoryId === selectedCategory ||
+      String(service.categoryId) === String(selectedCategory)
+    );
   });
 
   const EXACT_SERVICE_IMAGES = {

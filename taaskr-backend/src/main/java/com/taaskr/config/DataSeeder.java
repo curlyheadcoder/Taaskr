@@ -108,7 +108,7 @@ public class DataSeeder {
         ServiceCategory homeHelp = seedCategory(categoryRepository, "Home Help & Errand Services", "On-demand cooks, domestic helpers, laundry, urgent medicine, and grocery pickups");
         ServiceCategory security = seedCategory(categoryRepository, "Security Services", "Home security CCTV installation, smart locks, and verified security guard protection");
         ServiceCategory diagnosticHealthcare = seedCategory(categoryRepository, "Diagnostic & Healthcare Services", "Doorstep blood tests, full body checkups, compounder nursing, and elderly care assistance");
-        ServiceCategory vehicleCategory = seedCategory(categoryRepository, "On-Demand Vehicle", "Intra-city on-demand goods transport and vehicle with driver service.");
+        ServiceCategory vehicleCategory = seedCategory(categoryRepository, "Logistics", "Intra-city on-demand goods transport and vehicle with driver service.");
 
         // 1. Plumbing & Cleaning
         seedService(serviceRepository, "Tap Repair", "Fix leaking or damaged taps and replace worn washers", new BigDecimal("299.00"), 60, plumbingCleaning);
