@@ -1078,14 +1078,7 @@ export default function Home() {
     }
   });
 
-  const [currentUser, setCurrentUser] = useState(() => {
-    try {
-      const saved = localStorage.getItem('user');
-      return saved ? JSON.parse(saved) : null;
-    } catch (e) {
-      return null;
-    }
-  });
+
 
   useEffect(() => {
     const handleAuthChange = () => {

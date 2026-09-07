@@ -2525,6 +2525,7 @@ export default function ProviderDashboard() {
             </div>
           </div>
         )}
+      </main>
 
       {/* Pop-up Modal for Payment Collection Restriction (When attempting before work completion) */}
       <PaymentRestrictionModal
