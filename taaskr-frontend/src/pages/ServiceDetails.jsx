@@ -15,6 +15,18 @@ export default function ServiceDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('user');
+      const u = saved ? JSON.parse(saved) : null;
+      if (u?.role === 'PROVIDER') {
+        navigate('/provider', { replace: true });
+      } else if (u?.role === 'ADMIN') {
+        navigate('/admin', { replace: true });
+      }
+    } catch (e) {}
+  }, [navigate]);
+
   // IST Date and Time helpers
   const getISTDateTime = () => {
     const now = new Date();

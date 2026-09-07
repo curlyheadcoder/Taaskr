@@ -426,7 +426,8 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
                 provider.getTotalJobs(),
                 provider.getBio(),
                 Boolean.TRUE.equals(provider.getUser().getEmailVerified()),
-                Boolean.TRUE.equals(provider.getUser().getPhoneVerified())
+                Boolean.TRUE.equals(provider.getUser().getPhoneVerified()),
+                provider.getAdminRemarks()
         );
     }
 

@@ -45,6 +45,21 @@ public class AdminProviderServiceImpl implements AdminProviderService {
         return mapToResponse(savedProvider);
     }
 
+    @Override
+    @Transactional
+    public AdminProviderResponse updateProviderRemarks(Long providerId, String remarks) {
+        ProviderProfile providerProfile = providerProfileRepository.findById(providerId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Provider not found with id: " + providerId));
+
+        providerProfile.setAdminRemarks(remarks);
+
+        ProviderProfile savedProvider =
+                providerProfileRepository.save(providerProfile);
+
+        return mapToResponse(savedProvider);
+    }
+
     private AdminProviderResponse mapToResponse(ProviderProfile providerProfile) {
 
         User user = providerProfile.getUser();
@@ -63,7 +78,8 @@ public class AdminProviderServiceImpl implements AdminProviderService {
                 providerProfile.getTotalJobs(),
                 providerProfile.getBio(),
                 Boolean.TRUE.equals(user.getEmailVerified()),
-                Boolean.TRUE.equals(user.getPhoneVerified())
+                Boolean.TRUE.equals(user.getPhoneVerified()),
+                providerProfile.getAdminRemarks()
         );
     }
 }

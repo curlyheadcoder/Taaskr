@@ -1,14 +1,11 @@
 package com.taaskr.controller;
 
-
-import com.taaskr.dto.provider.AvailabilityResponse;
-import com.taaskr.dto.provider.CreateAvailabilityRequest;
-import com.taaskr.dto.provider.ProviderBookingResponse;
-import com.taaskr.dto.provider.UpdateProviderBookingStatusRequest;
-import com.taaskr.dto.provider.ProviderProfileResponse;
-import com.taaskr.dto.provider.UpdateProviderProfileRequest;
-import com.taaskr.dto.provider.UpdateProviderCategoriesRequest;
+import com.taaskr.dto.discussion.CreateDiscussionRequest;
+import com.taaskr.dto.discussion.DiscussionResponse;
+import com.taaskr.dto.discussion.ReplyDiscussionRequest;
+import com.taaskr.dto.provider.*;
 import com.taaskr.dto.service.CategoryResponse;
+import com.taaskr.service.PartnerDiscussionService;
 import com.taaskr.service.ProviderWorkflowService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
@@ -21,9 +18,12 @@ import java.util.List;
 public class ProviderController {
 
     private final ProviderWorkflowService providerWorkflowService;
+    private final PartnerDiscussionService partnerDiscussionService;
 
-    public ProviderController(ProviderWorkflowService providerWorkflowService) {
+    public ProviderController(ProviderWorkflowService providerWorkflowService,
+                              PartnerDiscussionService partnerDiscussionService) {
         this.providerWorkflowService = providerWorkflowService;
+        this.partnerDiscussionService = partnerDiscussionService;
     }
 
     @PostMapping("/availability")
@@ -59,23 +59,17 @@ public class ProviderController {
         return providerWorkflowService.claimTask(authentication.getName(), bookingId);
     }
 
-    @PutMapping("/bookings/{bookingId}/accept")
-    public ProviderBookingResponse acceptBooking(@PathVariable Long bookingId,
-                                                 Authentication authentication) {
-        return providerWorkflowService.acceptBooking(authentication.getName(), bookingId);
+    @PutMapping("/bookings/{bookingId}/status")
+    public ProviderBookingResponse updateBookingStatus(@PathVariable Long bookingId,
+                                                       @Valid @RequestBody UpdateProviderBookingStatusRequest request,
+                                                       Authentication authentication) {
+        return providerWorkflowService.updateBookingStatus(authentication.getName(), bookingId, request);
     }
 
     @PutMapping("/bookings/{bookingId}/reject")
     public ProviderBookingResponse rejectBooking(@PathVariable Long bookingId,
                                                  Authentication authentication) {
         return providerWorkflowService.rejectBooking(authentication.getName(), bookingId);
-    }
-
-    @PutMapping("/bookings/{bookingId}/status")
-    public ProviderBookingResponse updateBookingStatus(@PathVariable Long bookingId,
-                                                       @Valid @RequestBody UpdateProviderBookingStatusRequest request,
-                                                       Authentication authentication) {
-        return providerWorkflowService.updateBookingStatus(authentication.getName(), bookingId, request);
     }
 
     @PutMapping("/bookings/{bookingId}/payment-received")
@@ -104,5 +98,32 @@ public class ProviderController {
     public List<CategoryResponse> updateMyCategories(@Valid @RequestBody UpdateProviderCategoriesRequest request,
                                                      Authentication authentication) {
         return providerWorkflowService.updateMyCategories(authentication.getName(), request);
+    }
+
+    // ----------------------------------------
+    // PARTNER DISCUSSION & ADMIN CONNECT
+    // ----------------------------------------
+    @PostMapping("/discussions")
+    public DiscussionResponse createDiscussion(@Valid @RequestBody CreateDiscussionRequest request,
+                                               Authentication authentication) {
+        return partnerDiscussionService.createDiscussion(authentication.getName(), request);
+    }
+
+    @GetMapping("/discussions")
+    public List<DiscussionResponse> getMyDiscussions(Authentication authentication) {
+        return partnerDiscussionService.getProviderDiscussions(authentication.getName());
+    }
+
+    @GetMapping("/discussions/{discussionId}")
+    public DiscussionResponse getDiscussionById(@PathVariable Long discussionId,
+                                                Authentication authentication) {
+        return partnerDiscussionService.getDiscussionByIdForProvider(authentication.getName(), discussionId);
+    }
+
+    @PostMapping("/discussions/{discussionId}/reply")
+    public DiscussionResponse replyDiscussion(@PathVariable Long discussionId,
+                                              @Valid @RequestBody ReplyDiscussionRequest request,
+                                              Authentication authentication) {
+        return partnerDiscussionService.replyDiscussionByProvider(authentication.getName(), discussionId, request);
     }
 }

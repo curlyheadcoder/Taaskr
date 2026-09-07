@@ -7,4 +7,5 @@ import java.util.List;
 public interface AdminProviderService {
     List<AdminProviderResponse> getAllProviders();
     AdminProviderResponse approveProvider(Long providerId);
+    AdminProviderResponse updateProviderRemarks(Long providerId, String remarks);
 }

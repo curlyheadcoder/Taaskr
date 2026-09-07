@@ -31,16 +31,19 @@ public class AdminController {
 
     private final AdminBookingService adminBookingService;
 
+    private final com.taaskr.service.PartnerDiscussionService partnerDiscussionService;
+
     public AdminController(AdminCatalogService adminCatalogService,
                            AdminUserService adminUserService,
                            AdminProviderService adminProviderService,
-                           AdminBookingService adminBookingService) {
+                           AdminBookingService adminBookingService,
+                           com.taaskr.service.PartnerDiscussionService partnerDiscussionService) {
         this.adminCatalogService = adminCatalogService;
         this.adminUserService = adminUserService;
         this.adminProviderService = adminProviderService;
         this.adminBookingService = adminBookingService;
+        this.partnerDiscussionService = partnerDiscussionService;
     }
-
 
     @PostMapping("/categories")
     public CategoryResponse createCategory(@Valid @RequestBody CategoryRequest request){
@@ -86,9 +89,43 @@ public class AdminController {
 
         return adminProviderService.approveProvider(providerId);
     }
+
+    @PutMapping("/providers/{providerId}/remarks")
+    public AdminProviderResponse updateProviderRemarks(
+            @PathVariable Long providerId,
+            @Valid @RequestBody com.taaskr.dto.admin.UpdateProviderRemarksRequest request) {
+
+        return adminProviderService.updateProviderRemarks(providerId, request.getRemarks());
+    }
+
     @GetMapping("/bookings")
     public List<AdminBookingResponse> getAllBookings() {
         return adminBookingService.getAllBookings();
     }
 
+    // ----------------------------------------
+    // PARTNER DISCUSSIONS & DESK
+    // ----------------------------------------
+    @GetMapping("/discussions")
+    public List<com.taaskr.dto.discussion.DiscussionResponse> getAllDiscussions(@RequestParam(required = false) com.taaskr.enums.DiscussionStatus status) {
+        return partnerDiscussionService.getAllDiscussionsForAdmin(status);
+    }
+
+    @GetMapping("/discussions/{discussionId}")
+    public com.taaskr.dto.discussion.DiscussionResponse getDiscussionById(@PathVariable Long discussionId) {
+        return partnerDiscussionService.getDiscussionByIdForAdmin(discussionId);
+    }
+
+    @PostMapping("/discussions/{discussionId}/reply")
+    public com.taaskr.dto.discussion.DiscussionResponse replyDiscussion(@PathVariable Long discussionId,
+                                                                        @Valid @RequestBody com.taaskr.dto.discussion.ReplyDiscussionRequest request,
+                                                                        org.springframework.security.core.Authentication authentication) {
+        return partnerDiscussionService.replyDiscussionByAdmin(authentication.getName(), discussionId, request);
+    }
+
+    @PutMapping("/discussions/{discussionId}/status")
+    public com.taaskr.dto.discussion.DiscussionResponse updateDiscussionStatus(@PathVariable Long discussionId,
+                                                                              @Valid @RequestBody com.taaskr.dto.discussion.UpdateDiscussionStatusRequest request) {
+        return partnerDiscussionService.updateDiscussionStatus(discussionId, request);
+    }
 }

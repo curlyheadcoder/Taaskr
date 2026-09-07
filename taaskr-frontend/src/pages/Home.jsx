@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { api } from '../services/api';
 import Pagination from '../components/Pagination';
 import {
@@ -1078,25 +1078,26 @@ export default function Home() {
     }
   });
 
-  // Partner Operations State
-  const [isOnline, setIsOnline] = useState(true);
-  const [showSkillRequestModal, setShowSkillRequestModal] = useState(false);
-  const [showEscalationModal, setShowEscalationModal] = useState(false);
-  const [requestedCategory, setRequestedCategory] = useState('');
-  const [requestedSkillExp, setRequestedSkillExp] = useState('3');
-  const [requestedSkillNotes, setRequestedSkillNotes] = useState('');
-  const [requestSubmitted, setRequestSubmitted] = useState(false);
-  const [escalationType, setEscalationType] = useState('PARTS_REIMBURSEMENT');
-  const [escalationAmount, setEscalationAmount] = useState('');
-  const [escalationBookingId, setEscalationBookingId] = useState('');
-  const [escalationNotes, setEscalationNotes] = useState('');
-  const [escalationSubmitted, setEscalationSubmitted] = useState(false);
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('user');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
 
   useEffect(() => {
     const handleAuthChange = () => {
       try {
         const saved = localStorage.getItem('user');
-        setCurrentUser(saved ? JSON.parse(saved) : null);
+        const parsed = saved ? JSON.parse(saved) : null;
+        setCurrentUser(parsed);
+        if (parsed?.role === 'PROVIDER') {
+          navigate('/provider', { replace: true });
+        } else if (parsed?.role === 'ADMIN') {
+          navigate('/admin', { replace: true });
+        }
       } catch (e) {
         setCurrentUser(null);
       }
@@ -1107,7 +1108,22 @@ export default function Home() {
       window.removeEventListener('auth_change', handleAuthChange);
       window.removeEventListener('storage', handleAuthChange);
     };
-  }, []);
+  }, [navigate]);
+
+  useEffect(() => {
+    if (currentUser?.role === 'PROVIDER') {
+      navigate('/provider', { replace: true });
+    } else if (currentUser?.role === 'ADMIN') {
+      navigate('/admin', { replace: true });
+    }
+  }, [currentUser, navigate]);
+
+  if (currentUser?.role === 'PROVIDER') {
+    return <Navigate to="/provider" replace />;
+  }
+  if (currentUser?.role === 'ADMIN') {
+    return <Navigate to="/admin" replace />;
+  }
 
   useEffect(() => {
     const handleLocChange = (e) => {

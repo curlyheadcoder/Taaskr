@@ -8,7 +8,7 @@ import Pagination from '../components/Pagination';
 import { 
   BarChart3, Activity, Layers, Users, Briefcase, Plus, Trash2, 
   Edit2, Check, X, ShieldCheck, RefreshCw, DollarSign, Calendar, 
-  MapPin, Truck, AlertCircle, Search
+  MapPin, Truck, AlertCircle, Search, MessageSquare, Send, CheckCircle2, Clock, HelpCircle, FileText
 } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -17,6 +17,7 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [providers, setProviders] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [discussions, setDiscussions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Pagination states
@@ -24,10 +25,23 @@ export default function AdminDashboard() {
   const [providersPage, setProvidersPage] = useState(1);
   const [bookingsPage, setBookingsPage] = useState(1);
   const [usersPage, setUsersPage] = useState(1);
+  const [discussionsPage, setDiscussionsPage] = useState(1);
   const itemsPerPage = 8;
 
-  // Tabs: 'analytics', 'observability', 'catalog', 'providers', 'bookings', 'users'
+  // Tabs: 'analytics', 'observability', 'catalog', 'providers', 'bookings', 'users', 'discussions'
   const [activeTab, setActiveTab] = useState('analytics');
+
+  // Provider sub-tabs & remarks states
+  const [providerSubTab, setProviderSubTab] = useState('pending');
+  const [editingRemarksProviderId, setEditingRemarksProviderId] = useState(null);
+  const [remarksInput, setRemarksInput] = useState('');
+  const [savingRemarks, setSavingRemarks] = useState(false);
+
+  // Discussion states
+  const [selectedDiscussionId, setSelectedDiscussionId] = useState(null);
+  const [adminReplyText, setAdminReplyText] = useState('');
+  const [discussionFilter, setDiscussionFilter] = useState('ALL');
+  const [submittingAdminReply, setSubmittingAdminReply] = useState(false);
 
   // Category CRUD states
   const [catName, setCatName] = useState('');
@@ -45,12 +59,13 @@ export default function AdminDashboard() {
   const loadAdminData = async () => {
     setLoading(true);
     try {
-      const [cats, servs, usersList, providersList, bookingsList] = await Promise.all([
+      const [cats, servs, usersList, providersList, bookingsList, discussionsList] = await Promise.all([
         api.catalog.getCategories(),
         api.catalog.getServices(),
         api.admin.getUsers(),
         api.admin.getProviders(),
-        api.admin.getAllBookings()
+        api.admin.getAllBookings(),
+        api.admin.getDiscussions()
       ]);
 
       setCategories(cats || []);
@@ -58,6 +73,10 @@ export default function AdminDashboard() {
       setUsers(usersList || []);
       setProviders(providersList || []);
       setBookings(sortBookingsByStatusPriority(bookingsList || []));
+      setDiscussions(discussionsList || []);
+      if (discussionsList && discussionsList.length > 0 && !selectedDiscussionId) {
+        setSelectedDiscussionId(discussionsList[0].id);
+      }
     } catch (err) {
       console.error('Failed to load admin console data:', err);
     } finally {
@@ -155,13 +174,54 @@ export default function AdminDashboard() {
     }
   };
 
+  // ----------------------------------------
+  // PARTNER DESK / DISCUSSION OPERATIONS
+  // ----------------------------------------
+  const handleAdminSendReply = async (e) => {
+    e.preventDefault();
+    if (!adminReplyText.trim() || !selectedDiscussionId) return;
+    setSubmittingAdminReply(true);
+    try {
+      const updated = await api.admin.replyDiscussion(selectedDiscussionId, adminReplyText);
+      setDiscussions(prev => prev.map(d => d.id === updated.id ? updated : d));
+      setAdminReplyText('');
+    } catch (err) {
+      alert(err.message || 'Failed to send reply to provider');
+    } finally {
+      setSubmittingAdminReply(false);
+    }
+  };
+
+  const handleUpdateDiscussionStatus = async (discussionId, status) => {
+    try {
+      const updated = await api.admin.updateDiscussionStatus(discussionId, status);
+      setDiscussions(prev => prev.map(d => d.id === updated.id ? updated : d));
+    } catch (err) {
+      alert(err.message || 'Failed to update discussion status');
+    }
+  };
+
   const handleApproveProvider = async (providerId) => {
     try {
       await api.admin.approveProvider(providerId);
       const providersList = await api.admin.getProviders();
       setProviders(providersList);
     } catch (err) {
-      alert(err.message);
+      alert(err.message || 'Failed to approve partner');
+    }
+  };
+
+  const handleSaveRemarks = async (providerId) => {
+    setSavingRemarks(true);
+    try {
+      const updated = await api.admin.updateProviderRemarks(providerId, remarksInput.trim());
+      setProviders(prev => prev.map(p => p.id === updated.id ? updated : p));
+      setEditingRemarksProviderId(null);
+      setRemarksInput('');
+    } catch (err) {
+      alert(err.message || 'Failed to save remarks');
+    } finally {
+      setSavingRemarks(false);
     }
   };
 
@@ -185,6 +245,13 @@ export default function AdminDashboard() {
   const totalRevenue = bookings
     .filter(b => b.paymentStatus === 'PAID')
     .reduce((acc, curr) => acc + (Number(curr.finalAmount) || 0), 0);
+
+  const filteredDiscussions = discussions.filter(d => {
+    if (discussionFilter === 'ALL') return true;
+    return d.status === discussionFilter;
+  });
+
+  const activeDiscussion = discussions.find(d => d.id === selectedDiscussionId) || filteredDiscussions[0] || null;
 
   return (
     <div className="enterprise-layout animate-fade-in">
@@ -213,6 +280,28 @@ export default function AdminDashboard() {
           >
             <Activity size={16} />
             <span>Observability</span>
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('discussions')}
+            className={`sidebar-item ${activeTab === 'discussions' ? 'active' : ''}`}
+            style={{ position: 'relative' }}
+          >
+            <MessageSquare size={16} />
+            <span>Partner Desk</span>
+            {discussions.filter(d => d.status === 'OPEN' || d.status === 'IN_REVIEW').length > 0 && (
+              <span style={{ 
+                marginLeft: 'auto', 
+                background: 'var(--primary)', 
+                color: '#fff', 
+                fontSize: '0.68rem', 
+                fontWeight: 700, 
+                padding: '0.1rem 0.45rem', 
+                borderRadius: '10px' 
+              }}>
+                {discussions.filter(d => d.status === 'OPEN' || d.status === 'IN_REVIEW').length}
+              </span>
+            )}
           </button>
 
           <button 
@@ -258,424 +347,706 @@ export default function AdminDashboard() {
           </div>
           <button onClick={loadAdminData} className="btn btn-secondary btn-sm">
             <RefreshCw size={13} />
-            <span>Refresh All</span>
+            <span>Refresh</span>
           </button>
         </div>
 
-        {/* Tab: Analytics */}
-        {activeTab === 'analytics' && <AnalyticsDashboardTab />}
+        {/* Tab: Analytics Dashboard */}
+        {activeTab === 'analytics' && (
+          <AnalyticsDashboardTab 
+            categories={categories}
+            providers={providers}
+            bookings={bookings}
+            totalRevenue={totalRevenue}
+          />
+        )}
 
-        {/* Tab: Observability */}
-        {activeTab === 'observability' && <SystemObservabilityTab />}
+        {/* Tab: System Observability & Telemetry */}
+        {activeTab === 'observability' && (
+          <SystemObservabilityTab 
+            totalBookings={bookings.length}
+            totalProviders={providers.length}
+            totalUsers={users.length}
+          />
+        )}
 
-        {/* Tab: Catalog Manager */}
-        {activeTab === 'catalog' && (
-          <div className="grid-cols-3" style={{ gap: '1.5rem', alignItems: 'flex-start' }}>
-            {/* Categories Form & List */}
-            <div className="panel">
-              <div className="panel-header">
-                <h3 className="panel-title">
-                  <Layers size={16} color="var(--primary)" />
-                  <span>{editingCatId ? 'Edit Category' : 'Add Category'}</span>
-                </h3>
+        {/* Tab: Partner Desk (Discussions & Support) */}
+        {activeTab === 'discussions' && (
+          <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: '1.25rem', height: 'calc(100vh - 160px)', minHeight: '600px' }}>
+            {/* Left Column: Tickets & Filter List */}
+            <div className="panel" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: 0 }}>
+              <div style={{ padding: '1rem', borderBottom: '1px solid var(--border)', background: 'var(--bg-subtle)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0 }}>Partner Discussions</h3>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{filteredDiscussions.length} threads</span>
+                </div>
+                <div style={{ display: 'flex', gap: '0.35rem' }}>
+                  {['ALL', 'OPEN', 'IN_REVIEW', 'RESOLVED'].map(filter => (
+                    <button
+                      key={filter}
+                      type="button"
+                      onClick={() => setDiscussionFilter(filter)}
+                      style={{
+                        padding: '0.25rem 0.6rem',
+                        fontSize: '0.72rem',
+                        fontWeight: 600,
+                        borderRadius: '4px',
+                        border: '1px solid',
+                        borderColor: discussionFilter === filter ? 'var(--primary)' : 'var(--border)',
+                        background: discussionFilter === filter ? 'var(--primary)' : 'transparent',
+                        color: discussionFilter === filter ? '#fff' : 'var(--text-muted)',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {filter.replace('_', ' ')}
+                    </button>
+                  ))}
+                </div>
               </div>
-              
-              <form onSubmit={handleSaveCategory} style={{ marginBottom: '1.25rem' }}>
-                <div className="form-group">
-                  <label className="form-label">Category Name</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Electrical & Wiring"
-                    className="form-control"
-                    value={catName}
-                    onChange={(e) => setCatName(e.target.value)}
-                    required
-                  />
+
+              <div style={{ flex: 1, overflowY: 'auto', padding: '0.5rem' }}>
+                {filteredDiscussions.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)' }}>
+                    <MessageSquare size={32} style={{ opacity: 0.3, marginBottom: '0.5rem' }} />
+                    <p style={{ fontSize: '0.875rem' }}>No discussions found in this filter.</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {filteredDiscussions.map(d => {
+                      const isSelected = (activeDiscussion && activeDiscussion.id === d.id);
+                      return (
+                        <div
+                          key={d.id}
+                          onClick={() => setSelectedDiscussionId(d.id)}
+                          style={{
+                            padding: '0.85rem',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            border: '1px solid',
+                            borderColor: isSelected ? 'var(--primary)' : 'var(--border)',
+                            background: isSelected ? 'var(--bg-subtle)' : 'var(--bg-card)',
+                            boxShadow: isSelected ? '0 0 0 1px var(--primary)' : 'none',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                            <span style={{ 
+                              fontSize: '0.68rem', 
+                              fontWeight: 700, 
+                              padding: '0.15rem 0.4rem', 
+                              borderRadius: '3px',
+                              background: 'rgba(59, 130, 246, 0.12)', 
+                              color: 'var(--primary)' 
+                            }}>
+                              {d.category ? d.category.replace('_', ' ') : 'GENERAL'}
+                            </span>
+                            <span className={`badge ${
+                              d.status === 'RESOLVED' ? 'badge-completed' :
+                              d.status === 'IN_REVIEW' ? 'badge-inprogress' :
+                              d.status === 'CLOSED' ? 'badge-pending' : 'badge-accepted'
+                            }`} style={{ fontSize: '0.65rem' }}>
+                              {d.status}
+                            </span>
+                          </div>
+
+                          <div style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--text-main)', marginBottom: '0.35rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {d.subject}
+                          </div>
+
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                            <span>Provider: <strong style={{ color: 'var(--text-main)' }}>{d.providerName || `Partner #${d.providerId}`}</strong></span>
+                            <span>{d.messages ? d.messages.length : 0} msgs</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Right Column: Active Conversation & Reply Console */}
+            {activeDiscussion ? (
+              <div className="panel" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 0, overflow: 'hidden' }}>
+                {/* Header */}
+                <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border)', background: 'var(--bg-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                      <h2 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>{activeDiscussion.subject}</h2>
+                      <span className={`badge ${
+                        activeDiscussion.status === 'RESOLVED' ? 'badge-completed' :
+                        activeDiscussion.status === 'IN_REVIEW' ? 'badge-inprogress' :
+                        activeDiscussion.status === 'CLOSED' ? 'badge-pending' : 'badge-accepted'
+                      }`}>
+                        {activeDiscussion.status}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      <span>Provider: <strong style={{ color: 'var(--text-main)' }}>{activeDiscussion.providerName || `Partner #${activeDiscussion.providerId}`}</strong> ({activeDiscussion.providerEmail || 'N/A'})</span>
+                      {activeDiscussion.bookingId && <span>Booking Ref: <strong>#{activeDiscussion.bookingId}</strong></span>}
+                      <span>Priority: <strong style={{ color: activeDiscussion.priority === 'URGENT' ? '#EF4444' : activeDiscussion.priority === 'HIGH' ? '#F59E0B' : 'var(--text-main)' }}>{activeDiscussion.priority}</strong></span>
+                    </div>
+                  </div>
+
+                  {/* Status Action Buttons */}
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    {activeDiscussion.status !== 'IN_REVIEW' && (
+                      <button 
+                        onClick={() => handleUpdateDiscussionStatus(activeDiscussion.id, 'IN_REVIEW')}
+                        className="btn btn-secondary btn-sm"
+                        style={{ fontSize: '0.75rem' }}
+                      >
+                        Mark In-Review
+                      </button>
+                    )}
+                    {activeDiscussion.status !== 'RESOLVED' && (
+                      <button 
+                        onClick={() => handleUpdateDiscussionStatus(activeDiscussion.id, 'RESOLVED')}
+                        className="btn btn-primary btn-sm"
+                        style={{ fontSize: '0.75rem', background: '#10B981', borderColor: '#10B981' }}
+                      >
+                        <CheckCircle2 size={13} />
+                        Mark Resolved
+                      </button>
+                    )}
+                    {activeDiscussion.status === 'RESOLVED' && (
+                      <button 
+                        onClick={() => handleUpdateDiscussionStatus(activeDiscussion.id, 'OPEN')}
+                        className="btn btn-secondary btn-sm"
+                        style={{ fontSize: '0.75rem' }}
+                      >
+                        Reopen Ticket
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label className="form-label">Description</label>
+
+                {/* Messages Thread */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {activeDiscussion.messages && activeDiscussion.messages.map((msg, idx) => {
+                    const isAdmin = msg.senderRole === 'ADMIN';
+                    return (
+                      <div 
+                        key={msg.id || idx}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: isAdmin ? 'flex-end' : 'flex-start',
+                          maxWidth: '80%',
+                          alignSelf: isAdmin ? 'flex-end' : 'flex-start'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                          <strong style={{ color: isAdmin ? 'var(--primary)' : 'var(--text-main)' }}>
+                            {isAdmin ? '🛡️ Admin Support' : `🛠️ ${msg.senderName || 'Provider'}`}
+                          </strong>
+                          <span>• {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                        <div style={{
+                          padding: '0.85rem 1rem',
+                          borderRadius: '12px',
+                          background: isAdmin ? 'var(--primary)' : 'var(--bg-subtle)',
+                          color: isAdmin ? '#ffffff' : 'var(--text-main)',
+                          border: isAdmin ? 'none' : '1px solid var(--border)',
+                          fontSize: '0.875rem',
+                          lineHeight: '1.45',
+                          whiteSpace: 'pre-wrap',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.04)'
+                        }}>
+                          {msg.message}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Reply Box */}
+                <form onSubmit={handleAdminSendReply} style={{ padding: '1rem 1.25rem', borderTop: '1px solid var(--border)', background: 'var(--bg-subtle)', display: 'flex', gap: '0.75rem' }}>
                   <textarea
-                    placeholder="Category scope summary..."
-                    className="form-control"
+                    value={adminReplyText}
+                    onChange={(e) => setAdminReplyText(e.target.value)}
+                    placeholder="Type official support response to provider..."
                     rows={2}
-                    value={catDesc}
-                    onChange={(e) => setCatDesc(e.target.value)}
-                    style={{ resize: 'none' }}
+                    className="form-control"
+                    style={{ flex: 1, resize: 'none' }}
+                  />
+                  <button 
+                    type="submit" 
+                    disabled={submittingAdminReply || !adminReplyText.trim()}
+                    className="btn btn-primary"
+                    style={{ alignSelf: 'flex-end', height: '42px', padding: '0 1.25rem' }}
+                  >
+                    <Send size={15} />
+                    <span>{submittingAdminReply ? 'Sending...' : 'Reply'}</span>
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <div className="panel" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+                <p>Select a discussion from the left pane to view messages.</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab: Service Catalog Management */}
+        {activeTab === 'catalog' && (
+          <div>
+            {/* Category Form & List */}
+            <div className="panel" style={{ marginBottom: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '1rem' }}>
+                {editingCatId ? 'Edit Category' : 'Create Service Category'}
+              </h3>
+              <form onSubmit={handleSaveCategory} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', alignItems: 'flex-end' }}>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Category Name</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    placeholder="e.g. Electrical" 
+                    value={catName} 
+                    onChange={e => setCatName(e.target.value)} 
                   />
                 </div>
-                <div style={{ display: 'flex', gap: '0.4rem' }}>
-                  <button type="submit" className="btn btn-primary btn-sm" style={{ flex: 1 }}>
-                    {editingCatId ? 'Update' : 'Add Category'}
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Description</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    placeholder="e.g. Wiring and repairs" 
+                    value={catDesc} 
+                    onChange={e => setCatDesc(e.target.value)} 
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button type="submit" className="btn btn-primary">
+                    <Plus size={14} />
+                    <span>{editingCatId ? 'Update Category' : 'Add Category'}</span>
                   </button>
                   {editingCatId && (
-                    <button
-                      type="button"
-                      onClick={() => { setEditingCatId(null); setCatName(''); setCatDesc(''); }}
-                      className="btn btn-secondary btn-sm"
-                    >
+                    <button type="button" onClick={() => { setEditingCatId(null); setCatName(''); setCatDesc(''); }} className="btn btn-secondary">
                       Cancel
                     </button>
                   )}
                 </div>
               </form>
 
-              <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.75rem' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem' }}>
-                  Existing Categories ({categories.length})
-                </span>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', maxHeight: '240px', overflowY: 'auto' }}>
-                  {categories.map(cat => (
-                    <div key={cat.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-subtle)', padding: '0.5rem 0.65rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', fontSize: '0.8125rem' }}>
-                      <div>
-                        <strong style={{ color: 'var(--text-main)' }}>{cat.name}</strong>
-                      </div>
-                      <button onClick={() => handleEditCategory(cat)} className="btn btn-ghost btn-sm" style={{ padding: '0.15rem' }}>
-                        <Edit2 size={12} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
+              {/* Categories Pills */}
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border)' }}>
+                {categories.map(cat => (
+                  <div key={cat.id} style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '0.5rem', 
+                    padding: '0.35rem 0.75rem', 
+                    borderRadius: 'var(--radius-sm)', 
+                    background: 'var(--bg-subtle)', 
+                    border: '1px solid var(--border)',
+                    fontSize: '0.8125rem'
+                  }}>
+                    <span style={{ fontWeight: 500, color: 'var(--text-main)' }}>{cat.name}</span>
+                    <button 
+                      type="button" 
+                      onClick={() => handleEditCategory(cat)}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--text-muted)' }}
+                    >
+                      <Edit2 size={12} />
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Services CRUD */}
-            <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <div className="panel">
-                <div className="panel-header">
-                  <h3 className="panel-title">
-                    <Plus size={16} color="var(--primary)" />
-                    <span>{editingSrvId ? 'Edit Service' : 'Register New Service'}</span>
-                  </h3>
+            {/* Service Form & Table */}
+            <div className="panel" style={{ marginBottom: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '1rem' }}>
+                {editingSrvId ? 'Edit Service' : 'Add New Service'}
+              </h3>
+              <form onSubmit={handleSaveService} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', alignItems: 'flex-end' }}>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Service Name</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    placeholder="e.g. Fan Repair" 
+                    value={srvName} 
+                    onChange={e => setSrvName(e.target.value)} 
+                  />
                 </div>
-
-                <form onSubmit={handleSaveService} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
-                  <div className="form-group">
-                    <label className="form-label">Service Title *</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Split AC Servicing"
-                      className="form-control"
-                      value={srvName}
-                      onChange={(e) => setSrvName(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Category *</label>
-                    <select
-                      className="form-control"
-                      value={srvCatId}
-                      onChange={(e) => setSrvCatId(e.target.value)}
-                      required
-                    >
-                      <option value="">Select Category</option>
-                      {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label">Base Rate (₹) *</label>
-                    <input
-                      type="number"
-                      placeholder="e.g. 599"
-                      className="form-control"
-                      value={srvPrice}
-                      onChange={(e) => setSrvPrice(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label">Duration (Minutes) *</label>
-                    <input
-                      type="number"
-                      placeholder="e.g. 60"
-                      className="form-control"
-                      value={srvDuration}
-                      onChange={(e) => setSrvDuration(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div className="form-group" style={{ gridColumn: 'span 2', margin: 0 }}>
-                    <label className="form-label">Description</label>
-                    <textarea
-                      placeholder="Service deliverables, terms, and tools included..."
-                      className="form-control"
-                      rows={2}
-                      value={srvDesc}
-                      onChange={(e) => setSrvDesc(e.target.value)}
-                      style={{ resize: 'none' }}
-                    />
-                  </div>
-
-                  <div style={{ gridColumn: 'span 2', display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                    <button type="submit" className="btn btn-primary btn-sm" style={{ flex: 1 }}>
-                      {editingSrvId ? 'Update Service' : 'Save Service'}
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Category</label>
+                  <select 
+                    className="form-control" 
+                    value={srvCatId} 
+                    onChange={e => setsrvCatId(e.target.value)}
+                  >
+                    <option value="">Select Category</option>
+                    {categories.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Price (₹)</label>
+                  <input 
+                    type="number" 
+                    className="form-control" 
+                    placeholder="e.g. 499" 
+                    value={srvPrice} 
+                    onChange={e => setSrvPrice(e.target.value)} 
+                  />
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Duration (Mins)</label>
+                  <input 
+                    type="number" 
+                    className="form-control" 
+                    placeholder="e.g. 60" 
+                    value={srvDuration} 
+                    onChange={e => setSrvDuration(e.target.value)} 
+                  />
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Description</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    placeholder="Service description" 
+                    value={srvDesc} 
+                    onChange={e => setsrvDesc(e.target.value)} 
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button type="submit" className="btn btn-primary">
+                    <Plus size={14} />
+                    <span>{editingSrvId ? 'Update' : 'Add'}</span>
+                  </button>
+                  {editingSrvId && (
+                    <button type="button" onClick={() => { setEditingSrvId(null); setSrvName(''); setSrvDesc(''); setSrvPrice(''); setSrvDuration(''); setSrvCatId(''); }} className="btn btn-secondary">
+                      Cancel
                     </button>
-                    {editingSrvId && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditingSrvId(null);
-                          setSrvName('');
-                          setSrvDesc('');
-                          setSrvPrice('');
-                          setSrvDuration('');
-                          setSrvCatId('');
-                        }}
-                        className="btn btn-secondary btn-sm"
-                      >
-                        Cancel
-                      </button>
-                    )}
-                  </div>
-                </form>
+                  )}
+                </div>
+              </form>
+            </div>
+
+            {/* Services Table */}
+            <div className="table-container">
+              <table className="enterprise-table">
+                <thead>
+                  <tr>
+                    <th>Service Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Duration</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {services.slice((servicesPage - 1) * itemsPerPage, servicesPage * itemsPerPage).map((s) => (
+                    <tr key={s.id}>
+                      <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{s.name}</td>
+                      <td>
+                        <span className="badge badge-accepted">{s.categoryName || 'General'}</span>
+                      </td>
+                      <td style={{ fontWeight: 600, color: 'var(--text-main)', fontFeatureSettings: 'tnum' }}>
+                        ₹{s.price}
+                      </td>
+                      <td style={{ color: 'var(--text-muted)' }}>{s.durationMinutes} mins</td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button 
+                            type="button" 
+                            onClick={() => handleEditService(s)}
+                            className="btn btn-secondary btn-sm"
+                            style={{ padding: '0.2rem 0.4rem' }}
+                          >
+                            <Edit2 size={12} />
+                          </button>
+                          <button 
+                            type="button" 
+                            onClick={() => handleDeleteService(s.id)}
+                            className="btn btn-secondary btn-sm"
+                            style={{ padding: '0.2rem 0.4rem', color: 'var(--color-danger)' }}
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <Pagination
+                currentPage={servicesPage}
+                totalItems={services.length}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setServicesPage}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Tab: Providers Verification & Directory */}
+        {activeTab === 'providers' && (
+          <div>
+            {/* Sub-tab Pill Switcher */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', background: 'var(--bg-subtle)', padding: '0.35rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
+                <button
+                  type="button"
+                  onClick={() => { setProviderSubTab('pending'); setProvidersPage(1); }}
+                  style={{
+                    padding: '0.45rem 1rem',
+                    fontSize: '0.8125rem',
+                    fontWeight: 600,
+                    borderRadius: 'var(--radius-sm)',
+                    border: 'none',
+                    background: providerSubTab === 'pending' ? 'var(--bg-card)' : 'transparent',
+                    color: providerSubTab === 'pending' ? 'var(--primary)' : 'var(--text-muted)',
+                    boxShadow: providerSubTab === 'pending' ? 'var(--shadow-sm)' : 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.45rem'
+                  }}
+                >
+                  <AlertCircle size={14} color={providers.filter(p => !p.approved).length > 0 ? '#F59E0B' : 'currentColor'} />
+                  <span>Pending Verification</span>
+                  <span style={{
+                    fontSize: '0.6875rem',
+                    padding: '0.1rem 0.5rem',
+                    borderRadius: '10px',
+                    background: providers.filter(p => !p.approved).length > 0 ? 'rgba(245, 158, 11, 0.18)' : 'var(--bg-subtle)',
+                    color: providers.filter(p => !p.approved).length > 0 ? '#D97706' : 'var(--text-muted)',
+                    fontWeight: 700
+                  }}>
+                    {providers.filter(p => !p.approved).length}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => { setProviderSubTab('approved'); setProvidersPage(1); }}
+                  style={{
+                    padding: '0.45rem 1rem',
+                    fontSize: '0.8125rem',
+                    fontWeight: 600,
+                    borderRadius: 'var(--radius-sm)',
+                    border: 'none',
+                    background: providerSubTab === 'approved' ? 'var(--bg-card)' : 'transparent',
+                    color: providerSubTab === 'approved' ? 'var(--primary)' : 'var(--text-muted)',
+                    boxShadow: providerSubTab === 'approved' ? 'var(--shadow-sm)' : 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.45rem'
+                  }}
+                >
+                  <CheckCircle2 size={14} color="#10B981" />
+                  <span>Approved Partners</span>
+                  <span style={{
+                    fontSize: '0.6875rem',
+                    padding: '0.1rem 0.5rem',
+                    borderRadius: '10px',
+                    background: 'rgba(16, 185, 129, 0.15)',
+                    color: '#10B981',
+                    fontWeight: 700
+                  }}>
+                    {providers.filter(p => p.approved).length}
+                  </span>
+                </button>
               </div>
 
-              {/* Service Table List */}
+              <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                {providerSubTab === 'pending'
+                  ? 'Set required actions/feedback for pending providers until they qualify for approval.'
+                  : 'Active onboarded service professionals verified to claim and fulfill customer jobs.'}
+              </div>
+            </div>
+
+            {/* PENDING PROVIDERS VIEW */}
+            {providerSubTab === 'pending' && (
+              <div>
+                {providers.filter(p => !p.approved).length === 0 ? (
+                  <div className="panel" style={{ textAlign: 'center', padding: '3.5rem 1rem', color: 'var(--text-muted)' }}>
+                    <CheckCircle2 size={40} color="#10B981" style={{ marginBottom: '0.75rem', opacity: 0.8 }} />
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '0.25rem' }}>All Caught Up!</h3>
+                    <p style={{ fontSize: '0.875rem', margin: 0 }}>There are no providers currently waiting for verification approval.</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {providers.filter(p => !p.approved).slice((providersPage - 1) * itemsPerPage, providersPage * itemsPerPage).map((p) => {
+                      const isEditingThis = editingRemarksProviderId === p.id;
+                      return (
+                        <div key={p.id} className="panel" style={{ borderLeft: '4px solid #F59E0B' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.25rem' }}>
+                                <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>{p.name}</h3>
+                                <span className="badge badge-pending" style={{ fontSize: '0.68rem' }}>Pending Verification</span>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>#{p.id}</span>
+                              </div>
+                              <div style={{ display: 'flex', gap: '1rem', fontSize: '0.8125rem', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
+                                <span>Email: <strong style={{ color: 'var(--text-main)' }}>{p.email}</strong> {p.emailVerified ? '✓' : '(unverified)'}</span>
+                                <span>Phone: <strong style={{ color: 'var(--text-main)' }}>{p.phone || 'N/A'}</strong> {p.phoneVerified ? '✓' : '(unverified)'}</span>
+                                <span>City: <strong style={{ color: 'var(--text-main)' }}>{p.city || 'N/A'}</strong> ({p.pincode || 'N/A'})</span>
+                                <span>Experience: <strong style={{ color: 'var(--text-main)' }}>{p.experienceYears || 0} yrs</strong></span>
+                              </div>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                              <button
+                                onClick={() => handleApproveProvider(p.id)}
+                                className="btn btn-primary btn-sm"
+                                style={{ background: '#10B981', borderColor: '#10B981' }}
+                              >
+                                <Check size={13} />
+                                <span>Approve Partner</span>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Action Requirements / Admin Remarks Box */}
+                          <div style={{ 
+                            background: 'var(--bg-subtle)', 
+                            border: '1px solid var(--border)', 
+                            borderRadius: 'var(--radius-sm)', 
+                            padding: '0.85rem 1rem' 
+                          }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                              <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#D97706', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                <span>📝 Required Action / Verification Feedback:</span>
+                              </span>
+                              {!isEditingThis && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingRemarksProviderId(p.id);
+                                    setRemarksInput(p.adminRemarks || '');
+                                  }}
+                                  className="btn btn-ghost btn-sm"
+                                  style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem', color: 'var(--primary)' }}
+                                >
+                                  <Edit2 size={12} />
+                                  <span>{p.adminRemarks ? 'Edit Requirement' : '+ Add Requirement'}</span>
+                                </button>
+                              )}
+                            </div>
+
+                            {isEditingThis ? (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+                                <textarea
+                                  value={remarksInput}
+                                  onChange={(e) => setRemarksInput(e.target.value)}
+                                  placeholder="Specify what documents, photos, or details are required from this provider (e.g. Please upload ID proof and vehicle insurance)..."
+                                  rows={2}
+                                  className="form-control"
+                                  style={{ width: '100%', fontSize: '0.8125rem' }}
+                                />
+                                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingRemarksProviderId(null);
+                                      setRemarksInput('');
+                                    }}
+                                    className="btn btn-secondary btn-sm"
+                                    style={{ fontSize: '0.75rem' }}
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    type="button"
+                                    disabled={savingRemarks}
+                                    onClick={() => handleSaveRemarks(p.id)}
+                                    className="btn btn-primary btn-sm"
+                                    style={{ fontSize: '0.75rem' }}
+                                  >
+                                    {savingRemarks ? 'Saving...' : 'Save Feedback'}
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <p style={{ 
+                                margin: 0, 
+                                fontSize: '0.8125rem', 
+                                color: p.adminRemarks ? 'var(--text-main)' : 'var(--text-muted)',
+                                fontStyle: p.adminRemarks ? 'normal' : 'italic'
+                              }}>
+                                {p.adminRemarks || 'No feedback or pending requirements added yet. Click "+ Add Requirement" to notify the provider what is needed.'}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    <Pagination
+                      currentPage={providersPage}
+                      totalItems={providers.filter(p => !p.approved).length}
+                      itemsPerPage={itemsPerPage}
+                      onPageChange={setProvidersPage}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* APPROVED PROVIDERS VIEW */}
+            {providerSubTab === 'approved' && (
               <div className="table-container">
                 <table className="enterprise-table">
                   <thead>
                     <tr>
-                      <th>Service Title</th>
-                      <th>Category</th>
-                      <th>Base Rate</th>
-                      <th>Duration</th>
+                      <th>Provider Name</th>
+                      <th>Contact Info</th>
+                      <th>Location</th>
+                      <th>Rating</th>
+                      <th>Completed Tasks</th>
                       <th>Status</th>
-                      <th style={{ textAlign: 'right' }}>Actions</th>
+                      <th>Admin Feedback / Notes</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {services.slice((servicesPage - 1) * itemsPerPage, servicesPage * itemsPerPage).map((srv) => (
-                      <tr key={srv.id}>
-                        <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{srv.name}</td>
-                        <td style={{ color: 'var(--text-muted)' }}>{srv.category?.name || categories.find(c => c.id === srv.categoryId)?.name || 'General'}</td>
-                        <td style={{ fontWeight: 600, color: 'var(--text-main)', fontFeatureSettings: 'tnum' }}>₹{srv.price}</td>
-                        <td style={{ color: 'var(--text-muted)' }}>{srv.durationMinutes} min</td>
+                    {providers.filter(p => p.approved).slice((providersPage - 1) * itemsPerPage, providersPage * itemsPerPage).map((p) => (
+                      <tr key={p.id}>
+                        <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>
+                          <div>{p.name}</div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>ID #{p.id}</div>
+                        </td>
+                        <td style={{ color: 'var(--text-muted)' }}>
+                          <div>{p.email}</div>
+                          <div style={{ fontSize: '0.75rem' }}>{p.phone || 'No phone'}</div>
+                        </td>
                         <td>
-                          <span className={`badge ${srv.active !== false ? 'badge-completed' : 'badge-cancelled'}`}>
-                            {srv.active !== false ? 'Active' : 'Inactive'}
+                          <div>{p.city || 'N/A'}</div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{p.pincode || ''}</div>
+                        </td>
+                        <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>
+                          ★ {p.rating ? p.rating.toFixed(1) : 'New'}
+                        </td>
+                        <td style={{ color: 'var(--text-muted)' }}>{p.totalJobs || 0} jobs</td>
+                        <td>
+                          <span className="badge badge-completed">
+                            Approved
                           </span>
                         </td>
-                        <td style={{ textAlign: 'right' }}>
-                          <div style={{ display: 'inline-flex', gap: '0.35rem' }}>
-                            <button onClick={() => handleEditService(srv)} className="btn btn-ghost btn-sm" title="Edit Service">
-                              <Edit2 size={13} />
-                            </button>
-                            <button onClick={() => handleDeleteService(srv.id)} className="btn btn-ghost btn-sm" style={{ color: 'var(--error)' }} title="Deactivate">
-                              <Trash2 size={13} />
-                            </button>
-                          </div>
+                        <td style={{ fontSize: '0.78rem', color: 'var(--text-muted)', maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {p.adminRemarks || '—'}
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
                 <Pagination
-                  currentPage={servicesPage}
-                  totalItems={services.length}
+                  currentPage={providersPage}
+                  totalItems={providers.filter(p => p.approved).length}
                   itemsPerPage={itemsPerPage}
-                  onPageChange={setServicesPage}
+                  onPageChange={setProvidersPage}
                 />
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* Tab: Provider Approvals */}
-        {activeTab === 'providers' && (
-          <div className="table-container">
-            <table className="enterprise-table">
-              <thead>
-                <tr>
-                  <th>Provider Name</th>
-                  <th>Contact Email</th>
-                  <th>Phone</th>
-                  <th>Location</th>
-                  <th>Experience</th>
-                  <th>Status</th>
-                  <th style={{ textAlign: 'right' }}>Admin Approval</th>
-                </tr>
-              </thead>
-              <tbody>
-                {providers.slice((providersPage - 1) * itemsPerPage, providersPage * itemsPerPage).map((p) => (
-                  <tr key={p.id}>
-                    <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{p.name}</td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>{p.email}</span>
-                        {p.emailVerified ? (
-                          <span title="Email Verified" style={{ color: '#10B981', display: 'inline-flex' }}><Check size={12} /></span>
-                        ) : (
-                          <span title="Email Unverified" style={{ color: '#D97706', fontSize: '0.65rem', background: '#FEF3C7', padding: '0.05rem 0.3rem', borderRadius: '3px' }}>Unverified</span>
-                        )}
-                      </div>
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>{p.phone || 'N/A'}</span>
-                        {p.phoneVerified ? (
-                          <span title="Phone Verified" style={{ color: '#10B981', display: 'inline-flex' }}><Check size={12} /></span>
-                        ) : (
-                          <span title="Phone Unverified" style={{ color: '#2563EB', fontSize: '0.65rem', background: '#EFF6FF', padding: '0.05rem 0.3rem', borderRadius: '3px' }}>Unverified</span>
-                        )}
-                      </div>
-                    </td>
-                    <td style={{ color: 'var(--text-main)' }}>{p.city} ({p.pincode})</td>
-                    <td style={{ color: 'var(--text-main)' }}>{p.experienceYears || 0} yrs</td>
-                    <td>
-                      <span className={`badge ${p.approved ? 'badge-completed' : 'badge-pending'}`}>
-                        {p.approved ? 'Approved' : 'Pending Verification'}
-                      </span>
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      {!p.approved ? (
-                        <button
-                          onClick={() => handleApproveProvider(p.id)}
-                          className="btn btn-success btn-sm"
-                          style={{ padding: '0.2rem 0.5rem' }}
-                        >
-                          Approve Partner
-                        </button>
-                      ) : (
-                        <span style={{ color: 'var(--success)', fontSize: '0.75rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
-                          <Check size={12} /> Approved
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <Pagination
-              currentPage={providersPage}
-              totalItems={providers.length}
-              itemsPerPage={itemsPerPage}
-              onPageChange={setProvidersPage}
-            />
-          </div>
-        )}
-
-        {/* Tab: All Bookings Monitor */}
-        {activeTab === 'bookings' && (
-          <div className="table-container">
-            <table className="enterprise-table">
-              <thead>
-                <tr>
-                  <th>Ref</th>
-                  <th>Customer</th>
-                  <th>Service</th>
-                  <th>Provider</th>
-                  <th>Scheduled</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                  <th>Payment</th>
-                </tr>
-              </thead>
-              <tbody>
-                {bookings.slice((bookingsPage - 1) * itemsPerPage, bookingsPage * itemsPerPage).map((b) => (
-                  <tr key={b.id}>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--text-muted)' }}>
-                      #{String(b.id).slice(-6)}
-                    </td>
-                    <td style={{ fontWeight: 500, color: 'var(--text-main)' }}>{b.customerName || 'Customer'}</td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                        {b.dropAddress && <Truck size={13} color="var(--primary)" />}
-                        <span>{b.serviceName}</span>
-                      </div>
-                    </td>
-                    <td style={{ color: 'var(--text-muted)' }}>{b.providerName || 'Unassigned'}</td>
-                    <td style={{ color: 'var(--text-muted)' }}>{b.bookingDate} {formatLocalTime(b.startTime)}</td>
-                    <td style={{ fontWeight: 600, color: 'var(--text-main)', fontFeatureSettings: 'tnum' }}>
-                      ₹{b.finalAmount ?? b.totalAmount ?? 0}
-                    </td>
-                    <td>
-                      <span className={`badge ${b.status === 'COMPLETED' ? 'badge-completed' : b.status === 'IN_PROGRESS' ? 'badge-inprogress' : b.status === 'ACCEPTED' ? 'badge-accepted' : 'badge-pending'}`}>
-                        {b.status}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`badge ${b.paymentStatus === 'PAID' ? 'badge-completed' : 'badge-pending'}`}>
-                        {b.paymentStatus}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <Pagination
-              currentPage={bookingsPage}
-              totalItems={bookings.length}
-              itemsPerPage={itemsPerPage}
-              onPageChange={setBookingsPage}
-            />
-          </div>
-        )}
-
-        {/* Tab: Registered Users */}
-        {activeTab === 'users' && (
-          <div className="table-container">
-            <table className="enterprise-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>User Name</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>City</th>
-                  <th>Role</th>
-                  <th>Verification</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.slice((usersPage - 1) * itemsPerPage, usersPage * itemsPerPage).map((u) => (
-                  <tr key={u.id}>
-                    <td style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>#{u.id}</td>
-                    <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{u.name}</td>
-                    <td style={{ color: 'var(--text-muted)' }}>{u.email}</td>
-                    <td style={{ color: 'var(--text-muted)' }}>{u.phone || 'N/A'}</td>
-                    <td style={{ color: 'var(--text-main)' }}>{u.city || 'N/A'}</td>
-                    <td>
-                      <span className={`badge ${u.role === 'ADMIN' ? 'badge-completed' : u.role === 'PROVIDER' ? 'badge-accepted' : 'badge-pending'}`}>
-                        {u.role}
-                      </span>
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-                        <span style={{ 
-                          fontSize: '0.68rem', 
-                          padding: '0.1rem 0.35rem', 
-                          borderRadius: '3px',
-                          background: u.emailVerified ? 'rgba(16, 185, 129, 0.12)' : 'rgba(217, 119, 6, 0.12)',
-                          color: u.emailVerified ? '#10B981' : '#D97706',
-                          fontWeight: 600
-                        }}>
-                          {u.emailVerified ? '✓ Email' : '✕ Email'}
-                        </span>
-                        <span style={{ 
-                          fontSize: '0.68rem', 
-                          padding: '0.1rem 0.35rem', 
-                          borderRadius: '3px',
-                          background: u.phoneVerified ? 'rgba(16, 185, 129, 0.12)' : 'rgba(37, 99, 235, 0.12)',
-                          color: u.phoneVerified ? '#10B981' : '#2563EB',
-                          fontWeight: 600
-                        }}>
-                          {u.phoneVerified ? '✓ Phone' : '✕ Phone'}
-                        </span>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <Pagination
-              currentPage={usersPage}
-              totalItems={users.length}
-              itemsPerPage={itemsPerPage}
-              onPageChange={setUsersPage}
-            />
+            )}
           </div>
         )}
       </main>

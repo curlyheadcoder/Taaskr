@@ -15,19 +15,27 @@ public class ProviderProfileResponse {
     private String bio;
     private Boolean emailVerified;
     private Boolean phoneVerified;
+    private String adminRemarks;
 
     public ProviderProfileResponse() {}
 
     public ProviderProfileResponse(Long id, Long userId, String name, String email, String phone,
                                    Integer experienceYears, String city, String pincode,
                                    Boolean approved, Double rating, Integer totalJobs, String bio) {
-        this(id, userId, name, email, phone, experienceYears, city, pincode, approved, rating, totalJobs, bio, false, false);
+        this(id, userId, name, email, phone, experienceYears, city, pincode, approved, rating, totalJobs, bio, false, false, null);
     }
 
     public ProviderProfileResponse(Long id, Long userId, String name, String email, String phone,
                                    Integer experienceYears, String city, String pincode,
                                    Boolean approved, Double rating, Integer totalJobs, String bio,
                                    Boolean emailVerified, Boolean phoneVerified) {
+        this(id, userId, name, email, phone, experienceYears, city, pincode, approved, rating, totalJobs, bio, emailVerified, phoneVerified, null);
+    }
+
+    public ProviderProfileResponse(Long id, Long userId, String name, String email, String phone,
+                                   Integer experienceYears, String city, String pincode,
+                                   Boolean approved, Double rating, Integer totalJobs, String bio,
+                                   Boolean emailVerified, Boolean phoneVerified, String adminRemarks) {
         this.id = id;
         this.userId = userId;
         this.name = name;
@@ -42,6 +50,7 @@ public class ProviderProfileResponse {
         this.bio = bio;
         this.emailVerified = emailVerified;
         this.phoneVerified = phoneVerified;
+        this.adminRemarks = adminRemarks;
     }
 
     public Long getId() { return id; }
@@ -72,4 +81,6 @@ public class ProviderProfileResponse {
     public void setEmailVerified(Boolean emailVerified) { this.emailVerified = emailVerified; }
     public Boolean getPhoneVerified() { return phoneVerified; }
     public void setPhoneVerified(Boolean phoneVerified) { this.phoneVerified = phoneVerified; }
+    public String getAdminRemarks() { return adminRemarks; }
+    public void setAdminRemarks(String adminRemarks) { this.adminRemarks = adminRemarks; }
 }

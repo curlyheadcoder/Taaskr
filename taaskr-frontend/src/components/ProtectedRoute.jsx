@@ -54,6 +54,8 @@ export default function ProtectedRoute({ children, allowedRoles }) {
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
+    if (user.role === 'PROVIDER') return <Navigate to="/provider" replace />;
+    if (user.role === 'ADMIN') return <Navigate to="/admin" replace />;
     return <Navigate to="/" replace />;
   }
 

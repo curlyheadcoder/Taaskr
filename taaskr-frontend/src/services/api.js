@@ -336,6 +336,28 @@ export const api = {
         method: 'PUT',
         body: JSON.stringify({ categoryIds })
       });
+    },
+
+    getDiscussions: async () => {
+      return makeRequest('/api/provider/discussions');
+    },
+
+    getDiscussionById: async (discussionId) => {
+      return makeRequest(`/api/provider/discussions/${discussionId}`);
+    },
+
+    createDiscussion: async (data) => {
+      return makeRequest('/api/provider/discussions', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+    },
+
+    replyDiscussion: async (discussionId, message) => {
+      return makeRequest(`/api/provider/discussions/${discussionId}/reply`, {
+        method: 'POST',
+        body: JSON.stringify({ message })
+      });
     }
   },
 
@@ -391,6 +413,13 @@ export const api = {
       });
     },
 
+    updateProviderRemarks: async (providerId, remarks) => {
+      return makeRequest(`/api/admin/providers/${providerId}/remarks`, {
+        method: 'PUT',
+        body: JSON.stringify({ remarks })
+      });
+    },
+
     getAllBookings: async () => {
       return makeRequest('/api/admin/bookings');
     },
@@ -401,6 +430,29 @@ export const api = {
 
     getActuatorHealth: async () => {
       return makeRequest('/actuator/health');
+    },
+
+    getDiscussions: async (status) => {
+      const url = status ? `/api/admin/discussions?status=${status}` : '/api/admin/discussions';
+      return makeRequest(url);
+    },
+
+    getDiscussionById: async (discussionId) => {
+      return makeRequest(`/api/admin/discussions/${discussionId}`);
+    },
+
+    replyDiscussion: async (discussionId, message) => {
+      return makeRequest(`/api/admin/discussions/${discussionId}/reply`, {
+        method: 'POST',
+        body: JSON.stringify({ message })
+      });
+    },
+
+    updateDiscussionStatus: async (discussionId, status) => {
+      return makeRequest(`/api/admin/discussions/${discussionId}/status`, {
+        method: 'PUT',
+        body: JSON.stringify({ status })
+      });
     }
   },
 

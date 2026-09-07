@@ -12,7 +12,8 @@ import {
   Clock, Check, X, AlertCircle, Plus, Trash2, Edit2, Phone, Mail, 
   Star, Briefcase, Calendar, CheckSquare, Settings, User, RefreshCw,
   DollarSign, ExternalLink, Power, TrendingUp, BarChart3, PieChart,
-  PanelLeftClose, PanelLeftOpen, Wallet, Award, ArrowUpRight, Banknote, Play
+  PanelLeftClose, PanelLeftOpen, Wallet, Award, ArrowUpRight, Banknote, Play,
+  MessageSquare, Send, MessageCircle, HelpCircle, Headphones, FileText
 } from 'lucide-react';
 
 export default function ProviderDashboard() {
@@ -87,6 +88,20 @@ export default function ProviderDashboard() {
   const [vehicleAvailable, setVehicleAvailable] = useState(true);
   const [savingVehicle, setSavingVehicle] = useState(false);
 
+  // Admin Discussions & Support Portal state
+  const [discussions, setDiscussions] = useState([]);
+  const [selectedDiscussionId, setSelectedDiscussionId] = useState(null);
+  const [showNewDiscussionModal, setShowNewDiscussionModal] = useState(false);
+  const [newSubject, setNewSubject] = useState('');
+  const [newCategory, setNewCategory] = useState('GENERAL_INQUIRY');
+  const [newPriority, setNewPriority] = useState('NORMAL');
+  const [newBookingId, setNewBookingId] = useState('');
+  const [newMessage, setNewMessage] = useState('');
+  const [replyMessage, setReplyMessage] = useState('');
+  const [discussionFilter, setDiscussionFilter] = useState('ALL');
+  const [submittingDiscussion, setSubmittingDiscussion] = useState(false);
+  const [submittingReply, setSubmittingReply] = useState(false);
+
   // New availability form state
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -141,6 +156,16 @@ export default function ProviderDashboard() {
         } catch (err2) {
           setMyVehicles([]);
         }
+      }
+
+      try {
+        const discList = await api.provider.getDiscussions();
+        setDiscussions(discList || []);
+        if (discList && discList.length > 0 && !selectedDiscussionId) {
+          setSelectedDiscussionId(discList[0].id);
+        }
+      } catch (dErr) {
+        console.warn('Discussions fetch notice:', dErr);
       }
 
     } catch (err) {
@@ -467,6 +492,53 @@ export default function ProviderDashboard() {
     }
   };
 
+  const handleCreateDiscussion = async (e) => {
+    e.preventDefault();
+    if (!newSubject.trim() || !newMessage.trim()) {
+      showNotification('Please fill in subject and initial message', 'error');
+      return;
+    }
+    setSubmittingDiscussion(true);
+    try {
+      const created = await api.provider.createDiscussion({
+        subject: newSubject.trim(),
+        category: newCategory,
+        priority: newPriority,
+        bookingId: newBookingId ? Number(newBookingId) : null,
+        message: newMessage.trim()
+      });
+      setDiscussions(prev => [created, ...prev]);
+      setSelectedDiscussionId(created.id);
+      setShowNewDiscussionModal(false);
+      setNewSubject('');
+      setNewCategory('GENERAL_INQUIRY');
+      setNewPriority('NORMAL');
+      setNewBookingId('');
+      setNewMessage('');
+      showNotification('Discussion thread started with Admin!');
+    } catch (err) {
+      showNotification(err.message || 'Failed to create discussion', 'error');
+    } finally {
+      setSubmittingDiscussion(false);
+    }
+  };
+
+  const handleSendReply = async (e) => {
+    e.preventDefault();
+    if (!replyMessage.trim() || !selectedDiscussionId) return;
+    setSubmittingReply(true);
+    try {
+      const updated = await api.provider.replyDiscussion(selectedDiscussionId, replyMessage.trim());
+      setDiscussions(prev => prev.map(d => d.id === updated.id ? updated : d));
+      setReplyMessage('');
+      showNotification('Message sent to Admin');
+    } catch (err) {
+      showNotification(err.message || 'Failed to send reply', 'error');
+    } finally {
+      setSubmittingReply(false);
+    }
+  };
+
   const openCustomerDirections = (job) => {
     const dest = job.latitude && job.longitude
       ? `${job.latitude},${job.longitude}`
@@ -761,8 +833,17 @@ export default function ProviderDashboard() {
                 <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)', lineHeight: 1.1, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
                   {userProfile?.name || 'Partner'}
                 </div>
-                <span style={{ fontSize: '0.6875rem', color: 'var(--success)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.15rem' }}>
-                  <span className="badge-dot" style={{ backgroundColor: 'var(--success)' }} /> Active Partner
+                <span style={{ 
+                  fontSize: '0.6875rem', 
+                  color: userProfile?.approved ? 'var(--success)' : '#D97706', 
+                  fontWeight: 600, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.25rem', 
+                  marginTop: '0.15rem' 
+                }}>
+                  <span className="badge-dot" style={{ backgroundColor: userProfile?.approved ? 'var(--success)' : '#F59E0B' }} /> 
+                  {userProfile?.approved ? 'Active Partner' : 'Pending Verification'}
                 </span>
               </div>
             </div>
@@ -861,6 +942,20 @@ export default function ProviderDashboard() {
             <Settings size={16} />
             <span>Profile & Services</span>
           </button>
+
+          <button 
+            className={`sidebar-item ${activeTab === 'discussions' ? 'active' : ''}`}
+            onClick={() => setActiveTab('discussions')}
+            title="Connect with Admin"
+            style={{
+              marginTop: '0.5rem',
+              borderTop: '1px solid var(--border-subtle)',
+              paddingTop: '0.65rem'
+            }}
+          >
+            <MessageSquare size={16} color="var(--primary)" />
+            <span style={{ fontWeight: 600 }}>Connect with Admin ({discussions.length})</span>
+          </button>
         </nav>
       </aside>
 
@@ -955,6 +1050,62 @@ export default function ProviderDashboard() {
             >
               Verify Phone
             </Link>
+          </div>
+        )}
+
+        {/* Pending Verification & Admin Feedback Alert */}
+        {userProfile && userProfile.approved === false && (
+          <div style={{
+            background: 'rgba(245, 158, 11, 0.08)',
+            border: '1px solid rgba(245, 158, 11, 0.35)',
+            borderRadius: 'var(--radius-sm)',
+            padding: '1rem 1.25rem',
+            marginBottom: '1.25rem',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem', marginBottom: userProfile.adminRemarks ? '0.75rem' : 0 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem' }}>
+                <AlertCircle size={20} color="#F59E0B" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 700, color: '#D97706' }}>
+                    Account Verification Pending
+                  </h4>
+                  <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8125rem', color: 'var(--text-main)' }}>
+                    Your partner profile is currently in pending state until verified by the Admin team. You can review available requests and set up your schedule, but claiming live jobs requires admin approval.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveTab('discussions')}
+                className="btn btn-sm"
+                style={{ background: '#F59E0B', color: '#fff', fontSize: '0.75rem', padding: '0.35rem 0.85rem', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+              >
+                <MessageSquare size={13} />
+                <span>Connect with Admin</span>
+              </button>
+            </div>
+
+            {/* Admin Remarks / Feedback */}
+            {userProfile.adminRemarks && (
+              <div style={{
+                background: 'var(--bg-card)',
+                border: '1px solid rgba(245, 158, 11, 0.25)',
+                borderRadius: '6px',
+                padding: '0.75rem 1rem',
+                marginTop: '0.5rem'
+              }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#D97706', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.25rem' }}>
+                  📝 Feedback / Required Actions from Admin:
+                </div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--text-main)', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                  {userProfile.adminRemarks}
+                </div>
+                <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  Once you have completed the required steps or provided the necessary documents, message the admin using the <strong>Connect with Admin</strong> tab to request verification.
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -1952,7 +2103,361 @@ export default function ProviderDashboard() {
             </form>
           </div>
         )}
-      </main>
+
+        {/* ---------------------------------------- */}
+        {/* TAB: CONNECT WITH ADMIN (HELP & DISCUSS) */}
+        {/* ---------------------------------------- */}
+        {activeTab === 'discussions' && (
+          <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {/* Header / Actions Bar */}
+            <div className="panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', padding: '1.25rem 1.5rem' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Headphones size={20} color="var(--primary)" />
+                  <h2 style={{ fontSize: '1.15rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+                    Admin Helpdesk & Discussion Portal
+                  </h2>
+                </div>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.25rem 0 0 0' }}>
+                  Direct private channel with Taaskr operations, payments & governance team. Ask questions, request reimbursements, or resolve disputes.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setShowNewDiscussionModal(true)}
+                className="btn btn-primary btn-sm"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
+              >
+                <Plus size={14} />
+                <span>Start New Discussion</span>
+              </button>
+            </div>
+
+            {/* Main 2-Column Split View */}
+            <div style={{ display: 'grid', gridTemplateColumns: discussions.length > 0 ? '360px 1fr' : '1fr', gap: '1.25rem', alignItems: 'flex-start' }}>
+              {/* Left Column: Discussion List */}
+              <div className="panel" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '720px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
+                    Your Threads ({discussions.length})
+                  </span>
+
+                  {/* Filter Pill */}
+                  <div style={{ display: 'flex', gap: '0.3rem' }}>
+                    {['ALL', 'OPEN', 'RESOLVED'].map(f => (
+                      <button
+                        key={f}
+                        onClick={() => setDiscussionFilter(f)}
+                        style={{
+                          fontSize: '0.68rem',
+                          padding: '0.15rem 0.45rem',
+                          borderRadius: '6px',
+                          border: '1px solid',
+                          borderColor: discussionFilter === f ? 'var(--primary)' : 'var(--border-light)',
+                          background: discussionFilter === f ? 'var(--primary-subtle)' : 'transparent',
+                          color: discussionFilter === f ? 'var(--primary)' : 'var(--text-muted)',
+                          cursor: 'pointer',
+                          fontWeight: 600
+                        }}
+                      >
+                        {f}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Discussions Scrollable List */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', overflowY: 'auto', maxHeight: '600px', paddingRight: '0.2rem' }}>
+                  {discussions
+                    .filter(d => {
+                      if (discussionFilter === 'OPEN') return d.status === 'OPEN' || d.status === 'IN_REVIEW';
+                      if (discussionFilter === 'RESOLVED') return d.status === 'RESOLVED' || d.status === 'CLOSED';
+                      return true;
+                    })
+                    .map(disc => {
+                      const isSelected = selectedDiscussionId === disc.id;
+                      const msgCount = disc.messages ? disc.messages.length : 0;
+                      const lastMsg = msgCount > 0 ? disc.messages[msgCount - 1] : null;
+
+                      let statusBadgeClass = 'badge-pending';
+                      if (disc.status === 'RESOLVED') statusBadgeClass = 'badge-completed';
+                      else if (disc.status === 'IN_REVIEW') statusBadgeClass = 'badge-assigned';
+
+                      return (
+                        <div
+                          key={disc.id}
+                          onClick={() => setSelectedDiscussionId(disc.id)}
+                          style={{
+                            padding: '0.75rem',
+                            borderRadius: 'var(--radius-sm)',
+                            border: '1px solid',
+                            borderColor: isSelected ? 'var(--primary)' : 'var(--border-light)',
+                            background: isSelected ? 'var(--primary-subtle)' : 'var(--bg-subtle)',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.35rem', gap: '0.4rem' }}>
+                            <strong style={{ fontSize: '0.82rem', color: 'var(--text-main)', lineHeight: 1.25 }}>
+                              {disc.subject}
+                            </strong>
+                            <span className={`badge ${statusBadgeClass}`} style={{ fontSize: '0.65rem', padding: '0.1rem 0.35rem', flexShrink: 0 }}>
+                              {disc.status}
+                            </span>
+                          </div>
+
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
+                            <span style={{ color: 'var(--primary)', fontWeight: 600 }}>{disc.category?.replace(/_/g, ' ')}</span>
+                            {disc.priority === 'URGENT' && (
+                              <span style={{ color: '#ef4444', fontWeight: 700, fontSize: '0.65rem', background: 'rgba(239, 68, 68, 0.12)', padding: '0.05rem 0.3rem', borderRadius: '4px' }}>
+                                URGENT
+                              </span>
+                            )}
+                            {disc.bookingId && (
+                              <span>• Booking #{disc.bookingId}</span>
+                            )}
+                          </div>
+
+                          {lastMsg && (
+                            <p style={{ fontSize: '0.73rem', color: 'var(--text-secondary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              <span style={{ fontWeight: 600 }}>{lastMsg.senderRole === 'PROVIDER' ? 'You: ' : 'Admin: '}</span>
+                              {lastMsg.message}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+
+                  {discussions.length === 0 && (
+                    <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)' }}>
+                      <MessageCircle size={32} style={{ opacity: 0.4, marginBottom: '0.5rem' }} />
+                      <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)' }}>No discussions yet</div>
+                      <p style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>
+                        Click the button above to ask a question or connect with the admin team.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column: Active Conversation Detail */}
+              {selectedDiscussionId && (() => {
+                const activeDisc = discussions.find(d => d.id === selectedDiscussionId);
+                if (!activeDisc) return null;
+
+                let statusBadgeClass = 'badge-pending';
+                if (activeDisc.status === 'RESOLVED') statusBadgeClass = 'badge-completed';
+                else if (activeDisc.status === 'IN_REVIEW') statusBadgeClass = 'badge-assigned';
+
+                return (
+                  <div className="panel" style={{ display: 'flex', flexDirection: 'column', height: '720px', padding: 0, overflow: 'hidden' }}>
+                    {/* Thread Header */}
+                    <div style={{ padding: '1.25rem', borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-subtle)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.4rem' }}>
+                        <div>
+                          <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
+                            {activeDisc.subject}
+                          </h3>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.35rem', flexWrap: 'wrap' }}>
+                            <span className="badge badge-assigned" style={{ fontSize: '0.7rem' }}>
+                              {activeDisc.category?.replace(/_/g, ' ')}
+                            </span>
+                            <span className={`badge ${statusBadgeClass}`} style={{ fontSize: '0.7rem' }}>
+                              {activeDisc.status}
+                            </span>
+                            {activeDisc.bookingId && (
+                              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                                Referenced Booking #{activeDisc.bookingId}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textAlign: 'right' }}>
+                          <div>Started: {new Date(activeDisc.createdAt).toLocaleDateString()}</div>
+                          <div>Updated: {formatLocalTime(activeDisc.updatedAt?.slice(11, 16) || '12:00')}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Chat Messages Timeline */}
+                    <div style={{ flex: 1, padding: '1.25rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem', background: 'var(--bg-main)' }}>
+                      {(activeDisc.messages || []).map((msg) => {
+                        const isMe = msg.senderRole === 'PROVIDER';
+                        return (
+                          <div
+                            key={msg.id}
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: isMe ? 'flex-end' : 'flex-start'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.2rem', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                              {!isMe && (
+                                <span style={{
+                                  display: 'inline-flex', alignItems: 'center', gap: '0.2rem',
+                                  backgroundColor: 'rgba(99, 102, 241, 0.15)', color: '#6366f1',
+                                  padding: '0.05rem 0.4rem', borderRadius: '4px', fontWeight: 700, fontSize: '0.65rem'
+                                }}>
+                                  <ShieldCheck size={10} /> TAASKR ADMIN SUPPORT
+                                </span>
+                              )}
+                              <span style={{ fontWeight: 600 }}>{isMe ? 'You' : msg.senderName}</span>
+                              <span>• {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                            </div>
+
+                            <div style={{
+                              maxWidth: '82%',
+                              padding: '0.85rem 1rem',
+                              borderRadius: '12px',
+                              borderTopRightRadius: isMe ? '2px' : '12px',
+                              borderTopLeftRadius: isMe ? '12px' : '2px',
+                              backgroundColor: isMe ? 'var(--primary)' : 'var(--bg-card)',
+                              color: isMe ? '#ffffff' : 'var(--text-main)',
+                              border: isMe ? 'none' : '1px solid var(--border-light)',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                              fontSize: '0.84rem',
+                              lineHeight: 1.45,
+                              whiteSpace: 'pre-wrap',
+                              wordBreak: 'break-word'
+                            }}>
+                              {msg.message}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Reply Input Box */}
+                    <form onSubmit={handleSendReply} style={{ padding: '1rem', borderTop: '1px solid var(--border-subtle)', background: 'var(--bg-subtle)', display: 'flex', gap: '0.6rem' }}>
+                      <textarea
+                        className="form-control"
+                        rows={2}
+                        placeholder="Type your reply or question for Admin..."
+                        value={replyMessage}
+                        onChange={(e) => setReplyMessage(e.target.value)}
+                        style={{ resize: 'none', fontSize: '0.82rem' }}
+                        required
+                      />
+                      <button
+                        type="submit"
+                        className="btn btn-primary"
+                        disabled={submittingReply || !replyMessage.trim()}
+                        style={{ alignSelf: 'flex-end', height: '42px', padding: '0 1rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                      >
+                        <Send size={14} />
+                        <span>{submittingReply ? 'Sending...' : 'Send'}</span>
+                      </button>
+                    </form>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        )}
+
+        {/* Modal: Start New Discussion */}
+        {showNewDiscussionModal && (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 1000, padding: '1rem'
+          }}>
+            <div className="panel animate-fade-in" style={{ maxWidth: '540px', width: '100%', padding: '1.5rem', maxHeight: '90vh', overflowY: 'auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.75rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <MessageSquare size={18} color="var(--primary)" />
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+                    Connect with Admin Team
+                  </h3>
+                </div>
+                <button onClick={() => setShowNewDiscussionModal(false)} className="btn btn-ghost btn-sm" style={{ padding: 4 }}>
+                  <X size={16} />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateDiscussion} style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Subject / Title *</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="e.g. Payment discrepancy for Booking #108 or Add new service"
+                    value={newSubject}
+                    onChange={(e) => setNewSubject(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label">Category *</label>
+                    <select
+                      className="form-control"
+                      value={newCategory}
+                      onChange={(e) => setNewCategory(e.target.value)}
+                    >
+                      <option value="GENERAL_INQUIRY">General Inquiry / Query</option>
+                      <option value="PAYMENT_DISPUTE">Payment & Rate Dispute</option>
+                      <option value="PARTS_REIMBURSEMENT">Parts & Materials Reimbursement</option>
+                      <option value="CUSTOMER_UNREACHABLE">Customer Unreachable / Location</option>
+                      <option value="SKILL_EXPANSION">Add New Service Domain</option>
+                      <option value="TECH_SUPPORT">App / Technical Support</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label">Priority</label>
+                    <select
+                      className="form-control"
+                      value={newPriority}
+                      onChange={(e) => setNewPriority(e.target.value)}
+                    >
+                      <option value="NORMAL">Normal</option>
+                      <option value="HIGH">High</option>
+                      <option value="URGENT">Urgent Escalation</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Related Booking ID (Optional)</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    placeholder="e.g. 108"
+                    value={newBookingId}
+                    onChange={(e) => setNewBookingId(e.target.value)}
+                  />
+                </div>
+
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Message / Details *</label>
+                  <textarea
+                    className="form-control"
+                    rows={4}
+                    placeholder="Describe your question, request, or issue in detail..."
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    style={{ resize: 'vertical' }}
+                    required
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  <button type="button" onClick={() => setShowNewDiscussionModal(false)} className="btn btn-secondary btn-sm" style={{ flex: 1 }}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-primary btn-sm" style={{ flex: 1 }} disabled={submittingDiscussion}>
+                    {submittingDiscussion ? 'Starting...' : 'Submit to Admin'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
       {/* Pop-up Modal for Payment Collection Restriction (When attempting before work completion) */}
       <PaymentRestrictionModal

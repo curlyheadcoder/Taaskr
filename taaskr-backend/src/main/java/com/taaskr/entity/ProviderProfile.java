@@ -27,6 +27,8 @@ public class ProviderProfile {
     private Integer totalRatings = 0;
     @Column(length= 500)
     private String bio;
+    @Column(length = 1000)
+    private String adminRemarks;
 
     public ProviderProfile() {
     }
@@ -109,5 +111,13 @@ public class ProviderProfile {
 
     public void setTotalRatings(Integer totalRatings) {
         this.totalRatings = totalRatings;
+    }
+
+    public String getAdminRemarks() {
+        return adminRemarks;
+    }
+
+    public void setAdminRemarks(String adminRemarks) {
+        this.adminRemarks = adminRemarks;
     }
 }

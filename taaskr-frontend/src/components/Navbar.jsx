@@ -188,7 +188,7 @@ export default function Navbar() {
       {/* Left Section: Brand Logo & Navigation Links */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexShrink: 0 }}>
         <Link 
-          to={user?.role === 'PROVIDER' ? '/provider' : '/'} 
+          to={user?.role === 'PROVIDER' ? '/provider' : user?.role === 'ADMIN' ? '/admin' : '/'} 
           style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', textDecoration: 'none' }}
         >
           <img
@@ -206,6 +206,54 @@ export default function Navbar() {
             letterSpacing: '-0.03em'
           }}>Taaskr</span>
         </Link>
+
+        {user?.role === 'PROVIDER' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Link
+              to="/provider"
+              className="badge"
+              style={{
+                backgroundColor: 'rgba(2, 132, 199, 0.12)',
+                color: 'var(--primary)',
+                border: '1px solid rgba(2, 132, 199, 0.25)',
+                fontWeight: 700,
+                fontSize: '0.75rem',
+                textDecoration: 'none',
+                padding: '0.25rem 0.65rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem'
+              }}
+            >
+              <Briefcase size={12} />
+              <span>Partner Console</span>
+            </Link>
+          </div>
+        )}
+
+        {user?.role === 'ADMIN' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Link
+              to="/admin"
+              className="badge"
+              style={{
+                backgroundColor: 'rgba(99, 102, 241, 0.12)',
+                color: '#6366f1',
+                border: '1px solid rgba(99, 102, 241, 0.25)',
+                fontWeight: 700,
+                fontSize: '0.75rem',
+                textDecoration: 'none',
+                padding: '0.25rem 0.65rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem'
+              }}
+            >
+              <ShieldCheck size={12} />
+              <span>Admin Center</span>
+            </Link>
+          </div>
+        )}
 
         {/* Location Selector (User / Guest Only) */}
         {isCustomerView && (
