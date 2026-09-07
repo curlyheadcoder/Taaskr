@@ -7,13 +7,14 @@ import Pagination from '../components/Pagination';
 import PaymentRestrictionModal from '../components/PaymentRestrictionModal';
 import CollectCashModal from '../components/CollectCashModal';
 import RejectTaskModal from '../components/RejectTaskModal';
+import LiveTrackingModal from '../components/LiveTrackingModal';
 import { 
   Truck, MapPin, Package, Navigation, CheckCircle2, ShieldCheck, 
   Clock, Check, X, AlertCircle, Plus, Trash2, Edit2, Phone, Mail, 
   Star, Briefcase, Calendar, CheckSquare, Settings, User, RefreshCw,
   DollarSign, ExternalLink, Power, TrendingUp, BarChart3, PieChart,
   PanelLeftClose, PanelLeftOpen, Wallet, Award, ArrowUpRight, Banknote, Play,
-  MessageSquare, Send, MessageCircle, HelpCircle, Headphones, FileText
+  MessageSquare, Send, MessageCircle, HelpCircle, Headphones, FileText, Radio
 } from 'lucide-react';
 
 export default function ProviderDashboard() {
@@ -113,6 +114,14 @@ export default function ProviderDashboard() {
   const [availStart, setAvailStart] = useState('09:00');
   const [availEnd, setAvailEnd] = useState('11:00');
 
+  // Live GPS Location Broadcasting state
+  const [isBroadcastingLocation, setIsBroadcastingLocation] = useState(false);
+  const [lastBroadcastCoords, setLastBroadcastCoords] = useState(null);
+  const [lastBroadcastTime, setLastBroadcastTime] = useState(null);
+  const [broadcastError, setBroadcastError] = useState('');
+  const [trackingModalBookingId, setTrackingModalBookingId] = useState(null);
+  const watchIdRef = useRef(null);
+
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 4000);
@@ -202,6 +211,62 @@ export default function ProviderDashboard() {
       document.body.classList.remove('theme-provider');
     };
   }, []);
+
+  // Live Provider GPS Location Broadcasting Watcher
+  useEffect(() => {
+    if (isBroadcastingLocation) {
+      if (!navigator.geolocation) {
+        setBroadcastError('Geolocation is not supported by your browser');
+        setIsBroadcastingLocation(false);
+        return;
+      }
+      setBroadcastError('');
+
+      const successHandler = async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        const speed = pos.coords.speed;
+        const heading = pos.coords.heading;
+        setLastBroadcastCoords({ lat, lng });
+        setLastBroadcastTime(new Date());
+
+        try {
+          await api.tracking.updateProviderLocation({
+            latitude: lat,
+            longitude: lng,
+            speed: speed != null ? speed : undefined,
+            heading: heading != null ? heading : undefined
+          });
+        } catch (err) {
+          console.warn('Location broadcast ping failed:', err);
+        }
+      };
+
+      const errorHandler = (err) => {
+        console.warn('Geolocation watch error:', err);
+        setBroadcastError('GPS signal weak or browser location permission denied.');
+      };
+
+      const id = navigator.geolocation.watchPosition(successHandler, errorHandler, {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 4000
+      });
+      watchIdRef.current = id;
+    } else {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+    }
+
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+    };
+  }, [isBroadcastingLocation]);
 
   // Broadcast tab changes to sync navbar pill styles
   useEffect(() => {
@@ -774,6 +839,28 @@ export default function ProviderDashboard() {
             </div>
 
             <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              {/* Live Tracking / Route Preview */}
+              {['ACCEPTED', 'IN_PROGRESS', 'IN_TRANSIT'].includes(job.status) && (
+                <button
+                  type="button"
+                  onClick={() => setTrackingModalBookingId(job.id)}
+                  className="btn btn-secondary btn-sm"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    fontSize: '0.75rem',
+                    padding: '0.25rem 0.55rem',
+                    color: 'var(--primary)',
+                    borderColor: 'var(--primary-subtle)'
+                  }}
+                  title="View Live Route and Coordinates"
+                >
+                  <Navigation size={12} />
+                  <span>Live Map</span>
+                </button>
+              )}
+
               {/* Step 1: ASSIGNED -> Accept or Reject */}
               {job.status === 'ASSIGNED' && (
                 <>
@@ -1357,6 +1444,85 @@ export default function ProviderDashboard() {
         {/* ========================================================================= */}
         {activeTab === 'bookings' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {/* GPS Broadcaster Control Card */}
+            <div style={{
+              background: isBroadcastingLocation 
+                ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(5, 150, 105, 0.05) 100%)' 
+                : 'var(--bg-subtle)',
+              border: `1px solid ${isBroadcastingLocation ? '#10b981' : 'var(--border-light)'}`,
+              borderRadius: 'var(--radius-md)',
+              padding: '0.85rem 1.15rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '0.75rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  backgroundColor: isBroadcastingLocation ? '#10b981' : 'var(--bg-card)',
+                  color: isBroadcastingLocation ? '#ffffff' : 'var(--text-muted)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: isBroadcastingLocation ? '0 0 12px rgba(16, 185, 129, 0.4)' : 'none'
+                }}>
+                  <Radio size={18} className={isBroadcastingLocation ? 'animate-pulse' : ''} />
+                </div>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <strong style={{ fontSize: '0.875rem', color: 'var(--text-main)' }}>
+                      Live GPS Location Broadcasting
+                    </strong>
+                    <span style={{
+                      fontSize: '0.6875rem',
+                      padding: '0.1rem 0.45rem',
+                      borderRadius: 'var(--radius-pill)',
+                      fontWeight: 700,
+                      backgroundColor: isBroadcastingLocation ? '#10b981' : 'var(--bg-card)',
+                      color: isBroadcastingLocation ? '#ffffff' : 'var(--text-muted)',
+                      border: '1px solid var(--border-subtle)'
+                    }}>
+                      {isBroadcastingLocation ? 'BROADCASTING ACTIVE' : 'STANDBY'}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
+                    {isBroadcastingLocation
+                      ? (lastBroadcastTime 
+                          ? `Transmitting coordinates (${lastBroadcastCoords?.lat.toFixed(4)}, ${lastBroadcastCoords?.lng.toFixed(4)}) to active customers.` 
+                          : 'Connecting to device GPS sensor...')
+                      : 'Share your live movement with customers during ongoing trips and appointments.'}
+                  </div>
+                  {broadcastError && (
+                    <div style={{ color: 'var(--error)', fontSize: '0.75rem', marginTop: '0.2rem' }}>
+                      {broadcastError}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsBroadcastingLocation(prev => !prev)}
+                  className={`btn btn-sm ${isBroadcastingLocation ? 'btn-danger' : 'btn-primary'}`}
+                  style={{
+                    padding: '0.4rem 0.85rem',
+                    fontSize: '0.8125rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.35rem'
+                  }}
+                >
+                  <Radio size={14} />
+                  <span>{isBroadcastingLocation ? 'Stop GPS Broadcast' : 'Start GPS Broadcast'}</span>
+                </button>
+              </div>
+            </div>
+
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-main)' }}>
                 Assigned Bookings & Active Trips
@@ -1395,6 +1561,80 @@ export default function ProviderDashboard() {
         {/* ========================================================================= */}
         {activeTab === 'in-transit' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {/* GPS Broadcaster Control Card */}
+            <div style={{
+              background: isBroadcastingLocation 
+                ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(5, 150, 105, 0.05) 100%)' 
+                : 'var(--bg-subtle)',
+              border: `1px solid ${isBroadcastingLocation ? '#10b981' : 'var(--border-light)'}`,
+              borderRadius: 'var(--radius-md)',
+              padding: '0.85rem 1.15rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '0.75rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  backgroundColor: isBroadcastingLocation ? '#10b981' : 'var(--bg-card)',
+                  color: isBroadcastingLocation ? '#ffffff' : 'var(--text-muted)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: isBroadcastingLocation ? '0 0 12px rgba(16, 185, 129, 0.4)' : 'none'
+                }}>
+                  <Radio size={18} className={isBroadcastingLocation ? 'animate-pulse' : ''} />
+                </div>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <strong style={{ fontSize: '0.875rem', color: 'var(--text-main)' }}>
+                      Live GPS Location Broadcasting
+                    </strong>
+                    <span style={{
+                      fontSize: '0.6875rem',
+                      padding: '0.1rem 0.45rem',
+                      borderRadius: 'var(--radius-pill)',
+                      fontWeight: 700,
+                      backgroundColor: isBroadcastingLocation ? '#10b981' : 'var(--bg-card)',
+                      color: isBroadcastingLocation ? '#ffffff' : 'var(--text-muted)',
+                      border: '1px solid var(--border-subtle)'
+                    }}>
+                      {isBroadcastingLocation ? 'BROADCASTING ACTIVE' : 'STANDBY'}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
+                    {isBroadcastingLocation
+                      ? (lastBroadcastTime 
+                          ? `Transmitting coordinates (${lastBroadcastCoords?.lat.toFixed(4)}, ${lastBroadcastCoords?.lng.toFixed(4)}) to active customers.` 
+                          : 'Connecting to device GPS sensor...')
+                      : 'Share your live movement with customers during ongoing trips and appointments.'}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsBroadcastingLocation(prev => !prev)}
+                  className={`btn btn-sm ${isBroadcastingLocation ? 'btn-danger' : 'btn-primary'}`}
+                  style={{
+                    padding: '0.4rem 0.85rem',
+                    fontSize: '0.8125rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.35rem'
+                  }}
+                >
+                  <Radio size={14} />
+                  <span>{isBroadcastingLocation ? 'Stop GPS Broadcast' : 'Start GPS Broadcast'}</span>
+                </button>
+              </div>
+            </div>
+
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>
@@ -2665,6 +2905,14 @@ export default function ProviderDashboard() {
         onConfirm={handleConfirmReject}
         loading={modalSubmitting}
       />
+
+      {/* Live Route & Tracking Modal */}
+      {trackingModalBookingId && (
+        <LiveTrackingModal
+          bookingId={trackingModalBookingId}
+          onClose={() => setTrackingModalBookingId(null)}
+        />
+      )}
     </div>
   );
 }

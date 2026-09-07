@@ -6,11 +6,12 @@ import { sortBookingsByStatusPriority } from '../utils/sorting';
 import confetti from 'canvas-confetti';
 import Pagination from '../components/Pagination';
 import PaymentRestrictionModal from '../components/PaymentRestrictionModal';
+import LiveTrackingModal from '../components/LiveTrackingModal';
 import { 
   Calendar, Clock, CreditCard, Star, Truck, MapPin, User, 
   ExternalLink, AlertCircle, CheckCircle2, ChevronRight, X, 
   RefreshCw, FileText, Settings, ShieldCheck, Mail, Phone, 
-  Check, Save, Lock
+  Check, Save, Lock, Navigation, Compass
 } from 'lucide-react';
 
 const loadRazorpayScript = () => {
@@ -38,6 +39,7 @@ export default function CustomerDashboard({ initialTab }) {
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [payingBookingId, setPayingBookingId] = useState(null);
+  const [trackingBookingId, setTrackingBookingId] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
 
   // Profile Editor state
@@ -663,6 +665,28 @@ export default function CustomerDashboard({ initialTab }) {
                   </td>
                   <td style={{ textAlign: 'right' }}>
                     <div style={{ display: 'inline-flex', gap: '0.35rem', alignItems: 'center' }}>
+                      {['ASSIGNED', 'ACCEPTED', 'IN_PROGRESS', 'IN_TRANSIT'].includes(booking.status) && (
+                        <button
+                          onClick={() => setTrackingBookingId(booking.id)}
+                          className="btn btn-primary btn-sm"
+                          style={{
+                            padding: '0.2rem 0.55rem',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.3rem',
+                            backgroundColor: '#10b981',
+                            borderColor: '#059669',
+                            color: '#ffffff',
+                            fontSize: '0.75rem',
+                            fontWeight: 600
+                          }}
+                          title="Track Provider Real-time Location on Live Map"
+                        >
+                          <Navigation size={12} />
+                          <span>Track Live</span>
+                        </button>
+                      )}
+
                       <button
                         onClick={() => setSelectedBooking(booking)}
                         className="btn btn-secondary btn-sm"
@@ -733,6 +757,32 @@ export default function CustomerDashboard({ initialTab }) {
                 <span style={{ color: 'var(--text-muted)' }}>Status:</span>
                 <div>{getStatusBadge(selectedBooking.status)}</div>
               </div>
+
+              {['ASSIGNED', 'ACCEPTED', 'IN_PROGRESS', 'IN_TRANSIT'].includes(selectedBooking.status) && (
+                <button
+                  onClick={() => {
+                    const id = selectedBooking.id;
+                    setSelectedBooking(null);
+                    setTrackingBookingId(id);
+                  }}
+                  className="btn btn-sm"
+                  style={{
+                    backgroundColor: '#10b981',
+                    borderColor: '#059669',
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.4rem',
+                    padding: '0.55rem',
+                    fontWeight: 600,
+                    borderRadius: 'var(--radius-sm)'
+                  }}
+                >
+                  <Navigation size={15} />
+                  <span>Track Provider Live on Map</span>
+                </button>
+              )}
 
               <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Service:</span>
@@ -904,8 +954,17 @@ export default function CustomerDashboard({ initialTab }) {
         onClose={() => setShowPaymentModal(false)}
         booking={paymentRestrictedBooking}
       />
+
+      {/* Live Provider Tracking Modal */}
+      {trackingBookingId && (
+        <LiveTrackingModal
+          bookingId={trackingBookingId}
+          onClose={() => setTrackingBookingId(null)}
+        />
+      )}
     </div>
   );
 }
+
 
 

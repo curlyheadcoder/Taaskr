@@ -554,5 +554,22 @@ export const api = {
         body: JSON.stringify(ruleData)
       });
     }
+  },
+
+  // ----------------------------------------
+  // LIVE GPS & PROVIDER TRACKING
+  // ----------------------------------------
+  tracking: {
+    getLiveTracking: async (bookingId) => {
+      return makeRequest(`/api/bookings/${bookingId}/track`);
+    },
+
+    updateProviderLocation: async (coords) => {
+      return makeRequest('/api/provider/location', {
+        method: 'POST',
+        body: JSON.stringify(coords)
+      });
+    }
   }
 };
+

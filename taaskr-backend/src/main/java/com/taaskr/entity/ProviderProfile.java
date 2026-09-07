@@ -30,6 +30,15 @@ public class ProviderProfile {
     @Column(length = 1000)
     private String adminRemarks;
 
+    @Column(precision = 10, scale = 7)
+    private java.math.BigDecimal currentLatitude;
+
+    @Column(precision = 10, scale = 7)
+    private java.math.BigDecimal currentLongitude;
+
+    @Column
+    private java.time.LocalDateTime locationUpdatedAt;
+
     public ProviderProfile() {
     }
 
@@ -119,5 +128,29 @@ public class ProviderProfile {
 
     public void setAdminRemarks(String adminRemarks) {
         this.adminRemarks = adminRemarks;
+    }
+
+    public java.math.BigDecimal getCurrentLatitude() {
+        return currentLatitude;
+    }
+
+    public void setCurrentLatitude(java.math.BigDecimal currentLatitude) {
+        this.currentLatitude = currentLatitude;
+    }
+
+    public java.math.BigDecimal getCurrentLongitude() {
+        return currentLongitude;
+    }
+
+    public void setCurrentLongitude(java.math.BigDecimal currentLongitude) {
+        this.currentLongitude = currentLongitude;
+    }
+
+    public java.time.LocalDateTime getLocationUpdatedAt() {
+        return locationUpdatedAt;
+    }
+
+    public void setLocationUpdatedAt(java.time.LocalDateTime locationUpdatedAt) {
+        this.locationUpdatedAt = locationUpdatedAt;
     }
 }
