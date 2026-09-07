@@ -115,7 +115,12 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
+    document.body.classList.remove('theme-user', 'theme-provider');
+    document.body.classList.add('theme-admin');
     loadAdminData();
+    return () => {
+      document.body.classList.remove('theme-admin');
+    };
   }, []);
 
   // Live Auto-Poll Partner Discussions in Admin Panel every 3 seconds
@@ -282,7 +287,7 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="enterprise-layout">
+      <div className="enterprise-layout admin-theme">
         <aside className="enterprise-sidebar">
           <div className="skeleton" style={{ width: '100%', height: '40px', marginBottom: '1rem' }} />
           <div className="skeleton" style={{ width: '100%', height: '30px' }} />
@@ -305,7 +310,7 @@ export default function AdminDashboard() {
   const approvedProviders = providers.filter(p => p.approved);
 
   return (
-    <div className="enterprise-layout animate-fade-in">
+    <div className="enterprise-layout admin-theme animate-fade-in">
       {/* Enterprise Sidebar */}
       <aside className={`enterprise-sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
         <div style={{
@@ -505,9 +510,9 @@ export default function AdminDashboard() {
           <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: '1.25rem', height: 'calc(100vh - 160px)', minHeight: '600px' }}>
             {/* Left Column: Tickets & Filter List */}
             <div className="panel" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: 0 }}>
-              <div style={{ padding: '1rem', borderBottom: '1px solid var(--border)', background: 'var(--bg-subtle)' }}>
+              <div style={{ padding: '1rem', borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-subtle)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                  <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0 }}>Partner Discussions</h3>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>Partner Discussions</h3>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{filteredDiscussions.length} threads</span>
                 </div>
                 <div style={{ display: 'flex', gap: '0.35rem' }}>
@@ -517,15 +522,17 @@ export default function AdminDashboard() {
                       type="button"
                       onClick={() => setDiscussionFilter(filter)}
                       style={{
-                        padding: '0.25rem 0.6rem',
+                        padding: '0.3rem 0.65rem',
                         fontSize: '0.72rem',
                         fontWeight: 600,
-                        borderRadius: '4px',
+                        borderRadius: '6px',
                         border: '1px solid',
-                        borderColor: discussionFilter === filter ? 'var(--primary)' : 'var(--border)',
-                        background: discussionFilter === filter ? 'var(--primary)' : 'transparent',
-                        color: discussionFilter === filter ? '#fff' : 'var(--text-muted)',
-                        cursor: 'pointer'
+                        borderColor: discussionFilter === filter ? 'rgba(99, 102, 241, 0.6)' : 'var(--border-light)',
+                        background: discussionFilter === filter ? 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)' : 'transparent',
+                        color: discussionFilter === filter ? '#ffffff' : 'var(--text-muted)',
+                        boxShadow: discussionFilter === filter ? '0 2px 8px rgba(99, 102, 241, 0.3)' : 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
                       }}
                     >
                       {filter.replace('_', ' ')}
@@ -534,14 +541,14 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div style={{ flex: 1, overflowY: 'auto', padding: '0.5rem' }}>
+              <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '0.75rem' }}>
                 {filteredDiscussions.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)' }}>
                     <MessageSquare size={32} style={{ opacity: 0.3, marginBottom: '0.5rem' }} />
                     <p style={{ fontSize: '0.875rem' }}>No discussions found in this filter.</p>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
                     {filteredDiscussions.map(d => {
                       const isSelected = (activeDiscussion && activeDiscussion.id === d.id);
                       return (
@@ -550,23 +557,25 @@ export default function AdminDashboard() {
                           onClick={() => setSelectedDiscussionId(d.id)}
                           style={{
                             padding: '0.85rem',
-                            borderRadius: '8px',
+                            borderRadius: '10px',
                             cursor: 'pointer',
                             border: '1px solid',
-                            borderColor: isSelected ? 'var(--primary)' : 'var(--border)',
-                            background: isSelected ? 'var(--bg-subtle)' : 'var(--bg-card)',
-                            boxShadow: isSelected ? '0 0 0 1px var(--primary)' : 'none',
-                            transition: 'all 0.15s ease'
+                            borderColor: isSelected ? 'var(--primary)' : 'var(--border-light)',
+                            background: isSelected ? 'rgba(99, 102, 241, 0.12)' : 'var(--bg-card)',
+                            boxShadow: isSelected ? '0 0 16px rgba(99, 102, 241, 0.18)' : 'none',
+                            transition: 'all 0.18s cubic-bezier(0.4, 0, 0.2, 1)'
                           }}
                         >
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
                             <span style={{ 
                               fontSize: '0.68rem', 
                               fontWeight: 700, 
-                              padding: '0.15rem 0.4rem', 
-                              borderRadius: '3px',
-                              background: 'rgba(59, 130, 246, 0.12)', 
-                              color: 'var(--primary)' 
+                              padding: '0.15rem 0.5rem', 
+                              borderRadius: '4px',
+                              background: 'rgba(99, 102, 241, 0.18)', 
+                              color: '#A78BFA',
+                              border: '1px solid rgba(99, 102, 241, 0.35)',
+                              letterSpacing: '0.02em'
                             }}>
                               {d.category ? d.category.replace('_', ' ') : 'GENERAL'}
                             </span>
@@ -599,10 +608,10 @@ export default function AdminDashboard() {
             {activeDiscussion ? (
               <div className="panel" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 0, overflow: 'hidden' }}>
                 {/* Header */}
-                <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border)', background: 'var(--bg-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+                <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                      <h2 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>{activeDiscussion.subject}</h2>
+                      <h2 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>{activeDiscussion.subject}</h2>
                       <span className={`badge ${
                         activeDiscussion.status === 'RESOLVED' ? 'badge-completed' :
                         activeDiscussion.status === 'IN_REVIEW' ? 'badge-inprogress' :
@@ -633,7 +642,7 @@ export default function AdminDashboard() {
                       <button 
                         onClick={() => handleUpdateDiscussionStatus(activeDiscussion.id, 'RESOLVED')}
                         className="btn btn-primary btn-sm"
-                        style={{ fontSize: '0.75rem', background: '#10B981', borderColor: '#10B981' }}
+                        style={{ fontSize: '0.75rem', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', border: 'none', boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)' }}
                       >
                         <CheckCircle2 size={13} />
                         Mark Resolved
@@ -652,7 +661,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Messages Thread */}
-                <div ref={messagesContainerRef} style={{ flex: 1, overflowY: 'auto', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div ref={messagesContainerRef} className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {activeDiscussion.messages && activeDiscussion.messages.map((msg, idx) => {
                     const isAdmin = msg.senderRole === 'ADMIN';
                     return (
@@ -667,21 +676,21 @@ export default function AdminDashboard() {
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                          <strong style={{ color: isAdmin ? 'var(--primary)' : 'var(--text-main)' }}>
+                          <strong style={{ color: isAdmin ? '#818CF8' : 'var(--text-main)' }}>
                             {isAdmin ? '🛡️ Admin Support' : `🛠️ ${msg.senderName || 'Provider'}`}
                           </strong>
                           <span>• {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                         <div style={{
-                          padding: '0.85rem 1rem',
-                          borderRadius: '12px',
-                          background: isAdmin ? 'var(--primary)' : 'var(--bg-subtle)',
+                          padding: '0.85rem 1.15rem',
+                          borderRadius: isAdmin ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                          background: isAdmin ? 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)' : 'var(--bg-subtle)',
                           color: isAdmin ? '#ffffff' : 'var(--text-main)',
-                          border: isAdmin ? 'none' : '1px solid var(--border)',
+                          border: isAdmin ? 'none' : '1px solid var(--border-light)',
                           fontSize: '0.875rem',
                           lineHeight: '1.45',
                           whiteSpace: 'pre-wrap',
-                          boxShadow: '0 2px 4px rgba(0,0,0,0.04)'
+                          boxShadow: isAdmin ? '0 4px 14px rgba(99, 102, 241, 0.25)' : '0 2px 4px rgba(0,0,0,0.04)'
                         }}>
                           {msg.message}
                         </div>
@@ -691,7 +700,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Reply Box */}
-                <form onSubmit={handleAdminSendReply} style={{ padding: '1rem 1.25rem', borderTop: '1px solid var(--border)', background: 'var(--bg-subtle)', display: 'flex', gap: '0.75rem' }}>
+                <form onSubmit={handleAdminSendReply} style={{ padding: '1rem 1.25rem', borderTop: '1px solid var(--border-subtle)', background: 'var(--bg-subtle)', display: 'flex', gap: '0.75rem' }}>
                   <textarea
                     value={adminReplyText}
                     onChange={(e) => setAdminReplyText(e.target.value)}
@@ -704,7 +713,15 @@ export default function AdminDashboard() {
                     type="submit" 
                     disabled={submittingAdminReply || !adminReplyText.trim()}
                     className="btn btn-primary"
-                    style={{ alignSelf: 'flex-end', height: '42px', padding: '0 1.25rem' }}
+                    style={{ 
+                      alignSelf: 'flex-end', 
+                      height: '42px', 
+                      padding: '0 1.35rem',
+                      background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
+                      border: 'none',
+                      boxShadow: '0 4px 14px rgba(99, 102, 241, 0.35)',
+                      fontWeight: 600
+                    }}
                   >
                     <Send size={15} />
                     <span>{submittingAdminReply ? 'Sending...' : 'Reply'}</span>

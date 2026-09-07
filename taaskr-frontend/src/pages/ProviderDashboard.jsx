@@ -187,6 +187,8 @@ export default function ProviderDashboard() {
   };
 
   useEffect(() => {
+    document.body.classList.remove('theme-user', 'theme-admin');
+    document.body.classList.add('theme-provider');
     loadProviderDashboard(true);
 
     const handleSwitchTab = (e) => {
@@ -195,7 +197,10 @@ export default function ProviderDashboard() {
       }
     };
     window.addEventListener('switch-provider-tab', handleSwitchTab);
-    return () => window.removeEventListener('switch-provider-tab', handleSwitchTab);
+    return () => {
+      window.removeEventListener('switch-provider-tab', handleSwitchTab);
+      document.body.classList.remove('theme-provider');
+    };
   }, []);
 
   // Broadcast tab changes to sync navbar pill styles
@@ -843,7 +848,7 @@ export default function ProviderDashboard() {
 
   if (loading) {
     return (
-      <div className="enterprise-layout">
+      <div className="enterprise-layout provider-theme">
         <aside className="enterprise-sidebar">
           <div className="skeleton" style={{ width: '100%', height: '40px', marginBottom: '1rem' }} />
           <div className="skeleton" style={{ width: '100%', height: '30px' }} />
@@ -899,7 +904,7 @@ export default function ProviderDashboard() {
   const maxChartAmount = Math.max(1, ...chartData.map(c => c.amount));
 
   return (
-    <div className="enterprise-layout animate-fade-in">
+    <div className="enterprise-layout provider-theme animate-fade-in">
       {/* Sidebar Navigation */}
       <aside className={`enterprise-sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
         <div style={{
@@ -2250,14 +2255,16 @@ export default function ProviderDashboard() {
                         onClick={() => setDiscussionFilter(f)}
                         style={{
                           fontSize: '0.68rem',
-                          padding: '0.15rem 0.45rem',
+                          padding: '0.2rem 0.55rem',
                           borderRadius: '6px',
                           border: '1px solid',
-                          borderColor: discussionFilter === f ? 'var(--primary)' : 'var(--border-light)',
-                          background: discussionFilter === f ? 'var(--primary-subtle)' : 'transparent',
-                          color: discussionFilter === f ? 'var(--primary)' : 'var(--text-muted)',
+                          borderColor: discussionFilter === f ? 'rgba(16, 185, 129, 0.6)' : 'var(--border-light)',
+                          background: discussionFilter === f ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)' : 'transparent',
+                          color: discussionFilter === f ? '#ffffff' : 'var(--text-muted)',
+                          boxShadow: discussionFilter === f ? '0 2px 8px rgba(16, 185, 129, 0.25)' : 'none',
                           cursor: 'pointer',
-                          fontWeight: 600
+                          fontWeight: 600,
+                          transition: 'all 0.15s ease'
                         }}
                       >
                         {f}
@@ -2267,7 +2274,7 @@ export default function ProviderDashboard() {
                 </div>
 
                 {/* Discussions Scrollable List */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', overflowY: 'auto', maxHeight: '600px', paddingRight: '0.2rem' }}>
+                <div className="custom-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', overflowY: 'auto', maxHeight: '600px', paddingRight: '0.35rem' }}>
                   {discussions
                     .filter(d => {
                       if (discussionFilter === 'OPEN') return d.status === 'OPEN' || d.status === 'IN_REVIEW';
@@ -2288,13 +2295,14 @@ export default function ProviderDashboard() {
                           key={disc.id}
                           onClick={() => setSelectedDiscussionId(disc.id)}
                           style={{
-                            padding: '0.75rem',
-                            borderRadius: 'var(--radius-sm)',
+                            padding: '0.85rem',
+                            borderRadius: '10px',
                             border: '1px solid',
                             borderColor: isSelected ? 'var(--primary)' : 'var(--border-light)',
-                            background: isSelected ? 'var(--primary-subtle)' : 'var(--bg-subtle)',
+                            background: isSelected ? 'rgba(16, 185, 129, 0.12)' : 'var(--bg-subtle)',
+                            boxShadow: isSelected ? '0 0 16px rgba(16, 185, 129, 0.18)' : 'none',
                             cursor: 'pointer',
-                            transition: 'all 0.15s ease'
+                            transition: 'all 0.18s cubic-bezier(0.4, 0, 0.2, 1)'
                           }}
                         >
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.35rem', gap: '0.4rem' }}>
@@ -2307,7 +2315,7 @@ export default function ProviderDashboard() {
                           </div>
 
                           <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
-                            <span style={{ color: 'var(--primary)', fontWeight: 600 }}>{disc.category?.replace(/_/g, ' ')}</span>
+                            <span style={{ color: '#34D399', fontWeight: 600 }}>{disc.category?.replace(/_/g, ' ')}</span>
                             {disc.priority === 'URGENT' && (
                               <span style={{ color: '#ef4444', fontWeight: 700, fontSize: '0.65rem', background: 'rgba(239, 68, 68, 0.12)', padding: '0.05rem 0.3rem', borderRadius: '4px' }}>
                                 URGENT
@@ -2381,7 +2389,7 @@ export default function ProviderDashboard() {
                     </div>
 
                     {/* Chat Messages Timeline */}
-                    <div ref={providerChatContainerRef} style={{ flex: 1, padding: '1.25rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem', background: 'var(--bg-main)' }}>
+                    <div ref={providerChatContainerRef} className="custom-scrollbar" style={{ flex: 1, padding: '1.25rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem', background: 'var(--bg-main)' }}>
                       {(activeDisc.messages || []).map((msg) => {
                         const isMe = msg.senderRole === 'PROVIDER';
                         return (
@@ -2397,26 +2405,27 @@ export default function ProviderDashboard() {
                               {!isMe && (
                                 <span style={{
                                   display: 'inline-flex', alignItems: 'center', gap: '0.2rem',
-                                  backgroundColor: 'rgba(99, 102, 241, 0.15)', color: '#6366f1',
-                                  padding: '0.05rem 0.4rem', borderRadius: '4px', fontWeight: 700, fontSize: '0.65rem'
+                                  backgroundColor: 'rgba(99, 102, 241, 0.15)', color: '#818CF8',
+                                  border: '1px solid rgba(99, 102, 241, 0.3)',
+                                  padding: '0.1rem 0.45rem', borderRadius: '4px', fontWeight: 700, fontSize: '0.65rem'
                                 }}>
                                   <ShieldCheck size={10} /> TAASKR ADMIN SUPPORT
                                 </span>
                               )}
-                              <span style={{ fontWeight: 600 }}>{isMe ? 'You' : msg.senderName}</span>
+                              <span style={{ fontWeight: 600, color: isMe ? '#34D399' : 'var(--text-main)' }}>{isMe ? 'You (Provider)' : msg.senderName}</span>
                               <span>• {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
                             </div>
 
                             <div style={{
                               maxWidth: '82%',
-                              padding: '0.85rem 1rem',
+                              padding: '0.85rem 1.15rem',
                               borderRadius: '12px',
                               borderTopRightRadius: isMe ? '2px' : '12px',
                               borderTopLeftRadius: isMe ? '12px' : '2px',
-                              backgroundColor: isMe ? 'var(--primary)' : 'var(--bg-card)',
+                              background: isMe ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)' : 'var(--bg-card)',
                               color: isMe ? '#ffffff' : 'var(--text-main)',
                               border: isMe ? 'none' : '1px solid var(--border-light)',
-                              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                              boxShadow: isMe ? '0 4px 14px rgba(16, 185, 129, 0.25)' : '0 2px 8px rgba(0,0,0,0.04)',
                               fontSize: '0.84rem',
                               lineHeight: 1.45,
                               whiteSpace: 'pre-wrap',
@@ -2444,7 +2453,18 @@ export default function ProviderDashboard() {
                         type="submit"
                         className="btn btn-primary"
                         disabled={submittingReply || !replyMessage.trim()}
-                        style={{ alignSelf: 'flex-end', height: '42px', padding: '0 1rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                        style={{ 
+                          alignSelf: 'flex-end', 
+                          height: '42px', 
+                          padding: '0 1.25rem', 
+                          display: 'inline-flex', 
+                          alignItems: 'center', 
+                          gap: '0.4rem',
+                          background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                          border: 'none',
+                          boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
+                          fontWeight: 600
+                        }}
                       >
                         <Send size={14} />
                         <span>{submittingReply ? 'Sending...' : 'Send'}</span>

@@ -1826,3 +1826,260 @@ body:not(.dark) .hero-physics-tile {
     opacity: 1;
   }
 }
+
+/* ==========================================================================
+   ROLE-SPECIFIC THEMES (INVESTOR PITCH-GRADE DESIGN SYSTEM)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. PROVIDER OPERATIONS CONSOLE THEME: CYBER EMERALD & ELECTRIC TEAL
+   -------------------------------------------------------------------------- */
+.provider-theme,
+body.theme-provider {
+  --primary: #10B981;
+  --primary-hover: #059669;
+  --primary-subtle: rgba(16, 185, 129, 0.14);
+  --primary-rgb: 16, 185, 129;
+  --secondary-accent: #14B8A6;
+  --icon-container: rgba(16, 185, 129, 0.18);
+}
+
+body.dark .provider-theme,
+body.dark.theme-provider {
+  --bg-page: #08111B;
+  --bg-header: #0C1A29;
+  --bg-card: #102235;
+  --bg-card-hover: #152B42;
+  --bg-card-selected: #11343C;
+  --bg-subtle: #0C1A29;
+  --bg-hover: #152B42;
+  --border-subtle: #102235;
+  --border-light: #1A3754;
+  --border-color: #1A3754;
+  --border-strong: #234B73;
+}
+
+body:not(.dark) .provider-theme,
+body:not(.dark).theme-provider {
+  --bg-page: #F0FDF4;
+  --bg-header: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #DCFCE7;
+  --bg-subtle: #F0FDF4;
+  --border-light: #BBF7D0;
+  --border-color: #BBF7D0;
+  --border-strong: #86EFAC;
+}
+
+.provider-theme .enterprise-sidebar .sidebar-item.active,
+body.theme-provider .enterprise-sidebar .sidebar-item.active {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(20, 184, 166, 0.14) 100%) !important;
+  border-color: rgba(16, 185, 129, 0.5) !important;
+  color: #34D399 !important;
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
+}
+
+.provider-theme .btn-primary,
+body.theme-provider .btn-primary {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35) !important;
+}
+
+.provider-theme .btn-primary:hover:not(:disabled),
+body.theme-provider .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5) !important;
+  transform: translateY(-1px);
+}
+
+.provider-theme .stat-card-modern,
+body.theme-provider .stat-card-modern {
+  border-left: 3.5px solid #10B981 !important;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.08);
+}
+
+.provider-theme .badge-assigned,
+body.theme-provider .badge-assigned {
+  background: rgba(16, 185, 129, 0.15) !important;
+  color: #34D399 !important;
+  border: 1px solid rgba(16, 185, 129, 0.35) !important;
+}
+
+/* --------------------------------------------------------------------------
+   2. ADMIN GOVERNANCE CONSOLE THEME: ROYAL INDIGO & ELECTRIC VIOLET
+   -------------------------------------------------------------------------- */
+.admin-theme,
+body.theme-admin {
+  --primary: #6366F1;
+  --primary-hover: #4F46E5;
+  --primary-subtle: rgba(99, 102, 241, 0.14);
+  --primary-rgb: 99, 102, 241;
+  --secondary-accent: #8B5CF6;
+  --icon-container: rgba(99, 102, 241, 0.18);
+}
+
+body.dark .admin-theme,
+body.dark.theme-admin {
+  --bg-page: #090D1A;
+  --bg-header: #0F142D;
+  --bg-card: #141B3B;
+  --bg-card-hover: #1B234F;
+  --bg-card-selected: #22295E;
+  --bg-subtle: #0F142D;
+  --bg-hover: #1B234F;
+  --border-subtle: #141B3B;
+  --border-light: #242D5F;
+  --border-color: #242D5F;
+  --border-strong: #323F82;
+}
+
+body:not(.dark) .admin-theme,
+body:not(.dark).theme-admin {
+  --bg-page: #F5F3FF;
+  --bg-header: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #EDE9FE;
+  --bg-subtle: #F5F3FF;
+  --border-light: #DDD6FE;
+  --border-color: #DDD6FE;
+  --border-strong: #C4B5FD;
+}
+
+.admin-theme .enterprise-sidebar .sidebar-item.active,
+body.theme-admin .enterprise-sidebar .sidebar-item.active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.14) 100%) !important;
+  border-color: rgba(99, 102, 241, 0.5) !important;
+  color: #A78BFA !important;
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.2);
+}
+
+.admin-theme .btn-primary,
+body.theme-admin .btn-primary {
+  background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35) !important;
+}
+
+.admin-theme .btn-primary:hover:not(:disabled),
+body.theme-admin .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #4F46E5 0%, #4338CA 100%) !important;
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5) !important;
+  transform: translateY(-1px);
+}
+
+.admin-theme .stat-card-modern,
+body.theme-admin .stat-card-modern {
+  border-left: 3.5px solid #6366F1 !important;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.08);
+}
+
+.admin-theme .badge-accepted,
+body.theme-admin .badge-accepted {
+  background: rgba(99, 102, 241, 0.15) !important;
+  color: #A78BFA !important;
+  border: 1px solid rgba(99, 102, 241, 0.35) !important;
+}
+
+/* ==========================================================================
+   GLOBAL PRODUCTION-GRADE CUSTOM SCROLLBAR SYSTEM
+   ========================================================================== */
+
+/* Universal thin scrollbar for modern browsers & Firefox */
+*, *::before, *::after {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+}
+
+/* WebKit Engines (Chrome, Edge, Safari, Opera, Brave) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.28);
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.55);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Role-Specific Custom Scrollbar Accents */
+body.theme-user ::-webkit-scrollbar-thumb,
+.theme-user ::-webkit-scrollbar-thumb {
+  background: rgba(2, 132, 199, 0.35);
+}
+
+body.theme-user ::-webkit-scrollbar-thumb:hover,
+.theme-user ::-webkit-scrollbar-thumb:hover {
+  background: rgba(2, 132, 199, 0.7);
+}
+
+body.theme-provider ::-webkit-scrollbar-thumb,
+.provider-theme ::-webkit-scrollbar-thumb,
+.provider-theme *::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.35);
+  scrollbar-color: rgba(16, 185, 129, 0.35) transparent;
+}
+
+body.theme-provider ::-webkit-scrollbar-thumb:hover,
+.provider-theme ::-webkit-scrollbar-thumb:hover,
+.provider-theme *::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.7);
+}
+
+body.theme-admin ::-webkit-scrollbar-thumb,
+.admin-theme ::-webkit-scrollbar-thumb,
+.admin-theme *::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.38);
+  scrollbar-color: rgba(99, 102, 241, 0.38) transparent;
+}
+
+body.theme-admin ::-webkit-scrollbar-thumb:hover,
+.admin-theme ::-webkit-scrollbar-thumb:hover,
+.admin-theme *::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.75);
+}
+
+/* Smooth custom scrolling container utility */
+.custom-scrollbar {
+  scrollbar-width: thin !important;
+  scrollbar-gutter: stable;
+  overflow-y: auto;
+}
+
+/* Fix for dark mode scrollbar tracks */
+body.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+body.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+body.dark.theme-provider ::-webkit-scrollbar-thumb,
+body.dark .provider-theme *::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.4);
+}
+
+body.dark.theme-admin ::-webkit-scrollbar-thumb,
+body.dark .admin-theme *::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.45);
+}
+
+

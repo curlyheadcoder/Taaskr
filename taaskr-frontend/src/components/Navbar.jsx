@@ -458,15 +458,15 @@ export default function Navbar() {
               fontSize: '0.875rem',
               fontWeight: 600,
               cursor: 'pointer',
-              color: (location.pathname === '/provider' && providerTab !== 'discussions') ? '#38bdf8' : 'var(--text-main)',
-              backgroundColor: (location.pathname === '/provider' && providerTab !== 'discussions') ? 'rgba(56, 189, 248, 0.12)' : 'var(--bg-subtle)',
-              border: (location.pathname === '/provider' && providerTab !== 'discussions') ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid var(--border-light)',
+              color: (location.pathname === '/provider' && providerTab !== 'discussions') ? '#34d399' : 'var(--text-main)',
+              backgroundColor: (location.pathname === '/provider' && providerTab !== 'discussions') ? 'rgba(16, 185, 129, 0.14)' : 'var(--bg-subtle)',
+              border: (location.pathname === '/provider' && providerTab !== 'discussions') ? '1px solid rgba(16, 185, 129, 0.45)' : '1px solid var(--border-light)',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.45rem',
               letterSpacing: '0.01em',
               transition: 'all 0.2s ease',
-              boxShadow: (location.pathname === '/provider' && providerTab !== 'discussions') ? '0 0 12px rgba(56, 189, 248, 0.15)' : 'none'
+              boxShadow: (location.pathname === '/provider' && providerTab !== 'discussions') ? '0 0 14px rgba(16, 185, 129, 0.2)' : 'none'
             }}
           >
             <Briefcase size={15} />
@@ -486,15 +486,15 @@ export default function Navbar() {
               fontSize: '0.875rem',
               fontWeight: 600,
               cursor: 'pointer',
-              color: (location.pathname === '/provider' && providerTab === 'discussions') ? '#38bdf8' : 'var(--text-main)',
-              backgroundColor: (location.pathname === '/provider' && providerTab === 'discussions') ? 'rgba(56, 189, 248, 0.12)' : 'var(--bg-subtle)',
-              border: (location.pathname === '/provider' && providerTab === 'discussions') ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid var(--border-light)',
+              color: (location.pathname === '/provider' && providerTab === 'discussions') ? '#34d399' : 'var(--text-main)',
+              backgroundColor: (location.pathname === '/provider' && providerTab === 'discussions') ? 'rgba(16, 185, 129, 0.14)' : 'var(--bg-subtle)',
+              border: (location.pathname === '/provider' && providerTab === 'discussions') ? '1px solid rgba(16, 185, 129, 0.45)' : '1px solid var(--border-light)',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.45rem',
               letterSpacing: '0.01em',
               transition: 'all 0.2s ease',
-              boxShadow: (location.pathname === '/provider' && providerTab === 'discussions') ? '0 0 12px rgba(56, 189, 248, 0.15)' : 'none'
+              boxShadow: (location.pathname === '/provider' && providerTab === 'discussions') ? '0 0 14px rgba(16, 185, 129, 0.2)' : 'none'
             }}
           >
             <MessageSquare size={15} />
