@@ -919,10 +919,18 @@ export default function CustomerDashboard({ initialTab }) {
               <label className="form-label">Review / Feedback (Optional)</label>
               <textarea
                 className="form-control"
-                placeholder="Describe the quality of work, punctuality, and professionalism..."
-                rows="3"
+                placeholder="Describe the quality of work, punctuality, and professionalism (Press Enter to submit, Shift+Enter for new line)..."
+                rows={3}
                 value={reviewText}
                 onChange={(e) => setReviewText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (!submittingRating) {
+                      handleRateSubmit();
+                    }
+                  }
+                }}
                 style={{ resize: 'none' }}
               />
             </div>

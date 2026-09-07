@@ -2724,9 +2724,17 @@ export default function ProviderDashboard() {
                       <textarea
                         className="form-control"
                         rows={2}
-                        placeholder="Type your reply or question for Admin..."
+                        placeholder="Type your reply or question for Admin (Press Enter to send, Shift+Enter for new line)..."
                         value={replyMessage}
                         onChange={(e) => setReplyMessage(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            if (replyMessage.trim() && !submittingReply) {
+                              handleSendReply(e);
+                            }
+                          }
+                        }}
                         style={{ resize: 'none', fontSize: '0.82rem' }}
                         required
                       />
@@ -2899,9 +2907,17 @@ export default function ProviderDashboard() {
                   <textarea
                     className="form-control"
                     rows={4}
-                    placeholder="Describe your question, request, or issue in detail..."
+                    placeholder="Describe your question, request, or issue in detail (Press Enter to submit, Shift+Enter for new line)..."
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        if (newMessage.trim() && !submittingDiscussion) {
+                          handleCreateDiscussion(e);
+                        }
+                      }
+                    }}
                     style={{ resize: 'vertical' }}
                     required
                   />

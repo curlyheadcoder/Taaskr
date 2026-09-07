@@ -704,7 +704,15 @@ export default function AdminDashboard() {
                   <textarea
                     value={adminReplyText}
                     onChange={(e) => setAdminReplyText(e.target.value)}
-                    placeholder="Type official support response to provider..."
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        if (adminReplyText.trim() && !submittingAdminReply) {
+                          handleAdminSendReply(e);
+                        }
+                      }
+                    }}
+                    placeholder="Type official support response to provider (Press Enter to send, Shift+Enter for new line)..."
                     rows={2}
                     className="form-control"
                     style={{ flex: 1, resize: 'none' }}
