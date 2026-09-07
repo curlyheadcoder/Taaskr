@@ -8,7 +8,8 @@ import Pagination from '../components/Pagination';
 import { 
   BarChart3, Activity, Layers, Users, Briefcase, Plus, Trash2, 
   Edit2, Check, X, ShieldCheck, RefreshCw, DollarSign, Calendar, 
-  MapPin, Truck, AlertCircle, Search, MessageSquare, Send, CheckCircle2, Clock, HelpCircle, FileText
+  MapPin, Truck, AlertCircle, Search, MessageSquare, Send, CheckCircle2, Clock, HelpCircle, FileText,
+  PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -20,6 +21,19 @@ export default function AdminDashboard() {
   const [discussions, setDiscussions] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Sidebar Expand / Collapse state
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    return localStorage.getItem('taaskr_admin_sidebar_collapsed') === 'true';
+  });
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('taaskr_admin_sidebar_collapsed', String(next));
+      return next;
+    });
+  };
+
   // Pagination states
   const [servicesPage, setServicesPage] = useState(1);
   const [providersPage, setProvidersPage] = useState(1);
@@ -28,7 +42,7 @@ export default function AdminDashboard() {
   const [discussionsPage, setDiscussionsPage] = useState(1);
   const itemsPerPage = 8;
 
-  // Tabs: 'analytics', 'observability', 'catalog', 'providers', 'bookings', 'users', 'discussions'
+  // Tabs: 'analytics', 'observability', 'catalog', 'providers', 'providers_pending', 'providers_approved', 'bookings', 'users', 'discussions'
   const [activeTab, setActiveTab] = useState('analytics');
 
   // Provider sub-tabs & remarks states
@@ -251,24 +265,63 @@ export default function AdminDashboard() {
     return d.status === discussionFilter;
   });
 
-  const activeDiscussion = discussions.find(d => d.id === selectedDiscussionId) || filteredDiscussions[0] || null;
+  const pendingProviders = providers.filter(p => !p.approved);
+  const approvedProviders = providers.filter(p => p.approved);
 
   return (
     <div className="enterprise-layout animate-fade-in">
       {/* Enterprise Sidebar */}
-      <aside className="enterprise-sidebar">
-        <div style={{ padding: '0.25rem 0.5rem', marginBottom: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-main)', fontWeight: 700, fontSize: '0.9375rem' }}>
-            <ShieldCheck size={18} color="var(--primary)" />
-            <span>Admin Center</span>
-          </div>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Operations & Governance</span>
+      <aside className={`enterprise-sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
+        <div style={{
+          padding: '0.25rem 0.25rem',
+          marginBottom: '1.25rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: isSidebarCollapsed ? 'center' : 'space-between',
+          gap: '0.5rem'
+        }}>
+          {!isSidebarCollapsed && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', overflow: 'hidden' }}>
+              <div style={{
+                width: '32px', height: '32px', borderRadius: 'var(--radius-sm)',
+                backgroundColor: 'rgba(59, 130, 246, 0.12)', color: 'var(--primary)', display: 'flex',
+                alignItems: 'center', justifyContent: 'center', flexShrink: 0
+              }}>
+                <ShieldCheck size={18} />
+              </div>
+              <div style={{ overflow: 'hidden' }}>
+                <div style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '0.875rem', lineHeight: 1.1, whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                  Admin Center
+                </div>
+                <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>Operations & Governance</span>
+              </div>
+            </div>
+          )}
+          <button
+            onClick={toggleSidebar}
+            className="btn btn-ghost btn-sm"
+            title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            aria-label={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            style={{
+              padding: '0.35rem',
+              color: 'var(--text-muted)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 'var(--radius-sm)',
+              minWidth: '30px',
+              height: '30px'
+            }}
+          >
+            {isSidebarCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+          </button>
         </div>
         
         <nav className="enterprise-sidebar-nav">
           <button 
             onClick={() => setActiveTab('analytics')}
             className={`sidebar-item ${activeTab === 'analytics' ? 'active' : ''}`}
+            title="Analytics"
           >
             <BarChart3 size={16} />
             <span>Analytics</span>
@@ -277,6 +330,7 @@ export default function AdminDashboard() {
           <button 
             onClick={() => setActiveTab('observability')}
             className={`sidebar-item ${activeTab === 'observability' ? 'active' : ''}`}
+            title="Observability"
           >
             <Activity size={16} />
             <span>Observability</span>
@@ -285,6 +339,7 @@ export default function AdminDashboard() {
           <button 
             onClick={() => setActiveTab('discussions')}
             className={`sidebar-item ${activeTab === 'discussions' ? 'active' : ''}`}
+            title="Partner Desk"
             style={{ position: 'relative' }}
           >
             <MessageSquare size={16} />
@@ -307,22 +362,60 @@ export default function AdminDashboard() {
           <button 
             onClick={() => setActiveTab('catalog')}
             className={`sidebar-item ${activeTab === 'catalog' ? 'active' : ''}`}
+            title="Service Catalog"
           >
             <Layers size={16} />
             <span>Service Catalog</span>
           </button>
 
+          {/* Pending Provider Approvals */}
           <button 
-            onClick={() => setActiveTab('providers')}
-            className={`sidebar-item ${activeTab === 'providers' ? 'active' : ''}`}
+            onClick={() => { setActiveTab('providers_pending'); setProviderSubTab('pending'); setProvidersPage(1); }}
+            className={`sidebar-item ${activeTab === 'providers_pending' || (activeTab === 'providers' && providerSubTab === 'pending') ? 'active' : ''}`}
+            title="Pending Approvals"
+          >
+            <AlertCircle size={16} color={pendingProviders.length > 0 ? '#F59E0B' : 'currentColor'} />
+            <span>Pending Approvals</span>
+            {pendingProviders.length > 0 && (
+              <span style={{ 
+                marginLeft: 'auto', 
+                background: 'rgba(245, 158, 11, 0.18)', 
+                color: '#D97706', 
+                fontSize: '0.68rem', 
+                fontWeight: 700, 
+                padding: '0.1rem 0.45rem', 
+                borderRadius: '10px' 
+              }}>
+                {pendingProviders.length}
+              </span>
+            )}
+          </button>
+
+          {/* Approved Providers */}
+          <button 
+            onClick={() => { setActiveTab('providers_approved'); setProviderSubTab('approved'); setProvidersPage(1); }}
+            className={`sidebar-item ${activeTab === 'providers_approved' || (activeTab === 'providers' && providerSubTab === 'approved') ? 'active' : ''}`}
+            title="Approved Providers"
           >
             <Briefcase size={16} />
-            <span>Providers ({providers.length})</span>
+            <span>Approved Providers</span>
+            <span style={{ 
+              marginLeft: 'auto', 
+              background: 'rgba(16, 185, 129, 0.15)', 
+              color: '#10B981', 
+              fontSize: '0.68rem', 
+              fontWeight: 700, 
+              padding: '0.1rem 0.45rem', 
+              borderRadius: '10px' 
+            }}>
+              {approvedProviders.length}
+            </span>
           </button>
 
           <button 
             onClick={() => setActiveTab('bookings')}
             className={`sidebar-item ${activeTab === 'bookings' ? 'active' : ''}`}
+            title="All Bookings"
           >
             <Calendar size={16} />
             <span>All Bookings ({bookings.length})</span>
@@ -331,6 +424,7 @@ export default function AdminDashboard() {
           <button 
             onClick={() => setActiveTab('users')}
             className={`sidebar-item ${activeTab === 'users' ? 'active' : ''}`}
+            title="Users"
           >
             <Users size={16} />
             <span>Users ({users.length})</span>
@@ -788,14 +882,14 @@ export default function AdminDashboard() {
         )}
 
         {/* Tab: Providers Verification & Directory */}
-        {activeTab === 'providers' && (
+        {(activeTab === 'providers' || activeTab === 'providers_pending' || activeTab === 'providers_approved') && (
           <div>
             {/* Sub-tab Pill Switcher */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
               <div style={{ display: 'flex', gap: '0.5rem', background: 'var(--bg-subtle)', padding: '0.35rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
                 <button
                   type="button"
-                  onClick={() => { setProviderSubTab('pending'); setProvidersPage(1); }}
+                  onClick={() => { setProviderSubTab('pending'); setActiveTab('providers_pending'); setProvidersPage(1); }}
                   style={{
                     padding: '0.45rem 1rem',
                     fontSize: '0.8125rem',
@@ -827,7 +921,7 @@ export default function AdminDashboard() {
 
                 <button
                   type="button"
-                  onClick={() => { setProviderSubTab('approved'); setProvidersPage(1); }}
+                  onClick={() => { setProviderSubTab('approved'); setActiveTab('providers_approved'); setProvidersPage(1); }}
                   style={{
                     padding: '0.45rem 1rem',
                     fontSize: '0.8125rem',

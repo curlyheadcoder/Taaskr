@@ -87,6 +87,7 @@ export default function ProviderDashboard() {
   const [vehicleCapacityKg, setVehicleCapacityKg] = useState('1000');
   const [vehicleAvailable, setVehicleAvailable] = useState(true);
   const [savingVehicle, setSavingVehicle] = useState(false);
+  const [vehicleModalError, setVehicleModalError] = useState('');
 
   // Admin Discussions & Support Portal state
   const [discussions, setDiscussions] = useState([]);
@@ -101,6 +102,7 @@ export default function ProviderDashboard() {
   const [discussionFilter, setDiscussionFilter] = useState('ALL');
   const [submittingDiscussion, setSubmittingDiscussion] = useState(false);
   const [submittingReply, setSubmittingReply] = useState(false);
+  const [discussionModalError, setDiscussionModalError] = useState('');
 
   // New availability form state
   const tomorrow = new Date();
@@ -417,6 +419,23 @@ export default function ProviderDashboard() {
     }
   };
 
+  const handleVehicleTypeChange = (newType) => {
+    setVehicleType(newType);
+    setVehicleModalError('');
+    const defaultCapacities = {
+      TWO_WHEELER_ELECTRIC: '25',
+      TWO_WHEELER_PETROL: '25',
+      THREE_WHEELER_ELECTRIC: '250',
+      LOADING_VEHICLE: '500',
+      MINI_TRUCK: '1000',
+      TRUCK: '2500',
+      HEAVY_TRUCK: '7000'
+    };
+    if (defaultCapacities[newType]) {
+      setVehicleCapacityKg(defaultCapacities[newType]);
+    }
+  };
+
   const handleAddNewVehicle = () => {
     setEditingVehicleId(null);
     setVehicleType('MINI_TRUCK');
@@ -425,6 +444,7 @@ export default function ProviderDashboard() {
     setRegistrationNumber('');
     setVehicleCapacityKg('1000');
     setVehicleAvailable(true);
+    setVehicleModalError('');
     setShowVehicleForm(true);
   };
 
@@ -436,6 +456,7 @@ export default function ProviderDashboard() {
     setRegistrationNumber(veh.registrationNumber || '');
     setVehicleCapacityKg(String(veh.capacityKg || '1000'));
     setVehicleAvailable(veh.available !== false);
+    setVehicleModalError('');
     setShowVehicleForm(true);
   };
 
@@ -461,8 +482,9 @@ export default function ProviderDashboard() {
 
   const handleSaveVehicle = async (e) => {
     e.preventDefault();
-    if (!registrationNumber || !vehicleModel) {
-      showNotification('Please fill in vehicle model and registration number', 'error');
+    setVehicleModalError('');
+    if (!registrationNumber.trim() || !vehicleModel.trim()) {
+      setVehicleModalError('Please fill in vehicle model and license plate number');
       return;
     }
     setSavingVehicle(true);
@@ -471,8 +493,8 @@ export default function ProviderDashboard() {
         id: editingVehicleId,
         vehicleType,
         fuelType,
-        modelName: vehicleModel,
-        registrationNumber: registrationNumber.toUpperCase(),
+        modelName: vehicleModel.trim(),
+        registrationNumber: registrationNumber.trim().toUpperCase(),
         capacityKg: parseFloat(vehicleCapacityKg) || 1000,
         available: vehicleAvailable
       });
@@ -485,8 +507,9 @@ export default function ProviderDashboard() {
       }
       setShowVehicleForm(false);
       setEditingVehicleId(null);
+      setVehicleModalError('');
     } catch (err) {
-      showNotification(`Vehicle registration failed: ${err.message}`, 'error');
+      setVehicleModalError(err.message || 'Vehicle registration failed');
     } finally {
       setSavingVehicle(false);
     }
@@ -494,8 +517,9 @@ export default function ProviderDashboard() {
 
   const handleCreateDiscussion = async (e) => {
     e.preventDefault();
+    setDiscussionModalError('');
     if (!newSubject.trim() || !newMessage.trim()) {
-      showNotification('Please fill in subject and initial message', 'error');
+      setDiscussionModalError('Please fill in subject and initial message');
       return;
     }
     setSubmittingDiscussion(true);
@@ -515,9 +539,10 @@ export default function ProviderDashboard() {
       setNewPriority('NORMAL');
       setNewBookingId('');
       setNewMessage('');
+      setDiscussionModalError('');
       showNotification('Discussion thread started with Admin!');
     } catch (err) {
-      showNotification(err.message || 'Failed to create discussion', 'error');
+      setDiscussionModalError(err.message || 'Failed to create discussion');
     } finally {
       setSubmittingDiscussion(false);
     }
@@ -1723,25 +1748,48 @@ export default function ProviderDashboard() {
 
             {/* Vehicle Registration / Edit Form Modal */}
             {showVehicleForm && (
-              <div className="modal-overlay" onClick={() => setShowVehicleForm(false)}>
-                <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '460px' }}>
+              <div className="modal-overlay" onClick={() => { setShowVehicleForm(false); setVehicleModalError(''); }}>
+                <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '480px' }}>
                   <div className="modal-header">
                     <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>
                       {editingVehicleId ? 'Edit Vehicle Details' : 'Register New Vehicle'}
                     </h3>
-                    <button onClick={() => setShowVehicleForm(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                    <button onClick={() => { setShowVehicleForm(false); setVehicleModalError(''); }} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
                       <X size={16} />
                     </button>
                   </div>
 
+                  {/* Pop-up Error Alert inside Modal */}
+                  {vehicleModalError && (
+                    <div style={{
+                      background: 'rgba(239, 68, 68, 0.12)',
+                      border: '1px solid rgba(239, 68, 68, 0.35)',
+                      color: '#EF4444',
+                      padding: '0.65rem 0.85rem',
+                      borderRadius: 'var(--radius-sm)',
+                      marginBottom: '1rem',
+                      fontSize: '0.8125rem',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '0.5rem',
+                      lineHeight: '1.4'
+                    }}>
+                      <AlertCircle size={16} color="#EF4444" style={{ flexShrink: 0, marginTop: '2px' }} />
+                      <div style={{ flex: 1 }}>{vehicleModalError}</div>
+                    </div>
+                  )}
+
                   <form onSubmit={handleSaveVehicle}>
                     <div className="form-group">
                       <label className="form-label">Vehicle Category</label>
-                      <select className="form-control" value={vehicleType} onChange={(e) => setVehicleType(e.target.value)}>
-                        <option value="MINI_TRUCK">Mini Truck (e.g. Tata Ace, Bolero)</option>
-                        <option value="THREE_WHEELER_CARGO">3 Wheeler Cargo (e.g. Ape, Alfa)</option>
-                        <option value="TWO_WHEELER_COURIER">2 Wheeler Cargo / Courier</option>
-                        <option value="PICKUP_LARGE">Large Commercial Truck</option>
+                      <select className="form-control" value={vehicleType} onChange={(e) => handleVehicleTypeChange(e.target.value)}>
+                        <option value="MINI_TRUCK">Mini Truck (e.g. Tata Ace, Bolero Maxi)</option>
+                        <option value="LOADING_VEHICLE">3-Wheeler Loading Vehicle (e.g. Ape, Champion)</option>
+                        <option value="THREE_WHEELER_ELECTRIC">Electric 3W Cargo Rickshaw</option>
+                        <option value="TWO_WHEELER_PETROL">2-Wheeler Petrol Bike / Courier</option>
+                        <option value="TWO_WHEELER_ELECTRIC">2-Wheeler Electric Bike</option>
+                        <option value="TRUCK">Medium Commercial Truck (14ft / 17ft)</option>
+                        <option value="HEAVY_TRUCK">Heavy Commercial Truck (e.g. Bharat Benz, Taurus)</option>
                       </select>
                     </div>
 
@@ -1750,7 +1798,7 @@ export default function ProviderDashboard() {
                         <label className="form-label">Model Name *</label>
                         <input
                           type="text"
-                          placeholder="e.g. Tata Ace Gold"
+                          placeholder="e.g. Bharat Benz 1217C"
                           className="form-control"
                           value={vehicleModel}
                           onChange={(e) => setVehicleModel(e.target.value)}
@@ -1810,7 +1858,7 @@ export default function ProviderDashboard() {
                       <button type="submit" className="btn btn-primary btn-sm" style={{ flex: 1 }} disabled={savingVehicle}>
                         {savingVehicle ? 'Saving...' : editingVehicleId ? 'Update Vehicle' : 'Register Vehicle'}
                       </button>
-                      <button type="button" onClick={() => setShowVehicleForm(false)} className="btn btn-secondary btn-sm" style={{ flex: 1 }}>
+                      <button type="button" onClick={() => { setShowVehicleForm(false); setVehicleModalError(''); }} className="btn btn-secondary btn-sm" style={{ flex: 1 }}>
                         Cancel
                       </button>
                     </div>
@@ -2373,10 +2421,29 @@ export default function ProviderDashboard() {
                     Connect with Admin Team
                   </h3>
                 </div>
-                <button onClick={() => setShowNewDiscussionModal(false)} className="btn btn-ghost btn-sm" style={{ padding: 4 }}>
+                <button onClick={() => { setShowNewDiscussionModal(false); setDiscussionModalError(''); }} className="btn btn-ghost btn-sm" style={{ padding: 4 }}>
                   <X size={16} />
                 </button>
               </div>
+
+              {discussionModalError && (
+                <div style={{
+                  background: 'rgba(239, 68, 68, 0.12)',
+                  border: '1px solid rgba(239, 68, 68, 0.35)',
+                  color: '#EF4444',
+                  padding: '0.65rem 0.85rem',
+                  borderRadius: 'var(--radius-sm)',
+                  marginBottom: '1rem',
+                  fontSize: '0.8125rem',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.5rem',
+                  lineHeight: '1.4'
+                }}>
+                  <AlertCircle size={16} color="#EF4444" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div style={{ flex: 1 }}>{discussionModalError}</div>
+                </div>
+              )}
 
               <form onSubmit={handleCreateDiscussion} style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
                 <div className="form-group" style={{ margin: 0 }}>
