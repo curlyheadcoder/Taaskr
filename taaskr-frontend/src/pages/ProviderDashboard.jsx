@@ -180,6 +180,14 @@ export default function ProviderDashboard() {
 
   useEffect(() => {
     loadProviderDashboard(true);
+
+    const handleSwitchTab = (e) => {
+      if (e.detail) {
+        setActiveTab(e.detail);
+      }
+    };
+    window.addEventListener('switch-provider-tab', handleSwitchTab);
+    return () => window.removeEventListener('switch-provider-tab', handleSwitchTab);
   }, []);
 
   const isProviderVerified = Boolean(userProfile?.emailVerified && userProfile?.phoneVerified);
@@ -522,6 +530,26 @@ export default function ProviderDashboard() {
       setDiscussionModalError('Please fill in subject and initial message');
       return;
     }
+
+    if (newCategory === 'PAYMENT_DISPUTE') {
+      const eligibleBookings = assignedBookings.filter(b => 
+        b.status === 'COMPLETED' || b.status === 'PAID' || b.status === 'IN_PROGRESS' || b.status === 'ACCEPTED'
+      );
+      if (eligibleBookings.length === 0) {
+        setDiscussionModalError('You cannot raise a payment dispute without any assigned or completed tasks. Please choose "General Inquiry" or "Technical Support".');
+        return;
+      }
+      if (!newBookingId) {
+        setDiscussionModalError('Please select the related booking for this payment dispute.');
+        return;
+      }
+    }
+
+    if ((newCategory === 'PARTS_REIMBURSEMENT' || newCategory === 'CUSTOMER_UNREACHABLE') && assignedBookings.length === 0) {
+      setDiscussionModalError('You have no active or assigned bookings to reference for this request.');
+      return;
+    }
+
     setSubmittingDiscussion(true);
     try {
       const created = await api.provider.createDiscussion({
@@ -1137,13 +1165,31 @@ export default function ProviderDashboard() {
         {/* Dashboard Header */}
         <div className="enterprise-header">
           <div>
-            <h1>Partner Console</h1>
+            <h1>Provider Console</h1>
             <p>Live job dispatch, fleet status, and schedule management.</p>
           </div>
-          <button onClick={() => loadProviderDashboard(false)} className="btn btn-secondary btn-sm">
-            <RefreshCw size={13} />
-            <span>Refresh Data</span>
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <button 
+              onClick={() => setActiveTab('discussions')} 
+              className="btn btn-sm"
+              style={{
+                backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                color: '#10B981',
+                border: '1px solid rgba(16, 185, 129, 0.35)',
+                fontWeight: 600,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem'
+              }}
+            >
+              <MessageSquare size={14} />
+              <span>Connect with Admin ({discussions.length})</span>
+            </button>
+            <button onClick={() => loadProviderDashboard(false)} className="btn btn-secondary btn-sm">
+              <RefreshCw size={13} />
+              <span>Refresh Data</span>
+            </button>
+          </div>
         </div>
 
         {/* Key Metrics Strip */}
@@ -2489,15 +2535,56 @@ export default function ProviderDashboard() {
                   </div>
                 </div>
 
+                {newCategory === 'PAYMENT_DISPUTE' && assignedBookings.length === 0 && (
+                  <div style={{
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.35)',
+                    borderRadius: 'var(--radius-sm)',
+                    padding: '0.65rem 0.85rem',
+                    fontSize: '0.8rem',
+                    color: '#EF4444',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '0.5rem',
+                    lineHeight: '1.4'
+                  }}>
+                    <AlertCircle size={15} style={{ flexShrink: 0, marginTop: '2px' }} />
+                    <div>
+                      <strong>No bookings found:</strong> You haven't completed or been assigned any customer bookings yet. Payment disputes require an existing booking. Please choose <strong>General Inquiry</strong> or <strong>Technical Support</strong> instead.
+                    </div>
+                  </div>
+                )}
+
                 <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">Related Booking ID (Optional)</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    placeholder="e.g. 108"
-                    value={newBookingId}
-                    onChange={(e) => setNewBookingId(e.target.value)}
-                  />
+                  <label className="form-label">
+                    Related Booking Reference {newCategory === 'PAYMENT_DISPUTE' ? '*' : '(Optional)'}
+                  </label>
+                  {assignedBookings.length > 0 ? (
+                    <select
+                      className="form-control"
+                      value={newBookingId}
+                      onChange={(e) => setNewBookingId(e.target.value)}
+                      required={newCategory === 'PAYMENT_DISPUTE'}
+                    >
+                      <option value="">
+                        -- {newCategory === 'PAYMENT_DISPUTE' ? 'Select Completed / Active Booking (Required)' : 'Select Related Booking (Optional)'} --
+                      </option>
+                      {assignedBookings.map((b) => (
+                        <option key={b.id} value={b.id}>
+                          Booking #{b.id} - {b.serviceName || 'Service'} (Status: {b.status}, Payment: {b.paymentStatus || 'PENDING'})
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="number"
+                      className="form-control"
+                      placeholder="e.g. 108 (No bookings found yet)"
+                      value={newBookingId}
+                      onChange={(e) => setNewBookingId(e.target.value)}
+                      disabled={newCategory === 'PAYMENT_DISPUTE'}
+                    />
+                  )}
                 </div>
 
                 <div className="form-group" style={{ margin: 0 }}>

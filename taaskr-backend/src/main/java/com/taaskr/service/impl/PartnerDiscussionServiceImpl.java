@@ -5,13 +5,17 @@ import com.taaskr.dto.discussion.DiscussionMessageResponse;
 import com.taaskr.dto.discussion.DiscussionResponse;
 import com.taaskr.dto.discussion.ReplyDiscussionRequest;
 import com.taaskr.dto.discussion.UpdateDiscussionStatusRequest;
+import com.taaskr.entity.Booking;
 import com.taaskr.entity.DiscussionMessage;
 import com.taaskr.entity.PartnerDiscussion;
 import com.taaskr.entity.ProviderProfile;
 import com.taaskr.entity.User;
+import com.taaskr.enums.BookingStatus;
+import com.taaskr.enums.DiscussionCategory;
 import com.taaskr.enums.DiscussionStatus;
 import com.taaskr.exception.BadRequestException;
 import com.taaskr.exception.ResourceNotFoundException;
+import com.taaskr.repository.BookingRepository;
 import com.taaskr.repository.PartnerDiscussionRepository;
 import com.taaskr.repository.ProviderProfileRepository;
 import com.taaskr.repository.UserRepository;
@@ -28,19 +32,38 @@ public class PartnerDiscussionServiceImpl implements PartnerDiscussionService {
     private final PartnerDiscussionRepository discussionRepository;
     private final ProviderProfileRepository providerProfileRepository;
     private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
 
     public PartnerDiscussionServiceImpl(PartnerDiscussionRepository discussionRepository,
                                        ProviderProfileRepository providerProfileRepository,
-                                       UserRepository userRepository) {
+                                       UserRepository userRepository,
+                                       BookingRepository bookingRepository) {
         this.discussionRepository = discussionRepository;
         this.providerProfileRepository = providerProfileRepository;
         this.userRepository = userRepository;
+        this.bookingRepository = bookingRepository;
     }
 
     @Override
     @Transactional
     public DiscussionResponse createDiscussion(String providerEmail, CreateDiscussionRequest request) {
         ProviderProfile provider = getProviderByEmail(providerEmail);
+
+        if (request.getCategory() == DiscussionCategory.PAYMENT_DISPUTE) {
+            if (request.getBookingId() == null) {
+                throw new BadRequestException("A payment dispute requires a valid completed or assigned booking reference.");
+            }
+            Booking booking = bookingRepository.findByIdAndProviderId(request.getBookingId(), provider.getId())
+                    .orElseThrow(() -> new BadRequestException("Booking #" + request.getBookingId() + " not found under your provider account. You can only raise payment disputes for your own completed or active tasks."));
+            if (booking.getStatus() != BookingStatus.COMPLETED && booking.getStatus() != BookingStatus.IN_PROGRESS && booking.getStatus() != BookingStatus.ACCEPTED) {
+                throw new BadRequestException("Payment disputes can only be raised for assigned or completed tasks.");
+            }
+        } else if (request.getBookingId() != null) {
+            boolean exists = bookingRepository.findByIdAndProviderId(request.getBookingId(), provider.getId()).isPresent();
+            if (!exists) {
+                throw new BadRequestException("Booking #" + request.getBookingId() + " not found under your provider account.");
+            }
+        }
 
         PartnerDiscussion discussion = new PartnerDiscussion();
         discussion.setProvider(provider);

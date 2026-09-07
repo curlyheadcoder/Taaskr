@@ -265,6 +265,9 @@ export default function AdminDashboard() {
     return d.status === discussionFilter;
   });
 
+  const activeDiscussion = discussions.find(d => d.id === selectedDiscussionId) 
+    || (filteredDiscussions.length > 0 ? filteredDiscussions[0] : null);
+
   const pendingProviders = providers.filter(p => !p.approved);
   const approvedProviders = providers.filter(p => p.approved);
 
@@ -291,7 +294,7 @@ export default function AdminDashboard() {
               </div>
               <div style={{ overflow: 'hidden' }}>
                 <div style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '0.875rem', lineHeight: 1.1, whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                  Admin Center
+                  Admin Console
                 </div>
                 <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>Operations & Governance</span>
               </div>

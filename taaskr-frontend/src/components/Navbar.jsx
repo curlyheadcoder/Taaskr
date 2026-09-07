@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../services/api';
 import { 
   Sun, Moon, Briefcase, ShieldCheck, Calendar, Grid, LogOut, 
-  MapPin, Search, ChevronDown, Bot, Navigation, X, Check, ArrowRight, Command, AlertCircle
+  MapPin, Search, ChevronDown, Bot, Navigation, X, Check, ArrowRight, Command, AlertCircle, MessageSquare
 } from 'lucide-react';
 
 const ACTIVE_CITY = { city: 'Indore', area: 'Indore Metro (All Service Zones)', status: 'ACTIVE' };
@@ -207,54 +207,6 @@ export default function Navbar() {
           }}>Taaskr</span>
         </Link>
 
-        {user?.role === 'PROVIDER' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Link
-              to="/provider"
-              className="badge"
-              style={{
-                backgroundColor: 'rgba(2, 132, 199, 0.12)',
-                color: 'var(--primary)',
-                border: '1px solid rgba(2, 132, 199, 0.25)',
-                fontWeight: 700,
-                fontSize: '0.75rem',
-                textDecoration: 'none',
-                padding: '0.25rem 0.65rem',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem'
-              }}
-            >
-              <Briefcase size={12} />
-              <span>Partner Console</span>
-            </Link>
-          </div>
-        )}
-
-        {user?.role === 'ADMIN' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Link
-              to="/admin"
-              className="badge"
-              style={{
-                backgroundColor: 'rgba(99, 102, 241, 0.12)',
-                color: '#6366f1',
-                border: '1px solid rgba(99, 102, 241, 0.25)',
-                fontWeight: 700,
-                fontSize: '0.75rem',
-                textDecoration: 'none',
-                padding: '0.25rem 0.65rem',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem'
-              }}
-            >
-              <ShieldCheck size={12} />
-              <span>Admin Center</span>
-            </Link>
-          </div>
-        )}
-
         {/* Location Selector (User / Guest Only) */}
         {isCustomerView && (
           <div ref={locationDropdownRef} style={{ position: 'relative' }}>
@@ -444,38 +396,44 @@ export default function Navbar() {
               <span>My Bookings</span>
             </Link>
           )}
-
-          {user && user.role === 'ADMIN' && (
-            <Link 
-              to="/admin" 
-              style={{
-                padding: '0.45rem 0.85rem',
-                borderRadius: '8px',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                color: 'var(--text-main)',
-                backgroundColor: 'var(--bg-card)',
-                border: '1px solid var(--border-light)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                textDecoration: 'none'
-              }}
-            >
-              <ShieldCheck size={15} />
-              <span>Admin Center</span>
-            </Link>
-          )}
         </nav>
       </div>
 
-      {/* Center Section: Provider Console (Provider View) or Spacious Global Service Search (User / Guest Only) */}
-      {user && user.role === 'PROVIDER' ? (
+      {/* Center Section: Admin Console (Admin) | Provider Console & Connect with Admin (Provider) | Global Service Search (Customer) */}
+      {user && user.role === 'ADMIN' ? (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
           <Link
-            to="/provider"
+            to="/admin"
             style={{
               padding: '0.45rem 1.35rem',
+              borderRadius: '24px',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              color: location.pathname === '/admin' ? '#818cf8' : 'var(--text-main)',
+              backgroundColor: location.pathname === '/admin' ? 'rgba(99, 102, 241, 0.12)' : 'var(--bg-subtle)',
+              border: location.pathname === '/admin' ? '1px solid rgba(99, 102, 241, 0.4)' : '1px solid var(--border-light)',
+              textDecoration: 'none',
+              letterSpacing: '0.01em',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              transition: 'all 0.2s ease',
+              boxShadow: location.pathname === '/admin' ? '0 0 12px rgba(99, 102, 241, 0.15)' : 'none'
+            }}
+          >
+            <ShieldCheck size={16} />
+            <span>Admin Console</span>
+          </Link>
+        </div>
+      ) : user && user.role === 'PROVIDER' ? (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.65rem', flex: 1 }}>
+          <Link
+            to="/provider"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('switch-provider-tab', { detail: 'tasks' }));
+            }}
+            style={{
+              padding: '0.45rem 1.25rem',
               borderRadius: '24px',
               fontSize: '0.875rem',
               fontWeight: 600,
@@ -483,13 +441,43 @@ export default function Navbar() {
               backgroundColor: location.pathname === '/provider' ? 'rgba(56, 189, 248, 0.12)' : 'var(--bg-subtle)',
               border: location.pathname === '/provider' ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid var(--border-light)',
               textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
               letterSpacing: '0.01em',
               transition: 'all 0.2s ease',
               boxShadow: location.pathname === '/provider' ? '0 0 12px rgba(56, 189, 248, 0.15)' : 'none'
             }}
           >
-            Provider Console
+            <Briefcase size={15} />
+            <span>Provider Console</span>
           </Link>
+          <button
+            onClick={() => {
+              if (location.pathname !== '/provider') {
+                navigate('/provider');
+              }
+              window.dispatchEvent(new CustomEvent('switch-provider-tab', { detail: 'discussions' }));
+            }}
+            style={{
+              padding: '0.45rem 1.15rem',
+              borderRadius: '24px',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              color: '#10B981',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              border: '1px solid rgba(16, 185, 129, 0.35)',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              transition: 'all 0.2s ease',
+              boxShadow: 'none'
+            }}
+          >
+            <MessageSquare size={15} />
+            <span>Connect with Admin</span>
+          </button>
         </div>
       ) : isCustomerView ? (
         <div ref={searchContainerRef} style={{ position: 'relative', flex: '0 1 320px', maxWidth: '380px' }}>
