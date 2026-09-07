@@ -684,16 +684,18 @@ export default function ProviderDashboard() {
   };
 
   const handleSendReply = async (e) => {
-    e.preventDefault();
-    if (!replyMessage.trim() || !selectedDiscussionId) return;
+    if (e && e.preventDefault) e.preventDefault();
+    const textToSend = replyMessage.trim();
+    if (!textToSend || !selectedDiscussionId || submittingReply) return;
+    setReplyMessage('');
     setSubmittingReply(true);
     try {
-      const updated = await api.provider.replyDiscussion(selectedDiscussionId, replyMessage.trim());
+      const updated = await api.provider.replyDiscussion(selectedDiscussionId, textToSend);
       setDiscussions(prev => prev.map(d => d.id === updated.id ? updated : d));
-      setReplyMessage('');
       showNotification('Message sent to Admin');
       setTimeout(scrollProviderChatToBottom, 60);
     } catch (err) {
+      setReplyMessage(textToSend);
       showNotification(err.message || 'Failed to send reply', 'error');
     } finally {
       setSubmittingReply(false);
@@ -2724,15 +2726,13 @@ export default function ProviderDashboard() {
                       <textarea
                         className="form-control"
                         rows={2}
-                        placeholder="Type your reply or question for Admin (Press Enter to send, Shift+Enter for new line)..."
+                        placeholder="Type your reply or question for Admin..."
                         value={replyMessage}
                         onChange={(e) => setReplyMessage(e.target.value)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
-                            if (replyMessage.trim() && !submittingReply) {
-                              handleSendReply(e);
-                            }
+                            handleSendReply(e);
                           }
                         }}
                         style={{ resize: 'none', fontSize: '0.82rem' }}
@@ -2907,7 +2907,7 @@ export default function ProviderDashboard() {
                   <textarea
                     className="form-control"
                     rows={4}
-                    placeholder="Describe your question, request, or issue in detail (Press Enter to submit, Shift+Enter for new line)..."
+                    placeholder="Describe your question, request, or issue in detail..."
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyDown={(e) => {

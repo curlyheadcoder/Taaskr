@@ -237,13 +237,14 @@ export default function AdminDashboard() {
   // PARTNER DESK / DISCUSSION OPERATIONS
   // ----------------------------------------
   const handleAdminSendReply = async (e) => {
-    e.preventDefault();
-    if (!adminReplyText.trim() || !selectedDiscussionId) return;
+    if (e && e.preventDefault) e.preventDefault();
+    const text = adminReplyText.trim();
+    if (!text || !selectedDiscussionId || submittingAdminReply) return;
     setSubmittingAdminReply(true);
+    setAdminReplyText('');
     try {
-      const updated = await api.admin.replyDiscussion(selectedDiscussionId, adminReplyText);
+      const updated = await api.admin.replyDiscussion(selectedDiscussionId, text);
       setDiscussions(prev => prev.map(d => d.id === updated.id ? updated : d));
-      setAdminReplyText('');
       setTimeout(scrollToChatBottom, 60);
     } catch (err) {
       alert(err.message || 'Failed to send reply to provider');
@@ -707,12 +708,10 @@ export default function AdminDashboard() {
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
-                        if (adminReplyText.trim() && !submittingAdminReply) {
-                          handleAdminSendReply(e);
-                        }
+                        handleAdminSendReply(e);
                       }
                     }}
-                    placeholder="Type official support response to provider (Press Enter to send, Shift+Enter for new line)..."
+                    placeholder="Type official support response to provider..."
                     rows={2}
                     className="form-control"
                     style={{ flex: 1, resize: 'none' }}
@@ -1094,6 +1093,14 @@ export default function AdminDashboard() {
                                 <textarea
                                   value={remarksInput}
                                   onChange={(e) => setRemarksInput(e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                      e.preventDefault();
+                                      if (remarksInput.trim() && !savingRemarks) {
+                                        handleSaveRemarks(p.id);
+                                      }
+                                    }
+                                  }}
                                   placeholder="Specify what documents, photos, or details are required from this provider (e.g. Please upload ID proof and vehicle insurance)..."
                                   rows={2}
                                   className="form-control"
