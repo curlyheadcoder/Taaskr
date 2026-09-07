@@ -36,11 +36,6 @@ export default function Login() {
     }
   };
 
-  const handleQuickLogin = (demoEmail, demoPass) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
-    setError('');
-  };
 
   return (
     <div style={{
@@ -142,45 +137,6 @@ export default function Login() {
           </button>
         </form>
 
-        {/* Quick Demo Logins for Testing / Investor Demos */}
-        <div style={{
-          marginTop: '1.25rem',
-          padding: '0.75rem',
-          background: 'var(--bg-subtle)',
-          borderRadius: 'var(--radius-sm)',
-          border: '1px solid var(--border-light)',
-          fontSize: '0.75rem'
-        }}>
-          <div style={{ color: 'var(--text-muted)', marginBottom: '0.4rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            Quick Demo Accounts
-          </div>
-          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('provider@taaskr.com', 'Provider@123')}
-              className="btn btn-secondary btn-sm"
-              style={{ fontSize: '0.72rem', padding: '0.2rem 0.5rem' }}
-            >
-              Partner (Provider)
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('user@taaskr.com', 'User@123')}
-              className="btn btn-secondary btn-sm"
-              style={{ fontSize: '0.72rem', padding: '0.2rem 0.5rem' }}
-            >
-              Customer (User)
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('admin@taaskr.com', 'Admin@123')}
-              className="btn btn-secondary btn-sm"
-              style={{ fontSize: '0.72rem', padding: '0.2rem 0.5rem' }}
-            >
-              Admin
-            </button>
-          </div>
-        </div>
 
         <div style={{ marginTop: '1.25rem', textAlign: 'center', fontSize: '0.8125rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <div>

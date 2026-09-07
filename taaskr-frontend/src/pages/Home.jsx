@@ -2,169 +2,169 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import Pagination from '../components/Pagination';
-import { 
-  Search, ShieldCheck, Tag, CreditCard, Star, LayoutList, 
-  Droplets, Zap, Paintbrush, Leaf, Truck, Settings, 
+import {
+  Search, ShieldCheck, Tag, CreditCard, Star, LayoutList,
+  Droplets, Zap, Paintbrush, Leaf, Truck, Settings,
   Snowflake, Ruler, Hammer, ArrowRight, Activity, Stethoscope, Building2, Scissors,
-  Radio, Award, AlertTriangle, CheckCircle2, ChevronRight, Phone, MessageSquare, 
+  Radio, Award, AlertTriangle, CheckCircle2, ChevronRight, Phone, MessageSquare,
   FileText, Plus, Bell, RefreshCw, Send, Check, X, ArrowUpRight, HelpCircle, Briefcase, Clock,
   Bug, Laptop, Car, HeartPulse, Wrench, MapPin, TrendingUp, Lock, UserCheck, Layers
 } from 'lucide-react';
 
 const CANONICAL_CATEGORIES = [
-  { 
-    id: 'appliances_electrical', 
+  {
+    id: 'appliances_electrical',
     name: 'Appliances & Electrical',
     matcher: (cName, sName) => {
       const s = (sName || '').toLowerCase();
-      if (s.includes('switch') || s.includes('wire') || s.includes('mcb') || s.includes('fan') || 
-          s.includes('ac ') || s.includes('air condition') || s.includes('ro ') || s.includes('purifier') || 
-          s.includes('geyser') || s.includes('water heater') || s.includes('inverter') || 
-          s.includes('microwave') || s.includes('refrigerator') || s.includes('washing machine')) {
+      if (s.includes('switch') || s.includes('wire') || s.includes('mcb') || s.includes('fan') ||
+        s.includes('ac ') || s.includes('air condition') || s.includes('ro ') || s.includes('purifier') ||
+        s.includes('geyser') || s.includes('water heater') || s.includes('inverter') ||
+        s.includes('microwave') || s.includes('refrigerator') || s.includes('washing machine')) {
         return true;
       }
       const c = (cName || '').toLowerCase();
-      return (c.includes('appliance') || c.includes('electric')) && 
-             !s.includes('tap') && !s.includes('pipe') && !s.includes('drain') && !s.includes('clean');
+      return (c.includes('appliance') || c.includes('electric')) &&
+        !s.includes('tap') && !s.includes('pipe') && !s.includes('drain') && !s.includes('clean');
     }
   },
-  { 
-    id: 'plumbing_cleaning', 
+  {
+    id: 'plumbing_cleaning',
     name: 'Plumbing & Cleaning',
     matcher: (cName, sName) => {
       const s = (sName || '').toLowerCase();
       // Strictly prevent electrical items from matching here
-      if (s.includes('switch') || s.includes('wire') || s.includes('mcb') || s.includes('fan') || 
-          s.includes('ac ') || s.includes('air condition') || s.includes('ro ') || s.includes('purifier') || 
-          s.includes('geyser') || s.includes('inverter') || s.includes('microwave') || 
-          s.includes('refrigerator') || s.includes('washing machine')) {
+      if (s.includes('switch') || s.includes('wire') || s.includes('mcb') || s.includes('fan') ||
+        s.includes('ac ') || s.includes('air condition') || s.includes('ro ') || s.includes('purifier') ||
+        s.includes('geyser') || s.includes('inverter') || s.includes('microwave') ||
+        s.includes('refrigerator') || s.includes('washing machine')) {
         return false;
       }
-      if (s.includes('tap') || s.includes('pipe') || s.includes('drain') || s.includes('leak') || 
-          s.includes('bathroom') || s.includes('clean') || s.includes('sofa') || s.includes('carpet') || s.includes('chimney')) {
+      if (s.includes('tap') || s.includes('pipe') || s.includes('drain') || s.includes('leak') ||
+        s.includes('bathroom') || s.includes('clean') || s.includes('sofa') || s.includes('carpet') || s.includes('chimney')) {
         return true;
       }
       const c = (cName || '').toLowerCase();
       return (c.includes('plumb') || c.includes('clean')) && !c.includes('pest');
     }
   },
-  { 
-    id: 'pest_control', 
+  {
+    id: 'pest_control',
     name: 'Pest Control',
     matcher: (cName, sName) => {
       const s = (sName || '').toLowerCase();
-      if (s.includes('pest') || s.includes('cockroach') || s.includes('termite') || 
-          s.includes('bed bug') || s.includes('mosquito') || s.includes('insect')) {
+      if (s.includes('pest') || s.includes('cockroach') || s.includes('termite') ||
+        s.includes('bed bug') || s.includes('mosquito') || s.includes('insect')) {
         return true;
       }
       const c = (cName || '').toLowerCase();
       return c.includes('pest');
     }
   },
-  { 
-    id: 'salon_wellness', 
+  {
+    id: 'salon_wellness',
     name: 'Salon & Massage / Wellness',
     matcher: (cName, sName) => {
       const s = (sName || '').toLowerCase();
-      if (s.includes('haircut') || s.includes('beard') || s.includes('spa') || s.includes('grooming') || 
-          s.includes('facial') || s.includes('manicure') || s.includes('pedicure') || s.includes('waxing') || 
-          s.includes('makeup') || s.includes('bridal') || s.includes('massage') || s.includes('therapy')) {
+      if (s.includes('haircut') || s.includes('beard') || s.includes('spa') || s.includes('grooming') ||
+        s.includes('facial') || s.includes('manicure') || s.includes('pedicure') || s.includes('waxing') ||
+        s.includes('makeup') || s.includes('bridal') || s.includes('massage') || s.includes('therapy')) {
         return true;
       }
       const c = (cName || '').toLowerCase();
       return c.includes('salon') || c.includes('massage') || c.includes('wellness') || c.includes('beauty');
     }
   },
-  { 
-    id: 'civil_maintenance', 
+  {
+    id: 'civil_maintenance',
     name: 'Civil & Property Maintenance',
     matcher: (cName, sName) => {
       const s = (sName || '').toLowerCase();
-      if (s.includes('carpenter') || s.includes('carpentry') || s.includes('woodwork') || 
-          s.includes('furniture assembly') || s.includes('flatpack') || s.includes('drilling') || s.includes('hanging') || 
-          s.includes('painting') || s.includes('paint') || s.includes('mason') || s.includes('waterproof') || 
-          s.includes('tiling') || s.includes('flooring') || s.includes('roof') || s.includes('renovat') || s.includes('civil')) {
+      if (s.includes('carpenter') || s.includes('carpentry') || s.includes('woodwork') ||
+        s.includes('furniture assembly') || s.includes('flatpack') || s.includes('drilling') || s.includes('hanging') ||
+        s.includes('painting') || s.includes('paint') || s.includes('mason') || s.includes('waterproof') ||
+        s.includes('tiling') || s.includes('flooring') || s.includes('roof') || s.includes('renovat') || s.includes('civil')) {
         return true;
       }
       const c = (cName || '').toLowerCase();
       return c.includes('civil') || c.includes('property');
     }
   },
-  { 
-    id: 'tech_automation', 
+  {
+    id: 'tech_automation',
     name: 'Tech & Home Automation',
     matcher: (cName, sName) => {
       const s = (sName || '').toLowerCase();
-      if (s.includes('laptop') || s.includes('pc ') || s.includes('computer') || s.includes('wi-fi') || 
-          s.includes('router') || s.includes('mesh') || s.includes('smart tv') || s.includes('printer')) {
+      if (s.includes('laptop') || s.includes('pc ') || s.includes('computer') || s.includes('wi-fi') ||
+        s.includes('router') || s.includes('mesh') || s.includes('smart tv') || s.includes('printer')) {
         return true;
       }
       const c = (cName || '').toLowerCase();
       return c.includes('tech') || c.includes('automation');
     }
   },
-  { 
-    id: 'vehicle_autocare', 
+  {
+    id: 'vehicle_autocare',
     name: 'Vehicle & Auto Care',
     matcher: (cName, sName) => {
       const s = (sName || '').toLowerCase();
-      if (s.includes('car foam') || s.includes('bike foam') || s.includes('detailing') || 
-          s.includes('car wash') || s.includes('bike wash') || s.includes('jump start') || s.includes('battery jump')) {
+      if (s.includes('car foam') || s.includes('bike foam') || s.includes('detailing') ||
+        s.includes('car wash') || s.includes('bike wash') || s.includes('jump start') || s.includes('battery jump')) {
         return true;
       }
       const c = (cName || '').toLowerCase();
       return c.includes('auto') || (c.includes('vehicle') && !c.includes('on-demand vehicle'));
     }
   },
-  { 
-    id: 'home_help', 
+  {
+    id: 'home_help',
     name: 'Home Help & Errand Services',
     matcher: (cName, sName) => {
       const s = (sName || '').toLowerCase();
-      if (s.includes('maid') || s.includes('domestic helper') || s.includes('cook') || s.includes('chef') || 
-          s.includes('laundry') || s.includes('steam ironing') || s.includes('medicine') || s.includes('grocery') || 
-          s.includes('queue') || s.includes('errand')) {
+      if (s.includes('maid') || s.includes('domestic helper') || s.includes('cook') || s.includes('chef') ||
+        s.includes('laundry') || s.includes('steam ironing') || s.includes('medicine') || s.includes('grocery') ||
+        s.includes('queue') || s.includes('errand')) {
         return true;
       }
       const c = (cName || '').toLowerCase();
       return c.includes('home help') || c.includes('errand');
     }
   },
-  { 
-    id: 'security_services', 
+  {
+    id: 'security_services',
     name: 'Security Services',
     matcher: (cName, sName) => {
       const s = (sName || '').toLowerCase();
-      if (s.includes('cctv') || s.includes('smart lock') || s.includes('security guard') || s.includes('guard') || 
-          s.includes('doorbell') || s.includes('camera') || s.includes('surveillance')) {
+      if (s.includes('cctv') || s.includes('smart lock') || s.includes('security guard') || s.includes('guard') ||
+        s.includes('doorbell') || s.includes('camera') || s.includes('surveillance')) {
         return true;
       }
       const c = (cName || '').toLowerCase();
       return c.includes('security');
     }
   },
-  { 
-    id: 'diagnostic_healthcare', 
+  {
+    id: 'diagnostic_healthcare',
     name: 'Diagnostic & Healthcare Services',
     matcher: (cName, sName) => {
       const s = (sName || '').toLowerCase();
-      if (s.includes('blood') || s.includes('doctor') || s.includes('nurse') || s.includes('compounder') || 
-          s.includes('sample') || s.includes('checkup') || s.includes('diagnostic') || s.includes('phlebotomy') || 
-          s.includes('elderly assistance') || s.includes('hospital escort')) {
+      if (s.includes('blood') || s.includes('doctor') || s.includes('nurse') || s.includes('compounder') ||
+        s.includes('sample') || s.includes('checkup') || s.includes('diagnostic') || s.includes('phlebotomy') ||
+        s.includes('elderly assistance') || s.includes('hospital escort')) {
         return true;
       }
       const c = (cName || '').toLowerCase();
       return c.includes('diagnostic') || c.includes('health');
     }
   },
-  { 
-    id: 'logistics', 
+  {
+    id: 'logistics',
     name: 'Logistics',
     matcher: (cName, sName) => {
       const s = (sName || '').toLowerCase();
-      if (s.includes('truck') || s.includes('tempo') || s.includes('courier') || s.includes('cargo') || 
-          s.includes('transport') || s.includes('moving') || s.includes('shifting') || s.includes('furniture moving') || 
-          s.includes('electric bike') || s.includes('petrol bike') || s.includes('rickshaw') || s.includes('loading vehicle')) {
+      if (s.includes('truck') || s.includes('tempo') || s.includes('courier') || s.includes('cargo') ||
+        s.includes('transport') || s.includes('moving') || s.includes('shifting') || s.includes('furniture moving') ||
+        s.includes('electric bike') || s.includes('petrol bike') || s.includes('rickshaw') || s.includes('loading vehicle')) {
         return true;
       }
       const c = (cName || '').toLowerCase();
@@ -237,7 +237,7 @@ const HERO_PALETTES = [
 
 const getCategoryTheme = (categoryIdentifier) => {
   const key = (categoryIdentifier || '').toLowerCase().trim();
-  
+
   // 1. Appliances & Electrical
   if (
     key === 'appliances_electrical' ||
@@ -990,7 +990,7 @@ export default function Home() {
       primary: tileTheme.primary,
       glow: tileTheme.glow,
       gradient: dynamicGradient,
-      orb1: isDark 
+      orb1: isDark
         ? `radial-gradient(circle, ${tileTheme.glow} 0%, transparent 70%)`
         : `radial-gradient(circle, ${tileTheme.glow.replace('0.35', '0.12')} 0%, transparent 70%)`,
       orb2: isDark
@@ -1104,7 +1104,7 @@ export default function Home() {
           api.catalog.getCategories(),
           api.catalog.getServices()
         ]);
-        
+
         const rawCats = Array.isArray(cats) ? cats.filter(c => c && c.active !== false) : [];
         const rawServs = Array.isArray(servs) ? servs.filter(s => s && s.active !== false) : [];
 
@@ -1172,156 +1172,156 @@ export default function Home() {
     return (service.canonicalCategoryId === selectedCategory || service.categoryId === selectedCategory);
   });
 
-const EXACT_SERVICE_IMAGES = {
-  // 1. Appliances & Electrical
-  'ac repair & service': 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=600&q=80',
-  'ac repair': 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=600&q=80',
-  'ac installation': 'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?auto=format&fit=crop&w=600&q=80',
-  'ac maintenance': 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80',
-  'ro water purifier service': 'https://images.unsplash.com/photo-1662647343432-a8710bfd6162?auto=format&fit=crop&w=600&q=80',
-  'ro repair': 'https://images.unsplash.com/photo-1662647343432-a8710bfd6162?auto=format&fit=crop&w=600&q=80',
-  'ro installation': 'https://images.unsplash.com/photo-1548839140-29a749e1bc4e?auto=format&fit=crop&w=600&q=80',
-  'ro maintenance': 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?auto=format&fit=crop&w=600&q=80',
-  'switchboard & wiring repair': 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80',
-  'switch board repair': 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80',
-  'ceiling & exhaust fan repair': 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=600&q=80',
-  'fan repair': 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=600&q=80',
-  'exhaust fan repair': 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=600&q=80',
-  'geyser & water heater servicing': 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?auto=format&fit=crop&w=600&q=80',
-  'inverter & battery servicing': 'https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&w=600&q=80',
-  'microwave & otg repair': 'https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?auto=format&fit=crop&w=600&q=80',
-  'refrigerator repair': 'https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?auto=format&fit=crop&w=600&q=80',
-  'washing machine repair': 'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=600&q=80',
+  const EXACT_SERVICE_IMAGES = {
+    // 1. Appliances & Electrical
+    'ac repair & service': 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=600&q=80',
+    'ac repair': 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=600&q=80',
+    'ac installation': 'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?auto=format&fit=crop&w=600&q=80',
+    'ac maintenance': 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80',
+    'ro water purifier service': 'https://images.unsplash.com/photo-1662647343432-a8710bfd6162?auto=format&fit=crop&w=600&q=80',
+    'ro repair': 'https://images.unsplash.com/photo-1662647343432-a8710bfd6162?auto=format&fit=crop&w=600&q=80',
+    'ro installation': 'https://images.unsplash.com/photo-1548839140-29a749e1bc4e?auto=format&fit=crop&w=600&q=80',
+    'ro maintenance': 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?auto=format&fit=crop&w=600&q=80',
+    'switchboard & wiring repair': 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80',
+    'switch board repair': 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80',
+    'ceiling & exhaust fan repair': 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=600&q=80',
+    'fan repair': 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=600&q=80',
+    'exhaust fan repair': 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=600&q=80',
+    'geyser & water heater servicing': 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?auto=format&fit=crop&w=600&q=80',
+    'inverter & battery servicing': 'https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&w=600&q=80',
+    'microwave & otg repair': 'https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?auto=format&fit=crop&w=600&q=80',
+    'refrigerator repair': 'https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?auto=format&fit=crop&w=600&q=80',
+    'washing machine repair': 'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=600&q=80',
 
-  // 2. Plumbing & Cleaning
-  'tap leakage & valve repair': 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=600&q=80',
-  'tap repair': 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=600&q=80',
-  'pipe leakage fix': 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=600&q=80',
-  'drain blockage & clog clearance': 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=600&q=80',
-  'kitchen deep cleaning & chimney degreasing': 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=600&q=80',
-  'sofa & carpet shampooing': 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&w=600&q=80',
-  'bathroom deep cleaning & sanitization': 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80',
-  'bathroom cleaning': 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80',
-  'full home cleaning': 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80',
-  'deep home & bathroom cleaning': 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80',
+    // 2. Plumbing & Cleaning
+    'tap leakage & valve repair': 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=600&q=80',
+    'tap repair': 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=600&q=80',
+    'pipe leakage fix': 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=600&q=80',
+    'drain blockage & clog clearance': 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=600&q=80',
+    'kitchen deep cleaning & chimney degreasing': 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=600&q=80',
+    'sofa & carpet shampooing': 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&w=600&q=80',
+    'bathroom deep cleaning & sanitization': 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80',
+    'bathroom cleaning': 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80',
+    'full home cleaning': 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80',
+    'deep home & bathroom cleaning': 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80',
 
-  // 3. Pest Control
-  'general pest & cockroach control': 'https://images.unsplash.com/photo-1587293852726-70cdb56c2866?auto=format&fit=crop&w=600&q=80',
-  'cockroach control': 'https://images.unsplash.com/photo-1587293852726-70cdb56c2866?auto=format&fit=crop&w=600&q=80',
-  'termite & wood borer treatment': 'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?auto=format&fit=crop&w=600&q=80',
-  'termite control': 'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?auto=format&fit=crop&w=600&q=80',
-  'bed bug eradication treatment': 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=600&q=80',
-  'bed bug control': 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=600&q=80',
-  'mosquito & flying insect control': 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&q=80',
-  'mosquito control': 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&q=80',
+    // 3. Pest Control
+    'general pest & cockroach control': 'https://images.unsplash.com/photo-1587293852726-70cdb56c2866?auto=format&fit=crop&w=600&q=80',
+    'cockroach control': 'https://images.unsplash.com/photo-1587293852726-70cdb56c2866?auto=format&fit=crop&w=600&q=80',
+    'termite & wood borer treatment': 'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?auto=format&fit=crop&w=600&q=80',
+    'termite control': 'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?auto=format&fit=crop&w=600&q=80',
+    'bed bug eradication treatment': 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=600&q=80',
+    'bed bug control': 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=600&q=80',
+    'mosquito & flying insect control': 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&q=80',
+    'mosquito control': 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&q=80',
 
-  // 4. Unisex Salon & Wellness
-  "men's haircut & beard styling": 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80',
-  "men haircut": 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80',
-  "women's haircut & hair spa": 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=600&q=80',
-  "women haircut": 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=600&q=80',
-  'at-home manicure & pedicure': 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80',
-  'pedicure & manicure': 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80',
-  'full arms & legs waxing': 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80',
-  'waxing': 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80',
-  'bridal & party makeup at home': 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=600&q=80',
-  'makeup & styling': 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=600&q=80',
-  'at-home facial & skin glow': 'https://images.unsplash.com/photo-1512290900672-1f41df0a996d?auto=format&fit=crop&w=600&q=80',
-  'facial & skin treatment': 'https://images.unsplash.com/photo-1512290900672-1f41df0a996d?auto=format&fit=crop&w=600&q=80',
-  'head, neck & shoulder massage': 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80',
-  'head massage': 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80',
-  'full body stress relief therapy': 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&fit=crop&w=600&q=80',
-  'full body massage': 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&fit=crop&w=600&q=80',
+    // 4. Unisex Salon & Wellness
+    "men's haircut & beard styling": 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80',
+    "men haircut": 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80',
+    "women's haircut & hair spa": 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=600&q=80',
+    "women haircut": 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=600&q=80',
+    'at-home manicure & pedicure': 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80',
+    'pedicure & manicure': 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80',
+    'full arms & legs waxing': 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80',
+    'waxing': 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80',
+    'bridal & party makeup at home': 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=600&q=80',
+    'makeup & styling': 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=600&q=80',
+    'at-home facial & skin glow': 'https://images.unsplash.com/photo-1512290900672-1f41df0a996d?auto=format&fit=crop&w=600&q=80',
+    'facial & skin treatment': 'https://images.unsplash.com/photo-1512290900672-1f41df0a996d?auto=format&fit=crop&w=600&q=80',
+    'head, neck & shoulder massage': 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80',
+    'head massage': 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80',
+    'full body stress relief therapy': 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&fit=crop&w=600&q=80',
+    'full body massage': 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&fit=crop&w=600&q=80',
 
-  // 5. Civil & Property Maintenance
-  'carpentry & furniture repair': 'https://images.unsplash.com/photo-1581783342308-f792dbdd27c5?auto=format&fit=crop&w=600&q=80',
-  'carpenter service': 'https://images.unsplash.com/photo-1581783342308-f792dbdd27c5?auto=format&fit=crop&w=600&q=80',
-  'carpentry': 'https://images.unsplash.com/photo-1581783342308-f792dbdd27c5?auto=format&fit=crop&w=600&q=80',
-  'furniture assembly & flatpack setup': 'https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=600&q=80',
-  'furniture assembly': 'https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=600&q=80',
-  'drilling, hanging & wall mounting': 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=600&q=80',
-  'drilling & hanging': 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=600&q=80',
-  'interior wall painting & touch-up': 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=600&q=80',
-  'painting & touch-up': 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=600&q=80',
-  'painting': 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=600&q=80',
-  'wall plastering & tile fixing': 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80',
-  'masonry & tile work': 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80',
-  'masonry & brickwork': 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80',
-  'waterproofing & leakage fix': 'https://images.unsplash.com/photo-1674485169641-bcb2bf6f1df9?auto=format&fit=crop&w=600&q=80',
-  'waterproofing': 'https://images.unsplash.com/photo-1674485169641-bcb2bf6f1df9?auto=format&fit=crop&w=600&q=80',
-  'flooring & tiling': 'https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?auto=format&fit=crop&w=600&q=80',
-  'roof & terrace maintenance': 'https://images.unsplash.com/photo-1632759145351-1d592919f522?auto=format&fit=crop&w=600&q=80',
-  'home renovation': 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=600&q=80',
+    // 5. Civil & Property Maintenance
+    'carpentry & furniture repair': 'https://images.unsplash.com/photo-1581783342308-f792dbdd27c5?auto=format&fit=crop&w=600&q=80',
+    'carpenter service': 'https://images.unsplash.com/photo-1581783342308-f792dbdd27c5?auto=format&fit=crop&w=600&q=80',
+    'carpentry': 'https://images.unsplash.com/photo-1581783342308-f792dbdd27c5?auto=format&fit=crop&w=600&q=80',
+    'furniture assembly & flatpack setup': 'https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=600&q=80',
+    'furniture assembly': 'https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=600&q=80',
+    'drilling, hanging & wall mounting': 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=600&q=80',
+    'drilling & hanging': 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=600&q=80',
+    'interior wall painting & touch-up': 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=600&q=80',
+    'painting & touch-up': 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=600&q=80',
+    'painting': 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=600&q=80',
+    'wall plastering & tile fixing': 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80',
+    'masonry & tile work': 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80',
+    'masonry & brickwork': 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80',
+    'waterproofing & leakage fix': 'https://images.unsplash.com/photo-1674485169641-bcb2bf6f1df9?auto=format&fit=crop&w=600&q=80',
+    'waterproofing': 'https://images.unsplash.com/photo-1674485169641-bcb2bf6f1df9?auto=format&fit=crop&w=600&q=80',
+    'flooring & tiling': 'https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?auto=format&fit=crop&w=600&q=80',
+    'roof & terrace maintenance': 'https://images.unsplash.com/photo-1632759145351-1d592919f522?auto=format&fit=crop&w=600&q=80',
+    'home renovation': 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=600&q=80',
 
-  // 6. Tech & Home Automation
-  'laptop & pc diagnostics / os setup': 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=600&q=80',
-  'laptop repair': 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=600&q=80',
-  'wi-fi router & mesh network setup': 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=600&q=80',
-  'wifi & router setup': 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=600&q=80',
-  'smart tv & home theater wall setup': 'https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&w=600&q=80',
-  'smart tv setup': 'https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&w=600&q=80',
-  'printer setup & troubleshooting': 'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?auto=format&fit=crop&w=600&q=80',
-  'printer repair': 'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?auto=format&fit=crop&w=600&q=80',
+    // 6. Tech & Home Automation
+    'laptop & pc diagnostics / os setup': 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=600&q=80',
+    'laptop repair': 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=600&q=80',
+    'wi-fi router & mesh network setup': 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=600&q=80',
+    'wifi & router setup': 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=600&q=80',
+    'smart tv & home theater wall setup': 'https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&w=600&q=80',
+    'smart tv setup': 'https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&w=600&q=80',
+    'printer setup & troubleshooting': 'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?auto=format&fit=crop&w=600&q=80',
+    'printer repair': 'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?auto=format&fit=crop&w=600&q=80',
 
-  // 7. Vehicle & Auto Care
-  'doorstep eco car foam wash & vacuum': 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=600&q=80',
-  'car wash': 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=600&q=80',
-  'doorstep bike foam wash & chain lube': 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=600&q=80',
-  'bike wash': 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=600&q=80',
-  'deep car interior detailing & polishing': 'https://images.unsplash.com/photo-1607860108855-64acf2078ed9?auto=format&fit=crop&w=600&q=80',
-  'car battery jump start assistance': 'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=600&q=80',
+    // 7. Vehicle & Auto Care
+    'doorstep eco car foam wash & vacuum': 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=600&q=80',
+    'car wash': 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=600&q=80',
+    'doorstep bike foam wash & chain lube': 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=600&q=80',
+    'bike wash': 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=600&q=80',
+    'deep car interior detailing & polishing': 'https://images.unsplash.com/photo-1607860108855-64acf2078ed9?auto=format&fit=crop&w=600&q=80',
+    'car battery jump start assistance': 'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=600&q=80',
 
-  // 8. Home Help & Errand Services
-  'daily domestic helper / maid on demand': 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80',
-  'home chef & daily cook on demand': 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=600&q=80',
-  'doorstep laundry & steam ironing': 'https://images.unsplash.com/photo-1545173168-9f1947eebb7f?auto=format&fit=crop&w=600&q=80',
-  'urgent medicine & prescription delivery': 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=80',
-  'local grocery & market pickup delivery': 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80',
-  'personal errand & queue assistance': 'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=600&q=80',
+    // 8. Home Help & Errand Services
+    'daily domestic helper / maid on demand': 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80',
+    'home chef & daily cook on demand': 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=600&q=80',
+    'doorstep laundry & steam ironing': 'https://images.unsplash.com/photo-1545173168-9f1947eebb7f?auto=format&fit=crop&w=600&q=80',
+    'urgent medicine & prescription delivery': 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=80',
+    'local grocery & market pickup delivery': 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80',
+    'personal errand & queue assistance': 'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=600&q=80',
 
-  // 9. Security Services
-  'cctv installation & setup': 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=600&q=80',
-  'cctv installation': 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=600&q=80',
-  'smart lock installation': 'https://images.unsplash.com/photo-1558089687-f282ffcbc126?auto=format&fit=crop&w=600&q=80',
-  'video doorbell installation': 'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=600&q=80',
-  'security guard service': 'https://images.unsplash.com/photo-1581568736305-49a04e012c13?auto=format&fit=crop&w=600&q=80',
+    // 9. Security Services
+    'cctv installation & setup': 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=600&q=80',
+    'cctv installation': 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=600&q=80',
+    'smart lock installation': 'https://images.unsplash.com/photo-1558089687-f282ffcbc126?auto=format&fit=crop&w=600&q=80',
+    'video doorbell installation': 'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=600&q=80',
+    'security guard service': 'https://images.unsplash.com/photo-1581568736305-49a04e012c13?auto=format&fit=crop&w=600&q=80',
 
-  // 10. Diagnostic & Healthcare Services
-  'blood test & sample collection': 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=600&q=80',
-  'full body health checkup': 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=600&q=80',
-  'home diagnostic test': 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=600&q=80',
-  'compounder on call': 'https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=600&q=80',
-  'elderly assistance & hospital escort': 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=600&q=80',
+    // 10. Diagnostic & Healthcare Services
+    'blood test & sample collection': 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=600&q=80',
+    'full body health checkup': 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=600&q=80',
+    'home diagnostic test': 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=600&q=80',
+    'compounder on call': 'https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=600&q=80',
+    'elderly assistance & hospital escort': 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=600&q=80',
 
-  // 11. Logistics & Vehicles
-  'mini truck goods transport': 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=600&q=80',
-  'mini truck': 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=600&q=80',
-  'mini truck (tata ace)': 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=600&q=80',
-  'electric bike express courier': 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=600&q=80',
-  'electric bike': 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=600&q=80',
-  'petrol bike': 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=600&q=80',
-  'express courier (local)': 'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=600&q=80',
-  'personal items (documents & files)': 'https://images.unsplash.com/photo-1586528116493-a029325540fa?auto=format&fit=crop&w=600&q=80',
-  'electric rickshaw': 'https://images.unsplash.com/photo-1517330357046-3ab5a5dd42a1?auto=format&fit=crop&w=600&q=80',
-  'loading vehicle (3w)': 'https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=600&q=80',
-  'loading vehicle': 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80',
-  'retail store delivery': 'https://images.unsplash.com/photo-1586528116024-e1b1d7d0a2ec?auto=format&fit=crop&w=600&q=80',
-  'truck': 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80',
-  'truck (14ft / 17ft)': 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80',
-  'furniture moving': '/furniture-moving.jpg',
-  'furniture shifting': '/furniture-moving.jpg',
-  'furniture transport': '/furniture-moving.jpg',
-  'house shifting & furniture': '/furniture-moving.jpg',
-  'heavy truck': 'https://images.unsplash.com/photo-1501700493788-fa1a4fc9fe62?auto=format&fit=crop&w=600&q=80',
-  'heavy truck commercial freight': 'https://images.unsplash.com/photo-1501700493788-fa1a4fc9fe62?auto=format&fit=crop&w=600&q=80'
-};
+    // 11. Logistics & Vehicles
+    'mini truck goods transport': 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=600&q=80',
+    'mini truck': 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=600&q=80',
+    'mini truck (tata ace)': 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=600&q=80',
+    'electric bike express courier': 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=600&q=80',
+    'electric bike': 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=600&q=80',
+    'petrol bike': 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=600&q=80',
+    'express courier (local)': 'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=600&q=80',
+    'personal items (documents & files)': 'https://images.unsplash.com/photo-1586528116493-a029325540fa?auto=format&fit=crop&w=600&q=80',
+    'electric rickshaw': 'https://images.unsplash.com/photo-1517330357046-3ab5a5dd42a1?auto=format&fit=crop&w=600&q=80',
+    'loading vehicle (3w)': 'https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=600&q=80',
+    'loading vehicle': 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80',
+    'retail store delivery': 'https://images.unsplash.com/photo-1586528116024-e1b1d7d0a2ec?auto=format&fit=crop&w=600&q=80',
+    'truck': 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80',
+    'truck (14ft / 17ft)': 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80',
+    'furniture moving': '/furniture-moving.jpg',
+    'furniture shifting': '/furniture-moving.jpg',
+    'furniture transport': '/furniture-moving.jpg',
+    'house shifting & furniture': '/furniture-moving.jpg',
+    'heavy truck': 'https://images.unsplash.com/photo-1501700493788-fa1a4fc9fe62?auto=format&fit=crop&w=600&q=80',
+    'heavy truck commercial freight': 'https://images.unsplash.com/photo-1501700493788-fa1a4fc9fe62?auto=format&fit=crop&w=600&q=80'
+  };
 
   const getServiceConfig = (serviceName, categoryName) => {
     const rawName = (serviceName || '').trim();
     const name = rawName.toLowerCase();
     const cat = (categoryName || '').toLowerCase();
     const theme = getCategoryTheme(cat || name);
-    
+
     // 1. Direct exact match from curated dictionary
     let serviceImage = EXACT_SERVICE_IMAGES[name];
 
@@ -2225,325 +2225,325 @@ const EXACT_SERVICE_IMAGES = {
               </span>
             </h1>
 
-          {/* Dynamic Live Cycling Service Highlight Pill Synchronized with Bouncing Tiles */}
-          {(() => {
-            const activeHighlightTheme = getCategoryTheme(activeHighlightService);
-            return (
-              <div
-                className="hero-highlight-pill"
-                style={{
-                  '--highlight-color': activeHighlightTheme.primary,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.6rem',
-                  padding: '0.45rem 1.15rem',
-                  borderRadius: '999px',
-                  border: `1.5px solid ${activeHighlightTheme.primary}50`,
-                  backgroundColor: `${activeHighlightTheme.primary}12`,
-                  boxShadow: `0 4px 18px ${activeHighlightTheme.glow || 'rgba(0,0,0,0.06)'}`,
-                  transition: 'border-color 0.4s ease, background-color 0.4s ease, box-shadow 0.4s ease',
-                  marginBottom: '1.25rem'
-                }}
-              >
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-                  Need fast
-                </span>
-                <span
-                  key={activeHighlightService}
-                  className="hero-highlight-text animate-fade-in"
-                  style={{
-                    color: activeHighlightTheme.primary,
-                    fontWeight: 800,
-                    transition: 'color 0.4s ease'
-                  }}
-                >
-                  {activeHighlightService}?
-                </span>
-                <span style={{
-                  fontSize: '0.72rem',
-                  padding: '0.15rem 0.5rem',
-                  borderRadius: '4px',
-                  backgroundColor: `${activeHighlightTheme.primary}22`,
-                  color: activeHighlightTheme.primary,
-                  fontWeight: 700,
-                  border: `1px solid ${activeHighlightTheme.primary}40`,
-                  transition: 'all 0.4s ease'
-                }}>
-                  Book in 60s
-                </span>
-              </div>
-            );
-          })()}
-
-          <p className="hero-desc" style={{ maxWidth: '680px', margin: '0 auto 2rem auto' }}>
-            Book verified electricians, plumbers, cleaners, wellness therapists, and logistics specialists in minutes. Upfront pricing, vetted partners, and instant doorstep scheduling.
-          </p>
-
-          {/* Hero Direct Exploration CTA Button */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '2.5rem' }}>
-            <button
-              type="button"
-              onClick={() => {
-                const elem = document.getElementById('services-catalog');
-                if (elem) elem.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="btn btn-primary"
-              style={{
-                borderRadius: '999px',
-                padding: '0.75rem 2rem',
-                fontSize: '0.95rem',
-                fontWeight: 700,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.55rem',
-                boxShadow: `0 8px 24px ${ambientHeroColor.glow || 'rgba(56, 189, 248, 0.25)'}`,
-                transition: 'all 0.3s ease'
-              }}
-            >
-              <span>Explore Verified Services</span>
-              <ArrowRight size={16} />
-            </button>
-          </div>
-
-          {/* Authentic Core Guarantees Strip */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '1.75rem',
-            flexWrap: 'wrap',
-            borderTop: '1px solid var(--border-light)',
-            paddingTop: '1.35rem',
-            maxWidth: '820px',
-            margin: '0 auto'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-main)', fontSize: '0.8125rem', fontWeight: 600 }}>
-              <ShieldCheck size={16} color="var(--success)" />
-              <span>Aadhaar Verified Pros</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
-              <CreditCard size={16} color="var(--primary)" />
-              <span>Upfront Fixed Quotes</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
-              <Clock size={16} color="var(--warning)" />
-              <span>Instant Doorstep Slot</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
-              <CheckCircle2 size={16} color="#10b981" />
-              <span>Job Completion Guarantee</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    {/* ========================================================================= */}
-    {/* MAIN SERVICES & CATEGORY CATALOG EXPLORATION                              */}
-    {/* ========================================================================= */}
-    <main id="services-catalog" style={{ maxWidth: '1200px', margin: '0 auto', padding: '2.5rem 1rem 4rem 1rem' }}>
-      <div className="section-header" style={{ marginBottom: '2rem', textAlign: 'center' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.3rem 0.85rem', borderRadius: '20px', backgroundColor: 'rgba(56, 189, 248, 0.1)', color: 'var(--primary)', fontSize: '0.78rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.65rem' }}>
-          <Tag size={13} />
-          <span>Full Service Directory</span>
-        </div>
-        <h2 className="section-title" style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.025em', margin: '0 0 0.5rem 0' }}>
-          Explore Verified Home & Commercial Services
-        </h2>
-        <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '620px', margin: '0 auto' }}>
-          Select a verified service category to instantly book top-rated, background-checked professionals with upfront pricing and live tracking.
-        </p>
-      </div>
-
-      {/* Category Header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '1rem',
-        marginBottom: '1.35rem'
-      }}>
-        <div>
-          <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em', margin: 0 }}>
-            Service Categories
-          </h3>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '0.2rem', marginBottom: 0 }}>
-            {selectedCategory ? (
-              <>Selected category: <strong style={{ color: getCategoryTheme(selectedCategory).primary }}>{categories.find(c => c.id === selectedCategory)?.name}</strong></>
-            ) : (
-              <span>Click on any category tile below to view its available services</span>
-            )}
-          </p>
-        </div>
-      </div>
-
-      {/* Clean Responsive Category Tiles Grid with Squircle Icon Badge */}
-      <div style={{ marginBottom: '2.5rem' }}>
-        <div className="category-tiles-grid">
-          {(categories || []).map((cat) => {
-            if (!cat) return null;
-            const isSelected = selectedCategory === cat.id;
-            const theme = getCategoryTheme(cat.id || cat.name);
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setSelectedCategory(prev => prev === cat.id ? null : cat.id)}
-                className={`category-tile ${isSelected ? 'active' : ''}`}
-                style={{
-                  '--tile-primary': theme.primary,
-                  '--tile-glow': theme.glow
-                }}
-              >
-                <div
-                  className="cat-squircle-badge"
-                  style={{
-                    background: theme.accentBg,
-                    boxShadow: `0 4px 14px ${theme.glow}`
-                  }}
-                >
-                  {theme.icon}
-                </div>
-                <div className="category-tile-title">
-                  {cat.name || 'Category'}
-                </div>
-                {isSelected && (
-                  <div className="cat-active-dot" style={{ backgroundColor: theme.primary }} />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Dynamic Services Grid Header */}
-      {selectedCategory ? (
-        <div id="services-catalog-grid-top" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', scrollMarginTop: '100px' }}>
-          <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', fontWeight: 700 }}>
-            Showing {filteredServices.length} {filteredServices.length === 1 ? 'service' : 'services'} in{' '}
-            <span style={{ color: getCategoryTheme(selectedCategory).primary, fontWeight: 800 }}>
-              {categories.find(c => c.id === selectedCategory)?.name || 'Selected Category'}
-            </span>
-          </h3>
-        </div>
-      ) : searchQuery.trim() !== '' ? (
-        <div id="services-catalog-grid-top" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', scrollMarginTop: '100px' }}>
-          <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', fontWeight: 700 }}>
-            Search results for "{searchQuery}" ({filteredServices.length} {filteredServices.length === 1 ? 'service' : 'services'})
-          </h3>
-        </div>
-      ) : null}
-
-      {/* Services Grid with Dynamic Hover */}
-      {!selectedCategory && searchQuery.trim() === '' ? (
-        <div className="empty-state" style={{ padding: '3.5rem 1.5rem', background: 'var(--bg-card)', border: '1px dashed var(--border-light)', borderRadius: '16px', textAlign: 'center' }}>
-          <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: 'rgba(56, 189, 248, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto', color: 'var(--primary)' }}>
-            <Layers size={28} />
-          </div>
-          <h3 className="empty-state-title" style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.4rem' }}>
-            Select a Category to View Services
-          </h3>
-          <p className="empty-state-description" style={{ fontSize: '0.875rem', color: 'var(--text-muted)', maxWidth: '440px', margin: '0 auto' }}>
-            Click on any service category tile above to view available verified professionals, transparent pricing, and instant booking options.
-          </p>
-        </div>
-      ) : loading ? (
-        <div className="grid-cols-4">
-          {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
-            <div key={n} className="panel" style={{ height: '220px', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <div className="skeleton" style={{ width: '44px', height: '44px' }} />
-              <div className="skeleton" style={{ width: '70%', height: '18px' }} />
-              <div className="skeleton" style={{ width: '100%', height: '14px' }} />
-              <div className="skeleton" style={{ width: '40%', height: '14px', marginTop: 'auto' }} />
-            </div>
-          ))}
-        </div>
-      ) : filteredServices.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-state-icon">
-            <Search size={22} />
-          </div>
-          <h3 className="empty-state-title">No Services in this Category</h3>
-          <p className="empty-state-description">
-            No services found for the selected category. Try selecting another category above.
-          </p>
-        </div>
-      ) : (
-        <div>
-          <div className="grid-cols-4">
-            {filteredServices.slice((servicesPage - 1) * servicesPerPage, servicesPage * servicesPerPage).map((service) => {
-              if (!service) return null;
-              const catName = service.canonicalCategoryName || categories.find(c => c && c.id === service.categoryId)?.name || 'Service';
-              const config = getServiceConfig(service.name, catName);
-              const priceUnit = service.pricingType === 'HOURLY' ? '/ hr' : '';
-              const descText = service.description || 'Verified, professional on-demand home and maintenance service.';
-
+            {/* Dynamic Live Cycling Service Highlight Pill Synchronized with Bouncing Tiles */}
+            {(() => {
+              const activeHighlightTheme = getCategoryTheme(activeHighlightService);
               return (
                 <div
-                  key={service.id}
-                  className="service-card"
+                  className="hero-highlight-pill"
                   style={{
-                    '--service-color': config.primary || config.color,
-                    '--service-primary': config.primary,
-                    '--service-shadow-1': config.shadow1,
-                    '--service-shadow-2': config.shadow2,
-                    '--service-shadow-3': config.shadow3,
-                    '--service-glow': config.shadow1,
-                    '--service-bg': config.bg
+                    '--highlight-color': activeHighlightTheme.primary,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.6rem',
+                    padding: '0.45rem 1.15rem',
+                    borderRadius: '999px',
+                    border: `1.5px solid ${activeHighlightTheme.primary}50`,
+                    backgroundColor: `${activeHighlightTheme.primary}12`,
+                    boxShadow: `0 4px 18px ${activeHighlightTheme.glow || 'rgba(0,0,0,0.06)'}`,
+                    transition: 'border-color 0.4s ease, background-color 0.4s ease, box-shadow 0.4s ease',
+                    marginBottom: '1.25rem'
                   }}
-                  onClick={() => navigate(`/services/${service.id}`)}
                 >
-                  <div className="service-card-image-box">
-                    <img
-                      src={config.image}
-                      alt={service.name || 'Service'}
-                      className="service-card-img"
-                      loading="lazy"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80';
-                      }}
-                    />
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
-                    <h3 className="service-card-title">{service.name || 'Service'}</h3>
-                  </div>
-
-                  <span className="service-category-tag" style={{
-                    color: config.primary || config.color,
-                    backgroundColor: `${config.primary || config.color}15`,
-                    border: `1px solid ${config.primary || config.color}30`
-                  }}>
-                    {catName}
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+                    Need fast
                   </span>
-
-                  <p className="service-card-desc">
-                    {descText.length > 85 ? descText.substring(0, 85) + '...' : descText}
-                  </p>
-
-                  <div className="service-card-footer">
-                    <div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>
-                        Starting from
-                      </div>
-                      <span className="service-price">
-                        ₹{service.price ?? 0} {priceUnit}
-                      </span>
-                    </div>
-                    
-                    <button className="service-cta" onClick={(e) => {
-                       e.stopPropagation();
-                       navigate(`/services/${service.id}`);
-                    }}>
-                      <span>Book</span> <ArrowRight size={13} />
-                    </button>
-                  </div>
+                  <span
+                    key={activeHighlightService}
+                    className="hero-highlight-text animate-fade-in"
+                    style={{
+                      color: activeHighlightTheme.primary,
+                      fontWeight: 800,
+                      transition: 'color 0.4s ease'
+                    }}
+                  >
+                    {activeHighlightService}?
+                  </span>
+                  <span style={{
+                    fontSize: '0.72rem',
+                    padding: '0.15rem 0.5rem',
+                    borderRadius: '4px',
+                    backgroundColor: `${activeHighlightTheme.primary}22`,
+                    color: activeHighlightTheme.primary,
+                    fontWeight: 700,
+                    border: `1px solid ${activeHighlightTheme.primary}40`,
+                    transition: 'all 0.4s ease'
+                  }}>
+                    Book in 60s
+                  </span>
                 </div>
+              );
+            })()}
+
+            <p className="hero-desc" style={{ maxWidth: '680px', margin: '0 auto 2rem auto' }}>
+              Book verified electricians, plumbers, cleaners, wellness therapists, and logistics specialists in minutes. Upfront pricing, vetted partners, and instant doorstep scheduling.
+            </p>
+
+            {/* Hero Direct Exploration CTA Button */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '2.5rem' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  const elem = document.getElementById('services-catalog');
+                  if (elem) elem.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="btn btn-primary"
+                style={{
+                  borderRadius: '999px',
+                  padding: '0.75rem 2rem',
+                  fontSize: '0.95rem',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.55rem',
+                  boxShadow: `0 8px 24px ${ambientHeroColor.glow || 'rgba(56, 189, 248, 0.25)'}`,
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                <span>Explore Verified Services</span>
+                <ArrowRight size={16} />
+              </button>
+            </div>
+
+            {/* Authentic Core Guarantees Strip */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '1.75rem',
+              flexWrap: 'wrap',
+              borderTop: '1px solid var(--border-light)',
+              paddingTop: '1.35rem',
+              maxWidth: '820px',
+              margin: '0 auto'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-main)', fontSize: '0.8125rem', fontWeight: 600 }}>
+                <ShieldCheck size={16} color="var(--success)" />
+                <span>Aadhaar Verified Pros</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+                <CreditCard size={16} color="var(--primary)" />
+                <span>Upfront Fixed Quotes</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+                <Clock size={16} color="var(--warning)" />
+                <span>Instant Doorstep Slot</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+                <CheckCircle2 size={16} color="#10b981" />
+                <span>Job Completion Guarantee</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* MAIN SERVICES & CATEGORY CATALOG EXPLORATION                              */}
+      {/* ========================================================================= */}
+      <main id="services-catalog" style={{ maxWidth: '1200px', margin: '0 auto', padding: '2.5rem 1rem 4rem 1rem' }}>
+        <div className="section-header" style={{ marginBottom: '2rem', textAlign: 'center' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.3rem 0.85rem', borderRadius: '20px', backgroundColor: 'rgba(56, 189, 248, 0.1)', color: 'var(--primary)', fontSize: '0.78rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.65rem' }}>
+            <Tag size={13} />
+            <span>Full Service Directory</span>
+          </div>
+          <h2 className="section-title" style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.025em', margin: '0 0 0.5rem 0' }}>
+            Explore Verified Home & Commercial Services
+          </h2>
+          <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '620px', margin: '0 auto' }}>
+            Select a verified service category to instantly book top-rated, background-checked professionals with upfront pricing and live tracking.
+          </p>
+        </div>
+
+        {/* Category Header */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          marginBottom: '1.35rem'
+        }}>
+          <div>
+            <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em', margin: 0 }}>
+              Service Categories
+            </h3>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '0.2rem', marginBottom: 0 }}>
+              {selectedCategory ? (
+                <>Selected category: <strong style={{ color: getCategoryTheme(selectedCategory).primary }}>{categories.find(c => c.id === selectedCategory)?.name}</strong></>
+              ) : (
+                <span>Click on any category tile below to view its available services</span>
+              )}
+            </p>
+          </div>
+        </div>
+
+        {/* Clean Responsive Category Tiles Grid with Squircle Icon Badge */}
+        <div style={{ marginBottom: '2.5rem' }}>
+          <div className="category-tiles-grid">
+            {(categories || []).map((cat) => {
+              if (!cat) return null;
+              const isSelected = selectedCategory === cat.id;
+              const theme = getCategoryTheme(cat.id || cat.name);
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setSelectedCategory(prev => prev === cat.id ? null : cat.id)}
+                  className={`category-tile ${isSelected ? 'active' : ''}`}
+                  style={{
+                    '--tile-primary': theme.primary,
+                    '--tile-glow': theme.glow
+                  }}
+                >
+                  <div
+                    className="cat-squircle-badge"
+                    style={{
+                      background: theme.accentBg,
+                      boxShadow: `0 4px 14px ${theme.glow}`
+                    }}
+                  >
+                    {theme.icon}
+                  </div>
+                  <div className="category-tile-title">
+                    {cat.name || 'Category'}
+                  </div>
+                  {isSelected && (
+                    <div className="cat-active-dot" style={{ backgroundColor: theme.primary }} />
+                  )}
+                </button>
               );
             })}
           </div>
+        </div>
+
+        {/* Dynamic Services Grid Header */}
+        {selectedCategory ? (
+          <div id="services-catalog-grid-top" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', scrollMarginTop: '100px' }}>
+            <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', fontWeight: 700 }}>
+              Showing {filteredServices.length} {filteredServices.length === 1 ? 'service' : 'services'} in{' '}
+              <span style={{ color: getCategoryTheme(selectedCategory).primary, fontWeight: 800 }}>
+                {categories.find(c => c.id === selectedCategory)?.name || 'Selected Category'}
+              </span>
+            </h3>
+          </div>
+        ) : searchQuery.trim() !== '' ? (
+          <div id="services-catalog-grid-top" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', scrollMarginTop: '100px' }}>
+            <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', fontWeight: 700 }}>
+              Search results for "{searchQuery}" ({filteredServices.length} {filteredServices.length === 1 ? 'service' : 'services'})
+            </h3>
+          </div>
+        ) : null}
+
+        {/* Services Grid with Dynamic Hover */}
+        {!selectedCategory && searchQuery.trim() === '' ? (
+          <div className="empty-state" style={{ padding: '3.5rem 1.5rem', background: 'var(--bg-card)', border: '1px dashed var(--border-light)', borderRadius: '16px', textAlign: 'center' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: 'rgba(56, 189, 248, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto', color: 'var(--primary)' }}>
+              <Layers size={28} />
+            </div>
+            <h3 className="empty-state-title" style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.4rem' }}>
+              Select a Category to View Services
+            </h3>
+            <p className="empty-state-description" style={{ fontSize: '0.875rem', color: 'var(--text-muted)', maxWidth: '440px', margin: '0 auto' }}>
+              Click on any service category tile above to view available verified professionals, transparent pricing, and instant booking options.
+            </p>
+          </div>
+        ) : loading ? (
+          <div className="grid-cols-4">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
+              <div key={n} className="panel" style={{ height: '220px', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div className="skeleton" style={{ width: '44px', height: '44px' }} />
+                <div className="skeleton" style={{ width: '70%', height: '18px' }} />
+                <div className="skeleton" style={{ width: '100%', height: '14px' }} />
+                <div className="skeleton" style={{ width: '40%', height: '14px', marginTop: 'auto' }} />
+              </div>
+            ))}
+          </div>
+        ) : filteredServices.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-state-icon">
+              <Search size={22} />
+            </div>
+            <h3 className="empty-state-title">No Services in this Category</h3>
+            <p className="empty-state-description">
+              No services found for the selected category. Try selecting another category above.
+            </p>
+          </div>
+        ) : (
+          <div>
+            <div className="grid-cols-4">
+              {filteredServices.slice((servicesPage - 1) * servicesPerPage, servicesPage * servicesPerPage).map((service) => {
+                if (!service) return null;
+                const catName = service.canonicalCategoryName || categories.find(c => c && c.id === service.categoryId)?.name || 'Service';
+                const config = getServiceConfig(service.name, catName);
+                const priceUnit = service.pricingType === 'HOURLY' ? '/ hr' : '';
+                const descText = service.description || 'Verified, professional on-demand home and maintenance service.';
+
+                return (
+                  <div
+                    key={service.id}
+                    className="service-card"
+                    style={{
+                      '--service-color': config.primary || config.color,
+                      '--service-primary': config.primary,
+                      '--service-shadow-1': config.shadow1,
+                      '--service-shadow-2': config.shadow2,
+                      '--service-shadow-3': config.shadow3,
+                      '--service-glow': config.shadow1,
+                      '--service-bg': config.bg
+                    }}
+                    onClick={() => navigate(`/services/${service.id}`)}
+                  >
+                    <div className="service-card-image-box">
+                      <img
+                        src={config.image}
+                        alt={service.name || 'Service'}
+                        className="service-card-img"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80';
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
+                      <h3 className="service-card-title">{service.name || 'Service'}</h3>
+                    </div>
+
+                    <span className="service-category-tag" style={{
+                      color: config.primary || config.color,
+                      backgroundColor: `${config.primary || config.color}15`,
+                      border: `1px solid ${config.primary || config.color}30`
+                    }}>
+                      {catName}
+                    </span>
+
+                    <p className="service-card-desc">
+                      {descText.length > 85 ? descText.substring(0, 85) + '...' : descText}
+                    </p>
+
+                    <div className="service-card-footer">
+                      <div>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>
+                          Starting from
+                        </div>
+                        <span className="service-price">
+                          ₹{service.price ?? 0} {priceUnit}
+                        </span>
+                      </div>
+
+                      <button className="service-cta" onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/services/${service.id}`);
+                      }}>
+                        <span>Book</span> <ArrowRight size={13} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
             <Pagination
               currentPage={servicesPage}
               totalItems={filteredServices.length}
