@@ -1130,25 +1130,66 @@ export default function ProviderDashboard() {
 
       {/* Main Operations Work Area */}
       <main className="enterprise-main">
-        {/* Toast Notification */}
+        {/* Floating Toast Notification Pop-up */}
         {notification && (
           <div style={{
-            position: 'fixed', top: '4.5rem', right: '1.5rem', zIndex: 100,
-            display: 'flex', alignItems: 'center', gap: '0.5rem',
-            padding: '0.65rem 1rem', borderRadius: 'var(--radius-sm)',
-            backgroundColor: notification.type === 'error' ? 'var(--error-bg)' : 'var(--success-bg)',
-            color: notification.type === 'error' ? 'var(--error)' : 'var(--success)',
-            border: `1px solid ${notification.type === 'error' ? 'var(--error-border)' : 'var(--success-border)'}`,
-            boxShadow: 'var(--shadow-md)',
-            fontSize: '0.8125rem',
-            fontWeight: 500
+            position: 'fixed',
+            top: '1.25rem',
+            right: '1.25rem',
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            padding: '0.85rem 1.15rem',
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: 'rgba(15, 23, 42, 0.96)',
+            color: '#ffffff',
+            border: `1px solid ${notification.type === 'error' ? '#ef4444' : '#10b981'}`,
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(12px)',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            maxWidth: '420px'
           }}>
-            <span>{notification.message}</span>
+            <div style={{
+              width: '28px',
+              height: '28px',
+              borderRadius: '50%',
+              backgroundColor: notification.type === 'error' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+              color: notification.type === 'error' ? '#ef4444' : '#10b981',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              {notification.type === 'error' ? <AlertCircle size={16} /> : <CheckCircle2 size={16} />}
+            </div>
+            <div style={{ flex: 1, lineHeight: 1.4 }}>
+              <div style={{ fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: notification.type === 'error' ? '#ef4444' : '#10b981' }}>
+                {notification.type === 'error' ? 'Action Notice' : 'Success'}
+              </div>
+              <div style={{ color: '#f8fafc', fontSize: '0.8125rem', marginTop: '1px' }}>
+                {notification.message}
+              </div>
+            </div>
             <button
+              type="button"
               onClick={() => setNotification(null)}
-              style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0 }}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'rgba(255, 255, 255, 0.6)',
+                cursor: 'pointer',
+                padding: '0.2rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '4px'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#ffffff'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)'}
             >
-              <X size={14} />
+              <X size={16} />
             </button>
           </div>
         )}

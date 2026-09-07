@@ -173,19 +173,67 @@ export default function LiveTrackingModal({ bookingId, onClose }) {
     return [providerCoords, customerCoords];
   }, [providerCoords, customerCoords, dropCoords, trackingData?.status]);
 
+  // Dynamic Real-time Distance & ETA computation based on current provider coordinates
+  const computedMetrics = useMemo(() => {
+    const targetCoords = (trackingData?.status === 'IN_TRANSIT' && dropCoords) ? dropCoords : customerCoords;
+    
+    if (providerCoords && targetCoords) {
+      const [lat1, lon1] = providerCoords;
+      const [lat2, lon2] = targetCoords;
+
+      const R = 6371; // Earth radius in KM
+      const dLat = (lat2 - lat1) * (Math.PI / 180);
+      const dLon = (lon2 - lon1) * (Math.PI / 180);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const straightLine = R * c;
+      const estimatedRoadKm = Math.max(0.1, straightLine * 1.25); // Road factor
+
+      const distStr = estimatedRoadKm < 1 ? estimatedRoadKm.toFixed(2) : estimatedRoadKm.toFixed(1);
+      const mins = Math.max(1, Math.round((estimatedRoadKm / 25.0) * 60.0));
+      const isArriving = estimatedRoadKm < 0.25;
+
+      return {
+        distanceKm: distStr,
+        etaText: isArriving ? 'Arriving now' : `~${mins} min${mins > 1 ? 's' : ''}`,
+        isArriving
+      };
+    }
+
+    if (trackingData?.distanceKm) {
+      const dist = Number(trackingData.distanceKm);
+      const mins = trackingData?.estimatedEtaMinutes || Math.max(1, Math.round((dist / 25.0) * 60.0));
+      return {
+        distanceKm: dist.toFixed(1),
+        etaText: `~${mins} min${mins > 1 ? 's' : ''}`,
+        isArriving: dist < 0.25
+      };
+    }
+
+    return {
+      distanceKm: '2.4',
+      etaText: '~6 mins',
+      isArriving: false
+    };
+  }, [providerCoords, customerCoords, dropCoords, trackingData]);
+
   // Simulation Runner for instant demo/testing
   useEffect(() => {
     let timer;
     if (simulationActive && customerCoords) {
-      // Start near customer location (offset by ~2.5 km)
-      const startLat = customerCoords[0] + 0.022;
-      const startLng = customerCoords[1] - 0.020;
+      const target = (trackingData?.status === 'IN_TRANSIT' && dropCoords) ? dropCoords : customerCoords;
+      // Start near target location (offset by ~3.2 km)
+      const startLat = target[0] + 0.024;
+      const startLng = target[1] - 0.022;
       
       timer = setInterval(() => {
         simulationStepRef.current += 1;
-        const progress = Math.min(simulationStepRef.current / 25, 1.0);
-        const currentLat = startLat + (customerCoords[0] - startLat) * progress;
-        const currentLng = startLng + (customerCoords[1] - startLng) * progress;
+        const progress = Math.min(simulationStepRef.current / 20, 1.0);
+        const currentLat = startLat + (target[0] - startLat) * progress;
+        const currentLng = startLng + (target[1] - startLng) * progress;
         
         setSimulatedProviderCoords([currentLat, currentLng]);
 
@@ -199,14 +247,14 @@ export default function LiveTrackingModal({ bookingId, onClose }) {
           setSimulationActive(false);
           simulationStepRef.current = 0;
         }
-      }, 1500);
+      }, 1200);
     } else {
       setSimulatedProviderCoords(null);
       simulationStepRef.current = 0;
     }
 
     return () => clearInterval(timer);
-  }, [simulationActive, customerCoords]);
+  }, [simulationActive, customerCoords, dropCoords, trackingData?.status]);
 
   const handleStartSimulation = () => {
     simulationStepRef.current = 0;
@@ -382,8 +430,8 @@ export default function LiveTrackingModal({ bookingId, onClose }) {
             <MapPin size={16} color="var(--primary)" />
             <div>
               <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Distance</div>
-              <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>
-                {trackingData?.distanceKm ? `${trackingData.distanceKm} km` : 'Estimating...'}
+              <div style={{ fontWeight: 700, color: 'var(--text-main)', fontFeatureSettings: 'tnum' }}>
+                {computedMetrics.distanceKm} km
               </div>
             </div>
           </div>
@@ -393,10 +441,8 @@ export default function LiveTrackingModal({ bookingId, onClose }) {
             <Clock size={16} color="#10b981" />
             <div>
               <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Estimated ETA</div>
-              <div style={{ fontWeight: 700, color: '#10b981' }}>
-                {trackingData?.estimatedEtaMinutes 
-                  ? `${trackingData.estimatedEtaMinutes} min${trackingData.estimatedEtaMinutes > 1 ? 's' : ''}` 
-                  : '~5-10 mins'}
+              <div style={{ fontWeight: 700, color: '#10b981', fontFeatureSettings: 'tnum' }}>
+                {computedMetrics.etaText}
               </div>
             </div>
           </div>
