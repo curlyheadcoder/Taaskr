@@ -800,8 +800,16 @@ export const api = {
         method: 'PATCH',
         body: JSON.stringify(payload)
       });
+    },
+
+    reply: async (disputeId, message) => {
+      return makeRequest(`/api/disputes/${disputeId}/reply`, {
+        method: 'POST',
+        body: JSON.stringify({ message })
+      });
     }
   },
+
 
   // ----------------------------------------
   // KYC VERIFICATION & DOCUMENT MANAGEMENT

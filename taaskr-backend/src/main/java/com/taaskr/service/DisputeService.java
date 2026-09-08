@@ -13,4 +13,6 @@ public interface DisputeService {
     List<DisputeResponse> getAllDisputesForAdmin();
     DisputeResponse getDisputeById(Long id);
     DisputeResponse resolveDispute(Long id, ResolveDisputeRequest request, String adminEmail);
+    DisputeResponse replyToDispute(Long id, String message, String userEmail);
 }
+

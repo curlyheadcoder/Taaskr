@@ -171,4 +171,48 @@ public class DisputeServiceImpl implements DisputeService {
 
         return DisputeResponse.fromEntity(saved);
     }
+
+    @Override
+    public DisputeResponse replyToDispute(Long id, String message, String userEmail) {
+        if (message == null || message.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Message cannot be empty");
+        }
+
+        Dispute dispute = disputeRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Dispute not found"));
+
+        User user = getUserByEmail(userEmail);
+        boolean isAdmin = user.getRoles() != null && user.getRoles().stream()
+                .anyMatch(r -> r.getName().name().equals("ROLE_ADMIN"));
+
+        if (!isAdmin && !dispute.getUser().getId().equals(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized to message on this dispute");
+        }
+
+        String timestamp = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        String senderTag = isAdmin ? "\n\n[Admin Support - " + timestamp + "]: " : "\n\n[Customer - " + timestamp + "]: ";
+
+        if (dispute.getDescription() == null) {
+            dispute.setDescription(senderTag.trim() + message.trim());
+        } else {
+            dispute.setDescription(dispute.getDescription() + senderTag + message.trim());
+        }
+
+        Dispute saved = disputeRepository.save(dispute);
+
+        // Send real-time notification
+        if (isAdmin && dispute.getUser() != null) {
+            notificationService.sendNotification(
+                    dispute.getUser(),
+                    "New Support Message on Dispute #" + dispute.getId(),
+                    message.trim(),
+                    NotificationType.INFO,
+                    "DISPUTE",
+                    dispute.getId()
+            );
+        }
+
+        return DisputeResponse.fromEntity(saved);
+    }
 }
+

@@ -59,4 +59,12 @@ public class DisputeController {
     public DisputeResponse resolveDispute(@PathVariable Long id, @Valid @RequestBody ResolveDisputeRequest request, Authentication authentication) {
         return disputeService.resolveDispute(id, request, authentication.getName());
     }
+
+    @PostMapping("/disputes/{id}/reply")
+    @PreAuthorize("isAuthenticated()")
+    public DisputeResponse replyToDispute(@PathVariable Long id, @RequestBody java.util.Map<String, String> body, Authentication authentication) {
+        String message = body != null ? body.get("message") : "";
+        return disputeService.replyToDispute(id, message, authentication.getName());
+    }
 }
+

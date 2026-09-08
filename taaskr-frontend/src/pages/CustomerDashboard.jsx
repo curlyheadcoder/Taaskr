@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../services/api';
 import { Link, useSearchParams } from 'react-router-dom';
 import { formatLocalTime } from '../utils/time';
@@ -11,8 +11,9 @@ import {
   Calendar, Clock, CreditCard, Star, Truck, MapPin, User, 
   ExternalLink, AlertCircle, CheckCircle2, ChevronRight, X, 
   RefreshCw, FileText, Settings, ShieldCheck, Mail, Phone, 
-  Check, Save, Lock, Navigation, Compass
+  Check, Save, Lock, Navigation, Compass, MessageSquare, Send, Headphones
 } from 'lucide-react';
+
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -73,6 +74,15 @@ export default function CustomerDashboard({ initialTab }) {
   const [loadingDisputes, setLoadingDisputes] = useState(false);
   const [selectedDisputeId, setSelectedDisputeId] = useState(null);
   const [disputeFilter, setDisputeFilter] = useState('ALL');
+  const [disputeReplyText, setDisputeReplyText] = useState('');
+  const [submittingDisputeReply, setSubmittingDisputeReply] = useState(false);
+  const disputeChatContainerRef = useRef(null);
+
+  const scrollDisputeChatToBottom = () => {
+    if (disputeChatContainerRef.current) {
+      disputeChatContainerRef.current.scrollTop = disputeChatContainerRef.current.scrollHeight;
+    }
+  };
 
   // Pagination & Modal state
   const [currentPage, setCurrentPage] = useState(1);
@@ -100,6 +110,48 @@ export default function CustomerDashboard({ initialTab }) {
       setLoadingDisputes(false);
     }
   };
+
+  const handleSendDisputeReply = async (e, dispute) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!dispute || !disputeReplyText.trim() || submittingDisputeReply) return;
+    const textToSend = disputeReplyText.trim();
+    setSubmittingDisputeReply(true);
+    setDisputeReplyText('');
+    try {
+      const updated = await api.disputes.reply(dispute.id, textToSend);
+      setMyDisputes(prev => prev.map(d => d.id === updated.id ? updated : d));
+      setTimeout(scrollDisputeChatToBottom, 60);
+    } catch (err) {
+      alert(err.message || 'Failed to send message to support');
+    } finally {
+      setSubmittingDisputeReply(false);
+    }
+  };
+
+  // Live Auto-Poll Disputes every 3.5 seconds when viewing disputes tab
+  useEffect(() => {
+    if (activeTab !== 'disputes') return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await api.disputes.getMyDisputes();
+        if (Array.isArray(res)) {
+          setMyDisputes(res);
+        }
+      } catch (err) {
+        // silent background poll
+      }
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [activeTab]);
+
+  // Scroll chat to bottom on dispute selection
+  useEffect(() => {
+    if (activeTab === 'disputes' && selectedDisputeId) {
+      const timer = setTimeout(scrollDisputeChatToBottom, 60);
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab, selectedDisputeId]);
+
 
   const fetchAddresses = async () => {
     setLoadingAddresses(true);
@@ -1133,66 +1185,160 @@ export default function CustomerDashboard({ initialTab }) {
                       )}
                     </div>
 
-                    {/* Customer's Reported Description */}
+                    {/* Live Support Chat & Discussion Thread */}
                     <div>
-                      <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.4rem' }}>
-                        Your Stated Issue
-                      </h4>
-                      <div style={{
-                        padding: '1rem',
-                        backgroundColor: 'var(--bg-subtle)',
-                        borderRadius: 'var(--radius-sm)',
-                        border: '1px solid var(--border-light)',
-                        color: 'var(--text-main)',
-                        fontSize: '0.875rem',
-                        lineHeight: 1.5,
-                        whiteSpace: 'pre-wrap'
-                      }}>
-                        "{activeDisp.description}"
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <MessageSquare size={16} color="var(--primary)" />
+                          <span>Support Conversation & Live Discussion</span>
+                        </h4>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                          Ticket status: <strong>{activeDisp.status}</strong>
+                        </span>
                       </div>
+
+                      {/* Chat Messages Timeline */}
+                      {(() => {
+                        const rawDesc = activeDisp.description || '';
+                        const conversationList = [];
+                        const parts = rawDesc.split(/\n\n(?=\[(?:Customer|Admin Support)[^\]]*\]:)/);
+                        
+                        parts.forEach((p, index) => {
+                          const trimmed = p.trim();
+                          if (!trimmed) return;
+                          const match = trimmed.match(/^\[(Customer|Admin Support)(?:\s*-\s*([^\]]+))?\]:\s*([\s\S]*)$/);
+                          if (match) {
+                            const role = match[1] === 'Admin Support' ? 'ADMIN' : 'USER';
+                            const timeStr = match[2] || (activeDisp.createdAt ? new Date(activeDisp.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent');
+                            conversationList.push({
+                              id: `desc-${index}`,
+                              senderRole: role,
+                              senderName: role === 'ADMIN' ? '🛡️ Support Team' : '👤 You',
+                              message: match[3],
+                              timestamp: timeStr
+                            });
+                          } else {
+                            conversationList.push({
+                              id: `initial-${index}`,
+                              senderRole: 'USER',
+                              senderName: '👤 You (Initial Filed Complaint)',
+                              message: trimmed,
+                              timestamp: activeDisp.createdAt ? new Date(activeDisp.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent'
+                            });
+                          }
+                        });
+
+                        if (activeDisp.resolution) {
+                          conversationList.push({
+                            id: 'resolution-ruling',
+                            senderRole: 'ADMIN',
+                            senderName: `🛡️ ${activeDisp.resolvedBy || 'Support Team'} (Official Ruling)`,
+                            message: activeDisp.resolution,
+                            timestamp: activeDisp.updatedAt ? new Date(activeDisp.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent',
+                            isRuling: true
+                          });
+                        }
+
+                        return (
+                          <div
+                            ref={disputeChatContainerRef}
+                            className="custom-scrollbar"
+                            style={{
+                              maxHeight: '340px',
+                              overflowY: 'auto',
+                              padding: '1rem',
+                              backgroundColor: 'var(--bg-subtle)',
+                              borderRadius: 'var(--radius-sm)',
+                              border: '1px solid var(--border-light)',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '0.85rem'
+                            }}
+                          >
+                            {conversationList.map((msg, idx) => {
+                              const isUser = msg.senderRole === 'USER';
+                              const isRuling = msg.isRuling;
+
+                              return (
+                                <div
+                                  key={msg.id || idx}
+                                  style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: isUser ? 'flex-end' : 'flex-start',
+                                    maxWidth: '85%',
+                                    alignSelf: isUser ? 'flex-end' : 'flex-start'
+                                  }}
+                                >
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.2rem', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                                    <strong style={{ color: isUser ? 'var(--primary)' : (isRuling ? '#10B981' : '#818CF8') }}>
+                                      {msg.senderName}
+                                    </strong>
+                                    <span>• {msg.timestamp}</span>
+                                  </div>
+                                  <div style={{
+                                    padding: '0.75rem 1rem',
+                                    borderRadius: isUser ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
+                                    background: isUser 
+                                      ? 'linear-gradient(135deg, var(--primary) 0%, #1D4ED8 100%)' 
+                                      : (isRuling ? 'rgba(16, 185, 129, 0.12)' : 'var(--bg-card)'),
+                                    color: isUser ? '#ffffff' : 'var(--text-main)',
+                                    border: isUser ? 'none' : `1px solid ${isRuling ? 'rgba(16, 185, 129, 0.3)' : 'var(--border-light)'}`,
+                                    fontSize: '0.84rem',
+                                    lineHeight: 1.45,
+                                    whiteSpace: 'pre-wrap',
+                                    boxShadow: isUser ? '0 2px 8px rgba(37, 99, 235, 0.2)' : '0 1px 3px rgba(0,0,0,0.04)'
+                                  }}>
+                                    {msg.message}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
                     </div>
 
-                    {/* Admin Support Resolution Outcome */}
-                    {activeDisp.resolution ? (
-                      <div style={{
-                        backgroundColor: activeDisp.status === 'RESOLVED' ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-subtle)',
-                        border: `1px solid ${activeDisp.status === 'RESOLVED' ? 'rgba(16, 185, 129, 0.25)' : 'var(--border-light)'}`,
-                        borderRadius: 'var(--radius-sm)',
-                        padding: '1.25rem'
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.5rem' }}>
-                          <ShieldCheck size={18} color={activeDisp.status === 'RESOLVED' ? 'var(--success)' : 'var(--primary)'} />
-                          <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700, color: activeDisp.status === 'RESOLVED' ? 'var(--success)' : 'var(--text-main)' }}>
-                            Official Support Resolution
-                          </h4>
+                    {/* Customer Reply Input Box */}
+                    {activeDisp.status !== 'DISMISSED' && activeDisp.status !== 'RESOLVED' ? (
+                      <form onSubmit={(e) => handleSendDisputeReply(e, activeDisp)} style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem', display: 'flex', gap: '0.5rem', alignItems: 'flex-end' }}>
+                        <div className="form-group" style={{ margin: 0, flex: 1 }}>
+                          <textarea
+                            className="form-control"
+                            rows={2}
+                            placeholder="Type a message or response to support team... (Press Enter to send, Shift+Enter for new line)"
+                            value={disputeReplyText}
+                            onChange={(e) => setDisputeReplyText(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                if (!submittingDisputeReply && disputeReplyText.trim()) {
+                                  handleSendDisputeReply(e, activeDisp);
+                                }
+                              }
+                            }}
+                            required
+                            style={{ resize: 'none' }}
+                          />
                         </div>
-                        <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', color: 'var(--text-main)', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
-                          {activeDisp.resolution}
-                        </p>
-                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', gap: '1rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.5rem', marginTop: '0.5rem' }}>
-                          <span>Reviewed by: <strong>{activeDisp.resolvedBy || 'Taaskr Governance Team'}</strong></span>
-                          <span>Updated: {activeDisp.updatedAt ? new Date(activeDisp.updatedAt).toLocaleDateString() : 'Recently'}</span>
-                        </div>
-                      </div>
+                        <button
+                          type="submit"
+                          className="btn btn-primary"
+                          disabled={submittingDisputeReply || !disputeReplyText.trim()}
+                          style={{ padding: '0.6rem 1.25rem', height: '100%', minHeight: '52px', fontWeight: 600 }}
+                        >
+                          <Send size={14} style={{ marginRight: '0.35rem' }} />
+                          <span>{submittingDisputeReply ? 'Sending...' : 'Send'}</span>
+                        </button>
+                      </form>
                     ) : (
-                      <div style={{
-                        backgroundColor: 'rgba(37, 99, 235, 0.06)',
-                        border: '1px solid rgba(37, 99, 235, 0.2)',
-                        borderRadius: 'var(--radius-sm)',
-                        padding: '1rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.75rem'
-                      }}>
-                        <Clock size={20} color="var(--primary)" />
-                        <div>
-                          <strong style={{ fontSize: '0.84rem', color: 'var(--primary)', display: 'block' }}>
-                            Investigation in Progress
-                          </strong>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                            Our operations and dispute resolution team is currently reviewing your ticket with the assigned partner. You will receive updates directly on this screen.
-                          </span>
-                        </div>
+                      <div style={{ backgroundColor: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)', borderRadius: 'var(--radius-sm)', padding: '0.85rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.8125rem' }}>
+                        <span style={{ color: 'var(--success)', fontWeight: 600 }}>
+                          ✓ This ticket has been finalized and closed with official resolution.
+                        </span>
+                        {activeDisp.refundAmount && Number(activeDisp.refundAmount) > 0 && (
+                          <strong style={{ color: 'var(--success)' }}>₹{Number(activeDisp.refundAmount).toLocaleString('en-IN')} Refunded</strong>
+                        )}
                       </div>
                     )}
                   </div>

@@ -1638,51 +1638,111 @@ export default function AdminDashboard() {
                             </div>
                           </div>
 
-                          {/* Customer Reported Complaint Box */}
+                          {/* Interactive Conversation Timeline Thread */}
                           <div>
-                            <h4 style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.4rem' }}>
-                              Customer Stated Complaint
+                            <h4 style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.5rem' }}>
+                              Communication & Dispute Thread
                             </h4>
-                            <div style={{
-                              padding: '1rem',
-                              backgroundColor: 'var(--bg-subtle)',
-                              borderRadius: 'var(--radius-sm)',
-                              border: '1px solid var(--border-light)',
-                              color: 'var(--text-main)',
-                              fontSize: '0.875rem',
-                              lineHeight: 1.5,
-                              whiteSpace: 'pre-wrap'
-                            }}>
-                              "{disp.description}"
-                            </div>
-                          </div>
+                            {(() => {
+                              const rawDesc = disp.description || '';
+                              const conversationList = [];
+                              const parts = rawDesc.split(/\n\n(?=\[(?:Customer|Admin Support)[^\]]*\]:)/);
+                              
+                              parts.forEach((p, index) => {
+                                const trimmed = p.trim();
+                                if (!trimmed) return;
+                                const match = trimmed.match(/^\[(Customer|Admin Support)(?:\s*-\s*([^\]]+))?\]:\s*([\s\S]*)$/);
+                                if (match) {
+                                  const role = match[1] === 'Admin Support' ? 'ADMIN' : 'USER';
+                                  const timeStr = match[2] || (disp.createdAt ? new Date(disp.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent');
+                                  conversationList.push({
+                                    id: `desc-${index}`,
+                                    senderRole: role,
+                                    senderName: role === 'ADMIN' ? '🛡️ Admin Support' : `👤 ${disp.customerName || 'Customer'}`,
+                                    message: match[3],
+                                    timestamp: timeStr
+                                  });
+                                } else {
+                                  conversationList.push({
+                                    id: `initial-${index}`,
+                                    senderRole: 'USER',
+                                    senderName: `👤 ${disp.customerName || 'Customer'} (Initial Stated Complaint)`,
+                                    message: trimmed,
+                                    timestamp: disp.createdAt ? new Date(disp.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent'
+                                  });
+                                }
+                              });
 
-                          {/* Existing Resolution Banner (if already resolved) */}
-                          {disp.resolution && (
-                            <div style={{
-                              backgroundColor: disp.status === 'RESOLVED' ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-subtle)',
-                              border: `1px solid ${disp.status === 'RESOLVED' ? 'rgba(16, 185, 129, 0.25)' : 'var(--border-light)'}`,
-                              borderRadius: 'var(--radius-sm)',
-                              padding: '1rem'
-                            }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-                                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: disp.status === 'RESOLVED' ? 'var(--success)' : 'var(--primary)' }}>
-                                  Previous Resolution Record:
-                                </span>
-                                {disp.refundAmount && Number(disp.refundAmount) > 0 && (
-                                  <span className="badge badge-completed" style={{ fontSize: '0.75rem' }}>
-                                    ₹{Number(disp.refundAmount).toLocaleString('en-IN')} Refunded
-                                  </span>
-                                )}
-                              </div>
-                              <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-main)', lineHeight: 1.45 }}>
-                                {disp.resolution}
-                              </p>
-                              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>
-                                Resolved by {disp.resolvedBy || 'Admin'} on {disp.updatedAt ? new Date(disp.updatedAt).toLocaleDateString() : 'Recent'}
-                              </div>
-                            </div>
-                          )}
+                              if (disp.resolution) {
+                                conversationList.push({
+                                  id: 'resolution-ruling',
+                                  senderRole: 'ADMIN',
+                                  senderName: `🛡️ ${disp.resolvedBy || 'Admin Support'} (Official Ruling)`,
+                                  message: disp.resolution,
+                                  timestamp: disp.updatedAt ? new Date(disp.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent',
+                                  isRuling: true
+                                });
+                              }
+
+                              return (
+                                <div
+                                  ref={messagesContainerRef}
+                                  className="custom-scrollbar"
+                                  style={{
+                                    maxHeight: '320px',
+                                    overflowY: 'auto',
+                                    padding: '1rem',
+                                    backgroundColor: 'var(--bg-subtle)',
+                                    borderRadius: 'var(--radius-sm)',
+                                    border: '1px solid var(--border-light)',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '0.85rem'
+                                  }}
+                                >
+                                  {conversationList.map((msg, idx) => {
+                                    const isAdmin = msg.senderRole === 'ADMIN';
+                                    const isRuling = msg.isRuling;
+
+                                    return (
+                                      <div
+                                        key={msg.id || idx}
+                                        style={{
+                                          display: 'flex',
+                                          flexDirection: 'column',
+                                          alignItems: isAdmin ? 'flex-end' : 'flex-start',
+                                          maxWidth: '85%',
+                                          alignSelf: isAdmin ? 'flex-end' : 'flex-start'
+                                        }}
+                                      >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.2rem', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                                          <strong style={{ color: isAdmin ? (isRuling ? '#10B981' : '#818CF8') : 'var(--text-main)' }}>
+                                            {msg.senderName}
+                                          </strong>
+                                          <span>• {msg.timestamp}</span>
+                                        </div>
+                                        <div style={{
+                                          padding: '0.75rem 1rem',
+                                          borderRadius: isAdmin ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
+                                          background: isAdmin 
+                                            ? (isRuling ? 'linear-gradient(135deg, #059669 0%, #047857 100%)' : 'linear-gradient(135deg, var(--primary) 0%, #1D4ED8 100%)')
+                                            : 'var(--bg-card)',
+                                          color: isAdmin ? '#ffffff' : 'var(--text-main)',
+                                          border: isAdmin ? 'none' : '1px solid var(--border-light)',
+                                          fontSize: '0.84rem',
+                                          lineHeight: 1.45,
+                                          whiteSpace: 'pre-wrap',
+                                          boxShadow: isAdmin ? '0 2px 8px rgba(37, 99, 235, 0.2)' : '0 1px 3px rgba(0,0,0,0.04)'
+                                        }}>
+                                          {msg.message}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              );
+                            })()}
+                          </div>
 
                           {/* Resolution Submission Console Form */}
                           <form onSubmit={(e) => handleResolveDispute(e, disp)} style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -1770,7 +1830,7 @@ export default function AdminDashboard() {
                                 disabled={submittingDisputeResolve || !disputeResolutionNotes.trim()}
                                 style={{ padding: '0.5rem 1.5rem', fontWeight: 600 }}
                               >
-                                {submittingDisputeResolve ? 'Processing...' : 'Submit Dispute Ruling'}
+                                {submittingDisputeResolve ? 'Processing...' : 'Submit Dispute Ruling & Send Reply'}
                               </button>
                             </div>
                           </form>
