@@ -229,39 +229,18 @@ const mapServiceToCanonical = (service, rawCategories = []) => {
 
 const HERO_PALETTES = [
   {
-    name: 'Sapphire Horizon',
-    gradient: 'linear-gradient(135deg, #0284C7 0%, #2563EB 50%, #4F46E5 100%)',
-    orb1: 'radial-gradient(circle, rgba(56, 189, 248, 0.18) 0%, rgba(37, 99, 235, 0.04) 50%, transparent 70%)',
-    orb2: 'radial-gradient(circle, rgba(99, 102, 241, 0.16) 0%, rgba(168, 85, 247, 0.03) 50%, transparent 70%)',
-    badgeColor: '#0284C7'
+    name: 'Warm Amber',
+    gradient: '#D97706',
+    orb1: 'none',
+    orb2: 'none',
+    badgeColor: '#D97706'
   },
   {
-    name: 'Oceanic Emerald',
-    gradient: 'linear-gradient(135deg, #0D9488 0%, #0284C7 50%, #2563EB 100%)',
-    orb1: 'radial-gradient(circle, rgba(20, 184, 166, 0.18) 0%, rgba(2, 132, 199, 0.04) 50%, transparent 70%)',
-    orb2: 'radial-gradient(circle, rgba(16, 185, 129, 0.16) 0%, rgba(6, 182, 212, 0.03) 50%, transparent 70%)',
-    badgeColor: '#0D9488'
-  },
-  {
-    name: 'Cyber Violet',
-    gradient: 'linear-gradient(135deg, #7C3AED 0%, #2563EB 50%, #4F46E5 100%)',
-    orb1: 'radial-gradient(circle, rgba(168, 85, 247, 0.18) 0%, rgba(37, 99, 235, 0.04) 50%, transparent 70%)',
-    orb2: 'radial-gradient(circle, rgba(124, 58, 237, 0.16) 0%, rgba(56, 189, 248, 0.03) 50%, transparent 70%)',
-    badgeColor: '#7C3AED'
-  },
-  {
-    name: 'Electric Cyan',
-    gradient: 'linear-gradient(135deg, #0891B2 0%, #2563EB 50%, #4F46E5 100%)',
-    orb1: 'radial-gradient(circle, rgba(6, 182, 212, 0.18) 0%, rgba(79, 70, 229, 0.04) 50%, transparent 70%)',
-    orb2: 'radial-gradient(circle, rgba(8, 145, 178, 0.16) 0%, rgba(99, 102, 241, 0.03) 50%, transparent 70%)',
-    badgeColor: '#0891B2'
-  },
-  {
-    name: 'Royal Indigo',
-    gradient: 'linear-gradient(135deg, #2563EB 0%, #4338CA 50%, #7C3AED 100%)',
-    orb1: 'radial-gradient(circle, rgba(37, 99, 235, 0.18) 0%, rgba(13, 148, 136, 0.04) 50%, transparent 70%)',
-    orb2: 'radial-gradient(circle, rgba(96, 165, 250, 0.16) 0%, rgba(2, 132, 199, 0.03) 50%, transparent 70%)',
-    badgeColor: '#2563EB'
+    name: 'Deep Charcoal',
+    gradient: '#18181B',
+    orb1: 'none',
+    orb2: 'none',
+    badgeColor: '#18181B'
   }
 ];
 
@@ -965,14 +944,8 @@ const ROTATING_HIGHLIGHTS = [
   'Smart Lock & CCTV Setup'
 ];
 
-const getCategoryGradient = (catId, isDark) => {
-  const theme = getCategoryTheme(catId);
-  if (theme && theme.accentBg) {
-    return theme.accentBg;
-  }
-  return isDark
-    ? 'linear-gradient(135deg, #38BDF8 0%, #818CF8 50%, #C084FC 100%)'
-    : 'linear-gradient(135deg, #091E42 0%, #172B4D 35%, #1E40AF 100%)';
+const getCategoryGradient = () => {
+  return '#D97706';
 };
 
 export default function Home() {
@@ -1472,51 +1445,37 @@ export default function Home() {
       <div className="animate-fade-in" style={{ maxWidth: '1200px', margin: '0 auto', padding: '1.5rem 1rem 3rem 1rem' }}>
         {/* Partner Executive Operations Header */}
         <div style={{
-          background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%)',
-          border: '1px solid rgba(56, 189, 248, 0.25)',
-          borderRadius: '16px',
-          padding: '1.75rem',
-          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.25), 0 0 20px rgba(56, 189, 248, 0.1)',
-          marginBottom: '2rem',
-          position: 'relative',
-          overflow: 'hidden'
+          backgroundColor: 'var(--bg-card)',
+          border: '1px solid var(--border-light)',
+          borderRadius: 'var(--radius-md)',
+          padding: '1.5rem',
+          boxShadow: 'var(--shadow-xs)',
+          marginBottom: '1.5rem',
+          position: 'relative'
         }}>
-          {/* Subtle Ambient Glow */}
-          <div style={{
-            position: 'absolute',
-            top: '-50px',
-            right: '-50px',
-            width: '200px',
-            height: '200px',
-            background: 'radial-gradient(circle, rgba(56, 189, 248, 0.25) 0%, transparent 70%)',
-            borderRadius: '50%',
-            filter: 'blur(30px)',
-            pointerEvents: 'none'
-          }} />
-
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.25rem', position: 'relative', zIndex: 2 }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
                 <span style={{
-                  padding: '0.2rem 0.6rem',
-                  borderRadius: '20px',
+                  padding: '0.2rem 0.55rem',
+                  borderRadius: 'var(--radius-sm)',
                   fontSize: '0.72rem',
-                  fontWeight: 700,
-                  backgroundColor: 'rgba(56, 189, 248, 0.15)',
-                  color: '#38bdf8',
-                  border: '1px solid rgba(56, 189, 248, 0.3)',
+                  fontWeight: 600,
+                  backgroundColor: 'var(--bg-subtle)',
+                  color: 'var(--text-main)',
+                  border: '1px solid var(--border-light)',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.35rem',
                   textTransform: 'uppercase',
                   letterSpacing: '0.04em'
                 }}>
-                  <Radio size={12} className="animate-pulse" />
+                  <Radio size={12} />
                   <span>Taaskr Partner Operations Hub</span>
                 </span>
                 <span style={{
                   fontSize: '0.75rem',
-                  color: 'var(--text-muted)',
+                  color: 'var(--text-secondary)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.25rem'
@@ -1525,10 +1484,10 @@ export default function Home() {
                 </span>
               </div>
 
-              <h1 style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--text-main)', margin: '0 0 0.4rem 0', letterSpacing: '-0.02em' }}>
+              <h1 style={{ fontSize: '1.45rem', fontWeight: 700, color: 'var(--text-main)', margin: '0 0 0.35rem 0', letterSpacing: '-0.02em' }}>
                 Welcome back, {currentUser.name || 'Partner Specialist'}
               </h1>
-              <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', margin: 0, maxWidth: '650px', lineHeight: 1.5 }}>
+              <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', margin: 0, maxWidth: '650px', lineHeight: 1.5 }}>
                 Connected to <strong>Taaskr Central Operations Desk</strong> • Authorized territory: <strong>Indore Metro & East Zone (15 km dispatch radius)</strong>
               </p>
             </div>
@@ -1541,24 +1500,22 @@ export default function Home() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.55rem',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '30px',
-                  border: isOnline ? '1px solid rgba(16, 185, 129, 0.5)' : '1px solid rgba(239, 68, 68, 0.5)',
-                  backgroundColor: isOnline ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
-                  color: isOnline ? '#10b981' : '#ef4444',
-                  fontWeight: 700,
-                  fontSize: '0.825rem',
+                  padding: '0.45rem 0.9rem',
+                  borderRadius: 'var(--radius-sm)',
+                  border: isOnline ? '1px solid var(--success)' : '1px solid var(--error)',
+                  backgroundColor: isOnline ? 'var(--success-bg)' : 'var(--error-bg)',
+                  color: isOnline ? 'var(--success-text)' : 'var(--error-text)',
+                  fontWeight: 600,
+                  fontSize: '0.8125rem',
                   cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  boxShadow: isOnline ? '0 0 12px rgba(16, 185, 129, 0.2)' : 'none'
+                  transition: 'var(--transition-fast)'
                 }}
               >
                 <span style={{
-                  width: '8px',
-                  height: '8px',
+                  width: '7px',
+                  height: '7px',
                   borderRadius: '50%',
-                  backgroundColor: isOnline ? '#10b981' : '#ef4444',
-                  boxShadow: isOnline ? '0 0 8px #10b981' : 'none'
+                  backgroundColor: isOnline ? 'var(--success)' : 'var(--error)'
                 }} />
                 <span>{isOnline ? 'Active on Dispatch Grid' : 'Dispatch Paused (On Break)'}</span>
               </button>
@@ -1567,7 +1524,7 @@ export default function Home() {
                 <Link
                   to="/provider"
                   className="btn btn-primary btn-sm"
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 0.9rem', fontSize: '0.825rem', fontWeight: 600 }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
                 >
                   <LayoutList size={14} />
                   <span>Open Partner Console</span>
@@ -1575,9 +1532,9 @@ export default function Home() {
                 <button
                   onClick={() => setShowEscalationModal(true)}
                   className="btn btn-secondary btn-sm"
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 0.8rem', fontSize: '0.825rem' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
                 >
-                  <AlertTriangle size={13} color="#f59e0b" />
+                  <AlertTriangle size={13} color="var(--accent)" />
                   <span>Admin Help Desk</span>
                 </button>
               </div>
@@ -1590,35 +1547,34 @@ export default function Home() {
         {/* ========================================================================= */}
         <div style={{ marginBottom: '2rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
-            <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
-              <Bell size={18} color="var(--primary)" />
+            <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+              <Bell size={16} color="var(--text-main)" />
               <span>Admin Operational Directives & Live Bulletins</span>
             </h2>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Updated 10 mins ago • Taaskr Ops Desk</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Updated 10 mins ago • Taaskr Ops Desk</span>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '0.85rem' }}>
             {/* Bulletin 1: Monsoon Surge Incentive */}
             <div style={{
-              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%)',
-              border: '1px solid rgba(245, 158, 11, 0.25)',
-              borderRadius: '12px',
-              padding: '1.15rem',
-              position: 'relative'
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border-light)',
+              borderRadius: 'var(--radius-md)',
+              padding: '1.1rem'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
                 <span style={{
-                  padding: '0.15rem 0.5rem',
-                  borderRadius: '6px',
-                  backgroundColor: 'rgba(245, 158, 11, 0.2)',
-                  color: '#f59e0b',
+                  padding: '0.15rem 0.45rem',
+                  borderRadius: 'var(--radius-xs)',
+                  backgroundColor: 'var(--accent-light)',
+                  color: 'var(--accent-text)',
                   fontSize: '0.7rem',
-                  fontWeight: 700,
+                  fontWeight: 600,
                   textTransform: 'uppercase'
                 }}>Active Surge</span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Indore East & Vijay Nagar</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Indore East & Vijay Nagar</span>
               </div>
-              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)', margin: '0 0 0.35rem 0' }}>
+              <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main)', margin: '0 0 0.3rem 0' }}>
                 ⚡ +₹150 Emergency Surcharge Incentive
               </h3>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
@@ -1628,25 +1584,24 @@ export default function Home() {
 
             {/* Bulletin 2: Security & OTP Protocol */}
             <div style={{
-              background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%)',
-              border: '1px solid rgba(56, 189, 248, 0.25)',
-              borderRadius: '12px',
-              padding: '1.15rem',
-              position: 'relative'
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border-light)',
+              borderRadius: 'var(--radius-md)',
+              padding: '1.1rem'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
                 <span style={{
-                  padding: '0.15rem 0.5rem',
-                  borderRadius: '6px',
-                  backgroundColor: 'rgba(56, 189, 248, 0.2)',
-                  color: '#38bdf8',
+                  padding: '0.15rem 0.45rem',
+                  borderRadius: 'var(--radius-xs)',
+                  backgroundColor: 'var(--bg-subtle)',
+                  color: 'var(--text-main)',
                   fontSize: '0.7rem',
-                  fontWeight: 700,
+                  fontWeight: 600,
                   textTransform: 'uppercase'
                 }}>Compliance Rule</span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Standard Operating Procedure</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Standard Operating Procedure</span>
               </div>
-              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)', margin: '0 0 0.35rem 0' }}>
+              <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main)', margin: '0 0 0.3rem 0' }}>
                 🛡️ Mandatory 4-Digit Start OTP & ID Badge
               </h3>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
@@ -1656,25 +1611,24 @@ export default function Home() {
 
             {/* Bulletin 3: Payout Notice */}
             <div style={{
-              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%)',
-              border: '1px solid rgba(16, 185, 129, 0.25)',
-              borderRadius: '12px',
-              padding: '1.15rem',
-              position: 'relative'
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border-light)',
+              borderRadius: 'var(--radius-md)',
+              padding: '1.1rem'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
                 <span style={{
-                  padding: '0.15rem 0.5rem',
-                  borderRadius: '6px',
-                  backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                  color: '#10b981',
+                  padding: '0.15rem 0.45rem',
+                  borderRadius: 'var(--radius-xs)',
+                  backgroundColor: 'var(--success-bg)',
+                  color: 'var(--success-text)',
                   fontSize: '0.7rem',
-                  fontWeight: 700,
+                  fontWeight: 600,
                   textTransform: 'uppercase'
                 }}>Payout Batch</span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Weekly Settlement</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Weekly Settlement</span>
               </div>
-              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)', margin: '0 0 0.35rem 0' }}>
+              <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main)', margin: '0 0 0.3rem 0' }}>
                 💳 Auto-IMPS Payouts Scheduled
               </h3>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
@@ -2231,134 +2185,44 @@ export default function Home() {
   // Regular Customer / Guest Catalog View
   return (
     <div className="animate-fade-in">
-      {/* Dynamic Responsive Hero Section with Bouncing Category Physics */}
-      <section className="hero-section" style={{ position: 'relative', overflow: 'hidden', minHeight: '480px' }}>
-        {/* Dynamic Glowing Ambient Orbs that smoothly morph when category tiles hit walls */}
-        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 1 }}>
-          <div className="hero-orb-1" style={{
-            position: 'absolute', top: '-10%', left: '12%', width: '520px', height: '520px',
-            background: ambientHeroColor.orb1,
-            borderRadius: '50%', filter: 'blur(60px)',
-            transition: 'background 2s cubic-bezier(0.4, 0, 0.2, 1)'
-          }} />
-          <div className="hero-orb-2" style={{
-            position: 'absolute', bottom: '-15%', right: '10%', width: '540px', height: '540px',
-            background: ambientHeroColor.orb2,
-            borderRadius: '50%', filter: 'blur(70px)',
-            transition: 'background 2s cubic-bezier(0.4, 0, 0.2, 1)'
-          }} />
-          <div className="hero-grid-pattern" style={{ position: 'absolute', inset: 0 }} />
-        </div>
-
-        {/* 2D Physics Bouncing Category Tiles Engine */}
-        <BouncingHeroPhysics
-          onWallHit={handleHeroWallHit}
-          onSelectCategory={setSelectedCategory}
-        />
-
-        {/* Hero Content Container with Frosted Glass Shield */}
-        <div style={{ maxWidth: '960px', margin: '0 auto', width: '100%', position: 'relative', zIndex: 10, padding: '1rem' }}>
-          <div className="hero-content-glass">
+      {/* Clean Marketplace Hero Section */}
+      <section className="hero-section" style={{ position: 'relative', overflow: 'hidden', padding: '3.5rem 1.5rem 4rem 1.5rem', borderBottom: '1px solid var(--border-light)', backgroundColor: 'var(--bg-page)' }}>
+        <div style={{ maxWidth: '840px', margin: '0 auto', width: '100%', position: 'relative', zIndex: 10, textAlign: 'center' }}>
+          <div>
             <div className="hero-pill-tag" style={{ margin: '0 auto 1.25rem auto' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--success)', display: 'inline-block', boxShadow: '0 0 10px var(--success)' }} />
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: 'var(--success)', display: 'inline-block' }} />
               <span>
-                Verified Service Marketplace • Real-Time Dispatch
+                Verified Service Marketplace • Instant Doorstep Scheduling
               </span>
             </div>
 
-            <h1 className="hero-title" style={{ maxWidth: '820px', margin: '0 auto 1.25rem auto' }}>
-              On-Demand Services.<br />
-              <span
-                className="hero-gradient-text"
-                style={{
-                  backgroundImage: ambientHeroColor.gradient,
-                  color: ambientHeroColor.badgeColor || '#1E40AF',
-                  WebkitBackgroundClip: 'text',
-                  backgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  transition: 'background-image 0.4s ease, color 0.4s ease'
-                }}
-              >
-                Engineered for Speed.
+            <h1 className="hero-title" style={{ maxWidth: '820px', margin: '0 auto 1rem auto' }}>
+              Everyday Services.<br />
+              <span style={{ color: 'var(--accent)' }}>
+                Vetted & Delivered On-Demand.
               </span>
             </h1>
 
-            {/* Dynamic Live Cycling Service Highlight Pill Synchronized with Bouncing Tiles */}
-            {(() => {
-              const activeHighlightTheme = getCategoryTheme(activeHighlightService);
-              return (
-                <div
-                  className="hero-highlight-pill"
-                  style={{
-                    '--highlight-color': activeHighlightTheme.primary,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.6rem',
-                    padding: '0.45rem 1.15rem',
-                    borderRadius: '999px',
-                    border: `1.5px solid ${activeHighlightTheme.primary}50`,
-                    backgroundColor: `${activeHighlightTheme.primary}12`,
-                    boxShadow: `0 4px 18px ${activeHighlightTheme.glow || 'rgba(0,0,0,0.06)'}`,
-                    transition: 'border-color 0.4s ease, background-color 0.4s ease, box-shadow 0.4s ease',
-                    marginBottom: '1.25rem'
-                  }}
-                >
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-                    Need fast
-                  </span>
-                  <span
-                    key={activeHighlightService}
-                    className="hero-highlight-text animate-fade-in"
-                    style={{
-                      color: activeHighlightTheme.primary,
-                      fontWeight: 800,
-                      transition: 'color 0.4s ease'
-                    }}
-                  >
-                    {activeHighlightService}?
-                  </span>
-                  <span style={{
-                    fontSize: '0.72rem',
-                    padding: '0.15rem 0.5rem',
-                    borderRadius: '4px',
-                    backgroundColor: `${activeHighlightTheme.primary}22`,
-                    color: activeHighlightTheme.primary,
-                    fontWeight: 700,
-                    border: `1px solid ${activeHighlightTheme.primary}40`,
-                    transition: 'all 0.4s ease'
-                  }}>
-                    Book in 60s
-                  </span>
-                </div>
-              );
-            })()}
-
-            <p className="hero-desc" style={{ maxWidth: '680px', margin: '0 auto 2rem auto' }}>
-              Book verified electricians, plumbers, cleaners, wellness therapists, and logistics specialists in minutes. Upfront pricing, vetted partners, and instant doorstep scheduling.
+            <p className="hero-desc" style={{ maxWidth: '640px', margin: '0 auto 1.75rem auto' }}>
+              Book background-checked electricians, plumbers, cleaners, wellness therapists, and transport specialists in minutes with upfront fixed pricing.
             </p>
 
             {/* Hero Direct Exploration CTA Button */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '2.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '2rem' }}>
               <button
                 type="button"
                 onClick={() => {
                   const elem = document.getElementById('services-catalog');
                   if (elem) elem.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="btn btn-primary"
+                className="btn btn-primary btn-lg"
                 style={{
-                  borderRadius: '999px',
-                  padding: '0.75rem 2rem',
-                  fontSize: '0.95rem',
-                  fontWeight: 700,
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.55rem',
-                  boxShadow: `0 8px 24px ${ambientHeroColor.glow || 'rgba(56, 189, 248, 0.25)'}`,
-                  transition: 'all 0.3s ease'
+                  gap: '0.5rem'
                 }}
               >
-                <span>Explore Verified Services</span>
+                <span>Browse Services</span>
                 <ArrowRight size={16} />
               </button>
             </div>
@@ -2368,28 +2232,28 @@ export default function Home() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '1.75rem',
+              gap: '1.5rem',
               flexWrap: 'wrap',
               borderTop: '1px solid var(--border-light)',
-              paddingTop: '1.35rem',
-              maxWidth: '820px',
+              paddingTop: '1.25rem',
+              maxWidth: '780px',
               margin: '0 auto'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-main)', fontSize: '0.8125rem', fontWeight: 600 }}>
                 <ShieldCheck size={16} color="var(--success)" />
-                <span>Aadhaar Verified Pros</span>
+                <span>Verified Professionals</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
-                <CreditCard size={16} color="var(--primary)" />
+                <CreditCard size={16} color="var(--text-main)" />
                 <span>Upfront Fixed Quotes</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
-                <Clock size={16} color="var(--warning)" />
+                <Clock size={16} color="var(--accent)" />
                 <span>Instant Doorstep Slot</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
-                <CheckCircle2 size={16} color="#10b981" />
-                <span>Job Completion Guarantee</span>
+                <CheckCircle2 size={16} color="var(--success)" />
+                <span>Satisfaction Guarantee</span>
               </div>
             </div>
           </div>
@@ -2399,17 +2263,13 @@ export default function Home() {
       {/* ========================================================================= */}
       {/* MAIN SERVICES & CATEGORY CATALOG EXPLORATION                              */}
       {/* ========================================================================= */}
-      <main id="services-catalog" style={{ maxWidth: '1200px', margin: '0 auto', padding: '2.5rem 1rem 4rem 1rem' }}>
-        <div className="section-header" style={{ marginBottom: '2rem', textAlign: 'center' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.3rem 0.85rem', borderRadius: '20px', backgroundColor: 'rgba(56, 189, 248, 0.1)', color: 'var(--primary)', fontSize: '0.78rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.65rem' }}>
-            <Tag size={13} />
-            <span>Full Service Directory</span>
-          </div>
-          <h2 className="section-title" style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.025em', margin: '0 0 0.5rem 0' }}>
-            Explore Verified Home & Commercial Services
+      <main id="services-catalog" style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1rem 3.5rem 1rem' }}>
+        <div className="section-header" style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
+          <h2 className="section-title" style={{ fontSize: '1.75rem', fontWeight: 700, letterSpacing: '-0.02em', margin: '0 0 0.35rem 0' }}>
+            Explore Verified Services
           </h2>
-          <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '620px', margin: '0 auto' }}>
-            Select a verified service category to instantly book top-rated, background-checked professionals with upfront pricing and live tracking.
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5, maxWidth: '560px', margin: '0 auto' }}>
+            Select a service category to book top-rated local professionals with upfront pricing.
           </p>
         </div>
 

@@ -2701,14 +2701,13 @@ export default function ProviderDashboard() {
 
                             <div style={{
                               maxWidth: '82%',
-                              padding: '0.85rem 1.15rem',
-                              borderRadius: '12px',
-                              borderTopRightRadius: isMe ? '2px' : '12px',
-                              borderTopLeftRadius: isMe ? '12px' : '2px',
-                              background: isMe ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)' : 'var(--bg-card)',
-                              color: isMe ? '#ffffff' : 'var(--text-main)',
-                              border: isMe ? 'none' : '1px solid var(--border-light)',
-                              boxShadow: isMe ? '0 4px 14px rgba(16, 185, 129, 0.25)' : '0 2px 8px rgba(0,0,0,0.04)',
+                              padding: '0.75rem 1rem',
+                              borderRadius: 'var(--radius-md)',
+                              borderTopRightRadius: isMe ? '2px' : 'var(--radius-md)',
+                              borderTopLeftRadius: isMe ? 'var(--radius-md)' : '2px',
+                              background: isMe ? 'var(--primary)' : 'var(--bg-card)',
+                              color: isMe ? 'var(--text-inverse)' : 'var(--text-main)',
+                              border: '1px solid var(--border-light)',
                               fontSize: '0.84rem',
                               lineHeight: 1.45,
                               whiteSpace: 'pre-wrap',
@@ -2722,7 +2721,7 @@ export default function ProviderDashboard() {
                     </div>
 
                     {/* Reply Input Box */}
-                    <form onSubmit={handleSendReply} style={{ padding: '1rem', borderTop: '1px solid var(--border-subtle)', background: 'var(--bg-subtle)', display: 'flex', gap: '0.6rem' }}>
+                    <form onSubmit={handleSendReply} style={{ padding: '1rem', borderTop: '1px solid var(--border-light)', background: 'var(--bg-subtle)', display: 'flex', gap: '0.6rem' }}>
                       <textarea
                         className="form-control"
                         rows={2}
@@ -2744,14 +2743,11 @@ export default function ProviderDashboard() {
                         disabled={submittingReply || !replyMessage.trim()}
                         style={{ 
                           alignSelf: 'flex-end', 
-                          height: '42px', 
-                          padding: '0 1.25rem', 
+                          height: '38px', 
+                          padding: '0 1.15rem', 
                           display: 'inline-flex', 
                           alignItems: 'center', 
                           gap: '0.4rem',
-                          background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-                          border: 'none',
-                          boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
                           fontWeight: 600
                         }}
                       >
