@@ -4,6 +4,7 @@ import {
   ShieldCheck, Phone, Mail, MapPin, 
   ArrowUpRight, Star, Heart, CheckCircle2, Award
 } from 'lucide-react';
+import TaaskrLogo from './TaaskrLogo';
 
 export default function Footer() {
   return (
@@ -32,27 +33,10 @@ export default function Footer() {
           marginBottom: '3rem'
         }}>
           <div>
-            <Link to="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.65rem' }}>
-              <div style={{
-                width: '38px',
-                height: '38px',
-                borderRadius: '10px',
-                background: 'linear-gradient(135deg, #0284C7 0%, #2563EB 50%, #4F46E5 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#FFFFFF',
-                fontWeight: 900,
-                fontSize: '1.25rem',
-                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)'
-              }}>
-                T
-              </div>
-              <span style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--text-main)', letterSpacing: '-0.03em' }}>
-                Taaskr
-              </span>
+            <Link to="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+              <TaaskrLogo size={36} withText={true} textSize="1.65rem" />
             </Link>
-            <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+            <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
               India's trusted on-demand home maintenance & emergency logistics marketplace.
             </p>
           </div>

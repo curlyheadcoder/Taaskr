@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../services/api';
+import TaaskrLogo from './TaaskrLogo';
 import { 
   Sun, Moon, Briefcase, ShieldCheck, Calendar, Grid, LogOut, 
   MapPin, Search, ChevronDown, Bot, Navigation, X, Check, ArrowRight, Command, AlertCircle, MessageSquare, Bell
@@ -256,22 +257,9 @@ export default function Navbar() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexShrink: 0 }}>
         <Link 
           to={user?.role === 'PROVIDER' ? '/provider' : user?.role === 'ADMIN' ? '/admin' : '/'} 
-          style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', textDecoration: 'none' }}
+          style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}
         >
-          <img
-            src="/taaskr-logo.png"
-            alt="Taaskr"
-            width="26"
-            height="26"
-            style={{ display: 'block', objectFit: 'contain' }}
-          />
-          <span style={{
-            fontFamily: 'var(--font-body)',
-            fontSize: '1.2rem',
-            fontWeight: 700,
-            color: 'var(--text-main)',
-            letterSpacing: '-0.03em'
-          }}>Taaskr</span>
+          <TaaskrLogo size={28} withText={true} textSize="1.25rem" />
         </Link>
 
         {/* Location Selector (User / Guest Only) */}

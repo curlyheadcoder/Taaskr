@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { Wrench, Truck, AlertCircle, ArrowRight, UserCheck, ShieldCheck } from 'lucide-react';
+import TaaskrLogo from '../components/TaaskrLogo';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -79,24 +80,14 @@ export default function Register() {
         width: '100%',
         padding: '2rem'
       }}>
-        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '44px',
-            height: '44px',
-            borderRadius: 'var(--radius-sm)',
-            backgroundColor: 'var(--primary-subtle)',
-            color: 'var(--primary)',
-            marginBottom: '0.75rem'
-          }}>
-            <img src="/taaskr-logo.png" alt="Taaskr" width="28" height="28" style={{ objectFit: 'contain' }} />
+        <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
+          <div style={{ display: 'inline-flex', marginBottom: '0.85rem' }}>
+            <TaaskrLogo size={46} />
           </div>
-          <h1 style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.25rem' }}>
+          <h1 style={{ fontSize: '1.45rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.25rem', letterSpacing: '-0.02em' }}>
             Create Your Account
           </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
             Get started with Taaskr as a customer or service partner
           </p>
         </div>
