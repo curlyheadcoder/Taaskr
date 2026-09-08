@@ -32,6 +32,13 @@ public class AdminProviderServiceImpl implements AdminProviderService {
 
     @Override
     @Transactional
+    public com.taaskr.dto.common.PageResponse<AdminProviderResponse> getAllProviders(org.springframework.data.domain.Pageable pageable) {
+        org.springframework.data.domain.Page<ProviderProfile> page = providerProfileRepository.findAll(pageable);
+        return com.taaskr.dto.common.PageResponse.of(page, this::mapToResponse);
+    }
+
+    @Override
+    @Transactional
     public AdminProviderResponse approveProvider(Long providerId) {
         ProviderProfile providerProfile = providerProfileRepository.findById(providerId)
                 .orElseThrow(() ->

@@ -25,6 +25,12 @@ public class AdminUserServiceImpl implements AdminUserService {
                 .toList();
     }
 
+    @Override
+    public com.taaskr.dto.common.PageResponse<AdminUserResponse> getAllUsers(org.springframework.data.domain.Pageable pageable) {
+        org.springframework.data.domain.Page<User> page = userRepository.findAll(pageable);
+        return com.taaskr.dto.common.PageResponse.of(page, this::mapToResponse);
+    }
+
     private AdminUserResponse mapToResponse(User user) {
         return new AdminUserResponse(
                 user.getId(),

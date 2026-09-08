@@ -90,12 +90,15 @@ public class AuthController {
     }
 
     @GetMapping("/test-email")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     public Map<String, Object> testEmail(@RequestParam(defaultValue = "mayanksonwani078@gmail.com") String to) {
         return emailService.testEmailDispatch(to);
     }
 
     @GetMapping("/test-sms")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     public Map<String, Object> testSms(@RequestParam(defaultValue = "9876543210") String phone) {
         return smsService.testSmsDispatch(phone);
     }
 }
+

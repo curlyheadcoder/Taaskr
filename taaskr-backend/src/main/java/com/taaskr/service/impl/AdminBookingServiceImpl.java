@@ -29,6 +29,13 @@ public class AdminBookingServiceImpl implements AdminBookingService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public com.taaskr.dto.common.PageResponse<AdminBookingResponse> getAllBookings(org.springframework.data.domain.Pageable pageable) {
+        org.springframework.data.domain.Page<Booking> page = bookingRepository.findAll(pageable);
+        return com.taaskr.dto.common.PageResponse.of(page, this::mapToResponse);
+    }
+
     private AdminBookingResponse mapToResponse(Booking booking) {
 
         User user = booking.getUser();

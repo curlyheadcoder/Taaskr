@@ -12,8 +12,10 @@ import java.util.Optional;
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByUserIdOrderByCreatedAtDesc(Long userId);
+    org.springframework.data.domain.Page<Booking> findByUserId(Long userId, org.springframework.data.domain.Pageable pageable);
 
     List<Booking> findByProviderIdOrderByCreatedAtDesc(Long providerId);
+    org.springframework.data.domain.Page<Booking> findByProviderId(Long providerId, org.springframework.data.domain.Pageable pageable);
 
     Optional<Booking> findByIdAndUserId(Long bookingId, Long userId);
 

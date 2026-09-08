@@ -221,6 +221,27 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ cancellationReason })
       });
+    },
+
+    downloadInvoice: async (bookingId, bookingCode) => {
+      const token = localStorage.getItem('taaskr_token');
+      const response = await fetch(`${BASE_URL}/api/bookings/${bookingId}/invoice`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to download invoice');
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Taaskr_Invoice_${bookingCode || bookingId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
     }
   },
 
@@ -570,6 +591,199 @@ export const api = {
         body: JSON.stringify(coords)
       });
     }
+  },
+
+  // ----------------------------------------
+  // REVIEWS & RATINGS
+  // ----------------------------------------
+  reviews: {
+    create: async (data) => {
+      return makeRequest('/api/reviews', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+    },
+
+    getByService: async (serviceId) => {
+      return makeRequest(`/api/reviews/service/${serviceId}`);
+    },
+
+    getByProvider: async (providerId) => {
+      return makeRequest(`/api/reviews/provider/${providerId}`);
+    },
+
+    reply: async (reviewId, reply) => {
+      return makeRequest(`/api/reviews/${reviewId}/reply`, {
+        method: 'POST',
+        body: JSON.stringify({ reply })
+      });
+    }
+  },
+
+  // ----------------------------------------
+  // REVIEWS & RATINGS
+  // ----------------------------------------
+  reviews: {
+    create: async (data) => {
+      return makeRequest('/api/reviews', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+    },
+
+    reply: async (reviewId, reply) => {
+      return makeRequest(`/api/reviews/${reviewId}/reply`, {
+        method: 'POST',
+        body: JSON.stringify({ reply })
+      });
+    },
+
+    getByService: async (serviceId) => {
+      return makeRequest(`/api/reviews/service/${serviceId}`);
+    },
+
+    getByProvider: async (providerId) => {
+      return makeRequest(`/api/reviews/provider/${providerId}`);
+    },
+
+    getMyReviews: async () => {
+      return makeRequest('/api/reviews/my');
+    },
+
+    getByBookingId: async (bookingId) => {
+      return makeRequest(`/api/reviews/booking/${bookingId}`);
+    }
+  },
+
+  // ----------------------------------------
+  // PERSISTENT NOTIFICATIONS
+  // ----------------------------------------
+  notifications: {
+    getAll: async () => {
+      return makeRequest('/api/notifications');
+    },
+
+    getUnreadCount: async () => {
+      return makeRequest('/api/notifications/unread-count');
+    },
+
+    markAsRead: async (id) => {
+      return makeRequest(`/api/notifications/${id}/read`, {
+        method: 'PATCH'
+      });
+    },
+
+    markAllAsRead: async () => {
+      return makeRequest('/api/notifications/read-all', {
+        method: 'POST'
+      });
+    }
+  },
+
+  // ----------------------------------------
+  // SAVED ADDRESS BOOK
+  // ----------------------------------------
+  addresses: {
+    getAll: async () => {
+      return makeRequest('/api/addresses');
+    },
+
+    create: async (data) => {
+      return makeRequest('/api/addresses', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+    },
+
+    update: async (id, data) => {
+      return makeRequest(`/api/addresses/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+    },
+
+    delete: async (id) => {
+      return makeRequest(`/api/addresses/${id}`, {
+        method: 'DELETE'
+      });
+    },
+
+    setDefault: async (id) => {
+      return makeRequest(`/api/addresses/${id}/default`, {
+        method: 'PATCH'
+      });
+    }
+  },
+
+  // ----------------------------------------
+  // PROVIDER WALLET & PAYOUTS
+  // ----------------------------------------
+  payouts: {
+    getWalletOverview: async () => {
+      return makeRequest('/api/provider/wallet');
+    },
+
+    requestPayout: async (arg1, arg2) => {
+      const payload = typeof arg1 === 'object' ? arg1 : { amount: Number(arg1), notes: arg2 };
+      return makeRequest('/api/provider/payouts/request', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+    },
+
+    getMyPayouts: async () => {
+      return makeRequest('/api/provider/payouts');
+    },
+
+    getAdminPayouts: async () => {
+      return makeRequest('/api/admin/payouts');
+    },
+
+    processAdminPayout: async (payoutId, arg1, arg2, arg3) => {
+      const payload = typeof arg1 === 'object' ? arg1 : { status: arg1, transactionReference: arg2, adminNotes: arg3 };
+      return makeRequest(`/api/admin/payouts/${payoutId}/process`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload)
+      });
+    }
+  },
+
+  // ----------------------------------------
+  // DISPUTES & ESCALATIONS
+  // ----------------------------------------
+  disputes: {
+    create: async (arg1, arg2, arg3) => {
+      const payload = typeof arg1 === 'object' ? arg1 : { bookingId: Number(arg1), reason: arg2, description: arg3 };
+      return makeRequest('/api/disputes', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+    },
+
+    getMyDisputes: async () => {
+      return makeRequest('/api/disputes/my');
+    },
+
+    getProviderDisputes: async () => {
+      return makeRequest('/api/disputes/provider');
+    },
+
+    getAllForAdmin: async () => {
+      return makeRequest('/api/admin/disputes');
+    },
+
+    getById: async (id) => {
+      return makeRequest(`/api/admin/disputes/${id}`);
+    },
+
+    resolve: async (disputeId, arg1, arg2, arg3) => {
+      const payload = typeof arg1 === 'object' ? arg1 : { status: arg1, resolution: arg2, refundAmount: arg3 };
+      return makeRequest(`/api/admin/disputes/${disputeId}/resolve`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload)
+      });
+    }
   }
 };
+
 

@@ -979,12 +979,13 @@ export default function Home() {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(() => {
     try {
-      const saved = localStorage.getItem('user');
+      const saved = localStorage.getItem('taaskr_current_user') || localStorage.getItem('user');
       return saved ? JSON.parse(saved) : null;
     } catch (e) {
       return null;
     }
   });
+
 
   const [lastHitCategory, setLastHitCategory] = useState('logistics');
   const [activeHighlightService, setActiveHighlightService] = useState('Express Goods Transport');
@@ -1083,9 +1084,10 @@ export default function Home() {
   useEffect(() => {
     const handleAuthChange = () => {
       try {
-        const saved = localStorage.getItem('user');
+        const saved = localStorage.getItem('taaskr_current_user') || localStorage.getItem('user');
         const parsed = saved ? JSON.parse(saved) : null;
         setCurrentUser(parsed);
+
         if (parsed?.role === 'PROVIDER') {
           navigate('/provider', { replace: true });
         } else if (parsed?.role === 'ADMIN') {

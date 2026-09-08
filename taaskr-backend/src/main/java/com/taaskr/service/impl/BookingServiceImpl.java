@@ -276,6 +276,16 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
+    public com.taaskr.dto.common.PageResponse<BookingResponse> getMyBookings(String userEmail, org.springframework.data.domain.Pageable pageable) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        org.springframework.data.domain.Page<Booking> page = bookingRepository.findByUserId(user.getId(), pageable);
+        return com.taaskr.dto.common.PageResponse.of(page, this::mapBooking);
+    }
+
+    @Override
+    @Transactional
     public BookingResponse getMyBookingById(String userEmail, Long bookingId) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));

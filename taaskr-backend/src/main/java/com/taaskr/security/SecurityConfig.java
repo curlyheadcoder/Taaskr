@@ -25,11 +25,14 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsService userDetailsService;
+    private final AiRateLimitingFilter aiRateLimitingFilter;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-                          CustomUserDetailsService userDetailsService) {
+                          CustomUserDetailsService userDetailsService,
+                          AiRateLimitingFilter aiRateLimitingFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.userDetailsService = userDetailsService;
+        this.aiRateLimitingFilter = aiRateLimitingFilter;
     }
 
     @Bean
@@ -42,13 +45,17 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/health").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/forgot-password", "/api/auth/reset-password", "/api/auth/verify-email", "/api/auth/send-verification-otp", "/api/auth/send-phone-otp", "/api/auth/verify-phone", "/api/auth/resend-otp", "/api/auth/test-email", "/api/auth/test-sms").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/forgot-password", "/api/auth/reset-password", "/api/auth/verify-email", "/api/auth/send-verification-otp", "/api/auth/send-phone-otp", "/api/auth/verify-phone", "/api/auth/resend-otp").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/categories").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/services").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/services/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/vehicle/estimate").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/vehicle/pricing-rules").permitAll()
                         .requestMatchers("/api/ai/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/error").permitAll()
                         .anyRequest().authenticated()
+
                 )
                 .exceptionHandling(exception-> exception
                         .authenticationEntryPoint((request, response, authException) -> {
@@ -65,6 +72,7 @@ public class SecurityConfig {
                         .accessDeniedHandler(accessDeniedHandler())
                 )
                 .authenticationProvider(authenticationProvider())
+                .addFilterBefore(aiRateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

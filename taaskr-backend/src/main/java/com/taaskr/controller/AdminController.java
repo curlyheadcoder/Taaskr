@@ -78,9 +78,35 @@ public class AdminController {
         return adminUserService.getAllUsers();
     }
 
+    @GetMapping("/users/page")
+    public com.taaskr.dto.common.PageResponse<AdminUserResponse> getUsersPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id,desc") String sort) {
+        String[] sortParts = sort.split(",");
+        org.springframework.data.domain.Sort.Direction dir = sortParts.length > 1 && sortParts[1].equalsIgnoreCase("asc")
+                ? org.springframework.data.domain.Sort.Direction.ASC
+                : org.springframework.data.domain.Sort.Direction.DESC;
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(dir, sortParts[0]));
+        return adminUserService.getAllUsers(pageable);
+    }
+
     @GetMapping("/providers")
     public List<AdminProviderResponse> getAllProviders(){
         return adminProviderService.getAllProviders();
+    }
+
+    @GetMapping("/providers/page")
+    public com.taaskr.dto.common.PageResponse<AdminProviderResponse> getProvidersPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id,asc") String sort) {
+        String[] sortParts = sort.split(",");
+        org.springframework.data.domain.Sort.Direction dir = sortParts.length > 1 && sortParts[1].equalsIgnoreCase("desc")
+                ? org.springframework.data.domain.Sort.Direction.DESC
+                : org.springframework.data.domain.Sort.Direction.ASC;
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(dir, sortParts[0]));
+        return adminProviderService.getAllProviders(pageable);
     }
 
     @PutMapping("/providers/{providerId}/approve")
@@ -101,6 +127,19 @@ public class AdminController {
     @GetMapping("/bookings")
     public List<AdminBookingResponse> getAllBookings() {
         return adminBookingService.getAllBookings();
+    }
+
+    @GetMapping("/bookings/page")
+    public com.taaskr.dto.common.PageResponse<AdminBookingResponse> getBookingsPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt,desc") String sort) {
+        String[] sortParts = sort.split(",");
+        org.springframework.data.domain.Sort.Direction dir = sortParts.length > 1 && sortParts[1].equalsIgnoreCase("asc")
+                ? org.springframework.data.domain.Sort.Direction.ASC
+                : org.springframework.data.domain.Sort.Direction.DESC;
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(dir, sortParts[0]));
+        return adminBookingService.getAllBookings(pageable);
     }
 
     // ----------------------------------------

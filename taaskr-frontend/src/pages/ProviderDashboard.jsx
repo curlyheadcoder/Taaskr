@@ -105,6 +105,19 @@ export default function ProviderDashboard() {
   const [submittingReply, setSubmittingReply] = useState(false);
   const [discussionModalError, setDiscussionModalError] = useState('');
 
+  // Wallet & Payouts state
+  const [walletOverview, setWalletOverview] = useState(null);
+  const [showPayoutModal, setShowPayoutModal] = useState(false);
+  const [payoutAmount, setPayoutAmount] = useState('');
+  const [payoutNotes, setPayoutNotes] = useState('');
+  const [submittingPayout, setSubmittingPayout] = useState(false);
+
+  // Reviews state
+  const [providerReviews, setProviderReviews] = useState([]);
+  const [replyingReviewId, setReplyingReviewId] = useState(null);
+  const [replyContent, setReplyContent] = useState('');
+  const [submittingReviewReply, setSubmittingReviewReply] = useState(false);
+
   // New availability form state
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -125,6 +138,44 @@ export default function ProviderDashboard() {
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 4000);
+  };
+
+  const handleRequestPayout = async (e) => {
+    e.preventDefault();
+    if (!payoutAmount || Number(payoutAmount) <= 0) return;
+    setSubmittingPayout(true);
+    try {
+      await api.payouts.requestPayout(Number(payoutAmount), payoutNotes);
+      showNotification('Payout request submitted successfully.');
+      setShowPayoutModal(false);
+      setPayoutAmount('');
+      setPayoutNotes('');
+      const updatedWallet = await api.payouts.getWalletOverview();
+      setWalletOverview(updatedWallet);
+    } catch (err) {
+      showNotification(`Failed to request payout: ${err.message}`, 'error');
+    } finally {
+      setSubmittingPayout(false);
+    }
+  };
+
+  const handleReplyReview = async (reviewId) => {
+    if (!replyContent.trim()) return;
+    setSubmittingReviewReply(true);
+    try {
+      await api.reviews.reply(reviewId, replyContent.trim());
+      showNotification('Response posted to customer review.');
+      setReplyingReviewId(null);
+      setReplyContent('');
+      if (userProfile?.id) {
+        const revs = await api.reviews.getByProvider(userProfile.id);
+        setProviderReviews(revs || []);
+      }
+    } catch (err) {
+      showNotification(`Failed to post reply: ${err.message}`, 'error');
+    } finally {
+      setSubmittingReviewReply(false);
+    }
   };
 
   const loadProviderDashboard = async (isInitial = false) => {
@@ -177,6 +228,22 @@ export default function ProviderDashboard() {
         }
       } catch (dErr) {
         console.warn('Discussions fetch notice:', dErr);
+      }
+
+      try {
+        const wallet = await api.payouts.getWalletOverview();
+        setWalletOverview(wallet);
+      } catch (wErr) {
+        console.warn('Wallet overview fetch notice:', wErr);
+      }
+
+      try {
+        if (user?.id) {
+          const revs = await api.reviews.getByProvider(user.id);
+          setProviderReviews(revs || []);
+        }
+      } catch (rErr) {
+        console.warn('Provider reviews fetch notice:', rErr);
       }
 
     } catch (err) {
@@ -1784,11 +1851,64 @@ export default function ProviderDashboard() {
                 </p>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                <span className="badge badge-completed" style={{ fontSize: '0.8125rem', padding: '0.35rem 0.75rem' }}>
-                  <span className="badge-dot" style={{ backgroundColor: 'var(--success)' }} /> All Payouts Active & Settled
-                </span>
+                <button
+                  onClick={() => setShowPayoutModal(true)}
+                  className="btn btn-primary btn-sm"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600 }}
+                >
+                  <Wallet size={14} />
+                  <span>Request Payout</span>
+                </button>
               </div>
             </div>
+
+            {/* Wallet Overview Modern Banner */}
+            {walletOverview && (
+              <div style={{
+                background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%)',
+                border: '1px solid var(--border-light)',
+                borderRadius: 'var(--radius-md)',
+                padding: '1.25rem 1.5rem',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '1rem'
+              }}>
+                <div>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Available Payout Balance
+                  </span>
+                  <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--success)', fontFeatureSettings: 'tnum', marginTop: '0.2rem' }}>
+                    ₹{(walletOverview.currentBalance || 0).toLocaleString('en-IN')}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                    Net after 15% platform commission • Instant withdrawal to bank
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+                  <div>
+                    <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>Lifetime Net</span>
+                    <strong style={{ fontSize: '1rem', color: 'var(--text-main)', fontFeatureSettings: 'tnum' }}>
+                      ₹{(walletOverview.totalEarned || 0).toLocaleString('en-IN')}
+                    </strong>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>Pending Payouts</span>
+                    <strong style={{ fontSize: '1rem', color: 'var(--warning)', fontFeatureSettings: 'tnum' }}>
+                      ₹{(walletOverview.pendingPayoutsAmount || 0).toLocaleString('en-IN')}
+                    </strong>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>Total Settled</span>
+                    <strong style={{ fontSize: '1rem', color: 'var(--primary)', fontFeatureSettings: 'tnum' }}>
+                      ₹{(walletOverview.totalPaidOut || 0).toLocaleString('en-IN')}
+                    </strong>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Earnings Stat Cards */}
             <div className="grid-cols-4" style={{ gap: '1rem' }}>
@@ -2071,6 +2191,214 @@ export default function ProviderDashboard() {
                     itemsPerPage={itemsPerPage}
                     onPageChange={setEarningsPage}
                   />
+                </div>
+              )}
+            </div>
+
+            {/* Payout Requests & Status Ledger */}
+            {walletOverview && walletOverview.recentPayouts && walletOverview.recentPayouts.length > 0 && (
+              <div className="panel">
+                <div className="panel-header" style={{ marginBottom: '1rem' }}>
+                  <h3 className="panel-title">
+                    <DollarSign size={16} color="var(--primary)" />
+                    <span>Payout Requests & Settlement Status</span>
+                  </h3>
+                  <span className="badge badge-assigned">{walletOverview.recentPayouts.length} Requests</span>
+                </div>
+
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8125rem', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid var(--border-light)', color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '0.6875rem' }}>
+                        <th style={{ padding: '0.6rem 0.5rem' }}>Request Ref</th>
+                        <th style={{ padding: '0.6rem 0.5rem' }}>Amount</th>
+                        <th style={{ padding: '0.6rem 0.5rem' }}>Status</th>
+                        <th style={{ padding: '0.6rem 0.5rem' }}>UTR / Reference</th>
+                        <th style={{ padding: '0.6rem 0.5rem' }}>Requested Date</th>
+                        <th style={{ padding: '0.6rem 0.5rem' }}>Processed Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {walletOverview.recentPayouts.map((p) => (
+                        <tr key={p.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                          <td style={{ padding: '0.65rem 0.5rem', fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--primary)' }}>
+                            #{String(p.id).slice(-6)}
+                          </td>
+                          <td style={{ padding: '0.65rem 0.5rem', fontWeight: 700, color: 'var(--text-main)', fontFeatureSettings: 'tnum' }}>
+                            ₹{p.amount?.toLocaleString('en-IN')}
+                          </td>
+                          <td style={{ padding: '0.65rem 0.5rem' }}>
+                            <span className={`badge ${p.status === 'COMPLETED' ? 'badge-completed' : p.status === 'REJECTED' ? 'badge-cancelled' : 'badge-pending'}`}>
+                              {p.status}
+                            </span>
+                          </td>
+                          <td style={{ padding: '0.65rem 0.5rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '0.75rem' }}>
+                            {p.transactionReference || 'Pending Bank Processing'}
+                          </td>
+                          <td style={{ padding: '0.65rem 0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                            {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : 'Recent'}
+                          </td>
+                          <td style={{ padding: '0.65rem 0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                            {p.processedAt ? new Date(p.processedAt).toLocaleDateString() : '—'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Wallet Transactions Ledger */}
+            {walletOverview && walletOverview.recentTransactions && walletOverview.recentTransactions.length > 0 && (
+              <div className="panel">
+                <div className="panel-header" style={{ marginBottom: '1rem' }}>
+                  <h3 className="panel-title">
+                    <Activity size={16} color="var(--success)" />
+                    <span>Real-time Wallet Transactions Ledger</span>
+                  </h3>
+                  <span className="badge badge-completed">85% Net Split / 15% Platform Commission</span>
+                </div>
+
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8125rem', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid var(--border-light)', color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '0.6875rem' }}>
+                        <th style={{ padding: '0.6rem 0.5rem' }}>Tx Ref</th>
+                        <th style={{ padding: '0.6rem 0.5rem' }}>Type</th>
+                        <th style={{ padding: '0.6rem 0.5rem' }}>Gross / Net Amount</th>
+                        <th style={{ padding: '0.6rem 0.5rem' }}>Commission</th>
+                        <th style={{ padding: '0.6rem 0.5rem' }}>Description</th>
+                        <th style={{ padding: '0.6rem 0.5rem' }}>Timestamp</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {walletOverview.recentTransactions.map((tx) => (
+                        <tr key={tx.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                          <td style={{ padding: '0.65rem 0.5rem', fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--text-muted)' }}>
+                            #{String(tx.id).slice(-6)}
+                          </td>
+                          <td style={{ padding: '0.65rem 0.5rem' }}>
+                            <span className={`badge ${tx.type === 'EARNING_CREDIT' ? 'badge-completed' : 'badge-pending'}`}>
+                              {tx.type === 'EARNING_CREDIT' ? 'Net Credit' : tx.type}
+                            </span>
+                          </td>
+                          <td style={{ padding: '0.65rem 0.5rem', fontWeight: 700, color: tx.type === 'EARNING_CREDIT' ? 'var(--success)' : 'var(--error)', fontFeatureSettings: 'tnum' }}>
+                            {tx.type === 'EARNING_CREDIT' ? '+' : '-'}₹{tx.netAmount?.toLocaleString('en-IN')}
+                          </td>
+                          <td style={{ padding: '0.65rem 0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                            {tx.commissionAmount ? `₹${tx.commissionAmount} (15%)` : '—'}
+                          </td>
+                          <td style={{ padding: '0.65rem 0.5rem', color: 'var(--text-main)', fontSize: '0.78rem' }}>
+                            {tx.description}
+                          </td>
+                          <td style={{ padding: '0.65rem 0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                            {tx.createdAt ? new Date(tx.createdAt).toLocaleDateString() : 'Recent'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Customer Reviews & Reputation */}
+            <div className="panel">
+              <div className="panel-header" style={{ marginBottom: '1rem' }}>
+                <h3 className="panel-title">
+                  <Star size={16} color="#F59E0B" />
+                  <span>Customer Reviews & Ratings</span>
+                </h3>
+                <span className="badge badge-completed">{providerReviews.length} Verified Reviews</span>
+              </div>
+
+              {providerReviews.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
+                  No customer reviews received yet. Reviews will show here as customers rate your completed bookings.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {providerReviews.map((rev) => (
+                    <div key={rev.id} style={{
+                      padding: '1rem',
+                      borderRadius: 'var(--radius-sm)',
+                      backgroundColor: 'var(--bg-subtle)',
+                      border: '1px solid var(--border-light)'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <span style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.875rem' }}>
+                            {rev.customerName || 'Customer'}
+                          </span>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                            for {rev.serviceName || 'Service'}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', color: '#F59E0B', fontWeight: 700, fontSize: '0.875rem' }}>
+                          <Star size={14} fill="#F59E0B" /> {rev.rating}/5
+                        </div>
+                      </div>
+
+                      {rev.comment && (
+                        <p style={{ color: 'var(--text-main)', fontSize: '0.8125rem', margin: '0.35rem 0', lineHeight: 1.4 }}>
+                          "{rev.comment}"
+                        </p>
+                      )}
+
+                      {rev.providerReply ? (
+                        <div style={{
+                          marginTop: '0.65rem',
+                          padding: '0.6rem 0.75rem',
+                          backgroundColor: 'rgba(56, 189, 248, 0.08)',
+                          borderLeft: '3px solid var(--primary)',
+                          borderRadius: '0 var(--radius-sm) var(--radius-sm) 0',
+                          fontSize: '0.78rem'
+                        }}>
+                          <span style={{ fontWeight: 700, color: 'var(--primary)', display: 'block', marginBottom: '0.15rem' }}>
+                            Your Official Reply:
+                          </span>
+                          <span style={{ color: 'var(--text-main)' }}>{rev.providerReply}</span>
+                        </div>
+                      ) : (
+                        <div style={{ marginTop: '0.5rem' }}>
+                          {replyingReviewId === rev.id ? (
+                            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                              <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Write a courteous response to this customer..."
+                                value={replyContent}
+                                onChange={(e) => setReplyContent(e.target.value)}
+                                style={{ fontSize: '0.78rem' }}
+                              />
+                              <button
+                                onClick={() => handleReplyReview(rev.id)}
+                                className="btn btn-primary btn-sm"
+                                disabled={submittingReviewReply || !replyContent.trim()}
+                              >
+                                {submittingReviewReply ? 'Posting...' : 'Post Reply'}
+                              </button>
+                              <button
+                                onClick={() => { setReplyingReviewId(null); setReplyContent(''); }}
+                                className="btn btn-secondary btn-sm"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => { setReplyingReviewId(rev.id); setReplyContent(''); }}
+                              className="btn btn-ghost btn-sm"
+                              style={{ color: 'var(--primary)', padding: '0.15rem 0.4rem', fontSize: '0.75rem' }}
+                            >
+                              Reply to Review
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -2978,6 +3306,96 @@ export default function ProviderDashboard() {
           bookingId={trackingModalBookingId}
           onClose={() => setTrackingModalBookingId(null)}
         />
+      )}
+
+      {/* Request Payout Modal */}
+      {showPayoutModal && (
+        <div className="modal-overlay" onClick={() => setShowPayoutModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
+            <div className="modal-header">
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Wallet size={17} color="var(--primary)" />
+                <span>Request Payout Settlement</span>
+              </h3>
+              <button onClick={() => setShowPayoutModal(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                <X size={16} />
+              </button>
+            </div>
+
+            <div style={{
+              backgroundColor: 'rgba(56, 189, 248, 0.08)',
+              borderRadius: 'var(--radius-sm)',
+              padding: '0.85rem 1rem',
+              marginBottom: '1rem',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>
+                  Available Balance
+                </span>
+                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--success)' }}>
+                  ₹{(walletOverview?.currentBalance || 0).toLocaleString('en-IN')}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPayoutAmount(String(walletOverview?.currentBalance || 0))}
+                className="btn btn-ghost btn-sm"
+                style={{ color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 600 }}
+              >
+                Withdraw Max
+              </button>
+            </div>
+
+            <form onSubmit={handleRequestPayout}>
+              <div className="form-group">
+                <label className="form-label">Withdrawal Amount (₹) *</label>
+                <input
+                  type="number"
+                  min="1"
+                  max={walletOverview?.currentBalance || 100000}
+                  className="form-control"
+                  placeholder="e.g. 2500"
+                  value={payoutAmount}
+                  onChange={(e) => setPayoutAmount(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Payout Notes / Bank Info (Optional)</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="e.g. UPI ID: username@okaxis or Bank Account"
+                  value={payoutNotes}
+                  onChange={(e) => setPayoutNotes(e.target.value)}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.25rem' }}>
+                <button
+                  type="submit"
+                  className="btn btn-primary btn-sm"
+                  style={{ flex: 1 }}
+                  disabled={submittingPayout || !payoutAmount || Number(payoutAmount) <= 0 || Number(payoutAmount) > (walletOverview?.currentBalance || 0)}
+                >
+                  {submittingPayout ? 'Processing...' : `Submit Request (₹${payoutAmount || 0})`}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowPayoutModal(false)}
+                  className="btn btn-secondary btn-sm"
+                  style={{ flex: 1 }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -3,7 +3,14 @@ package com.taaskr.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name="provider_profiles")
+@Table(
+        name = "provider_profiles",
+        indexes = {
+                @Index(name = "idx_provider_user", columnList = "user_id"),
+                @Index(name = "idx_provider_approved", columnList = "approved"),
+                @Index(name = "idx_provider_rating", columnList = "rating")
+        }
+)
 public class ProviderProfile {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)

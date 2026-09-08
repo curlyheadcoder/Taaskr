@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../services/api';
 import { 
   Sun, Moon, Briefcase, ShieldCheck, Calendar, Grid, LogOut, 
-  MapPin, Search, ChevronDown, Bot, Navigation, X, Check, ArrowRight, Command, AlertCircle, MessageSquare
+  MapPin, Search, ChevronDown, Bot, Navigation, X, Check, ArrowRight, Command, AlertCircle, MessageSquare, Bell
 } from 'lucide-react';
 
 const ACTIVE_CITY = { city: 'Indore', area: 'Indore Metro (All Service Zones)', status: 'ACTIVE' };
@@ -44,6 +44,52 @@ export default function Navbar() {
 
   // Provider Active Tab tracking
   const [providerTab, setProviderTab] = useState('tasks');
+
+  // Notifications State
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const notificationDropdownRef = useRef(null);
+
+  const fetchNotifications = async () => {
+    try {
+      const [list, countData] = await Promise.all([
+        api.notifications.getAll(),
+        api.notifications.getUnreadCount()
+      ]);
+      setNotifications(list || []);
+      setUnreadCount(typeof countData === 'number' ? countData : (countData?.unreadCount || 0));
+    } catch (e) {
+      // ignore
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchNotifications();
+      const interval = setInterval(fetchNotifications, 20000);
+      return () => clearInterval(interval);
+    } else {
+      setNotifications([]);
+      setUnreadCount(0);
+    }
+  }, [user]);
+
+  const handleMarkAsRead = async (id) => {
+    try {
+      await api.notifications.markAsRead(id);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (e) {}
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await api.notifications.markAllAsRead();
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      setUnreadCount(0);
+    } catch (e) {}
+  };
 
   useEffect(() => {
     const handleTabChange = (e) => {
@@ -130,6 +176,9 @@ export default function Navbar() {
       if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
         setSearchOpen(false);
       }
+      if (notificationDropdownRef.current && !notificationDropdownRef.current.contains(e.target)) {
+        setNotificationsOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -139,6 +188,7 @@ export default function Navbar() {
   useEffect(() => {
     setSearchOpen(false);
     setSearchQuery('');
+    setNotificationsOpen(false);
   }, [location.pathname]);
 
   const checkUser = async () => {
@@ -692,6 +742,140 @@ export default function Navbar() {
         >
           {isDark ? <Sun size={15} color="#F59E0B" /> : <Moon size={15} color="#6366F1" />}
         </button>
+
+        {/* Real-time Notifications Bell */}
+        {user && (
+          <div style={{ position: 'relative' }} ref={notificationDropdownRef}>
+            <button
+              onClick={() => setNotificationsOpen(!notificationsOpen)}
+              className="btn btn-ghost btn-sm"
+              title="Notifications"
+              aria-label="View notifications"
+              style={{
+                padding: '0.4rem',
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: unreadCount > 0 ? 'var(--primary)' : 'var(--text-secondary)',
+                border: '1px solid var(--border-light)',
+                backgroundColor: 'var(--bg-card)',
+                cursor: 'pointer',
+                position: 'relative'
+              }}
+            >
+              <Bell size={15} />
+              {unreadCount > 0 && (
+                <span style={{
+                  position: 'absolute',
+                  top: '-4px',
+                  right: '-4px',
+                  backgroundColor: '#EF4444',
+                  color: '#ffffff',
+                  fontSize: '0.625rem',
+                  fontWeight: 700,
+                  borderRadius: '999px',
+                  minWidth: '16px',
+                  height: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '0 3px',
+                  boxShadow: '0 0 0 2px var(--bg-header)'
+                }}>
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+
+            {notificationsOpen && (
+              <div style={{
+                position: 'absolute',
+                top: 'calc(100% + 8px)',
+                right: 0,
+                width: '320px',
+                maxWidth: '90vw',
+                backgroundColor: 'var(--bg-card)',
+                borderRadius: 'var(--radius-md)',
+                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+                border: '1px solid var(--border-light)',
+                zIndex: 100,
+                overflow: 'hidden',
+                animation: 'fadeSlideDown 0.15s ease'
+              }}>
+                <div style={{
+                  padding: '0.75rem 1rem',
+                  borderBottom: '1px solid var(--border-light)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  backgroundColor: 'var(--bg-subtle)'
+                }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-main)' }}>
+                    Notifications
+                  </div>
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={handleMarkAllAsRead}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--primary)',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        padding: 0
+                      }}
+                    >
+                      Mark all as read
+                    </button>
+                  )}
+                </div>
+
+                <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
+                  {notifications.length === 0 ? (
+                    <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
+                      No notifications yet
+                    </div>
+                  ) : (
+                    notifications.map((n) => (
+                      <div
+                        key={n.id}
+                        onClick={() => handleMarkAsRead(n.id)}
+                        style={{
+                          padding: '0.75rem 1rem',
+                          borderBottom: '1px solid var(--border-subtle)',
+                          backgroundColor: n.isRead ? 'transparent' : 'rgba(56, 189, 248, 0.06)',
+                          cursor: 'pointer',
+                          transition: 'background-color 0.15s'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+                          <span style={{ fontWeight: n.isRead ? 600 : 700, fontSize: '0.8125rem', color: 'var(--text-main)' }}>
+                            {n.title}
+                          </span>
+                          {!n.isRead && (
+                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#EF4444', flexShrink: 0, marginTop: '4px' }} />
+                          )}
+                        </div>
+                        <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.35 }}>
+                          {n.message}
+                        </p>
+                        {n.createdAt && (
+                          <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                            {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {new Date(n.createdAt).toLocaleDateString()}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {user ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>

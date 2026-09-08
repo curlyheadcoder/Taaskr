@@ -6,7 +6,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "services")
+@Table(
+        name = "services",
+        indexes = {
+                @Index(name = "idx_service_category_active", columnList = "category_id, active"),
+                @Index(name = "idx_service_name", columnList = "name")
+        }
+)
 public class Service {
 
     @Id

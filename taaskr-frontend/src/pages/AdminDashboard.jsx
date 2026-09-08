@@ -19,6 +19,8 @@ export default function AdminDashboard() {
   const [providers, setProviders] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [discussions, setDiscussions] = useState([]);
+  const [payouts, setPayouts] = useState([]);
+  const [disputes, setDisputes] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Sidebar Expand / Collapse state
@@ -40,10 +42,25 @@ export default function AdminDashboard() {
   const [bookingsPage, setBookingsPage] = useState(1);
   const [usersPage, setUsersPage] = useState(1);
   const [discussionsPage, setDiscussionsPage] = useState(1);
+  const [payoutsPage, setPayoutsPage] = useState(1);
+  const [disputesPage, setDisputesPage] = useState(1);
   const itemsPerPage = 8;
 
-  // Tabs: 'analytics', 'observability', 'catalog', 'providers', 'providers_pending', 'providers_approved', 'bookings', 'users', 'discussions'
+  // Tabs: 'analytics', 'observability', 'catalog', 'providers', 'providers_pending', 'providers_approved', 'bookings', 'users', 'discussions', 'payouts', 'disputes'
   const [activeTab, setActiveTab] = useState('analytics');
+
+  // Payout processing modal state
+  const [processingPayout, setProcessingPayout] = useState(null);
+  const [payoutStatusDecision, setPayoutStatusDecision] = useState('COMPLETED');
+  const [payoutTxRef, setPayoutTxRef] = useState('');
+  const [payoutAdminNotes, setPayoutAdminNotes] = useState('');
+  const [submittingPayoutProcess, setSubmittingPayoutProcess] = useState(false);
+
+  // Dispute resolution modal state
+  const [resolvingDispute, setResolvingDispute] = useState(null);
+  const [disputeStatusDecision, setDisputeStatusDecision] = useState('RESOLVED');
+  const [disputeResolutionNotes, setDisputeResolutionNotes] = useState('');
+  const [submittingDisputeResolve, setSubmittingDisputeResolve] = useState(false);
 
   // Provider sub-tabs & remarks states
   const [providerSubTab, setProviderSubTab] = useState('pending');
@@ -81,13 +98,15 @@ export default function AdminDashboard() {
   const loadAdminData = async () => {
     setLoading(true);
     try {
-      const [cats, servs, usersList, providersList, bookingsList, discussionsList] = await Promise.all([
+      const [cats, servs, usersList, providersList, bookingsList, discussionsList, payoutsList, disputesList] = await Promise.all([
         api.catalog.getCategories(),
         api.catalog.getServices(),
         api.admin.getUsers(),
         api.admin.getProviders(),
         api.admin.getAllBookings(),
-        api.admin.getDiscussions()
+        api.admin.getDiscussions(),
+        api.payouts.getAdminPayouts().catch(() => []),
+        api.disputes.getAllForAdmin().catch(() => [])
       ]);
 
       setCategories(cats || []);
@@ -96,6 +115,8 @@ export default function AdminDashboard() {
       setProviders(providersList || []);
       setBookings(sortBookingsByStatusPriority(bookingsList || []));
       setDiscussions(discussionsList || []);
+      setPayouts(payoutsList || []);
+      setDisputes(disputesList || []);
       if (discussionsList && discussionsList.length > 0 && !selectedDiscussionId) {
         setSelectedDiscussionId(discussionsList[0].id);
       }
@@ -103,6 +124,48 @@ export default function AdminDashboard() {
       console.error('Failed to load admin console data:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleProcessPayout = async (e) => {
+    e.preventDefault();
+    if (!processingPayout) return;
+    setSubmittingPayoutProcess(true);
+    try {
+      await api.payouts.processAdminPayout(
+        processingPayout.id,
+        payoutStatusDecision,
+        payoutTxRef.trim(),
+        payoutAdminNotes.trim()
+      );
+      setProcessingPayout(null);
+      setPayoutTxRef('');
+      setPayoutAdminNotes('');
+      loadAdminData();
+    } catch (err) {
+      alert(`Failed to process payout: ${err.message}`);
+    } finally {
+      setSubmittingPayoutProcess(false);
+    }
+  };
+
+  const handleResolveDispute = async (e) => {
+    e.preventDefault();
+    if (!resolvingDispute) return;
+    setSubmittingDisputeResolve(true);
+    try {
+      await api.disputes.resolve(
+        resolvingDispute.id,
+        disputeStatusDecision,
+        disputeResolutionNotes.trim()
+      );
+      setResolvingDispute(null);
+      setDisputeResolutionNotes('');
+      loadAdminData();
+    } catch (err) {
+      alert(`Failed to resolve dispute: ${err.message}`);
+    } finally {
+      setSubmittingDisputeResolve(false);
     }
   };
 
@@ -461,6 +524,50 @@ export default function AdminDashboard() {
           >
             <Calendar size={16} />
             <span>All Bookings ({bookings.length})</span>
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('payouts')}
+            className={`sidebar-item ${activeTab === 'payouts' ? 'active' : ''}`}
+            title="Payout Settlements"
+          >
+            <DollarSign size={16} />
+            <span>Payouts & Settlements</span>
+            {payouts.filter(p => p.status === 'REQUESTED' || p.status === 'PROCESSING').length > 0 && (
+              <span style={{ 
+                marginLeft: 'auto', 
+                background: 'rgba(245, 158, 11, 0.18)', 
+                color: '#D97706', 
+                fontSize: '0.68rem', 
+                fontWeight: 700, 
+                padding: '0.1rem 0.45rem', 
+                borderRadius: '10px' 
+              }}>
+                {payouts.filter(p => p.status === 'REQUESTED' || p.status === 'PROCESSING').length}
+              </span>
+            )}
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('disputes')}
+            className={`sidebar-item ${activeTab === 'disputes' ? 'active' : ''}`}
+            title="Customer Disputes"
+          >
+            <AlertCircle size={16} color={disputes.filter(d => d.status === 'OPEN' || d.status === 'UNDER_REVIEW').length > 0 ? '#EF4444' : 'currentColor'} />
+            <span>Disputes & Issues</span>
+            {disputes.filter(d => d.status === 'OPEN' || d.status === 'UNDER_REVIEW').length > 0 && (
+              <span style={{ 
+                marginLeft: 'auto', 
+                background: 'rgba(239, 68, 68, 0.15)', 
+                color: '#EF4444', 
+                fontSize: '0.68rem', 
+                fontWeight: 700, 
+                padding: '0.1rem 0.45rem', 
+                borderRadius: '10px' 
+              }}>
+                {disputes.filter(d => d.status === 'OPEN' || d.status === 'UNDER_REVIEW').length}
+              </span>
+            )}
           </button>
 
           <button 
@@ -1213,7 +1320,346 @@ export default function AdminDashboard() {
             )}
           </div>
         )}
+
+        {/* ========================================================================= */}
+        {/* TAB: PAYOUT SETTLEMENTS                                                  */}
+        {/* ========================================================================= */}
+        {activeTab === 'payouts' && (
+          <div className="panel">
+            <div className="panel-header" style={{ marginBottom: '1rem' }}>
+              <h2 className="panel-title">
+                <DollarSign size={18} color="var(--primary)" />
+                <span>Provider Payouts & Settlement Requests</span>
+              </h2>
+              <span className="badge badge-assigned">{payouts.length} Total Requests</span>
+            </div>
+
+            {payouts.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-state-icon">
+                  <DollarSign size={22} />
+                </div>
+                <h3 className="empty-state-title">No payout requests</h3>
+                <p className="empty-state-description">When partners request earnings withdrawals, they will appear here for processing.</p>
+              </div>
+            ) : (
+              <div className="table-container">
+                <table className="enterprise-table">
+                  <thead>
+                    <tr>
+                      <th>Request ID</th>
+                      <th>Provider Name</th>
+                      <th>Amount</th>
+                      <th>Requested Date</th>
+                      <th>Status</th>
+                      <th>Banking Notes / UTR</th>
+                      <th style={{ textAlign: 'right' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {payouts.slice((payoutsPage - 1) * itemsPerPage, payoutsPage * itemsPerPage).map((p) => (
+                      <tr key={p.id}>
+                        <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--primary)' }}>
+                          #{String(p.id).slice(-6)}
+                        </td>
+                        <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>
+                          <div>{p.providerName || `Provider #${p.providerId}`}</div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{p.providerEmail || ''}</div>
+                        </td>
+                        <td style={{ fontWeight: 700, color: 'var(--success)', fontSize: '0.9375rem', fontFeatureSettings: 'tnum' }}>
+                          ₹{p.amount?.toLocaleString('en-IN')}
+                        </td>
+                        <td style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                          {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : 'Recent'}
+                        </td>
+                        <td>
+                          <span className={`badge ${p.status === 'COMPLETED' ? 'badge-completed' : p.status === 'REJECTED' ? 'badge-cancelled' : 'badge-pending'}`}>
+                            {p.status}
+                          </span>
+                        </td>
+                        <td style={{ fontSize: '0.75rem', color: 'var(--text-muted)', maxWidth: '200px' }}>
+                          {p.transactionReference ? (
+                            <div><strong>UTR:</strong> {p.transactionReference}</div>
+                          ) : null}
+                          {p.notes ? <div>{p.notes}</div> : '—'}
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                          {p.status === 'REQUESTED' || p.status === 'PROCESSING' ? (
+                            <button
+                              onClick={() => {
+                                setProcessingPayout(p);
+                                setPayoutStatusDecision('COMPLETED');
+                                setPayoutTxRef('');
+                                setPayoutAdminNotes('');
+                              }}
+                              className="btn btn-primary btn-sm"
+                              style={{ padding: '0.2rem 0.55rem', fontSize: '0.75rem' }}
+                            >
+                              Process Settlement
+                            </button>
+                          ) : (
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                              Processed ({p.processedAt ? new Date(p.processedAt).toLocaleDateString() : 'Settled'})
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <Pagination
+                  currentPage={payoutsPage}
+                  totalItems={payouts.length}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={setPayoutsPage}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB: DISPUTES & ISSUES                                                   */}
+        {/* ========================================================================= */}
+        {activeTab === 'disputes' && (
+          <div className="panel">
+            <div className="panel-header" style={{ marginBottom: '1rem' }}>
+              <h2 className="panel-title">
+                <AlertCircle size={18} color="#EF4444" />
+                <span>Customer Booking Disputes & Escalations</span>
+              </h2>
+              <span className="badge badge-cancelled">{disputes.length} Disputes</span>
+            </div>
+
+            {disputes.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-state-icon">
+                  <CheckCircle2 size={22} color="var(--success)" />
+                </div>
+                <h3 className="empty-state-title">No customer disputes</h3>
+                <p className="empty-state-description">Zero unresolved customer complaints or service escalations at this time.</p>
+              </div>
+            ) : (
+              <div className="table-container">
+                <table className="enterprise-table">
+                  <thead>
+                    <tr>
+                      <th>Dispute ID</th>
+                      <th>Booking Ref</th>
+                      <th>Customer</th>
+                      <th>Provider</th>
+                      <th>Reason Category</th>
+                      <th>Description</th>
+                      <th>Status</th>
+                      <th style={{ textAlign: 'right' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {disputes.slice((disputesPage - 1) * itemsPerPage, disputesPage * itemsPerPage).map((d) => (
+                      <tr key={d.id}>
+                        <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: '#EF4444' }}>
+                          #{String(d.id).slice(-6)}
+                        </td>
+                        <td>
+                          <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{d.serviceName}</div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                            Booking #{d.bookingId}
+                          </div>
+                        </td>
+                        <td style={{ color: 'var(--text-main)', fontSize: '0.8125rem' }}>
+                          <div>{d.customerName || 'Customer'}</div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{d.customerEmail || ''}</div>
+                        </td>
+                        <td style={{ color: 'var(--text-main)', fontSize: '0.8125rem' }}>
+                          <div>{d.providerName || 'Provider'}</div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{d.providerEmail || ''}</div>
+                        </td>
+                        <td>
+                          <span className="badge badge-assigned" style={{ fontSize: '0.6875rem', textTransform: 'capitalize' }}>
+                            {d.reason?.toLowerCase().replace(/_/g, ' ') || 'General'}
+                          </span>
+                        </td>
+                        <td style={{ fontSize: '0.78rem', color: 'var(--text-main)', maxWidth: '240px', lineHeight: 1.35 }}>
+                          <div>"{d.description}"</div>
+                          {d.resolutionNotes && (
+                            <div style={{ marginTop: '0.25rem', fontSize: '0.72rem', color: 'var(--success)' }}>
+                              <strong>Resolution:</strong> {d.resolutionNotes}
+                            </div>
+                          )}
+                        </td>
+                        <td>
+                          <span className={`badge ${d.status === 'RESOLVED' ? 'badge-completed' : d.status === 'DISMISSED' ? 'badge-cancelled' : 'badge-pending'}`}>
+                            {d.status}
+                          </span>
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                          {d.status === 'OPEN' || d.status === 'UNDER_REVIEW' ? (
+                            <button
+                              onClick={() => {
+                                setResolvingDispute(d);
+                                setDisputeStatusDecision('RESOLVED');
+                                setDisputeResolutionNotes('');
+                              }}
+                              className="btn btn-secondary btn-sm"
+                              style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}
+                            >
+                              Resolve
+                            </button>
+                          ) : (
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Closed</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <Pagination
+                  currentPage={disputesPage}
+                  totalItems={disputes.length}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={setDisputesPage}
+                />
+              </div>
+            )}
+          </div>
+        )}
       </main>
+
+      {/* Modal: Process Payout */}
+      {processingPayout && (
+        <div className="modal-overlay" onClick={() => setProcessingPayout(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
+            <div className="modal-header">
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>
+                Process Provider Payout #{String(processingPayout.id).slice(-6)}
+              </h3>
+              <button onClick={() => setProcessingPayout(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                <X size={16} />
+              </button>
+            </div>
+
+            <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', border: '1px solid var(--border-light)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Provider:</span>
+                <strong style={{ color: 'var(--text-main)', fontSize: '0.8125rem' }}>{processingPayout.providerName}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Requested Amount:</span>
+                <strong style={{ color: 'var(--success)', fontSize: '1rem' }}>₹{processingPayout.amount?.toLocaleString('en-IN')}</strong>
+              </div>
+              {processingPayout.notes && (
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  <strong>Bank / UPI Info:</strong> {processingPayout.notes}
+                </div>
+              )}
+            </div>
+
+            <form onSubmit={handleProcessPayout}>
+              <div className="form-group">
+                <label className="form-label">Payout Action</label>
+                <select className="form-control" value={payoutStatusDecision} onChange={(e) => setPayoutStatusDecision(e.target.value)}>
+                  <option value="COMPLETED">Approve & Mark Transferred (COMPLETED)</option>
+                  <option value="PROCESSING">Mark Processing in Bank</option>
+                  <option value="REJECTED">Reject Payout Request</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Bank UTR / Transaction Reference</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="e.g. UTR123456789012 or IMPS ref"
+                  value={payoutTxRef}
+                  onChange={(e) => setPayoutTxRef(e.target.value)}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Internal Admin Notes</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Optional notes or rejection rationale"
+                  value={payoutAdminNotes}
+                  onChange={(e) => setPayoutAdminNotes(e.target.value)}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.25rem' }}>
+                <button type="submit" className="btn btn-primary btn-sm" style={{ flex: 1 }} disabled={submittingPayoutProcess}>
+                  {submittingPayoutProcess ? 'Saving...' : 'Confirm Status'}
+                </button>
+                <button type="button" onClick={() => setProcessingPayout(null)} className="btn btn-secondary btn-sm" style={{ flex: 1 }}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Resolve Dispute */}
+      {resolvingDispute && (
+        <div className="modal-overlay" onClick={() => setResolvingDispute(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
+            <div className="modal-header">
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>
+                Resolve Dispute #{String(resolvingDispute.id).slice(-6)}
+              </h3>
+              <button onClick={() => setResolvingDispute(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                <X size={16} />
+              </button>
+            </div>
+
+            <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', border: '1px solid var(--border-light)', fontSize: '0.8125rem' }}>
+              <div style={{ marginBottom: '0.35rem' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Customer: </span>
+                <strong>{resolvingDispute.customerName}</strong> ({resolvingDispute.customerEmail})
+              </div>
+              <div style={{ marginBottom: '0.35rem' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Provider: </span>
+                <strong>{resolvingDispute.providerName}</strong> ({resolvingDispute.providerEmail})
+              </div>
+              <div style={{ marginTop: '0.5rem', fontStyle: 'italic', color: 'var(--text-main)' }}>
+                "{resolvingDispute.description}"
+              </div>
+            </div>
+
+            <form onSubmit={handleResolveDispute}>
+              <div className="form-group">
+                <label className="form-label">Resolution Status</label>
+                <select className="form-control" value={disputeStatusDecision} onChange={(e) => setDisputeStatusDecision(e.target.value)}>
+                  <option value="RESOLVED">Resolved (Action Taken)</option>
+                  <option value="DISMISSED">Dismissed (No Action Required)</option>
+                  <option value="UNDER_REVIEW">Keep Under Review</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Resolution Details / Notes *</label>
+                <textarea
+                  className="form-control"
+                  rows={3}
+                  placeholder="Explain resolution, refund decision, or follow-up..."
+                  value={disputeResolutionNotes}
+                  onChange={(e) => setDisputeResolutionNotes(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.25rem' }}>
+                <button type="submit" className="btn btn-primary btn-sm" style={{ flex: 1 }} disabled={submittingDisputeResolve || !disputeResolutionNotes.trim()}>
+                  {submittingDisputeResolve ? 'Saving...' : 'Submit Resolution'}
+                </button>
+                <button type="button" onClick={() => setResolvingDispute(null)} className="btn btn-secondary btn-sm" style={{ flex: 1 }}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

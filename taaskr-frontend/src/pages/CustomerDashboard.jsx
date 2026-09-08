@@ -51,6 +51,25 @@ export default function CustomerDashboard({ initialTab }) {
   const [profileSuccessMsg, setProfileSuccessMsg] = useState('');
   const [profileErrorMsg, setProfileErrorMsg] = useState('');
 
+  // Address Book state
+  const [addresses, setAddresses] = useState([]);
+  const [loadingAddresses, setLoadingAddresses] = useState(false);
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [editingAddressId, setEditingAddressId] = useState(null);
+  const [addrLabel, setAddrLabel] = useState('HOME');
+  const [addrStreet, setAddrStreet] = useState('');
+  const [addrCity, setAddrCity] = useState('Indore');
+  const [addrPincode, setAddrPincode] = useState('452001');
+  const [addrIsDefault, setAddrIsDefault] = useState(false);
+  const [savingAddress, setSavingAddress] = useState(false);
+
+  // Dispute state
+  const [disputeModalBooking, setDisputeModalBooking] = useState(null);
+  const [disputeReason, setDisputeReason] = useState('SERVICE_QUALITY');
+  const [disputeDescription, setDisputeDescription] = useState('');
+  const [submittingDispute, setSubmittingDispute] = useState(false);
+  const [disputeSuccessMsg, setDisputeSuccessMsg] = useState('');
+
   // Pagination & Modal state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
@@ -62,8 +81,86 @@ export default function CustomerDashboard({ initialTab }) {
   const [reviewText, setReviewText] = useState('');
   const [submittingRating, setSubmittingRating] = useState(false);
 
+  const fetchAddresses = async () => {
+    setLoadingAddresses(true);
+    try {
+      const res = await api.addresses.getAll();
+      setAddresses(Array.isArray(res) ? res : []);
+    } catch (e) {
+      console.error('Failed to load addresses:', e);
+    } finally {
+      setLoadingAddresses(false);
+    }
+  };
+
+  const handleSaveAddress = async (e) => {
+    e.preventDefault();
+    setSavingAddress(true);
+    try {
+      const payload = {
+        label: addrLabel,
+        streetAddress: addrStreet.trim(),
+        city: addrCity.trim(),
+        pincode: addrPincode.trim(),
+        isDefault: addrIsDefault
+      };
+      if (editingAddressId) {
+        await api.addresses.update(editingAddressId, payload);
+      } else {
+        await api.addresses.create(payload);
+      }
+      setShowAddressModal(false);
+      setEditingAddressId(null);
+      setAddrStreet('');
+      fetchAddresses();
+    } catch (err) {
+      alert(`Failed to save address: ${err.message}`);
+    } finally {
+      setSavingAddress(false);
+    }
+  };
+
+  const handleDeleteAddress = async (id) => {
+    if (!confirm('Are you sure you want to remove this saved address?')) return;
+    try {
+      await api.addresses.delete(id);
+      fetchAddresses();
+    } catch (err) {
+      alert(`Failed to delete address: ${err.message}`);
+    }
+  };
+
+  const handleSetDefaultAddress = async (id) => {
+    try {
+      await api.addresses.setDefault(id);
+      fetchAddresses();
+    } catch (err) {
+      alert(`Failed to set default: ${err.message}`);
+    }
+  };
+
+  const handleCreateDispute = async (e) => {
+    e.preventDefault();
+    if (!disputeModalBooking) return;
+    setSubmittingDispute(true);
+    try {
+      await api.disputes.create(disputeModalBooking.id, disputeReason, disputeDescription);
+      setDisputeSuccessMsg('Dispute report submitted. Our support team will investigate and follow up.');
+      setTimeout(() => {
+        setDisputeSuccessMsg('');
+        setDisputeModalBooking(null);
+        setDisputeDescription('');
+      }, 3000);
+      fetchMyBookings();
+    } catch (err) {
+      alert(`Failed to submit dispute: ${err.message}`);
+    } finally {
+      setSubmittingDispute(false);
+    }
+  };
+
   useEffect(() => {
-    if (urlTab && (urlTab === 'bookings' || urlTab === 'profile')) {
+    if (urlTab && (urlTab === 'bookings' || urlTab === 'profile' || urlTab === 'addresses')) {
       setActiveTab(urlTab);
     }
   }, [urlTab]);
@@ -71,6 +168,9 @@ export default function CustomerDashboard({ initialTab }) {
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setSearchParams({ tab });
+    if (tab === 'addresses') {
+      fetchAddresses();
+    }
   };
 
   const fetchMyBookings = async () => {
@@ -235,14 +335,24 @@ export default function CustomerDashboard({ initialTab }) {
     if (!ratingModalData) return;
     setSubmittingRating(true);
     try {
-      await api.bookings.rate(ratingModalData.id, {
-        rating: ratingValue,
-        review: reviewText
+      await api.reviews.create({
+        bookingId: Number(ratingModalData.id),
+        rating: Number(ratingValue),
+        comment: reviewText.trim()
       });
       setRatingModalData(null);
       fetchMyBookings();
     } catch (err) {
-      alert(`Failed to submit rating: ${err.message}`);
+      try {
+        await api.bookings.rate(ratingModalData.id, {
+          rating: ratingValue,
+          review: reviewText
+        });
+        setRatingModalData(null);
+        fetchMyBookings();
+      } catch (legacyErr) {
+        alert(`Failed to submit review: ${err.message}`);
+      }
     } finally {
       setSubmittingRating(false);
     }
@@ -254,11 +364,13 @@ export default function CustomerDashboard({ initialTab }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>
-            {activeTab === 'profile' ? 'Profile Settings' : 'My Bookings'}
+            {activeTab === 'profile' ? 'Profile Settings' : activeTab === 'addresses' ? 'Saved Address Book' : 'My Bookings'}
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
             {activeTab === 'profile'
               ? 'Manage your personal details, verified contacts, and default service locations.'
+              : activeTab === 'addresses'
+              ? 'Manage your saved delivery, home, and office addresses for fast one-click bookings.'
               : 'Track and manage your scheduled services, trips, and payment receipts.'}
           </p>
         </div>
@@ -267,6 +379,22 @@ export default function CustomerDashboard({ initialTab }) {
             <button onClick={fetchMyBookings} className="btn btn-secondary btn-sm">
               <RefreshCw size={13} />
               <span>Refresh</span>
+            </button>
+          )}
+          {activeTab === 'addresses' && (
+            <button
+              onClick={() => {
+                setEditingAddressId(null);
+                setAddrLabel('HOME');
+                setAddrStreet('');
+                setAddrCity(currentUser?.city || 'Indore');
+                setAddrPincode(currentUser?.pincode || '452001');
+                setAddrIsDefault(addresses.length === 0);
+                setShowAddressModal(true);
+              }}
+              className="btn btn-primary btn-sm"
+            >
+              Add New Address
             </button>
           )}
           <Link to="/" className="btn btn-primary btn-sm">
@@ -298,6 +426,30 @@ export default function CustomerDashboard({ initialTab }) {
           <span>My Bookings</span>
           <span className="badge badge-assigned" style={{ fontSize: '0.7rem', padding: '0.1rem 0.45rem' }}>
             {bookings.length}
+          </span>
+        </button>
+
+        <button
+          onClick={() => handleTabChange('addresses')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            padding: '0.6rem 1.1rem',
+            border: 'none',
+            background: 'none',
+            borderBottom: activeTab === 'addresses' ? '2px solid var(--primary)' : '2px solid transparent',
+            color: activeTab === 'addresses' ? 'var(--primary)' : 'var(--text-muted)',
+            fontWeight: activeTab === 'addresses' ? 600 : 500,
+            fontSize: '0.875rem',
+            cursor: 'pointer',
+            transition: 'var(--transition-fast)'
+          }}
+        >
+          <MapPin size={15} />
+          <span>Address Book</span>
+          <span className="badge badge-completed" style={{ fontSize: '0.7rem', padding: '0.1rem 0.45rem' }}>
+            {addresses.length}
           </span>
         </button>
 
@@ -580,8 +732,103 @@ export default function CustomerDashboard({ initialTab }) {
             </button>
           </form>
         </div>
+      ) : activeTab === 'addresses' ? (
+        /* TAB 2: SAVED ADDRESS BOOK */
+        <div>
+          {loadingAddresses ? (
+            <div className="panel" style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Loading saved addresses...</span>
+            </div>
+          ) : addresses.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-state-icon">
+                <MapPin size={22} />
+              </div>
+              <h3 className="empty-state-title">No saved addresses</h3>
+              <p className="empty-state-description">Save your home, office, and regular service locations for faster checkout.</p>
+              <button
+                onClick={() => {
+                  setEditingAddressId(null);
+                  setAddrLabel('HOME');
+                  setAddrStreet('');
+                  setAddrCity(currentUser?.city || 'Indore');
+                  setAddrPincode(currentUser?.pincode || '452001');
+                  setAddrIsDefault(true);
+                  setShowAddressModal(true);
+                }}
+                className="btn btn-primary btn-sm"
+              >
+                Add Your First Address
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+              {addresses.map((addr) => (
+                <div key={addr.id} className="panel" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                      <span className="badge badge-assigned" style={{ textTransform: 'uppercase', fontWeight: 700 }}>
+                        {addr.label || 'ADDRESS'}
+                      </span>
+                      {addr.isDefault && (
+                        <span className="badge badge-completed" style={{ fontSize: '0.6875rem' }}>
+                          Default Address
+                        </span>
+                      )}
+                    </div>
+                    <p style={{ fontWeight: 600, color: 'var(--text-main)', fontSize: '0.875rem', marginBottom: '0.25rem', lineHeight: 1.4 }}>
+                      {addr.streetAddress}
+                    </p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
+                      {addr.city} {addr.state ? `, ${addr.state}` : ''} - {addr.pincode}
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-subtle)' }}>
+                    {!addr.isDefault ? (
+                      <button
+                        onClick={() => handleSetDefaultAddress(addr.id)}
+                        className="btn btn-ghost btn-sm"
+                        style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem' }}
+                      >
+                        Set as Default
+                      </button>
+                    ) : (
+                      <span style={{ fontSize: '0.75rem', color: 'var(--success)', fontWeight: 600 }}>Default</span>
+                    )}
+
+                    <div style={{ display: 'flex', gap: '0.35rem' }}>
+                      <button
+                        onClick={() => {
+                          setEditingAddressId(addr.id);
+                          setAddrLabel(addr.label || 'HOME');
+                          setAddrStreet(addr.streetAddress || '');
+                          setAddrCity(addr.city || 'Indore');
+                          setAddrPincode(addr.pincode || '452001');
+                          setAddrIsDefault(addr.isDefault || false);
+                          setShowAddressModal(true);
+                        }}
+                        className="btn btn-secondary btn-sm"
+                        style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteAddress(addr.id)}
+                        className="btn btn-danger btn-sm"
+                        style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       ) : (
-        /* TAB 2: MY BOOKINGS LIST VIEW */
+        /* TAB 3: MY BOOKINGS LIST VIEW */
         <div>
           {errorMessage && (
             <div style={{
@@ -694,6 +941,21 @@ export default function CustomerDashboard({ initialTab }) {
                       >
                         Details
                       </button>
+
+                      <button
+                        onClick={async () => {
+                          try {
+                            await api.bookings.downloadInvoice(booking.id, booking.bookingCode);
+                          } catch (err) {
+                            alert(`Failed to download invoice: ${err.message}`);
+                          }
+                        }}
+                        className="btn btn-ghost btn-sm"
+                        style={{ padding: '0.25rem 0.45rem', color: 'var(--primary)' }}
+                        title="Download PDF Invoice / Receipt"
+                      >
+                        <FileText size={13} />
+                      </button>
                       
                       {booking.status === 'COMPLETED' && !booking.rating && (
                         <button
@@ -714,6 +976,19 @@ export default function CustomerDashboard({ initialTab }) {
                           <Star size={12} fill="#D97706" /> {booking.rating}/5
                         </span>
                       )}
+
+                      <button
+                        onClick={() => {
+                          setDisputeModalBooking(booking);
+                          setDisputeReason('SERVICE_QUALITY');
+                          setDisputeDescription('');
+                        }}
+                        className="btn btn-ghost btn-sm"
+                        style={{ color: '#EF4444', padding: '0.25rem 0.45rem' }}
+                        title="Raise Dispute / Report Issue"
+                      >
+                        <AlertCircle size={13} />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -767,35 +1042,49 @@ export default function CustomerDashboard({ initialTab }) {
                   }}
                   className="btn btn-sm"
                   style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.35rem',
                     backgroundColor: '#10b981',
                     borderColor: '#059669',
                     color: '#ffffff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.4rem',
-                    padding: '0.55rem',
+                    padding: '0.45rem',
                     fontWeight: 600,
                     borderRadius: 'var(--radius-sm)'
                   }}
                 >
-                  <Navigation size={15} />
-                  <span>Track Provider Live on Map</span>
+                  <Navigation size={13} />
+                  <span>Open Live Map & Provider GPS Route</span>
                 </button>
               )}
 
               <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Service:</span>
-                <strong style={{ color: 'var(--text-main)' }}>{selectedBooking.serviceName}</strong>
+                <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{selectedBooking.serviceName}</span>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Scheduled Time:</span>
-                <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>{selectedBooking.bookingDate} at {formatLocalTime(selectedBooking.startTime)}</span>
+                <span style={{ color: 'var(--text-muted)' }}>Schedule:</span>
+                <span style={{ color: 'var(--text-main)' }}>
+                  {selectedBooking.bookingDate} at {formatLocalTime(selectedBooking.startTime)}
+                </span>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
-                <span style={{ color: 'var(--text-muted)' }}>{selectedBooking.dropAddress ? 'Pickup Location:' : 'Service Address:'}</span>
+                <span style={{ color: 'var(--text-muted)' }}>Amount & Payment:</span>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontWeight: 700, color: 'var(--text-main)', fontFeatureSettings: 'tnum' }}>
+                    ₹{selectedBooking.finalAmount}
+                  </div>
+                  <span className={`badge ${selectedBooking.paymentStatus === 'PAID' ? 'badge-completed' : 'badge-pending'}`}>
+                    {selectedBooking.paymentStatus} ({selectedBooking.paymentMethod === 'AFTER_SERVICE' ? 'Cash on Completion' : 'Online'})
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Service Location:</span>
                 <span style={{ color: 'var(--text-main)', textAlign: 'right', maxWidth: '240px' }}>
                   {selectedBooking.address}, {selectedBooking.city} - {selectedBooking.pincode}
                 </span>
@@ -867,6 +1156,34 @@ export default function CustomerDashboard({ initialTab }) {
                 </button>
               )}
               <button
+                onClick={async () => {
+                  try {
+                    await api.bookings.downloadInvoice(selectedBooking.id, selectedBooking.bookingCode);
+                  } catch (err) {
+                    alert(`Failed to download invoice: ${err.message}`);
+                  }
+                }}
+                className="btn btn-secondary btn-sm"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                title="Download Official PDF Invoice"
+              >
+                <FileText size={13} />
+                <span>Invoice PDF</span>
+              </button>
+              <button
+                onClick={() => {
+                  const b = selectedBooking;
+                  setSelectedBooking(null);
+                  setDisputeModalBooking(b);
+                  setDisputeReason('SERVICE_QUALITY');
+                  setDisputeDescription('');
+                }}
+                className="btn btn-secondary btn-sm"
+                style={{ color: '#EF4444' }}
+              >
+                Raise Dispute
+              </button>
+              <button
                 onClick={() => setSelectedBooking(null)}
                 className="btn btn-secondary btn-sm"
                 style={{ flex: 1 }}
@@ -874,6 +1191,152 @@ export default function CustomerDashboard({ initialTab }) {
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Address Create / Edit Modal */}
+      {showAddressModal && (
+        <div className="modal-overlay" onClick={() => setShowAddressModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
+            <div className="modal-header">
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>
+                {editingAddressId ? 'Edit Address' : 'Add New Saved Address'}
+              </h3>
+              <button onClick={() => setShowAddressModal(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveAddress}>
+              <div className="form-group">
+                <label className="form-label">Address Tag / Label</label>
+                <select className="form-control" value={addrLabel} onChange={(e) => setAddrLabel(e.target.value)}>
+                  <option value="HOME">Home</option>
+                  <option value="WORK">Work / Office</option>
+                  <option value="OTHER">Other / Family</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Street Address *</label>
+                <input
+                  type="text"
+                  placeholder="Flat/House No, Building, Landmark, Street"
+                  className="form-control"
+                  value={addrStreet}
+                  onChange={(e) => setAddrStreet(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">City *</label>
+                  <input
+                    type="text"
+                    placeholder="Indore"
+                    className="form-control"
+                    value={addrCity}
+                    onChange={(e) => setAddrCity(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Pincode *</label>
+                  <input
+                    type="text"
+                    placeholder="452001"
+                    className="form-control"
+                    value={addrPincode}
+                    onChange={(e) => setAddrPincode(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                <label className="form-checkbox-label">
+                  <input
+                    type="checkbox"
+                    className="form-checkbox"
+                    checked={addrIsDefault}
+                    onChange={(e) => setAddrIsDefault(e.target.checked)}
+                  />
+                  <span>Set as default booking address</span>
+                </label>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button type="submit" className="btn btn-primary btn-sm" style={{ flex: 1 }} disabled={savingAddress || !addrStreet.trim()}>
+                  {savingAddress ? 'Saving...' : editingAddressId ? 'Update Address' : 'Save Address'}
+                </button>
+                <button type="button" onClick={() => setShowAddressModal(false)} className="btn btn-secondary btn-sm" style={{ flex: 1 }}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Dispute Modal */}
+      {disputeModalBooking && (
+        <div className="modal-overlay" onClick={() => setDisputeModalBooking(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '420px' }}>
+            <div className="modal-header">
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>
+                Raise Dispute / Report Issue
+              </h3>
+              <button onClick={() => setDisputeModalBooking(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                <X size={16} />
+              </button>
+            </div>
+
+            {disputeSuccessMsg ? (
+              <div style={{ padding: '1rem', background: 'var(--success-bg)', border: '1px solid var(--success-border)', color: 'var(--success)', borderRadius: 'var(--radius-sm)', fontSize: '0.8125rem' }}>
+                {disputeSuccessMsg}
+              </div>
+            ) : (
+              <form onSubmit={handleCreateDispute}>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', marginBottom: '1rem' }}>
+                  Reporting issue for booking #{String(disputeModalBooking.id).slice(-6)} ({disputeModalBooking.serviceName}).
+                </p>
+
+                <div className="form-group">
+                  <label className="form-label">Dispute Reason *</label>
+                  <select className="form-control" value={disputeReason} onChange={(e) => setDisputeReason(e.target.value)}>
+                    <option value="SERVICE_QUALITY">Service Quality Issue</option>
+                    <option value="PROVIDER_NO_SHOW">Provider Did Not Show Up</option>
+                    <option value="BILLING_ISSUE">Incorrect Billing / Overcharged</option>
+                    <option value="DAMAGE_OR_LOSS">Damage or Loss of Goods</option>
+                    <option value="UNPROFESSIONAL_BEHAVIOR">Unprofessional Behavior</option>
+                    <option value="OTHER">Other Reason</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Detailed Explanation *</label>
+                  <textarea
+                    className="form-control"
+                    rows={4}
+                    placeholder="Describe what went wrong in detail..."
+                    value={disputeDescription}
+                    onChange={(e) => setDisputeDescription(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.25rem' }}>
+                  <button type="submit" className="btn btn-danger btn-sm" style={{ flex: 1 }} disabled={submittingDispute || !disputeDescription.trim()}>
+                    {submittingDispute ? 'Submitting...' : 'Submit Dispute'}
+                  </button>
+                  <button type="button" onClick={() => setDisputeModalBooking(null)} className="btn btn-secondary btn-sm" style={{ flex: 1 }}>
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}
@@ -973,6 +1436,3 @@ export default function CustomerDashboard({ initialTab }) {
     </div>
   );
 }
-
-
-

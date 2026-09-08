@@ -11,7 +11,16 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
-@Table(name = "bookings")
+@Table(
+        name = "bookings",
+        indexes = {
+                @Index(name = "idx_booking_user_status", columnList = "user_id, status"),
+                @Index(name = "idx_booking_provider_status", columnList = "provider_id, status"),
+                @Index(name = "idx_booking_date", columnList = "bookingDate"),
+                @Index(name = "idx_booking_created_at", columnList = "createdAt"),
+                @Index(name = "idx_booking_code", columnList = "bookingCode")
+        }
+)
 public class Booking {
 
     @Id

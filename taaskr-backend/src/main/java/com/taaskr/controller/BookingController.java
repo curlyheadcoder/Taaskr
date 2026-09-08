@@ -20,9 +20,11 @@ import com.taaskr.dto.booking.AvailableProviderResponse;
 public class BookingController {
 
     private final BookingService bookingService;
+    private final com.taaskr.service.InvoicePdfService invoicePdfService;
 
-    public BookingController(BookingService bookingService) {
+    public BookingController(BookingService bookingService, com.taaskr.service.InvoicePdfService invoicePdfService) {
         this.bookingService = bookingService;
+        this.invoicePdfService = invoicePdfService;
     }
 
     @PostMapping
@@ -33,9 +35,28 @@ public class BookingController {
     public List<BookingResponse> getMyBookings(Authentication authentication){
         return bookingService.getMyBookings(authentication.getName());
     }
+
+    @GetMapping("/my/page")
+    public com.taaskr.dto.common.PageResponse<BookingResponse> getMyBookingsPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Authentication authentication){
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt"));
+        return bookingService.getMyBookings(authentication.getName(), pageable);
+    }
+
     @GetMapping("/{bookingId}")
     public BookingResponse getMyBookingById(@PathVariable Long bookingId, Authentication authentication){
         return bookingService.getMyBookingById(authentication.getName(), bookingId);
+    }
+
+    @GetMapping("/{bookingId}/invoice")
+    public org.springframework.http.ResponseEntity<byte[]> downloadInvoice(@PathVariable Long bookingId, Authentication authentication) {
+        byte[] pdfBytes = invoicePdfService.generateInvoicePdf(bookingId, authentication.getName());
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.setContentType(org.springframework.http.MediaType.APPLICATION_PDF);
+        headers.setContentDisposition(org.springframework.http.ContentDisposition.inline().filename("Taaskr_Invoice_" + bookingId + ".pdf").build());
+        return new org.springframework.http.ResponseEntity<>(pdfBytes, headers, org.springframework.http.HttpStatus.OK);
     }
 
     @PostMapping("/{bookingId}/rate")

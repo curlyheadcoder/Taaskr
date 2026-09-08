@@ -5,7 +5,7 @@ import LocationPicker from '../components/LocationPicker';
 import { 
   Truck, MapPin, Package, ShieldCheck, CheckCircle2, Clock, 
   AlertCircle, ArrowRight, ChevronRight, RefreshCw, Calendar, 
-  Info, Check, Navigation
+  Info, Check, Navigation, Star, MessageSquare
 } from 'lucide-react';
 
 export default function ServiceDetails() {
@@ -14,11 +14,14 @@ export default function ServiceDetails() {
   const [service, setService] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [reviews, setReviews] = useState([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('user');
+      const saved = localStorage.getItem('taaskr_current_user') || localStorage.getItem('user');
       const u = saved ? JSON.parse(saved) : null;
+
       if (u?.role === 'PROVIDER') {
         navigate('/provider', { replace: true });
       } else if (u?.role === 'ADMIN') {
@@ -165,7 +168,21 @@ export default function ServiceDetails() {
         setLoading(false);
       }
     };
+
+    const fetchReviews = async () => {
+      setLoadingReviews(true);
+      try {
+        const revList = await api.reviews.getByService(serviceId);
+        setReviews(Array.isArray(revList) ? revList : []);
+      } catch (e) {
+        console.error('Failed to load reviews', e);
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
+
     fetchService();
+    fetchReviews();
   }, [serviceId]);
 
   const fetchEstimates = async (currentService = service) => {
@@ -762,6 +779,124 @@ export default function ServiceDetails() {
           </div>
         </div>
       )}
+
+      {/* Verified Customer Reviews & Ratings Section */}
+      <div className="panel" style={{ marginTop: '2rem' }}>
+        <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 className="panel-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Star size={18} color="#F59E0B" fill="#F59E0B" />
+            <span>Verified Customer Reviews & Ratings</span>
+            <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+              ({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})
+            </span>
+          </h3>
+          {reviews.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: 'rgba(245, 158, 11, 0.1)', padding: '0.35rem 0.75rem', borderRadius: '999px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+              <Star size={14} color="#F59E0B" fill="#F59E0B" />
+              <span style={{ fontWeight: 700, fontSize: '0.875rem', color: '#D97706' }}>
+                {(reviews.reduce((acc, r) => acc + (r.rating || 5), 0) / reviews.length).toFixed(1)} / 5.0
+              </span>
+            </div>
+          )}
+        </div>
+
+        {loadingReviews ? (
+          <div style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+            Loading verified reviews...
+          </div>
+        ) : reviews.length === 0 ? (
+          <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+            <p style={{ margin: '0 0 0.5rem 0' }}>No customer reviews posted for this service yet.</p>
+            <span style={{ fontSize: '0.75rem' }}>Book this service to be the first to leave a verified rating!</span>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+            {reviews.map((r) => (
+              <div
+                key={r.id}
+                style={{
+                  padding: '1rem 1.25rem',
+                  borderRadius: 'var(--radius-sm)',
+                  backgroundColor: 'var(--bg-subtle)',
+                  border: '1px solid var(--border-light)'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                    <div style={{
+                      width: '28px',
+                      height: '28px',
+                      borderRadius: '50%',
+                      backgroundColor: 'var(--primary-subtle)',
+                      color: 'var(--primary)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.75rem',
+                      fontWeight: 700
+                    }}>
+                      {r.userName ? r.userName.charAt(0).toUpperCase() : 'U'}
+                    </div>
+                    <div>
+                      <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-main)', display: 'block' }}>
+                        {r.userName || 'Verified Customer'}
+                      </span>
+                      {r.createdAt && (
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                          {new Date(r.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <Star
+                        key={s}
+                        size={14}
+                        color={s <= (r.rating || 5) ? '#F59E0B' : 'var(--border-light)'}
+                        fill={s <= (r.rating || 5) ? '#F59E0B' : 'none'}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {r.comment && (
+                  <p style={{ margin: '0.35rem 0', fontSize: '0.8125rem', color: 'var(--text-main)', lineHeight: 1.45 }}>
+                    {r.comment}
+                  </p>
+                )}
+
+                {/* Sub-ratings if available */}
+                {(r.qualityRating || r.punctualityRating) && (
+                  <div style={{ display: 'flex', gap: '1rem', marginTop: '0.45rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    {r.qualityRating && <span>Quality: <strong>{r.qualityRating}/5</strong></span>}
+                    {r.punctualityRating && <span>Punctuality: <strong>{r.punctualityRating}/5</strong></span>}
+                  </div>
+                )}
+
+                {/* Provider Reply */}
+                {r.providerReply && (
+                  <div style={{
+                    marginTop: '0.75rem',
+                    padding: '0.65rem 0.85rem',
+                    backgroundColor: 'var(--bg-card)',
+                    borderRadius: 'var(--radius-sm)',
+                    borderLeft: '3px solid var(--primary)',
+                    fontSize: '0.78rem'
+                  }}>
+                    <div style={{ fontWeight: 600, color: 'var(--primary)', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                      <MessageSquare size={13} />
+                      <span>Partner Response ({r.providerName || 'Provider'}):</span>
+                    </div>
+                    <p style={{ margin: 0, color: 'var(--text-muted)' }}>{r.providerReply}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -49,6 +49,7 @@ export default function BookingFlow() {
   const [newBooking, setNewBooking] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('online');
+  const [savedAddresses, setSavedAddresses] = useState([]);
 
   // Provider Selection State
   const [availableProviders, setAvailableProviders] = useState([]);
@@ -58,11 +59,26 @@ export default function BookingFlow() {
   useEffect(() => {
     const prefillUser = async () => {
       try {
-        const user = await api.auth.me();
+        const [user, addresses] = await Promise.all([
+          api.auth.me(),
+          api.addresses.getAll().catch(() => [])
+        ]);
         if (user) {
           setCurrentUser(user);
           if (!pickupCity && user.city) setCity(user.city);
           if (!pickupPincode && user.pincode) setPincode(user.pincode);
+        }
+        if (Array.isArray(addresses)) {
+          setSavedAddresses(addresses);
+          const defaultAddr = addresses.find(a => a.isDefault);
+          if (defaultAddr && !address) {
+            setAddress(defaultAddr.streetAddress);
+            if (defaultAddr.city) setCity(defaultAddr.city);
+            if (defaultAddr.pincode) setPincode(defaultAddr.pincode);
+            if (defaultAddr.latitude && defaultAddr.longitude) {
+              setCoordinates({ latitude: defaultAddr.latitude, longitude: defaultAddr.longitude });
+            }
+          }
         }
       } catch (e) {}
     };
@@ -424,6 +440,51 @@ export default function BookingFlow() {
             </div>
           )}
           
+          {savedAddresses.length > 0 && (
+            <div style={{ marginBottom: '1rem' }}>
+              <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>Saved Addresses</span>
+                <span style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: 500 }}>Click to auto-fill</span>
+              </label>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {savedAddresses.map((addr) => (
+                  <button
+                    key={addr.id}
+                    type="button"
+                    onClick={() => {
+                      setAddress(addr.streetAddress);
+                      if (addr.city) setCity(addr.city);
+                      if (addr.pincode) setPincode(addr.pincode);
+                      if (addr.latitude && addr.longitude) {
+                        setCoordinates({ latitude: addr.latitude, longitude: addr.longitude });
+                      }
+                    }}
+                    style={{
+                      padding: '0.35rem 0.65rem',
+                      borderRadius: 'var(--radius-sm)',
+                      fontSize: '0.75rem',
+                      border: '1px solid var(--border-light)',
+                      backgroundColor: address === addr.streetAddress ? 'var(--primary-subtle)' : 'var(--bg-subtle)',
+                      color: address === addr.streetAddress ? 'var(--primary)' : 'var(--text-main)',
+                      fontWeight: address === addr.streetAddress ? 700 : 500,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      transition: 'all 0.15s'
+                    }}
+                  >
+                    <span style={{ textTransform: 'capitalize', fontWeight: 700 }}>{addr.label?.toLowerCase() || 'Address'}:</span>
+                    <span style={{ maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {addr.streetAddress}
+                    </span>
+                    {addr.isDefault && <span className="badge badge-completed" style={{ fontSize: '0.625rem', padding: '0.05rem 0.3rem' }}>Default</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="form-group">
             <label className="form-label">
               <span>{isVehicle ? 'Pickup Street Address *' : 'Street Address *'}</span>
