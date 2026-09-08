@@ -557,29 +557,6 @@ export default function AdminDashboard() {
           </button>
 
           <button 
-            onClick={() => { setActiveTab('disputes'); setDisputeTypeTab('PROVIDER'); }}
-            className={`sidebar-item ${activeTab === 'disputes' && disputeTypeTab === 'PROVIDER' ? 'active' : ''}`}
-            title="Partner Desk (Provider Tickets)"
-            style={{ position: 'relative' }}
-          >
-            <MessageSquare size={16} />
-            <span>Partner Desk</span>
-            {discussions.filter(d => d.status === 'OPEN' || d.status === 'IN_REVIEW').length > 0 && (
-              <span style={{ 
-                marginLeft: 'auto', 
-                background: 'var(--primary)', 
-                color: '#fff', 
-                fontSize: '0.68rem', 
-                fontWeight: 700, 
-                padding: '0.1rem 0.45rem', 
-                borderRadius: '10px' 
-              }}>
-                {discussions.filter(d => d.status === 'OPEN' || d.status === 'IN_REVIEW').length}
-              </span>
-            )}
-          </button>
-
-          <button 
             onClick={() => setActiveTab('catalog')}
             className={`sidebar-item ${activeTab === 'catalog' ? 'active' : ''}`}
             title="Service Catalog"
@@ -666,10 +643,10 @@ export default function AdminDashboard() {
           <button 
             onClick={() => { setActiveTab('disputes'); }}
             className={`sidebar-item ${activeTab === 'disputes' ? 'active' : ''}`}
-            title="Disputes & Issues"
+            title="Help Desk"
           >
-            <AlertCircle size={16} color={(disputes.filter(d => d.status === 'OPEN' || d.status === 'UNDER_REVIEW').length + discussions.filter(d => d.status === 'OPEN' || d.status === 'IN_REVIEW').length) > 0 ? '#EF4444' : 'currentColor'} />
-            <span>Disputes & Issues</span>
+            <HelpCircle size={16} color={(disputes.filter(d => d.status === 'OPEN' || d.status === 'UNDER_REVIEW').length + discussions.filter(d => d.status === 'OPEN' || d.status === 'IN_REVIEW').length) > 0 ? '#EF4444' : 'currentColor'} />
+            <span>Help Desk</span>
             {(disputes.filter(d => d.status === 'OPEN' || d.status === 'UNDER_REVIEW').length + discussions.filter(d => d.status === 'OPEN' || d.status === 'IN_REVIEW').length) > 0 && (
               <span style={{ 
                 marginLeft: 'auto', 
