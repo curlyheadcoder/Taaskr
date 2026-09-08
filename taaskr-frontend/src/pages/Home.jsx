@@ -2256,11 +2256,11 @@ export default function Home() {
           onSelectCategory={setSelectedCategory}
         />
 
-        {/* Hero Content Container with Restrained Professional Card */}
+        {/* Hero Content Container with Frosted Glass Shield */}
         <div style={{ maxWidth: '960px', margin: '0 auto', width: '100%', position: 'relative', zIndex: 10, padding: '1rem' }}>
-          <div className="hero-content-glass" style={{ background: 'transparent', backdropFilter: 'none', WebkitBackdropFilter: 'none' }}>
+          <div className="hero-content-glass">
             <div className="hero-pill-tag" style={{ margin: '0 auto 1.25rem auto' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--success)', display: 'inline-block' }} />
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--success)', display: 'inline-block', boxShadow: '0 0 10px var(--success)' }} />
               <span>
                 Verified Service Marketplace • Real-Time Dispatch
               </span>
@@ -2269,9 +2269,14 @@ export default function Home() {
             <h1 className="hero-title" style={{ maxWidth: '820px', margin: '0 auto 1.25rem auto' }}>
               On-Demand Services.<br />
               <span
+                className="hero-gradient-text"
                 style={{
-                  color: 'var(--accent)',
-                  fontWeight: 800
+                  backgroundImage: ambientHeroColor.gradient,
+                  color: ambientHeroColor.badgeColor || '#1E40AF',
+                  WebkitBackgroundClip: 'text',
+                  backgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  transition: 'background-image 0.4s ease, color 0.4s ease'
                 }}
               >
                 Engineered for Speed.
@@ -2280,32 +2285,34 @@ export default function Home() {
 
             {/* Dynamic Live Cycling Service Highlight Pill Synchronized with Bouncing Tiles */}
             {(() => {
+              const activeHighlightTheme = getCategoryTheme(activeHighlightService);
               return (
                 <div
                   className="hero-highlight-pill"
                   style={{
+                    '--highlight-color': activeHighlightTheme.primary,
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '0.6rem',
                     padding: '0.45rem 1.15rem',
-                    borderRadius: 'var(--radius-full)',
-                    border: '1px solid var(--border-strong)',
-                    backgroundColor: 'var(--bg-card)',
-                    boxShadow: 'var(--shadow-xs)',
-                    transition: 'all 0.3s ease',
+                    borderRadius: '999px',
+                    border: `1.5px solid ${activeHighlightTheme.primary}50`,
+                    backgroundColor: `${activeHighlightTheme.primary}12`,
+                    boxShadow: `0 4px 18px ${activeHighlightTheme.glow || 'rgba(0,0,0,0.06)'}`,
+                    transition: 'border-color 0.4s ease, background-color 0.4s ease, box-shadow 0.4s ease',
                     marginBottom: '1.25rem'
                   }}
                 >
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>
                     Need fast
                   </span>
                   <span
                     key={activeHighlightService}
                     className="hero-highlight-text animate-fade-in"
                     style={{
-                      color: 'var(--accent)',
+                      color: activeHighlightTheme.primary,
                       fontWeight: 800,
-                      transition: 'color 0.3s ease'
+                      transition: 'color 0.4s ease'
                     }}
                   >
                     {activeHighlightService}?
@@ -2313,12 +2320,12 @@ export default function Home() {
                   <span style={{
                     fontSize: '0.72rem',
                     padding: '0.15rem 0.5rem',
-                    borderRadius: 'var(--radius-xs)',
-                    backgroundColor: 'var(--accent-light)',
-                    color: 'var(--accent-text)',
+                    borderRadius: '4px',
+                    backgroundColor: `${activeHighlightTheme.primary}22`,
+                    color: activeHighlightTheme.primary,
                     fontWeight: 700,
-                    border: '1px solid var(--warning-border)',
-                    transition: 'all 0.3s ease'
+                    border: `1px solid ${activeHighlightTheme.primary}40`,
+                    transition: 'all 0.4s ease'
                   }}>
                     Book in 60s
                   </span>
@@ -2338,11 +2345,17 @@ export default function Home() {
                   const elem = document.getElementById('services-catalog');
                   if (elem) elem.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="btn btn-primary btn-lg"
+                className="btn btn-primary"
                 style={{
+                  borderRadius: '999px',
+                  padding: '0.75rem 2rem',
+                  fontSize: '0.95rem',
+                  fontWeight: 700,
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.55rem'
+                  gap: '0.55rem',
+                  boxShadow: `0 8px 24px ${ambientHeroColor.glow || 'rgba(56, 189, 248, 0.25)'}`,
+                  transition: 'all 0.3s ease'
                 }}
               >
                 <span>Explore Verified Services</span>

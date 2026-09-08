@@ -422,19 +422,20 @@ export default function Navbar() {
           <Link
             to="/admin"
             style={{
-              padding: '0.45rem 1.15rem',
-              borderRadius: 'var(--radius-sm)',
-              fontSize: '0.84rem',
+              padding: '0.45rem 1.35rem',
+              borderRadius: '24px',
+              fontSize: '0.875rem',
               fontWeight: 600,
-              color: 'var(--text-main)',
-              backgroundColor: location.pathname === '/admin' ? 'var(--bg-hover)' : 'var(--bg-subtle)',
-              border: '1px solid var(--border-light)',
+              color: location.pathname === '/admin' ? '#818cf8' : 'var(--text-main)',
+              backgroundColor: location.pathname === '/admin' ? 'rgba(99, 102, 241, 0.12)' : 'var(--bg-subtle)',
+              border: location.pathname === '/admin' ? '1px solid rgba(99, 102, 241, 0.4)' : '1px solid var(--border-light)',
               textDecoration: 'none',
               letterSpacing: '0.01em',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.45rem',
-              transition: 'var(--transition-fast)'
+              transition: 'all 0.2s ease',
+              boxShadow: location.pathname === '/admin' ? '0 0 12px rgba(99, 102, 241, 0.15)' : 'none'
             }}
           >
             <ShieldCheck size={16} />
@@ -452,19 +453,20 @@ export default function Navbar() {
               window.dispatchEvent(new CustomEvent('switch-provider-tab', { detail: 'tasks' }));
             }}
             style={{
-              padding: '0.45rem 1rem',
-              borderRadius: 'var(--radius-sm)',
-              fontSize: '0.84rem',
+              padding: '0.45rem 1.25rem',
+              borderRadius: '24px',
+              fontSize: '0.875rem',
               fontWeight: 600,
               cursor: 'pointer',
-              color: 'var(--text-main)',
-              backgroundColor: (location.pathname === '/provider' && providerTab !== 'discussions') ? 'var(--bg-hover)' : 'var(--bg-card)',
-              border: (location.pathname === '/provider' && providerTab !== 'discussions') ? '1px solid var(--border-strong)' : '1px solid var(--border-light)',
+              color: (location.pathname === '/provider' && providerTab !== 'discussions') ? '#34d399' : 'var(--text-main)',
+              backgroundColor: (location.pathname === '/provider' && providerTab !== 'discussions') ? 'rgba(16, 185, 129, 0.14)' : 'var(--bg-subtle)',
+              border: (location.pathname === '/provider' && providerTab !== 'discussions') ? '1px solid rgba(16, 185, 129, 0.45)' : '1px solid var(--border-light)',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.45rem',
               letterSpacing: '0.01em',
-              transition: 'var(--transition-fast)'
+              transition: 'all 0.2s ease',
+              boxShadow: (location.pathname === '/provider' && providerTab !== 'discussions') ? '0 0 14px rgba(16, 185, 129, 0.2)' : 'none'
             }}
           >
             <Briefcase size={15} />
@@ -479,19 +481,20 @@ export default function Navbar() {
               window.dispatchEvent(new CustomEvent('switch-provider-tab', { detail: 'discussions' }));
             }}
             style={{
-              padding: '0.45rem 1rem',
-              borderRadius: 'var(--radius-sm)',
-              fontSize: '0.84rem',
+              padding: '0.45rem 1.15rem',
+              borderRadius: '24px',
+              fontSize: '0.875rem',
               fontWeight: 600,
               cursor: 'pointer',
-              color: 'var(--text-main)',
-              backgroundColor: (location.pathname === '/provider' && providerTab === 'discussions') ? 'var(--bg-hover)' : 'var(--bg-card)',
-              border: (location.pathname === '/provider' && providerTab === 'discussions') ? '1px solid var(--border-strong)' : '1px solid var(--border-light)',
+              color: (location.pathname === '/provider' && providerTab === 'discussions') ? '#34d399' : 'var(--text-main)',
+              backgroundColor: (location.pathname === '/provider' && providerTab === 'discussions') ? 'rgba(16, 185, 129, 0.14)' : 'var(--bg-subtle)',
+              border: (location.pathname === '/provider' && providerTab === 'discussions') ? '1px solid rgba(16, 185, 129, 0.45)' : '1px solid var(--border-light)',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.45rem',
               letterSpacing: '0.01em',
-              transition: 'var(--transition-fast)'
+              transition: 'all 0.2s ease',
+              boxShadow: (location.pathname === '/provider' && providerTab === 'discussions') ? '0 0 14px rgba(16, 185, 129, 0.2)' : 'none'
             }}
           >
             <MessageSquare size={15} />

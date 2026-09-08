@@ -523,16 +523,17 @@ export default function AdminDashboard() {
                       type="button"
                       onClick={() => setDiscussionFilter(filter)}
                       style={{
-                        padding: '0.25rem 0.55rem',
+                        padding: '0.3rem 0.65rem',
                         fontSize: '0.72rem',
                         fontWeight: 600,
-                        borderRadius: 'var(--radius-sm)',
+                        borderRadius: '6px',
                         border: '1px solid',
-                        borderColor: discussionFilter === filter ? 'var(--border-strong)' : 'var(--border-light)',
-                        background: discussionFilter === filter ? 'var(--bg-hover)' : 'transparent',
-                        color: 'var(--text-main)',
+                        borderColor: discussionFilter === filter ? 'rgba(99, 102, 241, 0.6)' : 'var(--border-light)',
+                        background: discussionFilter === filter ? 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)' : 'transparent',
+                        color: discussionFilter === filter ? '#ffffff' : 'var(--text-muted)',
+                        boxShadow: discussionFilter === filter ? '0 2px 8px rgba(99, 102, 241, 0.3)' : 'none',
                         cursor: 'pointer',
-                        transition: 'var(--transition-fast)'
+                        transition: 'all 0.15s ease'
                       }}
                     >
                       {filter.replace('_', ' ')}
@@ -641,8 +642,8 @@ export default function AdminDashboard() {
                     {activeDiscussion.status !== 'RESOLVED' && (
                       <button 
                         onClick={() => handleUpdateDiscussionStatus(activeDiscussion.id, 'RESOLVED')}
-                        className="btn btn-success btn-sm"
-                        style={{ fontSize: '0.75rem' }}
+                        className="btn btn-primary btn-sm"
+                        style={{ fontSize: '0.75rem', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', border: 'none', boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)' }}
                       >
                         <CheckCircle2 size={13} />
                         Mark Resolved
@@ -675,23 +676,22 @@ export default function AdminDashboard() {
                           alignSelf: isAdmin ? 'flex-end' : 'flex-start'
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
-                          <strong style={{ color: 'var(--text-main)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                          <strong style={{ color: isAdmin ? '#818CF8' : 'var(--text-main)' }}>
                             {isAdmin ? '🛡️ Admin Support' : `🛠️ ${msg.senderName || 'Provider'}`}
                           </strong>
                           <span>• {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                         <div style={{
-                          padding: '0.75rem 1rem',
-                          borderRadius: 'var(--radius-md)',
-                          borderTopRightRadius: isAdmin ? '2px' : 'var(--radius-md)',
-                          borderTopLeftRadius: isAdmin ? 'var(--radius-md)' : '2px',
-                          background: isAdmin ? 'var(--primary)' : 'var(--bg-card)',
-                          color: isAdmin ? 'var(--text-inverse)' : 'var(--text-main)',
-                          border: '1px solid var(--border-light)',
-                          fontSize: '0.84rem',
+                          padding: '0.85rem 1.15rem',
+                          borderRadius: isAdmin ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                          background: isAdmin ? 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)' : 'var(--bg-subtle)',
+                          color: isAdmin ? '#ffffff' : 'var(--text-main)',
+                          border: isAdmin ? 'none' : '1px solid var(--border-light)',
+                          fontSize: '0.875rem',
                           lineHeight: '1.45',
-                          whiteSpace: 'pre-wrap'
+                          whiteSpace: 'pre-wrap',
+                          boxShadow: isAdmin ? '0 4px 14px rgba(99, 102, 241, 0.25)' : '0 2px 4px rgba(0,0,0,0.04)'
                         }}>
                           {msg.message}
                         </div>
@@ -701,7 +701,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Reply Box */}
-                <form onSubmit={handleAdminSendReply} style={{ padding: '1rem 1.25rem', borderTop: '1px solid var(--border-light)', background: 'var(--bg-subtle)', display: 'flex', gap: '0.75rem' }}>
+                <form onSubmit={handleAdminSendReply} style={{ padding: '1rem 1.25rem', borderTop: '1px solid var(--border-subtle)', background: 'var(--bg-subtle)', display: 'flex', gap: '0.75rem' }}>
                   <textarea
                     value={adminReplyText}
                     onChange={(e) => setAdminReplyText(e.target.value)}
@@ -722,8 +722,11 @@ export default function AdminDashboard() {
                     className="btn btn-primary"
                     style={{ 
                       alignSelf: 'flex-end', 
-                      height: '38px', 
-                      padding: '0 1.25rem',
+                      height: '42px', 
+                      padding: '0 1.35rem',
+                      background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
+                      border: 'none',
+                      boxShadow: '0 4px 14px rgba(99, 102, 241, 0.35)',
                       fontWeight: 600
                     }}
                   >

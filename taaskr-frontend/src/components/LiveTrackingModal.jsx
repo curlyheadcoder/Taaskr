@@ -33,11 +33,11 @@ const createProviderIcon = (isVehicle, providerName) => {
     className: 'custom-live-provider-marker',
     html: `
       <div style="position: relative; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -50%);">
-        <div style="position: absolute; width: 40px; height: 40px; border-radius: 50%; background: rgba(217, 119, 6, 0.2); animation: taaskr-pulse-radar 2s infinite ease-out;"></div>
-        <div style="width: 34px; height: 34px; border-radius: 50%; background: #18181B; display: flex; align-items: center; justify-content: center; font-size: 16px; border: 2px solid #D97706; z-index: 2;">
+        <div style="position: absolute; width: 44px; height: 44px; border-radius: 50%; background: rgba(34, 197, 94, 0.28); animation: taaskr-pulse-radar 2s infinite ease-out;"></div>
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #10b981 0%, #059669 100%); display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.45); border: 2.5px solid #ffffff; z-index: 2;">
           ${iconEmoji}
         </div>
-        <div style="margin-top: 4px; background: #18181B; color: #FFFFFF; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 600; white-space: nowrap; border: 1px solid #3F3F46; z-index: 2;">
+        <div style="margin-top: 4px; background: rgba(15, 23, 42, 0.92); color: #ffffff; padding: 2px 8px; border-radius: 9999px; font-size: 10px; font-weight: 700; white-space: nowrap; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 2px 6px rgba(0,0,0,0.3); z-index: 2;">
           ${providerName ? providerName.split(' ')[0] : 'Provider'}
         </div>
       </div>
@@ -48,17 +48,17 @@ const createProviderIcon = (isVehicle, providerName) => {
 };
 
 const createCustomerIcon = (isDrop) => {
-  const bg = isDrop ? '#DC2626' : '#18181B';
+  const bg = isDrop ? 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)' : 'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)';
   const label = isDrop ? 'Drop Point' : 'Service Location';
   const emoji = isDrop ? '🏁' : '🏠';
   return L.divIcon({
     className: 'custom-destination-marker',
     html: `
       <div style="position: relative; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -50%);">
-        <div style="width: 30px; height: 30px; border-radius: 50%; background: ${bg}; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 2px solid #ffffff; z-index: 1;">
+        <div style="width: 32px; height: 32px; border-radius: 50%; background: ${bg}; display: flex; align-items: center; justify-content: center; font-size: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 2px solid #ffffff; z-index: 1;">
           ${emoji}
         </div>
-        <div style="margin-top: 3px; background: #18181B; color: #FFFFFF; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 600; white-space: nowrap; border: 1px solid #3F3F46;">
+        <div style="margin-top: 3px; background: rgba(15, 23, 42, 0.85); color: #ffffff; padding: 2px 7px; border-radius: 9999px; font-size: 9px; font-weight: 600; white-space: nowrap; border: 1px solid rgba(255,255,255,0.12);">
           ${label}
         </div>
       </div>
@@ -339,14 +339,14 @@ export default function LiveTrackingModal({ bookingId, onClose }) {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: 'var(--radius-sm)',
-              background: 'var(--primary)',
+              width: '38px',
+              height: '38px',
+              borderRadius: 'var(--radius-md)',
+              background: 'linear-gradient(135deg, var(--primary) 0%, #4338ca 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: 'var(--text-inverse)'
+              color: '#ffffff'
             }}>
               <Navigation size={18} />
             </div>
