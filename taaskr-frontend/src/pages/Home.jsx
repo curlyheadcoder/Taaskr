@@ -229,39 +229,39 @@ const mapServiceToCanonical = (service, rawCategories = []) => {
 
 const HERO_PALETTES = [
   {
-    name: 'Sapphire Horizon',
-    gradient: 'linear-gradient(135deg, #0284C7 0%, #2563EB 50%, #4F46E5 100%)',
-    orb1: 'radial-gradient(circle, rgba(56, 189, 248, 0.18) 0%, rgba(37, 99, 235, 0.04) 50%, transparent 70%)',
-    orb2: 'radial-gradient(circle, rgba(99, 102, 241, 0.16) 0%, rgba(168, 85, 247, 0.03) 50%, transparent 70%)',
-    badgeColor: '#0284C7'
+    name: 'Warm Amber',
+    gradient: 'linear-gradient(135deg, #D97706 0%, #B45309 50%, #92400E 100%)',
+    orb1: 'radial-gradient(circle, rgba(245, 158, 11, 0.16) 0%, rgba(217, 119, 6, 0.04) 50%, transparent 70%)',
+    orb2: 'radial-gradient(circle, rgba(251, 191, 36, 0.14) 0%, rgba(180, 83, 9, 0.03) 50%, transparent 70%)',
+    badgeColor: '#D97706'
   },
   {
-    name: 'Oceanic Emerald',
-    gradient: 'linear-gradient(135deg, #0D9488 0%, #0284C7 50%, #2563EB 100%)',
-    orb1: 'radial-gradient(circle, rgba(20, 184, 166, 0.18) 0%, rgba(2, 132, 199, 0.04) 50%, transparent 70%)',
-    orb2: 'radial-gradient(circle, rgba(16, 185, 129, 0.16) 0%, rgba(6, 182, 212, 0.03) 50%, transparent 70%)',
-    badgeColor: '#0D9488'
+    name: 'Terracotta Bronze',
+    gradient: 'linear-gradient(135deg, #EA580C 0%, #C2410C 50%, #9A3412 100%)',
+    orb1: 'radial-gradient(circle, rgba(234, 88, 12, 0.16) 0%, rgba(194, 65, 12, 0.04) 50%, transparent 70%)',
+    orb2: 'radial-gradient(circle, rgba(249, 115, 22, 0.14) 0%, rgba(154, 52, 18, 0.03) 50%, transparent 70%)',
+    badgeColor: '#EA580C'
   },
   {
-    name: 'Cyber Violet',
-    gradient: 'linear-gradient(135deg, #7C3AED 0%, #2563EB 50%, #4F46E5 100%)',
-    orb1: 'radial-gradient(circle, rgba(168, 85, 247, 0.18) 0%, rgba(37, 99, 235, 0.04) 50%, transparent 70%)',
-    orb2: 'radial-gradient(circle, rgba(124, 58, 237, 0.16) 0%, rgba(56, 189, 248, 0.03) 50%, transparent 70%)',
-    badgeColor: '#7C3AED'
+    name: 'Forest Emerald',
+    gradient: 'linear-gradient(135deg, #059669 0%, #047857 50%, #065F46 100%)',
+    orb1: 'radial-gradient(circle, rgba(16, 185, 129, 0.16) 0%, rgba(5, 150, 105, 0.04) 50%, transparent 70%)',
+    orb2: 'radial-gradient(circle, rgba(52, 211, 153, 0.14) 0%, rgba(4, 120, 87, 0.03) 50%, transparent 70%)',
+    badgeColor: '#059669'
   },
   {
-    name: 'Electric Cyan',
-    gradient: 'linear-gradient(135deg, #0891B2 0%, #2563EB 50%, #4F46E5 100%)',
-    orb1: 'radial-gradient(circle, rgba(6, 182, 212, 0.18) 0%, rgba(79, 70, 229, 0.04) 50%, transparent 70%)',
-    orb2: 'radial-gradient(circle, rgba(8, 145, 178, 0.16) 0%, rgba(99, 102, 241, 0.03) 50%, transparent 70%)',
-    badgeColor: '#0891B2'
+    name: 'Golden Ochre',
+    gradient: 'linear-gradient(135deg, #CA8A04 0%, #A16207 50%, #713F12 100%)',
+    orb1: 'radial-gradient(circle, rgba(234, 179, 8, 0.16) 0%, rgba(202, 138, 4, 0.04) 50%, transparent 70%)',
+    orb2: 'radial-gradient(circle, rgba(250, 204, 21, 0.14) 0%, rgba(161, 98, 7, 0.03) 50%, transparent 70%)',
+    badgeColor: '#CA8A04'
   },
   {
-    name: 'Royal Indigo',
-    gradient: 'linear-gradient(135deg, #2563EB 0%, #4338CA 50%, #7C3AED 100%)',
-    orb1: 'radial-gradient(circle, rgba(37, 99, 235, 0.18) 0%, rgba(13, 148, 136, 0.04) 50%, transparent 70%)',
-    orb2: 'radial-gradient(circle, rgba(96, 165, 250, 0.16) 0%, rgba(2, 132, 199, 0.03) 50%, transparent 70%)',
-    badgeColor: '#2563EB'
+    name: 'Charcoal Obsidian',
+    gradient: 'linear-gradient(135deg, #3F3F46 0%, #27272A 50%, #18181B 100%)',
+    orb1: 'radial-gradient(circle, rgba(245, 158, 11, 0.12) 0%, rgba(63, 63, 70, 0.04) 50%, transparent 70%)',
+    orb2: 'radial-gradient(circle, rgba(161, 161, 170, 0.12) 0%, rgba(24, 24, 27, 0.03) 50%, transparent 70%)',
+    badgeColor: '#D97706'
   }
 ];
 

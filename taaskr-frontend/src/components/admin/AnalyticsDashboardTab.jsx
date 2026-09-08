@@ -10,21 +10,21 @@ import {
 } from 'recharts';
 
 const PALETTE = [
-  '#3b82f6', // Brand Blue
+  '#d97706', // Warm Amber
   '#10b981', // Emerald
-  '#f59e0b', // Amber
+  '#f59e0b', // Honey Gold
+  '#ea580c', // Terracotta
   '#8b5cf6', // Violet
-  '#ec4899', // Pink
-  '#06b6d4', // Cyan
-  '#f97316'  // Orange
+  '#059669', // Forest Green
+  '#ca8a04'  // Ochre
 ];
 
 const STATUS_CONFIG = {
   PENDING: { label: 'Pending', color: '#f59e0b' },
-  ASSIGNED: { label: 'Assigned', color: '#3b82f6' },
-  ACCEPTED: { label: 'Accepted', color: '#6366f1' },
+  ASSIGNED: { label: 'Assigned', color: '#d97706' },
+  ACCEPTED: { label: 'Accepted', color: '#ca8a04' },
   IN_PROGRESS: { label: 'In Progress', color: '#8b5cf6' },
-  IN_TRANSIT: { label: 'In Transit', color: '#06b6d4' },
+  IN_TRANSIT: { label: 'In Transit', color: '#ea580c' },
   COMPLETED: { label: 'Completed', color: '#10b981' },
   CANCELLED: { label: 'Cancelled', color: '#ef4444' }
 };
@@ -367,7 +367,7 @@ export default function AnalyticsDashboardTab({
       }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <TrendingUp size={22} style={{ color: '#3b82f6' }} />
+            <TrendingUp size={22} style={{ color: 'var(--primary)' }} />
             <h2 style={{ fontSize: '1.35rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
               Dashboard Analytics
             </h2>
@@ -440,7 +440,7 @@ export default function AnalyticsDashboardTab({
                   onClick={() => setDaysRange(r.value)}
                   style={{
                     border: 'none',
-                    backgroundColor: isActive ? '#3b82f6' : 'transparent',
+                    backgroundColor: isActive ? 'var(--primary)' : 'transparent',
                     color: isActive ? '#ffffff' : 'var(--text-muted)',
                     padding: '0.45rem 0.85rem',
                     borderRadius: '7px',
@@ -448,7 +448,7 @@ export default function AnalyticsDashboardTab({
                     fontSize: '0.85rem',
                     cursor: 'pointer',
                     transition: 'all 0.18s ease',
-                    boxShadow: isActive ? '0 2px 8px rgba(59, 130, 246, 0.35)' : 'none'
+                    boxShadow: isActive ? '0 2px 8px rgba(217, 119, 6, 0.35)' : 'none'
                   }}
                 >
                   {r.label}
@@ -478,7 +478,7 @@ export default function AnalyticsDashboardTab({
               boxShadow: 'var(--shadow-sm)'
             }}
           >
-            <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} style={{ color: '#3b82f6' }} />
+            <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} style={{ color: 'var(--primary)' }} />
             <span>{isRefreshing ? 'Syncing...' : 'Live Sync'}</span>
           </button>
 
@@ -520,12 +520,12 @@ export default function AnalyticsDashboardTab({
         </div>
 
         {/* Card 2: Total Bookings (in Range) */}
-        <div className="premium-card" style={{ padding: '1.4rem', borderTop: '4px solid #3b82f6', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)' }}>
+        <div className="premium-card" style={{ padding: '1.4rem', borderTop: '4px solid var(--primary)', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', fontWeight: 700 }}>
               {rangeLabel} Bookings
             </span>
-            <span style={{ fontSize: '0.72rem', color: '#3b82f6', fontWeight: 700 }}>
+            <span style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: 700 }}>
               {kpi.fulfillmentRate}% fulfilled
             </span>
           </div>
@@ -612,7 +612,7 @@ export default function AnalyticsDashboardTab({
                     content={<CustomTooltip formatter={(val, name) => name === 'Revenue' ? `₹${Number(val).toLocaleString('en-IN')}` : `${val} jobs`} />}
                   />
                   <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenueGlow)" />
-                  <Area type="monotone" dataKey="bookingsCount" name="Bookings" stroke="#3b82f6" strokeWidth={2} fillOpacity={0} />
+                  <Area type="monotone" dataKey="bookingsCount" name="Bookings" stroke="var(--primary)" strokeWidth={2} fillOpacity={0} />
                 </AreaChart>
               </ResponsiveContainer>
             )}
