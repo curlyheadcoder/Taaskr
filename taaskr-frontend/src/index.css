@@ -365,15 +365,23 @@ button, input, select, textarea {
 }
 
 .btn-success {
-  background-color: var(--success-bg);
-  color: var(--success);
-  border-color: var(--success-border);
+  background-color: #10B981;
+  color: #FFFFFF !important;
+  border-color: #10B981;
+  font-weight: 600;
 }
 
 .btn-success:hover:not(:disabled) {
-  background-color: var(--success);
-  color: #FFFFFF;
-  border-color: var(--success);
+  background-color: #059669;
+  color: #FFFFFF !important;
+  border-color: #059669;
+  transform: translateY(-1px);
+}
+
+.btn-success-subtle {
+  background-color: var(--success-bg);
+  color: var(--success);
+  border-color: var(--success-border);
 }
 
 .btn-small, .btn-sm {

@@ -1014,11 +1014,11 @@ export default function ProviderDashboard() {
                 <button 
                   onClick={() => handleMarkCompleted(job)} 
                   className="btn btn-success btn-sm"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600 }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600, color: '#FFFFFF', backgroundColor: '#10B981', borderColor: '#10B981' }}
                   disabled={isActionLoading}
                 >
-                  <CheckCircle2 size={14} />
-                  <span>{isActionLoading ? 'Completing...' : 'Mark as Completed'}</span>
+                  <CheckCircle2 size={14} color="#FFFFFF" />
+                  <span style={{ color: '#FFFFFF' }}>{isActionLoading ? 'Completing...' : 'Mark as Completed'}</span>
                 </button>
               )}
 
@@ -1027,10 +1027,10 @@ export default function ProviderDashboard() {
                 <button 
                   onClick={() => handleCollectCashClick(job)} 
                   className="btn btn-success btn-sm"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontWeight: 700, backgroundColor: '#10b981', borderColor: '#10b981' }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontWeight: 700, backgroundColor: '#10B981', borderColor: '#10B981', color: '#FFFFFF' }}
                 >
-                  <Banknote size={15} />
-                  <span>Collect Cash (₹{job.finalAmount})</span>
+                  <Banknote size={15} color="#FFFFFF" />
+                  <span style={{ color: '#FFFFFF' }}>Collect Cash (₹{job.finalAmount})</span>
                 </button>
               )}
 
