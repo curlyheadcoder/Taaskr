@@ -46,18 +46,29 @@ public class AdminAnalyticsServiceImpl implements AdminAnalyticsService {
         long totalProviders = providerProfileRepository.count();
         long pendingProviderApprovals = providerProfileRepository.countByApprovedFalse();
 
-        // 1. KPI Aggregations
+        // 1. KPI Aggregations & Range-Specific Aggregations
         AdminAnalyticsResponse.KpiSummary kpi = new AdminAnalyticsResponse.KpiSummary();
         kpi.setTotalBookings(allBookings.size());
         kpi.setTotalUsers(totalUsers);
         kpi.setTotalProviders(totalProviders);
         kpi.setPendingProviderApprovals(pendingProviderApprovals);
+        kpi.setDaysRange(daysRange);
 
         long completed = 0;
         long active = 0;
         long pending = 0;
         long cancelled = 0;
         BigDecimal totalRevenue = BigDecimal.ZERO;
+
+        LocalDate today = LocalDate.now();
+        LocalDate rangeStartDate = daysRange == 1 ? today : today.minusDays(daysRange - 1);
+        LocalDate prevPeriodStartDate = daysRange == 1 ? today.minusDays(1) : today.minusDays((daysRange * 2) - 1);
+        LocalDate prevPeriodEndDate = daysRange == 1 ? today.minusDays(1) : today.minusDays(daysRange);
+
+        long rangeBookingsCount = 0;
+        long rangeCompletedCount = 0;
+        BigDecimal rangeRevenue = BigDecimal.ZERO;
+        BigDecimal prevPeriodRevenue = BigDecimal.ZERO;
 
         Map<String, Long> statusCounts = new LinkedHashMap<>();
         for (BookingStatus status : BookingStatus.values()) {
@@ -78,10 +89,33 @@ public class AdminAnalyticsServiceImpl implements AdminAnalyticsService {
                 }
             }
 
-            // Total revenue from completed or paid bookings
-            if (b.getPaymentStatus() == PaymentStatus.PAID || b.getStatus() == BookingStatus.COMPLETED) {
-                if (b.getFinalAmount() != null) {
-                    totalRevenue = totalRevenue.add(b.getFinalAmount());
+            LocalDate bDate = b.getBookingDate();
+            if (bDate == null && b.getCreatedAt() != null) {
+                bDate = b.getCreatedAt().toLocalDate();
+            }
+
+            boolean isPaidOrDone = (b.getPaymentStatus() == PaymentStatus.PAID || b.getStatus() == BookingStatus.COMPLETED);
+            BigDecimal bookingAmt = b.getFinalAmount() != null ? b.getFinalAmount() : BigDecimal.ZERO;
+
+            // Lifetime revenue
+            if (isPaidOrDone) {
+                totalRevenue = totalRevenue.add(bookingAmt);
+            }
+
+            // In-range calculations
+            if (bDate != null) {
+                if (!bDate.isBefore(rangeStartDate) && !bDate.isAfter(today)) {
+                    rangeBookingsCount++;
+                    if (b.getStatus() == BookingStatus.COMPLETED) {
+                        rangeCompletedCount++;
+                    }
+                    if (isPaidOrDone) {
+                        rangeRevenue = rangeRevenue.add(bookingAmt);
+                    }
+                } else if (!bDate.isBefore(prevPeriodStartDate) && !bDate.isAfter(prevPeriodEndDate)) {
+                    if (isPaidOrDone) {
+                        prevPeriodRevenue = prevPeriodRevenue.add(bookingAmt);
+                    }
                 }
             }
         }
@@ -92,6 +126,28 @@ public class AdminAnalyticsServiceImpl implements AdminAnalyticsService {
         kpi.setCancelledBookings(cancelled);
         kpi.setTotalRevenue(totalRevenue);
 
+        kpi.setRangeRevenue(rangeRevenue);
+        kpi.setRangeBookings(rangeBookingsCount);
+        kpi.setRangeCompleted(rangeCompletedCount);
+
+        // Growth rate calculation vs previous period
+        double growthRate = 0.0;
+        if (prevPeriodRevenue.compareTo(BigDecimal.ZERO) > 0) {
+            growthRate = rangeRevenue.subtract(prevPeriodRevenue)
+                    .divide(prevPeriodRevenue, 4, java.math.RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100))
+                    .doubleValue();
+        } else if (rangeRevenue.compareTo(BigDecimal.ZERO) > 0) {
+            growthRate = 100.0;
+        }
+        kpi.setRevenueGrowthRate(Math.round(growthRate * 100.0) / 100.0);
+
+        // Average Order Value (AOV)
+        BigDecimal aov = rangeBookingsCount > 0 
+                ? rangeRevenue.divide(BigDecimal.valueOf(rangeBookingsCount), 2, java.math.RoundingMode.HALF_UP)
+                : (allBookings.size() > 0 ? totalRevenue.divide(BigDecimal.valueOf(allBookings.size()), 2, java.math.RoundingMode.HALF_UP) : BigDecimal.ZERO);
+        kpi.setAverageOrderValue(aov);
+
         long nonCancelled = allBookings.size() - cancelled;
         double fulfillmentRate = nonCancelled > 0 ? ((double) completed / nonCancelled) * 100.0 : 0.0;
         kpi.setPlatformFulfillmentRate(Math.round(fulfillmentRate * 100.0) / 100.0);
@@ -101,7 +157,6 @@ public class AdminAnalyticsServiceImpl implements AdminAnalyticsService {
 
         if (daysRange == 1) {
             // 24 Hours breakdown by time buckets
-            LocalDate today = LocalDate.now();
             String[] timeBuckets = {"00:00", "04:00", "08:00", "12:00", "16:00", "20:00", "23:59"};
             Map<String, BigDecimal> hourlyRevenueMap = new LinkedHashMap<>();
             Map<String, Long> hourlyCountMap = new LinkedHashMap<>();

@@ -78,6 +78,12 @@ public class AdminAnalyticsResponse {
         private long totalProviders;
         private long pendingProviderApprovals;
         private double platformFulfillmentRate;
+        private BigDecimal rangeRevenue;
+        private long rangeBookings;
+        private long rangeCompleted;
+        private double revenueGrowthRate;
+        private BigDecimal averageOrderValue;
+        private int daysRange;
 
         public KpiSummary() {}
 
@@ -110,6 +116,24 @@ public class AdminAnalyticsResponse {
 
         public double getPlatformFulfillmentRate() { return platformFulfillmentRate; }
         public void setPlatformFulfillmentRate(double platformFulfillmentRate) { this.platformFulfillmentRate = platformFulfillmentRate; }
+
+        public BigDecimal getRangeRevenue() { return rangeRevenue; }
+        public void setRangeRevenue(BigDecimal rangeRevenue) { this.rangeRevenue = rangeRevenue; }
+
+        public long getRangeBookings() { return rangeBookings; }
+        public void setRangeBookings(long rangeBookings) { this.rangeBookings = rangeBookings; }
+
+        public long getRangeCompleted() { return rangeCompleted; }
+        public void setRangeCompleted(long rangeCompleted) { this.rangeCompleted = rangeCompleted; }
+
+        public double getRevenueGrowthRate() { return revenueGrowthRate; }
+        public void setRevenueGrowthRate(double revenueGrowthRate) { this.revenueGrowthRate = revenueGrowthRate; }
+
+        public BigDecimal getAverageOrderValue() { return averageOrderValue; }
+        public void setAverageOrderValue(BigDecimal averageOrderValue) { this.averageOrderValue = averageOrderValue; }
+
+        public int getDaysRange() { return daysRange; }
+        public void setDaysRange(int daysRange) { this.daysRange = daysRange; }
     }
 
     public static class DailyRevenueTrend {

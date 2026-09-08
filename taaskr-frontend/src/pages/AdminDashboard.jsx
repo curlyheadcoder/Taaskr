@@ -493,7 +493,9 @@ export default function AdminDashboard() {
             categories={categories}
             providers={providers}
             bookings={bookings}
+            users={users}
             totalRevenue={totalRevenue}
+            onRefresh={loadAdminData}
           />
         )}
 
