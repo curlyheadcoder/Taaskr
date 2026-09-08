@@ -576,11 +576,20 @@ export default function ProviderDashboard() {
   };
 
   const handleToggleVehicleAvailability = async (vehicleId) => {
+    const targetVehicle = myVehicles.find(v => v.id === vehicleId);
+    const prevAvailable = targetVehicle ? (targetVehicle.available !== false) : true;
+    const nextAvailable = !prevAvailable;
+
+    // Optimistic instant UI update
+    setMyVehicles(prev => prev.map(v => v.id === vehicleId ? { ...v, available: nextAvailable } : v));
+
     try {
       const updated = await api.vehicle.toggleVehicleAvailability(vehicleId);
       setMyVehicles(prev => prev.map(v => v.id === vehicleId ? updated : v));
-      showNotification(`Vehicle availability set to ${updated.available ? 'Online' : 'Offline'}.`);
+      showNotification(`Vehicle is now ${updated.available !== false ? 'Online & Available for Trips' : 'Offline'}.`);
     } catch (err) {
+      // Revert optimistic update on failure
+      setMyVehicles(prev => prev.map(v => v.id === vehicleId ? { ...v, available: prevAvailable } : v));
       showNotification(`Failed to toggle vehicle status: ${err.message}`, 'error');
     }
   };

@@ -164,7 +164,7 @@ public class VehicleController {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{id}/toggle-availability")
+    @RequestMapping(value = "/{id}/toggle-availability", method = {RequestMethod.PATCH, RequestMethod.PUT, RequestMethod.POST})
     @PreAuthorize("hasRole('PROVIDER')")
     @Transactional
     public ResponseEntity<VehicleResponse> toggleVehicleAvailability(Authentication authentication, @PathVariable Long id) {
