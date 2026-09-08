@@ -56,7 +56,10 @@ export default function AdminDashboard() {
   const [payoutAdminNotes, setPayoutAdminNotes] = useState('');
   const [submittingPayoutProcess, setSubmittingPayoutProcess] = useState(false);
 
-  // Dispute resolution states
+  // Segmented tab inside Disputes & Issues: 'CUSTOMER' | 'PROVIDER'
+  const [disputeTypeTab, setDisputeTypeTab] = useState('CUSTOMER');
+
+  // Customer Dispute resolution states
   const [resolvingDispute, setResolvingDispute] = useState(null);
   const [selectedDisputeId, setSelectedDisputeId] = useState(null);
   const [disputeFilter, setDisputeFilter] = useState('ALL');
@@ -98,15 +101,27 @@ export default function AdminDashboard() {
   const [remarksInput, setRemarksInput] = useState('');
   const [savingRemarks, setSavingRemarks] = useState(false);
 
-  // Discussion states
+  // Provider Raised Tickets / Discussions states
   const [selectedDiscussionId, setSelectedDiscussionId] = useState(null);
   const [adminReplyText, setAdminReplyText] = useState('');
   const [discussionFilter, setDiscussionFilter] = useState('ALL');
+  const [providerTicketSearch, setProviderTicketSearch] = useState('');
+  const [providerResolutionStatus, setProviderResolutionStatus] = useState('RESOLVED');
   const [submittingAdminReply, setSubmittingAdminReply] = useState(false);
 
   const filteredDiscussions = discussions.filter(d => {
-    if (discussionFilter === 'ALL') return true;
-    return d.status === discussionFilter;
+    if (discussionFilter !== 'ALL' && d.status !== discussionFilter) return false;
+    if (providerTicketSearch.trim()) {
+      const q = providerTicketSearch.toLowerCase();
+      const matchId = String(d.id).includes(q);
+      const matchSubject = String(d.subject || '').toLowerCase().includes(q);
+      const matchProvider = String(d.providerName || '').toLowerCase().includes(q) || String(d.providerEmail || '').toLowerCase().includes(q);
+      const matchCategory = String(d.category || '').toLowerCase().includes(q);
+      const matchBooking = String(d.bookingId || '').includes(q);
+      const matchMessages = Array.isArray(d.messages) && d.messages.some(m => String(m.message || '').toLowerCase().includes(q));
+      return matchId || matchSubject || matchProvider || matchCategory || matchBooking || matchMessages;
+    }
+    return true;
   });
 
   const activeDiscussion = discussions.find(d => d.id === selectedDiscussionId) 
@@ -259,7 +274,7 @@ export default function AdminDashboard() {
 
   // Live Auto-Poll Partner Discussions in Admin Panel every 3 seconds
   useEffect(() => {
-    if (activeTab !== 'discussions') return;
+    if (activeTab !== 'discussions' && !(activeTab === 'disputes' && disputeTypeTab === 'PROVIDER')) return;
     const pollInterval = setInterval(async () => {
       try {
         const discussionsList = await api.admin.getDiscussions();
@@ -271,15 +286,15 @@ export default function AdminDashboard() {
       }
     }, 3000);
     return () => clearInterval(pollInterval);
-  }, [activeTab]);
+  }, [activeTab, disputeTypeTab]);
 
   // Scroll chat box when opening/selecting a discussion thread
   useEffect(() => {
-    if (activeTab === 'discussions' && selectedDiscussionId) {
+    if ((activeTab === 'discussions' || (activeTab === 'disputes' && disputeTypeTab === 'PROVIDER')) && selectedDiscussionId) {
       const timer = setTimeout(scrollToChatBottom, 60);
       return () => clearTimeout(timer);
     }
-  }, [selectedDiscussionId, activeTab]);
+  }, [selectedDiscussionId, activeTab, disputeTypeTab]);
 
   // ----------------------------------------
   // CATEGORY OPERATIONS
@@ -370,14 +385,15 @@ export default function AdminDashboard() {
   // ----------------------------------------
   // PARTNER DESK / DISCUSSION OPERATIONS
   // ----------------------------------------
-  const handleAdminSendReply = async (e) => {
+  const handleAdminSendReply = async (e, customTargetId, customText) => {
     if (e && e.preventDefault) e.preventDefault();
-    const text = adminReplyText.trim();
-    if (!text || !selectedDiscussionId || submittingAdminReply) return;
+    const targetId = customTargetId || selectedDiscussionId;
+    const text = (customText !== undefined ? customText : adminReplyText).trim();
+    if (!text || !targetId || submittingAdminReply) return;
     setSubmittingAdminReply(true);
     setAdminReplyText('');
     try {
-      const updated = await api.admin.replyDiscussion(selectedDiscussionId, text);
+      const updated = await api.admin.replyDiscussion(targetId, text);
       setDiscussions(prev => prev.map(d => d.id === updated.id ? updated : d));
       setTimeout(scrollToChatBottom, 60);
     } catch (err) {
@@ -393,6 +409,34 @@ export default function AdminDashboard() {
       setDiscussions(prev => prev.map(d => d.id === updated.id ? updated : d));
     } catch (err) {
       alert(err.message || 'Failed to update discussion status');
+    }
+  };
+
+  const handleResolveProviderTicket = async (e, ticket) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const target = ticket || activeDiscussion;
+    if (!target) return;
+    const text = adminReplyText.trim();
+    if (!text && target.status === providerResolutionStatus) {
+      alert('Please enter a response note/finding or select a new status.');
+      return;
+    }
+    setSubmittingAdminReply(true);
+    try {
+      let updatedTicket = target;
+      if (text) {
+        updatedTicket = await api.admin.replyDiscussion(target.id, text);
+      }
+      if (providerResolutionStatus && providerResolutionStatus !== target.status) {
+        updatedTicket = await api.admin.updateDiscussionStatus(target.id, providerResolutionStatus);
+      }
+      setDiscussions(prev => prev.map(d => d.id === updatedTicket.id ? updatedTicket : d));
+      setAdminReplyText('');
+      setTimeout(scrollToChatBottom, 60);
+    } catch (err) {
+      alert(err.message || 'Failed to process provider ticket resolution');
+    } finally {
+      setSubmittingAdminReply(false);
     }
   };
 
@@ -513,9 +557,9 @@ export default function AdminDashboard() {
           </button>
 
           <button 
-            onClick={() => setActiveTab('discussions')}
-            className={`sidebar-item ${activeTab === 'discussions' ? 'active' : ''}`}
-            title="Partner Desk"
+            onClick={() => { setActiveTab('disputes'); setDisputeTypeTab('PROVIDER'); }}
+            className={`sidebar-item ${activeTab === 'disputes' && disputeTypeTab === 'PROVIDER' ? 'active' : ''}`}
+            title="Partner Desk (Provider Tickets)"
             style={{ position: 'relative' }}
           >
             <MessageSquare size={16} />
@@ -620,13 +664,13 @@ export default function AdminDashboard() {
           </button>
 
           <button 
-            onClick={() => setActiveTab('disputes')}
+            onClick={() => { setActiveTab('disputes'); }}
             className={`sidebar-item ${activeTab === 'disputes' ? 'active' : ''}`}
-            title="Customer Disputes"
+            title="Disputes & Issues"
           >
-            <AlertCircle size={16} color={disputes.filter(d => d.status === 'OPEN' || d.status === 'UNDER_REVIEW').length > 0 ? '#EF4444' : 'currentColor'} />
+            <AlertCircle size={16} color={(disputes.filter(d => d.status === 'OPEN' || d.status === 'UNDER_REVIEW').length + discussions.filter(d => d.status === 'OPEN' || d.status === 'IN_REVIEW').length) > 0 ? '#EF4444' : 'currentColor'} />
             <span>Disputes & Issues</span>
-            {disputes.filter(d => d.status === 'OPEN' || d.status === 'UNDER_REVIEW').length > 0 && (
+            {(disputes.filter(d => d.status === 'OPEN' || d.status === 'UNDER_REVIEW').length + discussions.filter(d => d.status === 'OPEN' || d.status === 'IN_REVIEW').length) > 0 && (
               <span style={{ 
                 marginLeft: 'auto', 
                 background: 'rgba(239, 68, 68, 0.15)', 
@@ -636,7 +680,7 @@ export default function AdminDashboard() {
                 padding: '0.1rem 0.45rem', 
                 borderRadius: '10px' 
               }}>
-                {disputes.filter(d => d.status === 'OPEN' || d.status === 'UNDER_REVIEW').length}
+                {disputes.filter(d => d.status === 'OPEN' || d.status === 'UNDER_REVIEW').length + discussions.filter(d => d.status === 'OPEN' || d.status === 'IN_REVIEW').length}
               </span>
             )}
           </button>
@@ -709,242 +753,7 @@ export default function AdminDashboard() {
           />
         )}
 
-        {/* Tab: Partner Desk (Discussions & Support) */}
-        {activeTab === 'discussions' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: '1.25rem', height: 'calc(100vh - 160px)', minHeight: '600px' }}>
-            {/* Left Column: Tickets & Filter List */}
-            <div className="panel" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: 0 }}>
-              <div style={{ padding: '1rem', borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-subtle)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                  <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>Partner Discussions</h3>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{filteredDiscussions.length} threads</span>
-                </div>
-                <div style={{ display: 'flex', gap: '0.35rem' }}>
-                  {['ALL', 'OPEN', 'IN_REVIEW', 'RESOLVED'].map(filter => (
-                    <button
-                      key={filter}
-                      type="button"
-                      onClick={() => setDiscussionFilter(filter)}
-                      style={{
-                        padding: '0.3rem 0.65rem',
-                        fontSize: '0.72rem',
-                        fontWeight: 600,
-                        borderRadius: '6px',
-                        border: '1px solid',
-                        borderColor: discussionFilter === filter ? 'rgba(99, 102, 241, 0.6)' : 'var(--border-light)',
-                        background: discussionFilter === filter ? 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)' : 'transparent',
-                        color: discussionFilter === filter ? '#ffffff' : 'var(--text-muted)',
-                        boxShadow: discussionFilter === filter ? '0 2px 8px rgba(99, 102, 241, 0.3)' : 'none',
-                        cursor: 'pointer',
-                        transition: 'all 0.15s ease'
-                      }}
-                    >
-                      {filter.replace('_', ' ')}
-                    </button>
-                  ))}
-                </div>
-              </div>
 
-              <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '0.75rem' }}>
-                {filteredDiscussions.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)' }}>
-                    <MessageSquare size={32} style={{ opacity: 0.3, marginBottom: '0.5rem' }} />
-                    <p style={{ fontSize: '0.875rem' }}>No discussions found in this filter.</p>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
-                    {filteredDiscussions.map(d => {
-                      const isSelected = (activeDiscussion && activeDiscussion.id === d.id);
-                      return (
-                        <div
-                          key={d.id}
-                          onClick={() => setSelectedDiscussionId(d.id)}
-                          style={{
-                            padding: '0.85rem',
-                            borderRadius: '10px',
-                            cursor: 'pointer',
-                            border: '1px solid',
-                            borderColor: isSelected ? 'var(--primary)' : 'var(--border-light)',
-                            background: isSelected ? 'rgba(99, 102, 241, 0.12)' : 'var(--bg-card)',
-                            boxShadow: isSelected ? '0 0 16px rgba(99, 102, 241, 0.18)' : 'none',
-                            transition: 'all 0.18s cubic-bezier(0.4, 0, 0.2, 1)'
-                          }}
-                        >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-                            <span style={{ 
-                              fontSize: '0.68rem', 
-                              fontWeight: 700, 
-                              padding: '0.15rem 0.5rem', 
-                              borderRadius: '4px',
-                              background: 'rgba(99, 102, 241, 0.18)', 
-                              color: '#A78BFA',
-                              border: '1px solid rgba(99, 102, 241, 0.35)',
-                              letterSpacing: '0.02em'
-                            }}>
-                              {d.category ? d.category.replace('_', ' ') : 'GENERAL'}
-                            </span>
-                            <span className={`badge ${
-                              d.status === 'RESOLVED' ? 'badge-completed' :
-                              d.status === 'IN_REVIEW' ? 'badge-inprogress' :
-                              d.status === 'CLOSED' ? 'badge-pending' : 'badge-accepted'
-                            }`} style={{ fontSize: '0.65rem' }}>
-                              {d.status}
-                            </span>
-                          </div>
-
-                          <div style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--text-main)', marginBottom: '0.35rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {d.subject}
-                          </div>
-
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                            <span>Provider: <strong style={{ color: 'var(--text-main)' }}>{d.providerName || `Partner #${d.providerId}`}</strong></span>
-                            <span>{d.messages ? d.messages.length : 0} msgs</span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Right Column: Active Conversation & Reply Console */}
-            {activeDiscussion ? (
-              <div className="panel" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 0, overflow: 'hidden' }}>
-                {/* Header */}
-                <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                      <h2 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>{activeDiscussion.subject}</h2>
-                      <span className={`badge ${
-                        activeDiscussion.status === 'RESOLVED' ? 'badge-completed' :
-                        activeDiscussion.status === 'IN_REVIEW' ? 'badge-inprogress' :
-                        activeDiscussion.status === 'CLOSED' ? 'badge-pending' : 'badge-accepted'
-                      }`}>
-                        {activeDiscussion.status}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      <span>Provider: <strong style={{ color: 'var(--text-main)' }}>{activeDiscussion.providerName || `Partner #${activeDiscussion.providerId}`}</strong> ({activeDiscussion.providerEmail || 'N/A'})</span>
-                      {activeDiscussion.bookingId && <span>Booking Ref: <strong>#{activeDiscussion.bookingId}</strong></span>}
-                      <span>Priority: <strong style={{ color: activeDiscussion.priority === 'URGENT' ? '#EF4444' : activeDiscussion.priority === 'HIGH' ? '#F59E0B' : 'var(--text-main)' }}>{activeDiscussion.priority}</strong></span>
-                    </div>
-                  </div>
-
-                  {/* Status Action Buttons */}
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    {activeDiscussion.status !== 'IN_REVIEW' && (
-                      <button 
-                        onClick={() => handleUpdateDiscussionStatus(activeDiscussion.id, 'IN_REVIEW')}
-                        className="btn btn-secondary btn-sm"
-                        style={{ fontSize: '0.75rem' }}
-                      >
-                        Mark In-Review
-                      </button>
-                    )}
-                    {activeDiscussion.status !== 'RESOLVED' && (
-                      <button 
-                        onClick={() => handleUpdateDiscussionStatus(activeDiscussion.id, 'RESOLVED')}
-                        className="btn btn-primary btn-sm"
-                        style={{ fontSize: '0.75rem', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', border: 'none', boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)' }}
-                      >
-                        <CheckCircle2 size={13} />
-                        Mark Resolved
-                      </button>
-                    )}
-                    {activeDiscussion.status === 'RESOLVED' && (
-                      <button 
-                        onClick={() => handleUpdateDiscussionStatus(activeDiscussion.id, 'OPEN')}
-                        className="btn btn-secondary btn-sm"
-                        style={{ fontSize: '0.75rem' }}
-                      >
-                        Reopen Ticket
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Messages Thread */}
-                <div ref={messagesContainerRef} className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {activeDiscussion.messages && activeDiscussion.messages.map((msg, idx) => {
-                    const isAdmin = msg.senderRole === 'ADMIN';
-                    return (
-                      <div 
-                        key={msg.id || idx}
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: isAdmin ? 'flex-end' : 'flex-start',
-                          maxWidth: '80%',
-                          alignSelf: isAdmin ? 'flex-end' : 'flex-start'
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                          <strong style={{ color: isAdmin ? '#818CF8' : 'var(--text-main)' }}>
-                            {isAdmin ? '🛡️ Admin Support' : `🛠️ ${msg.senderName || 'Provider'}`}
-                          </strong>
-                          <span>• {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                        </div>
-                        <div style={{
-                          padding: '0.85rem 1.15rem',
-                          borderRadius: isAdmin ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                          background: isAdmin ? 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)' : 'var(--bg-subtle)',
-                          color: isAdmin ? '#ffffff' : 'var(--text-main)',
-                          border: isAdmin ? 'none' : '1px solid var(--border-light)',
-                          fontSize: '0.875rem',
-                          lineHeight: '1.45',
-                          whiteSpace: 'pre-wrap',
-                          boxShadow: isAdmin ? '0 4px 14px rgba(99, 102, 241, 0.25)' : '0 2px 4px rgba(0,0,0,0.04)'
-                        }}>
-                          {msg.message}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Reply Box */}
-                <form onSubmit={handleAdminSendReply} style={{ padding: '1rem 1.25rem', borderTop: '1px solid var(--border-subtle)', background: 'var(--bg-subtle)', display: 'flex', gap: '0.75rem' }}>
-                  <textarea
-                    value={adminReplyText}
-                    onChange={(e) => setAdminReplyText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleAdminSendReply(e);
-                      }
-                    }}
-                    placeholder="Type official support response to provider..."
-                    rows={2}
-                    className="form-control"
-                    style={{ flex: 1, resize: 'none' }}
-                  />
-                  <button 
-                    type="submit" 
-                    disabled={submittingAdminReply || !adminReplyText.trim()}
-                    className="btn btn-primary"
-                    style={{ 
-                      alignSelf: 'flex-end', 
-                      height: '42px', 
-                      padding: '0 1.35rem',
-                      background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
-                      border: 'none',
-                      boxShadow: '0 4px 14px rgba(99, 102, 241, 0.35)',
-                      fontWeight: 600
-                    }}
-                  >
-                    <Send size={15} />
-                    <span>{submittingAdminReply ? 'Sending...' : 'Reply'}</span>
-                  </button>
-                </form>
-              </div>
-            ) : (
-              <div className="panel" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
-                <p>Select a discussion from the left pane to view messages.</p>
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Tab: Service Catalog Management */}
         {activeTab === 'catalog' && (
@@ -1513,394 +1322,932 @@ export default function AdminDashboard() {
         )}
 
         {/* ========================================================================= */}
-        {/* TAB: DISPUTES & ESCALATIONS SPLIT CONSOLE                                */}
+        {/* TAB: DISPUTES & ESCALATIONS SPLIT CONSOLE (CUSTOMER & PROVIDER TICKETS)   */}
         {/* ========================================================================= */}
         {activeTab === 'disputes' && (
           <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            {/* Header & Metrics Strip */}
-            <div className="panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', padding: '1.25rem 1.5rem' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <AlertCircle size={22} color="#EF4444" />
-                  <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
-                    Customer Booking Disputes & Escalations Console
-                  </h2>
-                </div>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', margin: '0.35rem 0 0 0' }}>
-                  Review reported customer complaints, investigate service discrepancies, issue resolution rulings, and authorize refunds.
-                </p>
+            
+            {/* Top Segmented Tab Switcher: Customer vs Provider Raised Tickets */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '1rem',
+              background: 'var(--bg-card)',
+              padding: '0.65rem 0.85rem',
+              borderRadius: '12px',
+              border: '1px solid var(--border-light)',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+            }}>
+              <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={() => setDisputeTypeTab('CUSTOMER')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    padding: '0.55rem 1.15rem',
+                    fontSize: '0.85rem',
+                    fontWeight: 700,
+                    borderRadius: '8px',
+                    border: '1px solid',
+                    borderColor: disputeTypeTab === 'CUSTOMER' ? 'var(--primary)' : 'transparent',
+                    background: disputeTypeTab === 'CUSTOMER' ? 'var(--primary-subtle)' : 'transparent',
+                    color: disputeTypeTab === 'CUSTOMER' ? 'var(--primary)' : 'var(--text-muted)',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <AlertCircle size={15} color={disputeTypeTab === 'CUSTOMER' ? 'var(--primary)' : 'currentColor'} />
+                  <span>👤 Customer Raised Tickets</span>
+                  <span style={{
+                    fontSize: '0.7rem',
+                    padding: '0.1rem 0.45rem',
+                    borderRadius: '10px',
+                    background: disputes.filter(d => d.status === 'OPEN' || d.status === 'UNDER_REVIEW').length > 0 ? 'rgba(239, 68, 68, 0.15)' : 'var(--bg-subtle)',
+                    color: disputes.filter(d => d.status === 'OPEN' || d.status === 'UNDER_REVIEW').length > 0 ? '#EF4444' : 'var(--text-muted)',
+                    fontWeight: 700
+                  }}>
+                    {disputes.filter(d => d.status === 'OPEN' || d.status === 'UNDER_REVIEW').length} Open ({disputes.length})
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setDisputeTypeTab('PROVIDER')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    padding: '0.55rem 1.15rem',
+                    fontSize: '0.85rem',
+                    fontWeight: 700,
+                    borderRadius: '8px',
+                    border: '1px solid',
+                    borderColor: disputeTypeTab === 'PROVIDER' ? '#6366F1' : 'transparent',
+                    background: disputeTypeTab === 'PROVIDER' ? 'rgba(99, 102, 241, 0.12)' : 'transparent',
+                    color: disputeTypeTab === 'PROVIDER' ? '#6366F1' : 'var(--text-muted)',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <MessageSquare size={15} color={disputeTypeTab === 'PROVIDER' ? '#6366F1' : 'currentColor'} />
+                  <span>🛠️ Provider Raised Tickets</span>
+                  <span style={{
+                    fontSize: '0.7rem',
+                    padding: '0.1rem 0.45rem',
+                    borderRadius: '10px',
+                    background: discussions.filter(d => d.status === 'OPEN' || d.status === 'IN_REVIEW').length > 0 ? 'rgba(99, 102, 241, 0.18)' : 'var(--bg-subtle)',
+                    color: discussions.filter(d => d.status === 'OPEN' || d.status === 'IN_REVIEW').length > 0 ? '#6366F1' : 'var(--text-muted)',
+                    fontWeight: 700
+                  }}>
+                    {discussions.filter(d => d.status === 'OPEN' || d.status === 'IN_REVIEW').length} Open ({discussions.length})
+                  </span>
+                </button>
               </div>
 
-              {/* Status Filter Chips */}
-              <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-                {[
-                  { key: 'ALL', label: `All (${disputes.length})` },
-                  { key: 'OPEN', label: `Open (${disputes.filter(d => d.status === 'OPEN').length})` },
-                  { key: 'UNDER_REVIEW', label: `In-Review (${disputes.filter(d => d.status === 'UNDER_REVIEW').length})` },
-                  { key: 'RESOLVED', label: `Resolved (${disputes.filter(d => d.status === 'RESOLVED').length})` },
-                  { key: 'DISMISSED', label: `Dismissed (${disputes.filter(d => d.status === 'DISMISSED').length})` }
-                ].map((f) => (
-                  <button
-                    key={f.key}
-                    onClick={() => { setDisputeFilter(f.key); setDisputesPage(1); }}
-                    style={{
-                      fontSize: '0.75rem',
-                      padding: '0.35rem 0.75rem',
-                      borderRadius: '6px',
-                      border: '1px solid',
-                      borderColor: disputeFilter === f.key ? 'var(--primary)' : 'var(--border-light)',
-                      background: disputeFilter === f.key ? 'var(--primary-subtle)' : 'transparent',
-                      color: disputeFilter === f.key ? 'var(--primary)' : 'var(--text-muted)',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease'
-                    }}
-                  >
-                    {f.label}
-                  </button>
-                ))}
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                Active Queue: <strong style={{ color: 'var(--text-main)' }}>{disputeTypeTab === 'CUSTOMER' ? 'Customer Booking Complaints' : 'Service Partner Inquiries & Grievances'}</strong>
               </div>
             </div>
 
-            {/* Main 2-Column Split Console */}
-            {disputes.length === 0 ? (
-              <div className="panel empty-state" style={{ padding: '3.5rem 1.5rem' }}>
-                <div className="empty-state-icon" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
-                  <CheckCircle2 size={32} color="var(--success)" />
+            {/* ------------------------------------------------------------- */}
+            {/* VIEW 1: CUSTOMER RAISED TICKETS CONSOLE                      */}
+            {/* ------------------------------------------------------------- */}
+            {disputeTypeTab === 'CUSTOMER' && (
+              <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                {/* Header & Metrics Strip */}
+                <div className="panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', padding: '1.25rem 1.5rem' }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <AlertCircle size={22} color="#EF4444" />
+                      <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+                        Customer Booking Disputes & Escalations Console
+                      </h2>
+                    </div>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', margin: '0.35rem 0 0 0' }}>
+                      Review reported customer complaints, investigate service discrepancies, issue resolution rulings, and authorize refunds.
+                    </p>
+                  </div>
+
+                  {/* Status Filter Chips */}
+                  <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                    {[
+                      { key: 'ALL', label: `All (${disputes.length})` },
+                      { key: 'OPEN', label: `Open (${disputes.filter(d => d.status === 'OPEN').length})` },
+                      { key: 'UNDER_REVIEW', label: `In-Review (${disputes.filter(d => d.status === 'UNDER_REVIEW').length})` },
+                      { key: 'RESOLVED', label: `Resolved (${disputes.filter(d => d.status === 'RESOLVED').length})` },
+                      { key: 'DISMISSED', label: `Dismissed (${disputes.filter(d => d.status === 'DISMISSED').length})` }
+                    ].map((f) => (
+                      <button
+                        key={f.key}
+                        onClick={() => { setDisputeFilter(f.key); setDisputesPage(1); }}
+                        style={{
+                          fontSize: '0.75rem',
+                          padding: '0.35rem 0.75rem',
+                          borderRadius: '6px',
+                          border: '1px solid',
+                          borderColor: disputeFilter === f.key ? 'var(--primary)' : 'var(--border-light)',
+                          background: disputeFilter === f.key ? 'var(--primary-subtle)' : 'transparent',
+                          color: disputeFilter === f.key ? 'var(--primary)' : 'var(--text-muted)',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        {f.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <h3 className="empty-state-title">No customer disputes</h3>
-                <p className="empty-state-description">Zero unresolved customer complaints or service escalations at this time.</p>
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: '1.25rem', alignItems: 'flex-start' }}>
-                {/* Left Column: Filterable Dispute Cards List */}
-                <div className="panel" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '760px' }}>
-                  {/* Search bar */}
-                  <div style={{ position: 'relative' }}>
-                    <Search size={14} color="var(--text-muted)" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
-                    <input
-                      type="text"
-                      placeholder="Search tickets, bookings, names..."
-                      value={disputeSearch}
-                      onChange={(e) => setDisputeSearch(e.target.value)}
-                      className="form-control"
-                      style={{ paddingLeft: '2rem', fontSize: '0.8125rem' }}
-                    />
-                  </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0', borderBottom: '1px solid var(--border-subtle)', fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-                    <span>Showing {filteredDisputes.length} tickets</span>
-                    <span>{disputeFilter !== 'ALL' ? `Filter: ${disputeFilter}` : 'All Statuses'}</span>
+                {/* Main 2-Column Split Console */}
+                {disputes.length === 0 ? (
+                  <div className="panel empty-state" style={{ padding: '3.5rem 1.5rem' }}>
+                    <div className="empty-state-icon" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
+                      <CheckCircle2 size={32} color="var(--success)" />
+                    </div>
+                    <h3 className="empty-state-title">No customer disputes</h3>
+                    <p className="empty-state-description">Zero unresolved customer complaints or service escalations at this time.</p>
                   </div>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: '1.25rem', alignItems: 'flex-start' }}>
+                    {/* Left Column: Filterable Dispute Cards List */}
+                    <div className="panel" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '760px' }}>
+                      {/* Search bar */}
+                      <div style={{ position: 'relative' }}>
+                        <Search size={14} color="var(--text-muted)" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
+                        <input
+                          type="text"
+                          placeholder="Search tickets, bookings, names..."
+                          value={disputeSearch}
+                          onChange={(e) => setDisputeSearch(e.target.value)}
+                          className="form-control"
+                          style={{ paddingLeft: '2rem', fontSize: '0.8125rem' }}
+                        />
+                      </div>
 
-                  {/* Scrollable list */}
-                  <div className="custom-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', overflowY: 'auto', maxHeight: '640px', paddingRight: '0.35rem' }}>
-                    {filteredDisputes.map((disp) => {
-                      const isSelected = (selectedDisputeId || disputes[0]?.id) === disp.id;
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0', borderBottom: '1px solid var(--border-subtle)', fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                        <span>Showing {filteredDisputes.length} tickets</span>
+                        <span>{disputeFilter !== 'ALL' ? `Filter: ${disputeFilter}` : 'All Statuses'}</span>
+                      </div>
+
+                      {/* Scrollable list */}
+                      <div className="custom-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', overflowY: 'auto', maxHeight: '640px', paddingRight: '0.35rem' }}>
+                        {filteredDisputes.map((disp) => {
+                          const isSelected = (selectedDisputeId || disputes[0]?.id) === disp.id;
+                          let statusBadgeClass = 'badge-pending';
+                          if (disp.status === 'RESOLVED') statusBadgeClass = 'badge-completed';
+                          else if (disp.status === 'UNDER_REVIEW') statusBadgeClass = 'badge-assigned';
+                          else if (disp.status === 'DISMISSED') statusBadgeClass = 'badge-cancelled';
+
+                          return (
+                            <div
+                              key={disp.id}
+                              onClick={() => {
+                                setSelectedDisputeId(disp.id);
+                                setDisputeStatusDecision(disp.status === 'OPEN' ? 'RESOLVED' : disp.status);
+                                setDisputeResolutionNotes(disp.resolution || '');
+                                setDisputeRefundAmount(disp.refundAmount ? String(disp.refundAmount) : '');
+                              }}
+                              style={{
+                                padding: '0.85rem',
+                                borderRadius: '10px',
+                                border: '1px solid',
+                                borderColor: isSelected ? 'var(--primary)' : 'var(--border-light)',
+                                background: isSelected ? 'var(--primary-subtle)' : 'var(--bg-subtle)',
+                                boxShadow: isSelected ? '0 0 12px rgba(37, 99, 235, 0.15)' : 'none',
+                                cursor: 'pointer',
+                                transition: 'all 0.18s ease'
+                              }}
+                            >
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.35rem', gap: '0.4rem' }}>
+                                <strong style={{ fontSize: '0.82rem', color: isSelected ? 'var(--primary)' : 'var(--text-main)', lineHeight: 1.25 }}>
+                                  Ticket #{String(disp.id).slice(-6)}
+                                </strong>
+                                <span className={`badge ${statusBadgeClass}`} style={{ fontSize: '0.65rem', padding: '0.1rem 0.35rem', flexShrink: 0 }}>
+                                  {disp.status}
+                                </span>
+                              </div>
+
+                              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
+                                <span style={{ color: '#EF4444', fontWeight: 600 }}>
+                                  {disp.reason?.replace(/_/g, ' ') || 'General Issue'}
+                                </span>
+                                <span>• Booking #{disp.bookingCode || disp.bookingId}</span>
+                              </div>
+
+                              <div style={{ fontSize: '0.75rem', color: 'var(--text-main)', marginBottom: '0.25rem' }}>
+                                <strong>Customer:</strong> {disp.customerName || 'Customer'}
+                                {disp.providerName && <span style={{ color: 'var(--text-muted)' }}> | <strong>Partner:</strong> {disp.providerName}</span>}
+                              </div>
+
+                              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                "{disp.description}"
+                              </p>
+
+                              <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+                                {disp.createdAt ? new Date(disp.createdAt).toLocaleDateString() : 'Recent'}
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                        {filteredDisputes.length === 0 && (
+                          <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
+                            No customer tickets matching current filters.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right Column: Active Customer Dispute Resolution Console */}
+                    {(() => {
+                      const disp = activeDispute;
+                      if (!disp) {
+                        return (
+                          <div className="panel" style={{ padding: '3rem 1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                            Select a customer dispute ticket from the left pane to view details and issue resolution.
+                          </div>
+                        );
+                      }
+
                       let statusBadgeClass = 'badge-pending';
                       if (disp.status === 'RESOLVED') statusBadgeClass = 'badge-completed';
                       else if (disp.status === 'UNDER_REVIEW') statusBadgeClass = 'badge-assigned';
                       else if (disp.status === 'DISMISSED') statusBadgeClass = 'badge-cancelled';
 
                       return (
-                        <div
-                          key={disp.id}
-                          onClick={() => {
-                            setSelectedDisputeId(disp.id);
-                            setDisputeStatusDecision(disp.status === 'OPEN' ? 'RESOLVED' : disp.status);
-                            setDisputeResolutionNotes(disp.resolution || '');
-                            setDisputeRefundAmount(disp.refundAmount ? String(disp.refundAmount) : '');
-                          }}
-                          style={{
-                            padding: '0.85rem',
-                            borderRadius: '10px',
-                            border: '1px solid',
-                            borderColor: isSelected ? 'var(--primary)' : 'var(--border-light)',
-                            background: isSelected ? 'var(--primary-subtle)' : 'var(--bg-subtle)',
-                            boxShadow: isSelected ? '0 0 12px rgba(37, 99, 235, 0.15)' : 'none',
-                            cursor: 'pointer',
-                            transition: 'all 0.18s ease'
-                          }}
-                        >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.35rem', gap: '0.4rem' }}>
-                            <strong style={{ fontSize: '0.82rem', color: isSelected ? 'var(--primary)' : 'var(--text-main)', lineHeight: 1.25 }}>
-                              Ticket #{String(disp.id).slice(-6)}
-                            </strong>
-                            <span className={`badge ${statusBadgeClass}`} style={{ fontSize: '0.65rem', padding: '0.1rem 0.35rem', flexShrink: 0 }}>
-                              {disp.status}
-                            </span>
+                        <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '1.5rem' }}>
+                          {/* Ticket Header */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1rem' }}>
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                                <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+                                  Dispute Resolution Console #{String(disp.id).slice(-6)}
+                                </h3>
+                                <span className={`badge ${statusBadgeClass}`}>
+                                  {disp.status}
+                                </span>
+                              </div>
+                              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                                Filed on: {disp.createdAt ? new Date(disp.createdAt).toLocaleString() : 'Recent'}
+                              </span>
+                            </div>
+
+                            {/* Quick Status Pill Actions */}
+                            <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                              {disp.status === 'OPEN' && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleQuickUpdateDisputeStatus(disp.id, 'UNDER_REVIEW')}
+                                  className="btn btn-secondary btn-sm"
+                                  style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem' }}
+                                >
+                                  ⏳ Mark In-Review
+                                </button>
+                              )}
+                              {disp.status !== 'RESOLVED' && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setDisputeStatusDecision('RESOLVED');
+                                    if (!disputeResolutionNotes.trim()) {
+                                      setDisputeResolutionNotes('Resolved to customer and provider satisfaction after review.');
+                                    }
+                                  }}
+                                  className="btn btn-primary btn-sm"
+                                  style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem', background: '#10B981', borderColor: '#10B981' }}
+                                >
+                                  ✓ Set Resolved
+                                </button>
+                              )}
+                            </div>
                           </div>
 
-                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
-                            <span style={{ color: '#EF4444', fontWeight: 600 }}>
-                              {disp.reason?.replace(/_/g, ' ') || 'General Issue'}
-                            </span>
-                            <span>• Booking #{disp.bookingCode || disp.bookingId}</span>
+                          {/* Party Intelligence & Booking Info Cards */}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.85rem' }}>
+                            <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', fontSize: '0.8125rem' }}>
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', display: 'block', marginBottom: '0.35rem' }}>
+                                👤 CUSTOMER DETAILS
+                              </span>
+                              <strong style={{ color: 'var(--text-main)', fontSize: '0.9rem', display: 'block' }}>{disp.customerName || 'Customer'}</strong>
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>{disp.customerEmail || 'No email registered'}</span>
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>User ID: #{disp.userId || 'N/A'}</span>
+                            </div>
+
+                            <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', fontSize: '0.8125rem' }}>
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', display: 'block', marginBottom: '0.35rem' }}>
+                                🛠️ SERVICE PARTNER
+                              </span>
+                              <strong style={{ color: 'var(--text-main)', fontSize: '0.9rem', display: 'block' }}>{disp.providerName || 'Provider Unassigned'}</strong>
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>{disp.providerEmail || ''}</span>
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>Provider ID: #{disp.providerId || 'N/A'}</span>
+                            </div>
+
+                            <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', fontSize: '0.8125rem' }}>
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', display: 'block', marginBottom: '0.35rem' }}>
+                                📋 BOOKING CONTEXT
+                              </span>
+                              <strong style={{ color: 'var(--primary)', fontFamily: 'var(--font-mono)', display: 'block' }}>
+                                #{disp.bookingCode || disp.bookingId}
+                              </strong>
+                              <span style={{ color: 'var(--text-main)', fontSize: '0.78rem', display: 'block' }}>{disp.serviceName || 'On-Demand Service'}</span>
+                              <span className="badge badge-assigned" style={{ fontSize: '0.68rem', marginTop: '0.2rem' }}>
+                                {disp.reason?.replace(/_/g, ' ') || 'General Issue'}
+                              </span>
+                            </div>
                           </div>
 
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-main)', marginBottom: '0.25rem' }}>
-                            <strong>Customer:</strong> {disp.customerName || 'Customer'}
-                            {disp.providerName && <span style={{ color: 'var(--text-muted)' }}> | <strong>Partner:</strong> {disp.providerName}</span>}
+                          {/* Customer Reported Complaint Box */}
+                          <div>
+                            <h4 style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.4rem' }}>
+                              Customer Stated Complaint
+                            </h4>
+                            <div style={{
+                              padding: '1rem',
+                              backgroundColor: 'var(--bg-subtle)',
+                              borderRadius: 'var(--radius-sm)',
+                              border: '1px solid var(--border-light)',
+                              color: 'var(--text-main)',
+                              fontSize: '0.875rem',
+                              lineHeight: 1.5,
+                              whiteSpace: 'pre-wrap'
+                            }}>
+                              "{disp.description}"
+                            </div>
                           </div>
 
-                          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            "{disp.description}"
-                          </p>
+                          {/* Existing Resolution Banner (if already resolved) */}
+                          {disp.resolution && (
+                            <div style={{
+                              backgroundColor: disp.status === 'RESOLVED' ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-subtle)',
+                              border: `1px solid ${disp.status === 'RESOLVED' ? 'rgba(16, 185, 129, 0.25)' : 'var(--border-light)'}`,
+                              borderRadius: 'var(--radius-sm)',
+                              padding: '1rem'
+                            }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: disp.status === 'RESOLVED' ? 'var(--success)' : 'var(--primary)' }}>
+                                  Previous Resolution Record:
+                                </span>
+                                {disp.refundAmount && Number(disp.refundAmount) > 0 && (
+                                  <span className="badge badge-completed" style={{ fontSize: '0.75rem' }}>
+                                    ₹{Number(disp.refundAmount).toLocaleString('en-IN')} Refunded
+                                  </span>
+                                )}
+                              </div>
+                              <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-main)', lineHeight: 1.45 }}>
+                                {disp.resolution}
+                              </p>
+                              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>
+                                Resolved by {disp.resolvedBy || 'Admin'} on {disp.updatedAt ? new Date(disp.updatedAt).toLocaleDateString() : 'Recent'}
+                              </div>
+                            </div>
+                          )}
 
-                          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
-                            {disp.createdAt ? new Date(disp.createdAt).toLocaleDateString() : 'Recent'}
-                          </div>
+                          {/* Resolution Submission Console Form */}
+                          <form onSubmit={(e) => handleResolveDispute(e, disp)} style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                              <ShieldCheck size={16} color="var(--primary)" />
+                              <span>Issue Resolution Ruling & Actions</span>
+                            </h4>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
+                              <div className="form-group" style={{ margin: 0 }}>
+                                <label className="form-label">Decision Status *</label>
+                                <select
+                                  className="form-control"
+                                  value={disputeStatusDecision}
+                                  onChange={(e) => setDisputeStatusDecision(e.target.value)}
+                                >
+                                  <option value="RESOLVED">RESOLVED (Action Taken / Solved)</option>
+                                  <option value="DISMISSED">DISMISSED (Complaint Invalid / Outside Terms)</option>
+                                  <option value="UNDER_REVIEW">UNDER REVIEW (Investigation In-Flight)</option>
+                                  <option value="OPEN">OPEN (Re-Opened for Audit)</option>
+                                </select>
+                              </div>
+
+                              <div className="form-group" style={{ margin: 0 }}>
+                                <label className="form-label">Refund Amount (₹ INR - Optional)</label>
+                                <input
+                                  type="number"
+                                  className="form-control"
+                                  placeholder="e.g. 499 or 0"
+                                  value={disputeRefundAmount}
+                                  onChange={(e) => setDisputeRefundAmount(e.target.value)}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Quick Presets Chips */}
+                            <div>
+                              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.35rem' }}>
+                                ⚡ One-Click Resolution Templates:
+                              </span>
+                              <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                                {[
+                                  'Full refund approved and issued to customer original payment method.',
+                                  'Service revisited and completed to customer satisfaction.',
+                                  'Provider counselled on service standards; partial refund credited.',
+                                  'Claim investigated; no breach of service terms found. Ticket closed.'
+                                ].map((preset) => (
+                                  <button
+                                    key={preset}
+                                    type="button"
+                                    onClick={() => setDisputeResolutionNotes(preset)}
+                                    className="btn btn-ghost btn-sm"
+                                    style={{ fontSize: '0.7rem', padding: '0.15rem 0.45rem', border: '1px solid var(--border-subtle)' }}
+                                  >
+                                    {preset.slice(0, 42)}...
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="form-group" style={{ margin: 0 }}>
+                              <label className="form-label">Official Resolution Details & Findings *</label>
+                              <textarea
+                                className="form-control"
+                                rows={3}
+                                placeholder="State the resolution reason, refund decision, or follow-up notes for customer and provider... (Press Enter to submit, Shift+Enter for new line)"
+                                value={disputeResolutionNotes}
+                                onChange={(e) => setDisputeResolutionNotes(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    if (!submittingDisputeResolve && disputeResolutionNotes.trim()) {
+                                      handleResolveDispute(e, disp);
+                                    }
+                                  }
+                                }}
+                                required
+                              />
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+                              <button
+                                type="submit"
+                                className="btn btn-primary"
+                                disabled={submittingDisputeResolve || !disputeResolutionNotes.trim()}
+                                style={{ padding: '0.5rem 1.5rem', fontWeight: 600 }}
+                              >
+                                {submittingDisputeResolve ? 'Processing...' : 'Submit Dispute Ruling'}
+                              </button>
+                            </div>
+                          </form>
                         </div>
                       );
-                    })}
+                    })()}
+                  </div>
+                )}
+              </div>
+            )}
 
-                    {filteredDisputes.length === 0 && (
-                      <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
-                        No tickets matching current filters.
-                      </div>
-                    )}
+            {/* ------------------------------------------------------------- */}
+            {/* VIEW 2: PROVIDER RAISED TICKETS & GRIEVANCE CONSOLE          */}
+            {/* ------------------------------------------------------------- */}
+            {disputeTypeTab === 'PROVIDER' && (
+              <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                {/* Header & Metrics Strip */}
+                <div className="panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', padding: '1.25rem 1.5rem' }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <MessageSquare size={22} color="#6366F1" />
+                      <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+                        Provider Disputes & Grievance Resolution Console
+                      </h2>
+                    </div>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', margin: '0.35rem 0 0 0' }}>
+                      Review service partner grievances, rate/payment queries, booking penalties, and communicate in real-time.
+                    </p>
+                  </div>
+
+                  {/* Status Filter Chips */}
+                  <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                    {[
+                      { key: 'ALL', label: `All (${discussions.length})` },
+                      { key: 'OPEN', label: `Open (${discussions.filter(d => d.status === 'OPEN').length})` },
+                      { key: 'IN_REVIEW', label: `In-Review (${discussions.filter(d => d.status === 'IN_REVIEW').length})` },
+                      { key: 'RESOLVED', label: `Resolved (${discussions.filter(d => d.status === 'RESOLVED').length})` },
+                      { key: 'CLOSED', label: `Closed (${discussions.filter(d => d.status === 'CLOSED').length})` }
+                    ].map((f) => (
+                      <button
+                        key={f.key}
+                        onClick={() => { setDiscussionFilter(f.key); }}
+                        style={{
+                          fontSize: '0.75rem',
+                          padding: '0.35rem 0.75rem',
+                          borderRadius: '6px',
+                          border: '1px solid',
+                          borderColor: discussionFilter === f.key ? '#6366F1' : 'var(--border-light)',
+                          background: discussionFilter === f.key ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
+                          color: discussionFilter === f.key ? '#6366F1' : 'var(--text-muted)',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        {f.label}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
-                {/* Right Column: Active Dispute Resolution Console */}
-                {(() => {
-                  const disp = activeDispute;
-                  if (!disp) {
-                    return (
-                      <div className="panel" style={{ padding: '3rem 1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                        Select a dispute ticket from the left pane to view details and issue resolution.
-                      </div>
-                    );
-                  }
-
-                  let statusBadgeClass = 'badge-pending';
-                  if (disp.status === 'RESOLVED') statusBadgeClass = 'badge-completed';
-                  else if (disp.status === 'UNDER_REVIEW') statusBadgeClass = 'badge-assigned';
-                  else if (disp.status === 'DISMISSED') statusBadgeClass = 'badge-cancelled';
-
-                  return (
-                    <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '1.5rem' }}>
-                      {/* Ticket Header */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1rem' }}>
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                            <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
-                              Dispute Resolution Console #{String(disp.id).slice(-6)}
-                            </h3>
-                            <span className={`badge ${statusBadgeClass}`}>
-                              {disp.status}
-                            </span>
-                          </div>
-                          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                            Filed on: {disp.createdAt ? new Date(disp.createdAt).toLocaleString() : 'Recent'}
-                          </span>
-                        </div>
-
-                        {/* Quick Status Pill Actions */}
-                        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                          {disp.status === 'OPEN' && (
-                            <button
-                              type="button"
-                              onClick={() => handleQuickUpdateDisputeStatus(disp.id, 'UNDER_REVIEW')}
-                              className="btn btn-secondary btn-sm"
-                              style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem' }}
-                            >
-                              ⏳ Mark In-Review
-                            </button>
-                          )}
-                          {disp.status !== 'RESOLVED' && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setDisputeStatusDecision('RESOLVED');
-                                if (!disputeResolutionNotes.trim()) {
-                                  setDisputeResolutionNotes('Resolved to customer and provider satisfaction after review.');
-                                }
-                              }}
-                              className="btn btn-primary btn-sm"
-                              style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem', background: '#10B981', borderColor: '#10B981' }}
-                            >
-                              ✓ Set Resolved
-                            </button>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Party Intelligence & Booking Info Cards */}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.85rem' }}>
-                        <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', fontSize: '0.8125rem' }}>
-                          <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', display: 'block', marginBottom: '0.35rem' }}>
-                            👤 CUSTOMER DETAILS
-                          </span>
-                          <strong style={{ color: 'var(--text-main)', fontSize: '0.9rem', display: 'block' }}>{disp.customerName || 'Customer'}</strong>
-                          <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>{disp.customerEmail || 'No email registered'}</span>
-                          <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>User ID: #{disp.userId || 'N/A'}</span>
-                        </div>
-
-                        <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', fontSize: '0.8125rem' }}>
-                          <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', display: 'block', marginBottom: '0.35rem' }}>
-                            🛠️ SERVICE PARTNER
-                          </span>
-                          <strong style={{ color: 'var(--text-main)', fontSize: '0.9rem', display: 'block' }}>{disp.providerName || 'Provider Unassigned'}</strong>
-                          <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>{disp.providerEmail || ''}</span>
-                          <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>Provider ID: #{disp.providerId || 'N/A'}</span>
-                        </div>
-
-                        <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', fontSize: '0.8125rem' }}>
-                          <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', display: 'block', marginBottom: '0.35rem' }}>
-                            📋 BOOKING CONTEXT
-                          </span>
-                          <strong style={{ color: 'var(--primary)', fontFamily: 'var(--font-mono)', display: 'block' }}>
-                            #{disp.bookingCode || disp.bookingId}
-                          </strong>
-                          <span style={{ color: 'var(--text-main)', fontSize: '0.78rem', display: 'block' }}>{disp.serviceName || 'On-Demand Service'}</span>
-                          <span className="badge badge-assigned" style={{ fontSize: '0.68rem', marginTop: '0.2rem' }}>
-                            {disp.reason?.replace(/_/g, ' ') || 'General Issue'}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Customer Reported Complaint Box */}
-                      <div>
-                        <h4 style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.4rem' }}>
-                          Customer Stated Complaint
-                        </h4>
-                        <div style={{
-                          padding: '1rem',
-                          backgroundColor: 'var(--bg-subtle)',
-                          borderRadius: 'var(--radius-sm)',
-                          border: '1px solid var(--border-light)',
-                          color: 'var(--text-main)',
-                          fontSize: '0.875rem',
-                          lineHeight: 1.5,
-                          whiteSpace: 'pre-wrap'
-                        }}>
-                          "{disp.description}"
-                        </div>
-                      </div>
-
-                      {/* Existing Resolution Banner (if already resolved) */}
-                      {disp.resolution && (
-                        <div style={{
-                          backgroundColor: disp.status === 'RESOLVED' ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-subtle)',
-                          border: `1px solid ${disp.status === 'RESOLVED' ? 'rgba(16, 185, 129, 0.25)' : 'var(--border-light)'}`,
-                          borderRadius: 'var(--radius-sm)',
-                          padding: '1rem'
-                        }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-                            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: disp.status === 'RESOLVED' ? 'var(--success)' : 'var(--primary)' }}>
-                              Previous Resolution Record:
-                            </span>
-                            {disp.refundAmount && Number(disp.refundAmount) > 0 && (
-                              <span className="badge badge-completed" style={{ fontSize: '0.75rem' }}>
-                                ₹{Number(disp.refundAmount).toLocaleString('en-IN')} Refunded
-                              </span>
-                            )}
-                          </div>
-                          <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-main)', lineHeight: 1.45 }}>
-                            {disp.resolution}
-                          </p>
-                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>
-                            Resolved by {disp.resolvedBy || 'Admin'} on {disp.updatedAt ? new Date(disp.updatedAt).toLocaleDateString() : 'Recent'}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Resolution Submission Console Form */}
-                      <form onSubmit={(e) => handleResolveDispute(e, disp)} style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                          <ShieldCheck size={16} color="var(--primary)" />
-                          <span>Issue Resolution Ruling & Actions</span>
-                        </h4>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
-                          <div className="form-group" style={{ margin: 0 }}>
-                            <label className="form-label">Decision Status *</label>
-                            <select
-                              className="form-control"
-                              value={disputeStatusDecision}
-                              onChange={(e) => setDisputeStatusDecision(e.target.value)}
-                            >
-                              <option value="RESOLVED">RESOLVED (Action Taken / Solved)</option>
-                              <option value="DISMISSED">DISMISSED (Complaint Invalid / Outside Terms)</option>
-                              <option value="UNDER_REVIEW">UNDER REVIEW (Investigation In-Flight)</option>
-                              <option value="OPEN">OPEN (Re-Opened for Audit)</option>
-                            </select>
-                          </div>
-
-                          <div className="form-group" style={{ margin: 0 }}>
-                            <label className="form-label">Refund Amount (₹ INR - Optional)</label>
-                            <input
-                              type="number"
-                              className="form-control"
-                              placeholder="e.g. 499 or 0"
-                              value={disputeRefundAmount}
-                              onChange={(e) => setDisputeRefundAmount(e.target.value)}
-                            />
-                          </div>
-                        </div>
-
-                        {/* Quick Presets Chips */}
-                        <div>
-                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.35rem' }}>
-                            ⚡ One-Click Resolution Templates:
-                          </span>
-                          <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-                            {[
-                              'Full refund approved and issued to customer original payment method.',
-                              'Service revisited and completed to customer satisfaction.',
-                              'Provider counselled on service standards; partial refund credited.',
-                              'Claim investigated; no breach of service terms found. Ticket closed.'
-                            ].map((preset) => (
-                              <button
-                                key={preset}
-                                type="button"
-                                onClick={() => setDisputeResolutionNotes(preset)}
-                                className="btn btn-ghost btn-sm"
-                                style={{ fontSize: '0.7rem', padding: '0.15rem 0.45rem', border: '1px solid var(--border-subtle)' }}
-                              >
-                                {preset.slice(0, 42)}...
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="form-group" style={{ margin: 0 }}>
-                          <label className="form-label">Official Resolution Details & Findings *</label>
-                          <textarea
-                            className="form-control"
-                            rows={3}
-                            placeholder="State the resolution reason, refund decision, or follow-up notes for customer and provider... (Press Enter to submit, Shift+Enter for new line)"
-                            value={disputeResolutionNotes}
-                            onChange={(e) => setDisputeResolutionNotes(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' && !e.shiftKey) {
-                                e.preventDefault();
-                                if (!submittingDisputeResolve && disputeResolutionNotes.trim()) {
-                                  handleResolveDispute(e, disp);
-                                }
-                              }
-                            }}
-                            required
-                          />
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
-                          <button
-                            type="submit"
-                            className="btn btn-primary"
-                            disabled={submittingDisputeResolve || !disputeResolutionNotes.trim()}
-                            style={{ padding: '0.5rem 1.5rem', fontWeight: 600 }}
-                          >
-                            {submittingDisputeResolve ? 'Processing...' : 'Submit Dispute Ruling'}
-                          </button>
-                        </div>
-                      </form>
+                {/* Main 2-Column Split Console */}
+                {discussions.length === 0 ? (
+                  <div className="panel empty-state" style={{ padding: '3.5rem 1.5rem' }}>
+                    <div className="empty-state-icon" style={{ backgroundColor: 'rgba(99, 102, 241, 0.1)' }}>
+                      <CheckCircle2 size={32} color="#6366F1" />
                     </div>
-                  );
-                })()}
+                    <h3 className="empty-state-title">No partner tickets</h3>
+                    <p className="empty-state-description">Zero unresolved provider grievances or support inquiries at this time.</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: '1.25rem', alignItems: 'flex-start' }}>
+                    {/* Left Column: Filterable Provider Tickets Cards List */}
+                    <div className="panel" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '760px' }}>
+                      {/* Search bar */}
+                      <div style={{ position: 'relative' }}>
+                        <Search size={14} color="var(--text-muted)" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
+                        <input
+                          type="text"
+                          placeholder="Search tickets, subjects, partners, bookings..."
+                          value={providerTicketSearch}
+                          onChange={(e) => setProviderTicketSearch(e.target.value)}
+                          className="form-control"
+                          style={{ paddingLeft: '2rem', fontSize: '0.8125rem' }}
+                        />
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0', borderBottom: '1px solid var(--border-subtle)', fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                        <span>Showing {filteredDiscussions.length} tickets</span>
+                        <span>{discussionFilter !== 'ALL' ? `Filter: ${discussionFilter}` : 'All Statuses'}</span>
+                      </div>
+
+                      {/* Scrollable list */}
+                      <div className="custom-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', overflowY: 'auto', maxHeight: '640px', paddingRight: '0.35rem' }}>
+                        {filteredDiscussions.map((d) => {
+                          const isSelected = (activeDiscussion && activeDiscussion.id === d.id);
+                          let statusBadgeClass = 'badge-pending';
+                          if (d.status === 'RESOLVED') statusBadgeClass = 'badge-completed';
+                          else if (d.status === 'IN_REVIEW') statusBadgeClass = 'badge-assigned';
+                          else if (d.status === 'CLOSED') statusBadgeClass = 'badge-cancelled';
+
+                          const priorityColor = d.priority === 'URGENT' ? '#EF4444' : (d.priority === 'HIGH' ? '#F59E0B' : '#6366F1');
+
+                          return (
+                            <div
+                              key={d.id}
+                              onClick={() => {
+                                setSelectedDiscussionId(d.id);
+                                setProviderResolutionStatus(d.status === 'OPEN' ? 'RESOLVED' : d.status);
+                              }}
+                              style={{
+                                padding: '0.85rem',
+                                borderRadius: '10px',
+                                border: '1px solid',
+                                borderColor: isSelected ? '#6366F1' : 'var(--border-light)',
+                                background: isSelected ? 'rgba(99, 102, 241, 0.12)' : 'var(--bg-subtle)',
+                                boxShadow: isSelected ? '0 0 12px rgba(99, 102, 241, 0.18)' : 'none',
+                                cursor: 'pointer',
+                                transition: 'all 0.18s ease'
+                              }}
+                            >
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.35rem', gap: '0.4rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                  <strong style={{ fontSize: '0.82rem', color: isSelected ? '#6366F1' : 'var(--text-main)', lineHeight: 1.25 }}>
+                                    Ticket #{String(d.id).slice(-6)}
+                                  </strong>
+                                  <span style={{ fontSize: '0.62rem', fontWeight: 700, color: priorityColor, border: `1px solid ${priorityColor}40`, padding: '0.05rem 0.3rem', borderRadius: '4px' }}>
+                                    {d.priority || 'NORMAL'}
+                                  </span>
+                                </div>
+                                <span className={`badge ${statusBadgeClass}`} style={{ fontSize: '0.65rem', padding: '0.1rem 0.35rem', flexShrink: 0 }}>
+                                  {d.status}
+                                </span>
+                              </div>
+
+                              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
+                                <span style={{ color: '#6366F1', fontWeight: 600 }}>
+                                  {d.category ? d.category.replace(/_/g, ' ') : 'GENERAL INQUIRY'}
+                                </span>
+                                {d.bookingId && <span>• Booking #{d.bookingId}</span>}
+                              </div>
+
+                              <div style={{ fontWeight: 600, fontSize: '0.8rem', color: 'var(--text-main)', marginBottom: '0.25rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {d.subject}
+                              </div>
+
+                              <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
+                                <strong>Partner:</strong> <span style={{ color: 'var(--text-main)' }}>{d.providerName || `Partner #${d.providerId}`}</span>
+                              </div>
+
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+                                <span>{d.messages ? d.messages.length : 0} messages in thread</span>
+                                <span>{d.createdAt ? new Date(d.createdAt).toLocaleDateString() : 'Recent'}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                        {filteredDiscussions.length === 0 && (
+                          <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
+                            No provider tickets matching current filters.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right Column: Active Provider Grievance Resolution Console */}
+                    {(() => {
+                      const d = activeDiscussion;
+                      if (!d) {
+                        return (
+                          <div className="panel" style={{ padding: '3rem 1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                            Select a provider ticket from the left pane to view grievance details and issue rulings.
+                          </div>
+                        );
+                      }
+
+                      let statusBadgeClass = 'badge-pending';
+                      if (d.status === 'RESOLVED') statusBadgeClass = 'badge-completed';
+                      else if (d.status === 'IN_REVIEW') statusBadgeClass = 'badge-assigned';
+                      else if (d.status === 'CLOSED') statusBadgeClass = 'badge-cancelled';
+
+                      const priorityColor = d.priority === 'URGENT' ? '#EF4444' : (d.priority === 'HIGH' ? '#F59E0B' : '#6366F1');
+
+                      return (
+                        <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '1.5rem' }}>
+                          {/* Ticket Header */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1rem' }}>
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
+                                <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+                                  {d.subject}
+                                </h3>
+                                <span className={`badge ${statusBadgeClass}`}>
+                                  {d.status}
+                                </span>
+                                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: priorityColor, border: `1px solid ${priorityColor}40`, padding: '0.1rem 0.4rem', borderRadius: '4px' }}>
+                                  {d.priority || 'NORMAL'} PRIORITY
+                                </span>
+                              </div>
+                              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                                Ticket #{String(d.id).slice(-6)} • Filed on: {d.createdAt ? new Date(d.createdAt).toLocaleString() : 'Recent'}
+                              </span>
+                            </div>
+
+                            {/* Quick Status Action Buttons */}
+                            <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                              {d.status === 'OPEN' && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateDiscussionStatus(d.id, 'IN_REVIEW')}
+                                  className="btn btn-secondary btn-sm"
+                                  style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem' }}
+                                >
+                                  ⏳ Mark In-Review
+                                </button>
+                              )}
+                              {d.status !== 'RESOLVED' && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateDiscussionStatus(d.id, 'RESOLVED')}
+                                  className="btn btn-primary btn-sm"
+                                  style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem', background: '#10B981', borderColor: '#10B981' }}
+                                >
+                                  ✓ Mark Resolved
+                                </button>
+                              )}
+                              {d.status !== 'CLOSED' && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateDiscussionStatus(d.id, 'CLOSED')}
+                                  className="btn btn-ghost btn-sm"
+                                  style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem', border: '1px solid var(--border-light)' }}
+                                >
+                                  ✕ Close Ticket
+                                </button>
+                              )}
+                              {(d.status === 'RESOLVED' || d.status === 'CLOSED') && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateDiscussionStatus(d.id, 'OPEN')}
+                                  className="btn btn-secondary btn-sm"
+                                  style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem' }}
+                                >
+                                  ↺ Re-Open
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Party Intelligence & Context Cards */}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.85rem' }}>
+                            <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', fontSize: '0.8125rem' }}>
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', display: 'block', marginBottom: '0.35rem' }}>
+                                🛠️ PROVIDER DETAILS
+                              </span>
+                              <strong style={{ color: 'var(--text-main)', fontSize: '0.9rem', display: 'block' }}>{d.providerName || 'Provider'}</strong>
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>{d.providerEmail || 'No email registered'}</span>
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>Partner ID: #{d.providerId || 'N/A'}</span>
+                            </div>
+
+                            <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', fontSize: '0.8125rem' }}>
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', display: 'block', marginBottom: '0.35rem' }}>
+                                🏷️ GRIEVANCE CATEGORY
+                              </span>
+                              <strong style={{ color: '#6366F1', fontSize: '0.85rem', display: 'block' }}>
+                                {d.category ? d.category.replace(/_/g, ' ') : 'GENERAL'}
+                              </strong>
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>
+                                Priority: <strong style={{ color: priorityColor }}>{d.priority || 'NORMAL'}</strong>
+                              </span>
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>{d.messages ? d.messages.length : 0} total messages</span>
+                            </div>
+
+                            <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', fontSize: '0.8125rem' }}>
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', display: 'block', marginBottom: '0.35rem' }}>
+                                📋 LINKED BOOKING CONTEXT
+                              </span>
+                              {d.bookingId ? (
+                                <>
+                                  <strong style={{ color: 'var(--primary)', fontFamily: 'var(--font-mono)', display: 'block' }}>
+                                    Booking #{d.bookingId}
+                                  </strong>
+                                  <span style={{ color: 'var(--text-main)', fontSize: '0.78rem', display: 'block' }}>Booking Related Inquiry</span>
+                                  <span className="badge badge-assigned" style={{ fontSize: '0.68rem', marginTop: '0.2rem' }}>
+                                    Partner Task
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <strong style={{ color: 'var(--text-main)', display: 'block' }}>General Platform Grievance</strong>
+                                  <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>No specific booking reference linked</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Interactive Conversation Timeline Thread */}
+                          <div>
+                            <h4 style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.5rem' }}>
+                              Communication Thread ({d.messages ? d.messages.length : 0})
+                            </h4>
+                            <div
+                              ref={messagesContainerRef}
+                              className="custom-scrollbar"
+                              style={{
+                                maxHeight: '340px',
+                                overflowY: 'auto',
+                                padding: '1rem',
+                                backgroundColor: 'var(--bg-subtle)',
+                                borderRadius: 'var(--radius-sm)',
+                                border: '1px solid var(--border-light)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '0.85rem'
+                              }}
+                            >
+                              {(!d.messages || d.messages.length === 0) ? (
+                                <div style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
+                                  No message history in this thread yet.
+                                </div>
+                              ) : (
+                                d.messages.map((msg, idx) => {
+                                  const isAdmin = msg.senderRole === 'ADMIN';
+                                  return (
+                                    <div
+                                      key={msg.id || idx}
+                                      style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: isAdmin ? 'flex-end' : 'flex-start',
+                                        maxWidth: '85%',
+                                        alignSelf: isAdmin ? 'flex-end' : 'flex-start'
+                                      }}
+                                    >
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.2rem', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                                        <strong style={{ color: isAdmin ? '#818CF8' : 'var(--text-main)' }}>
+                                          {isAdmin ? '🛡️ Admin Support' : `🛠️ ${msg.senderName || 'Provider'}`}
+                                        </strong>
+                                        <span>• {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent'}</span>
+                                      </div>
+                                      <div style={{
+                                        padding: '0.75rem 1rem',
+                                        borderRadius: isAdmin ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
+                                        background: isAdmin ? 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)' : 'var(--bg-card)',
+                                        color: isAdmin ? '#ffffff' : 'var(--text-main)',
+                                        border: isAdmin ? 'none' : '1px solid var(--border-light)',
+                                        fontSize: '0.84rem',
+                                        lineHeight: 1.45,
+                                        whiteSpace: 'pre-wrap',
+                                        boxShadow: isAdmin ? '0 2px 10px rgba(99, 102, 241, 0.2)' : '0 1px 3px rgba(0,0,0,0.04)'
+                                      }}>
+                                        {msg.message}
+                                      </div>
+                                    </div>
+                                  );
+                                })
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Provider Resolution Ruling & Actions Form */}
+                          <form onSubmit={(e) => handleResolveProviderTicket(e, d)} style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                              <ShieldCheck size={16} color="#6366F1" />
+                              <span>Issue Resolution Ruling & Support Response</span>
+                            </h4>
+
+                            <div className="form-group" style={{ margin: 0 }}>
+                              <label className="form-label">Decision Status *</label>
+                              <select
+                                className="form-control"
+                                value={providerResolutionStatus}
+                                onChange={(e) => setProviderResolutionStatus(e.target.value)}
+                              >
+                                <option value="RESOLVED">RESOLVED (Grievance Solved / Action Executed)</option>
+                                <option value="IN_REVIEW">IN REVIEW (Under Investigation / Follow-up Needed)</option>
+                                <option value="CLOSED">CLOSED (Inquiry Completed / Dismissed)</option>
+                                <option value="OPEN">OPEN (Active Thread)</option>
+                              </select>
+                            </div>
+
+                            {/* Quick Presets Chips */}
+                            <div>
+                              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.35rem' }}>
+                                ⚡ One-Click Resolution Templates:
+                              </span>
+                              <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                                {[
+                                  'Payment discrepancy verified and credited to provider wallet.',
+                                  'Booking penalty dispute reviewed and successfully waived.',
+                                  'Payout release initiated; funds will reflect in bank account within 24 hours.',
+                                  'Issue investigated and resolved per platform service agreement.',
+                                  'Inquiry addressed; closing ticket. Please open a new request if needed.'
+                                ].map((preset) => (
+                                  <button
+                                    key={preset}
+                                    type="button"
+                                    onClick={() => setAdminReplyText(preset)}
+                                    className="btn btn-ghost btn-sm"
+                                    style={{ fontSize: '0.7rem', padding: '0.15rem 0.45rem', border: '1px solid var(--border-subtle)' }}
+                                  >
+                                    {preset.slice(0, 42)}...
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="form-group" style={{ margin: 0 }}>
+                              <label className="form-label">Official Ruling & Response Message *</label>
+                              <textarea
+                                className="form-control"
+                                rows={3}
+                                placeholder="Type the official ruling, explanation, or resolution instructions for the service partner... (Press Enter to submit, Shift+Enter for new line)"
+                                value={adminReplyText}
+                                onChange={(e) => setAdminReplyText(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    if (!submittingAdminReply && adminReplyText.trim()) {
+                                      handleResolveProviderTicket(e, d);
+                                    }
+                                  }
+                                }}
+                                required
+                              />
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+                              <button
+                                type="submit"
+                                className="btn btn-primary"
+                                disabled={submittingAdminReply || (!adminReplyText.trim() && d.status === providerResolutionStatus)}
+                                style={{
+                                  padding: '0.5rem 1.5rem',
+                                  fontWeight: 600,
+                                  background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
+                                  border: 'none',
+                                  boxShadow: '0 4px 14px rgba(99, 102, 241, 0.35)'
+                                }}
+                              >
+                                <Send size={14} style={{ marginRight: '0.35rem' }} />
+                                {submittingAdminReply ? 'Processing Ruling...' : 'Submit Resolution & Send Reply'}
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
               </div>
             )}
+
           </div>
         )}
 
