@@ -33,6 +33,7 @@ public class DataSeeder {
                                org.springframework.transaction.support.TransactionTemplate transactionTemplate) {
         return args -> {
             transactionTemplate.execute(status -> {
+                deactivateDuplicates(serviceRepository);
                 seedUsers(userRepository, passwordEncoder);
                 seedCatalog(categoryRepository, serviceRepository);
                 seedVehiclePricingRules(vehiclePricingRuleRepository);
@@ -40,6 +41,27 @@ public class DataSeeder {
                 return null;
             });
         };
+    }
+
+    private void deactivateDuplicates(ServiceRepository serviceRepository) {
+        List<String> duplicateOrObsoleteNames = List.of(
+                "Tap Repair",
+                "Bathroom Cleaning",
+                "Switch Board Repair",
+                "Fan Repair",
+                "RO Repair",
+                "RO Maintenance",
+                "AC Repair",
+                "AC Maintenance",
+                "CCTV Installation",
+                "Home Diagnostic Test"
+        );
+        for (Service s : serviceRepository.findAll()) {
+            if (duplicateOrObsoleteNames.stream().anyMatch(name -> name.equalsIgnoreCase(s.getName()))) {
+                s.setActive(false);
+                serviceRepository.save(s);
+            }
+        }
     }
 
     private void seedUsers(UserRepository userRepository, PasswordEncoder passwordEncoder) {
@@ -111,32 +133,24 @@ public class DataSeeder {
         ServiceCategory vehicleCategory = seedCategory(categoryRepository, "Logistics", "Intra-city on-demand goods transport and vehicle with driver service.");
 
         // 1. Plumbing & Cleaning
-        seedService(serviceRepository, "Tap Repair", "Fix leaking or damaged taps and replace worn washers", new BigDecimal("299.00"), 60, plumbingCleaning);
         seedService(serviceRepository, "Tap Leakage & Valve Repair", "Fix leaking or damaged taps and replace worn washers", new BigDecimal("299.00"), 60, plumbingCleaning);
         seedService(serviceRepository, "Pipe Leakage Fix", "Detect and repair concealed or open pipe leakages", new BigDecimal("499.00"), 90, plumbingCleaning);
         seedService(serviceRepository, "Drain Blockage & Clog Clearance", "Mechanical spring clearing for clogged kitchen sinks, washbasins, and bathroom drain traps", new BigDecimal("399.00"), 60, plumbingCleaning);
-        seedService(serviceRepository, "Bathroom Cleaning", "Deep tile scrub, lime stain removal, and sanitaryware disinfection", new BigDecimal("399.00"), 90, plumbingCleaning);
         seedService(serviceRepository, "Bathroom Deep Cleaning & Sanitization", "Deep tile scrub, lime stain removal, and sanitaryware disinfection", new BigDecimal("399.00"), 90, plumbingCleaning);
         seedService(serviceRepository, "Kitchen Deep Cleaning & Chimney Degreasing", "Thorough degreasing of chimney filters, gas stove scrub, and kitchen oil stain removal", new BigDecimal("799.00"), 120, plumbingCleaning);
         seedService(serviceRepository, "Sofa & Carpet Shampooing", "High-suction wet extraction shampooing for fabric sofas, cushions, and floor carpets", new BigDecimal("699.00"), 90, plumbingCleaning);
         seedService(serviceRepository, "Full Home Cleaning", "Complete multi-room deep cleaning, floor scrubbing, and dusting", new BigDecimal("1499.00"), 240, plumbingCleaning);
         
         // 2. Appliances & Electrical
-        seedService(serviceRepository, "Switch Board Repair", "Repair or replace faulty switch boards, tripped MCBs, and wiring", new BigDecimal("349.00"), 60, appliancesElectrical);
         seedService(serviceRepository, "Switchboard & Wiring Repair", "Repair or replace faulty switch boards, tripped MCBs, and wiring", new BigDecimal("349.00"), 60, appliancesElectrical);
-        seedService(serviceRepository, "Fan Repair", "Ceiling and exhaust fan motor, capacitor, and regulator repair", new BigDecimal("299.00"), 60, appliancesElectrical);
         seedService(serviceRepository, "Ceiling & Exhaust Fan Repair", "Ceiling and exhaust fan motor, capacitor, and regulator repair", new BigDecimal("299.00"), 60, appliancesElectrical);
         seedService(serviceRepository, "Geyser & Water Heater Servicing", "Element descaling, thermostat inspection, and leak repairs for storage/instant geysers", new BigDecimal("449.00"), 60, appliancesElectrical);
         seedService(serviceRepository, "Inverter & Battery Servicing", "Battery distilled water top-up, terminal desulfation, and inverter load testing", new BigDecimal("349.00"), 45, appliancesElectrical);
         seedService(serviceRepository, "Microwave & OTG Repair", "Magnetron check, high-voltage fuse change, and rotating plate motor repair", new BigDecimal("399.00"), 60, appliancesElectrical);
-        seedService(serviceRepository, "RO Repair", "Reverse Osmosis water purifier pump, filter change, and TDS calibration", new BigDecimal("499.00"), 90, appliancesElectrical);
-        seedService(serviceRepository, "RO Installation", "RO water purifier installation and waterline fitting", new BigDecimal("399.00"), 60, appliancesElectrical);
-        seedService(serviceRepository, "RO Maintenance", "Routine RO maintenance, membrane flush, and filter change", new BigDecimal("599.00"), 90, appliancesElectrical);
         seedService(serviceRepository, "RO Water Purifier Service", "Reverse Osmosis water purifier pump, filter change, and TDS calibration", new BigDecimal("499.00"), 90, appliancesElectrical);
-        seedService(serviceRepository, "AC Repair", "Air conditioner cooling diagnostics, gas leak check, and coil cleaning", new BigDecimal("699.00"), 120, appliancesElectrical);
-        seedService(serviceRepository, "AC Installation", "Air conditioner installation and bracket mounting", new BigDecimal("1499.00"), 180, appliancesElectrical);
-        seedService(serviceRepository, "AC Maintenance", "Routine AC jet pump foam wash, filter cleaning, and pressure test", new BigDecimal("599.00"), 90, appliancesElectrical);
+        seedService(serviceRepository, "RO Installation", "RO water purifier installation and waterline fitting", new BigDecimal("399.00"), 60, appliancesElectrical);
         seedService(serviceRepository, "AC Repair & Service", "Air conditioner cooling diagnostics, gas leak check, and coil cleaning", new BigDecimal("699.00"), 120, appliancesElectrical);
+        seedService(serviceRepository, "AC Installation", "Air conditioner installation and bracket mounting", new BigDecimal("1499.00"), 180, appliancesElectrical);
         seedService(serviceRepository, "Refrigerator Repair", "Single/double door refrigerator cooling, compressor, and defrost repair", new BigDecimal("599.00"), 90, appliancesElectrical);
         seedService(serviceRepository, "Washing Machine Repair", "Automatic/semi-automatic washing machine drum, drain pump, and PCB servicing", new BigDecimal("599.00"), 90, appliancesElectrical);
 
@@ -188,7 +202,6 @@ public class DataSeeder {
         seedService(serviceRepository, "Personal Errand & Queue Assistance", "On-demand assistant for document submission, standing in billing queues, and municipal errands", new BigDecimal("249.00"), 60, homeHelp);
 
         // 9. Security Services
-        seedService(serviceRepository, "CCTV Installation", "Install and configure CCTV cameras with mobile live-view setup", new BigDecimal("1199.00"), 120, security);
         seedService(serviceRepository, "CCTV Installation & Setup", "Install and configure CCTV cameras with mobile live-view setup", new BigDecimal("1199.00"), 120, security);
         seedService(serviceRepository, "Smart Lock Installation", "Install and set up a biometric fingerprint and digital keypad smart lock", new BigDecimal("799.00"), 90, security);
         seedService(serviceRepository, "Video Doorbell Installation", "Install and configure wireless / wired video doorbell with two-way audio", new BigDecimal("899.00"), 90, security);
@@ -197,7 +210,6 @@ public class DataSeeder {
         // 10. Diagnostic & Healthcare Services
         seedService(serviceRepository, "Blood Test & Sample Collection", "At-home phlebotomy sample collection with NABL certified laboratory analysis", new BigDecimal("499.00"), 30, diagnosticHealthcare);
         seedService(serviceRepository, "Full Body Health Checkup", "Comprehensive full body preventive health screening covering 60+ vital parameters", new BigDecimal("1999.00"), 60, diagnosticHealthcare);
-        seedService(serviceRepository, "Home Diagnostic Test", "At-home vital checks, blood sugar profiling, and rapid diagnostic screenings", new BigDecimal("999.00"), 45, diagnosticHealthcare);
         seedService(serviceRepository, "Compounder on Call", "Healthcare assistance for basic patient care, IV infusion, dressing, and prescribed medication support", new BigDecimal("599.00"), 60, diagnosticHealthcare);
         seedService(serviceRepository, "Elderly Assistance & Hospital Escort", "Companion escort for senior citizens to doctor appointments, mobility aid, and clinic visits", new BigDecimal("799.00"), 180, diagnosticHealthcare);
 
@@ -264,27 +276,27 @@ public class DataSeeder {
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "ro@taaskr.com", 4.8, 45, 5, "RO water purifier specialist",
-                serviceRepository, List.of("RO Repair", "RO Installation", "RO Maintenance", "RO Water Purifier Service"));
+                serviceRepository, List.of("RO Water Purifier Service", "RO Installation"));
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "ac@taaskr.com", 4.6, 32, 4, "AC repair and maintenance expert",
-                serviceRepository, List.of("AC Repair", "AC Installation", "AC Maintenance", "AC Repair & Service"));
+                serviceRepository, List.of("AC Repair & Service", "AC Installation"));
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "electrician@taaskr.com", 4.9, 120, 8, "Licensed electrician for all home wiring, switches, and fans",
-                serviceRepository, List.of("Switch Board Repair", "Switchboard & Wiring Repair", "Fan Repair", "Ceiling & Exhaust Fan Repair", "Inverter & Battery Servicing", "Geyser & Water Heater Servicing"));
+                serviceRepository, List.of("Switchboard & Wiring Repair", "Ceiling & Exhaust Fan Repair", "Inverter & Battery Servicing", "Geyser & Water Heater Servicing"));
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "plumber@taaskr.com", 4.5, 60, 6, "Experienced plumber for leaks, taps, and drain clearance",
-                serviceRepository, List.of("Tap Repair", "Tap Leakage & Valve Repair", "Pipe Leakage Fix", "Drain Blockage & Clog Clearance"));
+                serviceRepository, List.of("Tap Leakage & Valve Repair", "Pipe Leakage Fix", "Drain Blockage & Clog Clearance"));
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "appliance@taaskr.com", 4.7, 85, 7, "Multi-brand appliance repair expert",
-                serviceRepository, List.of("Refrigerator Repair", "Washing Machine Repair", "Microwave & OTG Repair", "RO Repair", "RO Installation", "RO Maintenance", "RO Water Purifier Service", "AC Repair", "AC Installation", "AC Maintenance", "AC Repair & Service", "Switch Board Repair", "Switchboard & Wiring Repair"));
+                serviceRepository, List.of("Refrigerator Repair", "Washing Machine Repair", "Microwave & OTG Repair", "RO Water Purifier Service", "AC Repair & Service", "Switchboard & Wiring Repair"));
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "provider@taaskr.com", 4.7, 12, 3, "Experienced home service professional",
-                serviceRepository, List.of("Tap Repair", "Tap Leakage & Valve Repair", "Pipe Leakage Fix", "Bathroom Cleaning", "Bathroom Deep Cleaning & Sanitization", "Full Home Cleaning", "Kitchen Deep Cleaning & Chimney Degreasing", "Sofa & Carpet Shampooing"));
+                serviceRepository, List.of("Tap Leakage & Valve Repair", "Pipe Leakage Fix", "Bathroom Deep Cleaning & Sanitization", "Full Home Cleaning", "Kitchen Deep Cleaning & Chimney Degreasing", "Sofa & Carpet Shampooing"));
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "salon@taaskr.com", 4.9, 150, 7, "Certified unisex salon, bridal makeup, and relaxation therapist",
@@ -312,11 +324,11 @@ public class DataSeeder {
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "nurse@taaskr.com", 4.9, 88, 9, "Registered nursing professional for vitals, injections, and elderly care",
-                serviceRepository, List.of("Blood Test & Sample Collection", "Full Body Health Checkup", "Home Diagnostic Test", "Compounder on Call", "Elderly Assistance & Hospital Escort"));
+                serviceRepository, List.of("Blood Test & Sample Collection", "Full Body Health Checkup", "Compounder on Call", "Elderly Assistance & Hospital Escort"));
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "security@taaskr.com", 4.8, 38, 6, "Certified home security and surveillance systems specialist",
-                serviceRepository, List.of("CCTV Installation", "CCTV Installation & Setup", "Smart Lock Installation", "Video Doorbell Installation"));
+                serviceRepository, List.of("CCTV Installation & Setup", "Smart Lock Installation", "Video Doorbell Installation"));
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "guard@taaskr.com", 4.6, 54, 5, "Professional residential and event security guard provider",
