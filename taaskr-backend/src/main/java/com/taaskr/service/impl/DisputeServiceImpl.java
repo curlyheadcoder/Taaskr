@@ -182,8 +182,7 @@ public class DisputeServiceImpl implements DisputeService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Dispute not found"));
 
         User user = getUserByEmail(userEmail);
-        boolean isAdmin = user.getRoles() != null && user.getRoles().stream()
-                .anyMatch(r -> r.getName().name().equals("ROLE_ADMIN"));
+        boolean isAdmin = user.getRole() == com.taaskr.enums.Role.ADMIN;
 
         if (!isAdmin && !dispute.getUser().getId().equals(user.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized to message on this dispute");
