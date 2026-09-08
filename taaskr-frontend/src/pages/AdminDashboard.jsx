@@ -68,6 +68,8 @@ export default function AdminDashboard() {
   const [disputeResolutionNotes, setDisputeResolutionNotes] = useState('');
   const [disputeRefundAmount, setDisputeRefundAmount] = useState('');
   const [submittingDisputeResolve, setSubmittingDisputeResolve] = useState(false);
+  const [adminCustomerReplyText, setAdminCustomerReplyText] = useState('');
+  const [submittingCustomerReply, setSubmittingCustomerReply] = useState(false);
 
   const filteredDisputes = disputes.filter(d => {
     if (disputeFilter !== 'ALL' && d.status !== disputeFilter) return false;
@@ -222,6 +224,24 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSendCustomerReply = async (e, disputeToSend) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const target = disputeToSend || activeDispute;
+    if (!target || !adminCustomerReplyText.trim() || submittingCustomerReply) return;
+    const text = adminCustomerReplyText.trim();
+    setSubmittingCustomerReply(true);
+    setAdminCustomerReplyText('');
+    try {
+      const updated = await api.disputes.reply(target.id, text);
+      setDisputes(prev => prev.map(d => d.id === updated.id ? updated : d));
+      setTimeout(scrollToChatBottom, 60);
+    } catch (err) {
+      alert(err.message || 'Failed to send reply to customer');
+    } finally {
+      setSubmittingCustomerReply(false);
+    }
+  };
+
   const handleQuickUpdateDisputeStatus = async (disputeId, newStatus) => {
     try {
       await api.disputes.resolve(
@@ -267,34 +287,63 @@ export default function AdminDashboard() {
     document.body.classList.remove('theme-user', 'theme-provider');
     document.body.classList.add('theme-admin');
     loadAdminData();
+
+    const handleSwitchTab = (e) => {
+      if (!e.detail) return;
+      if (typeof e.detail === 'string') {
+        setActiveTab(e.detail);
+      } else if (typeof e.detail === 'object') {
+        if (e.detail.tab) setActiveTab(e.detail.tab);
+        if (e.detail.disputeType) setDisputeTypeTab(e.detail.disputeType);
+        if (e.detail.disputeId) setSelectedDisputeId(Number(e.detail.disputeId));
+        if (e.detail.discussionId) setSelectedDiscussionId(Number(e.detail.discussionId));
+      }
+    };
+    window.addEventListener('switch-admin-tab', handleSwitchTab);
+
     return () => {
+      window.removeEventListener('switch-admin-tab', handleSwitchTab);
       document.body.classList.remove('theme-admin');
     };
   }, []);
 
-  // Live Auto-Poll Partner Discussions in Admin Panel every 3 seconds
+  // Live Auto-Poll Disputes & Partner Discussions in Admin Panel every 2.5 seconds without page refresh
   useEffect(() => {
-    if (activeTab !== 'discussions' && !(activeTab === 'disputes' && disputeTypeTab === 'PROVIDER')) return;
+    if (activeTab !== 'discussions' && activeTab !== 'disputes') return;
     const pollInterval = setInterval(async () => {
       try {
-        const discussionsList = await api.admin.getDiscussions();
-        if (Array.isArray(discussionsList)) {
-          setDiscussions(discussionsList);
+        if (activeTab === 'disputes') {
+          if (disputeTypeTab === 'CUSTOMER') {
+            const disputesList = await api.disputes.getAllForAdmin();
+            if (Array.isArray(disputesList)) {
+              setDisputes(disputesList);
+            }
+          } else if (disputeTypeTab === 'PROVIDER') {
+            const discussionsList = await api.admin.getDiscussions();
+            if (Array.isArray(discussionsList)) {
+              setDiscussions(discussionsList);
+            }
+          }
+        } else if (activeTab === 'discussions') {
+          const discussionsList = await api.admin.getDiscussions();
+          if (Array.isArray(discussionsList)) {
+            setDiscussions(discussionsList);
+          }
         }
       } catch (e) {
         // silent background poll
       }
-    }, 3000);
+    }, 2500);
     return () => clearInterval(pollInterval);
   }, [activeTab, disputeTypeTab]);
 
-  // Scroll chat box when opening/selecting a discussion thread
+  // Scroll chat box when opening/selecting a discussion or dispute thread
   useEffect(() => {
-    if ((activeTab === 'discussions' || (activeTab === 'disputes' && disputeTypeTab === 'PROVIDER')) && selectedDiscussionId) {
+    if ((activeTab === 'discussions' || activeTab === 'disputes') && (selectedDiscussionId || selectedDisputeId)) {
       const timer = setTimeout(scrollToChatBottom, 60);
       return () => clearTimeout(timer);
     }
-  }, [selectedDiscussionId, activeTab, disputeTypeTab]);
+  }, [selectedDiscussionId, selectedDisputeId, activeTab, disputeTypeTab]);
 
   // ----------------------------------------
   // CATEGORY OPERATIONS
@@ -1744,6 +1793,39 @@ export default function AdminDashboard() {
                             })()}
                           </div>
 
+                          {/* Conversational Reply Input for Ongoing Discussion */}
+                          {disp.status !== 'DISMISSED' && (
+                            <form onSubmit={(e) => handleSendCustomerReply(e, disp)} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end', marginTop: '0.25rem' }}>
+                              <div className="form-group" style={{ margin: 0, flex: 1 }}>
+                                <textarea
+                                  className="form-control"
+                                  rows={2}
+                                  placeholder="Type a message or response to customer in this thread..."
+                                  value={adminCustomerReplyText}
+                                  onChange={(e) => setAdminCustomerReplyText(e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                      e.preventDefault();
+                                      if (!submittingCustomerReply && adminCustomerReplyText.trim()) {
+                                        handleSendCustomerReply(e, disp);
+                                      }
+                                    }
+                                  }}
+                                  style={{ resize: 'none', fontSize: '0.84rem' }}
+                                />
+                              </div>
+                              <button
+                                type="submit"
+                                className="btn btn-primary"
+                                disabled={submittingCustomerReply || !adminCustomerReplyText.trim()}
+                                style={{ padding: '0.65rem 1.25rem', height: 'fit-content', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
+                              >
+                                <Send size={15} />
+                                <span>{submittingCustomerReply ? 'Sending...' : 'Send Message'}</span>
+                              </button>
+                            </form>
+                          )}
+
                           {/* Resolution Submission Console Form */}
                           <form onSubmit={(e) => handleResolveDispute(e, disp)} style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -1808,7 +1890,7 @@ export default function AdminDashboard() {
                               <textarea
                                 className="form-control"
                                 rows={3}
-                                placeholder="State the resolution reason, refund decision, or follow-up notes for customer and provider... (Press Enter to submit, Shift+Enter for new line)"
+                                placeholder="State the resolution reason, refund decision, or follow-up notes for customer and provider..."
                                 value={disputeResolutionNotes}
                                 onChange={(e) => setDisputeResolutionNotes(e.target.value)}
                                 onKeyDown={(e) => {
@@ -2244,7 +2326,7 @@ export default function AdminDashboard() {
                               <textarea
                                 className="form-control"
                                 rows={3}
-                                placeholder="Type the official ruling, explanation, or resolution instructions for the service partner... (Press Enter to submit, Shift+Enter for new line)"
+                                placeholder="Type the official ruling, explanation, or resolution instructions for the service partner..."
                                 value={adminReplyText}
                                 onChange={(e) => setAdminReplyText(e.target.value)}
                                 onKeyDown={(e) => {

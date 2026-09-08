@@ -2422,7 +2422,7 @@ export default function ProviderDashboard() {
                               <input
                                 type="text"
                                 className="form-control"
-                                placeholder="Write a courteous response to this customer... (Press Enter to post)"
+                                placeholder="Write a courteous response to this customer..."
                                 value={replyContent}
                                 onChange={(e) => setReplyContent(e.target.value)}
                                 onKeyDown={(e) => {

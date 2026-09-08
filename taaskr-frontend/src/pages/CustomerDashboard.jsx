@@ -1306,7 +1306,7 @@ export default function CustomerDashboard({ initialTab }) {
                           <textarea
                             className="form-control"
                             rows={2}
-                            placeholder="Type a message or response to support team... (Press Enter to send, Shift+Enter for new line)"
+                            placeholder="Type a message or response to support team..."
                             value={disputeReplyText}
                             onChange={(e) => setDisputeReplyText(e.target.value)}
                             onKeyDown={(e) => {
@@ -1840,7 +1840,7 @@ export default function CustomerDashboard({ initialTab }) {
                   <textarea
                     className="form-control"
                     rows={4}
-                    placeholder="Describe what went wrong in detail... (Press Enter to submit, Shift+Enter for new line)"
+                    placeholder="Describe what went wrong in detail..."
                     value={disputeDescription}
                     onChange={(e) => setDisputeDescription(e.target.value)}
                     onKeyDown={(e) => {

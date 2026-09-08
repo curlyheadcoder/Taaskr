@@ -4,7 +4,8 @@ import { api } from '../services/api';
 import TaaskrLogo from './TaaskrLogo';
 import { 
   Sun, Moon, Briefcase, ShieldCheck, Calendar, Grid, LogOut, 
-  MapPin, Search, ChevronDown, Bot, Navigation, X, Check, ArrowRight, Command, AlertCircle, MessageSquare, Bell
+  MapPin, Search, ChevronDown, Bot, Navigation, X, Check, ArrowRight, Command, AlertCircle, MessageSquare, Bell,
+  Headphones, HelpCircle, LifeBuoy, CreditCard
 } from 'lucide-react';
 
 const ACTIVE_CITY = { city: 'Indore', area: 'Indore Metro (All Service Zones)', status: 'ACTIVE' };
@@ -106,35 +107,60 @@ export default function Navbar() {
 
     const isDispute = refType === 'DISPUTE' || titleLower.includes('dispute') || msgLower.includes('dispute') || titleLower.includes('ticket') || msgLower.includes('complaint');
     const isBooking = refType === 'BOOKING' || titleLower.includes('booking') || msgLower.includes('booking') || titleLower.includes('otp');
-    const isWallet = refType === 'WALLET' || titleLower.includes('wallet') || titleLower.includes('refund') || msgLower.includes('refund');
+    const isWallet = refType === 'WALLET' || titleLower.includes('wallet') || titleLower.includes('refund') || msgLower.includes('refund') || titleLower.includes('payout');
     const isDiscussion = refType === 'DISCUSSION' || titleLower.includes('discussion') || msgLower.includes('discussion') || titleLower.includes('message');
+    const isKyc = refType === 'KYC' || titleLower.includes('kyc') || msgLower.includes('kyc') || titleLower.includes('document');
 
     if (user?.role === 'ADMIN') {
-      navigate('/admin');
-    } else if (user?.role === 'PROVIDER') {
-      if (isDiscussion || isDispute) {
-        if (location.pathname !== '/provider') {
-          navigate('/provider');
+      if (location.pathname !== '/admin') {
+        navigate('/admin');
+      }
+      setTimeout(() => {
+        if (isDiscussion) {
+          window.dispatchEvent(new CustomEvent('switch-admin-tab', { detail: { tab: 'disputes', disputeType: 'PROVIDER', discussionId: n.referenceId } }));
+        } else if (isDispute) {
+          window.dispatchEvent(new CustomEvent('switch-admin-tab', { detail: { tab: 'disputes', disputeType: 'CUSTOMER', disputeId: n.referenceId } }));
+        } else if (isBooking) {
+          window.dispatchEvent(new CustomEvent('switch-admin-tab', { detail: { tab: 'bookings', bookingId: n.referenceId } }));
+        } else if (isKyc) {
+          window.dispatchEvent(new CustomEvent('switch-admin-tab', { detail: { tab: 'kyc' } }));
+        } else if (isWallet) {
+          window.dispatchEvent(new CustomEvent('switch-admin-tab', { detail: { tab: 'payouts' } }));
+        } else {
+          window.dispatchEvent(new CustomEvent('switch-admin-tab', { detail: 'analytics' }));
         }
-        setTimeout(() => {
-          window.dispatchEvent(new CustomEvent('switch-provider-tab', { detail: 'discussions' }));
-        }, 150);
-      } else {
+      }, 150);
+    } else if (user?.role === 'PROVIDER') {
+      if (location.pathname !== '/provider') {
         navigate('/provider');
       }
+      setTimeout(() => {
+        if (isDiscussion || isDispute) {
+          window.dispatchEvent(new CustomEvent('switch-provider-tab', { detail: 'discussions' }));
+        } else if (isBooking) {
+          window.dispatchEvent(new CustomEvent('switch-provider-tab', { detail: 'bookings' }));
+        } else if (isKyc) {
+          window.dispatchEvent(new CustomEvent('switch-provider-tab', { detail: 'kyc' }));
+        } else if (isWallet) {
+          window.dispatchEvent(new CustomEvent('switch-provider-tab', { detail: 'earnings' }));
+        } else {
+          window.dispatchEvent(new CustomEvent('switch-provider-tab', { detail: 'tasks' }));
+        }
+      }, 150);
     } else {
       // Customer role
       if (isDispute) {
-        navigate(`/profile?tab=disputes${n.referenceId ? `&disputeId=${n.referenceId}` : ''}`);
+        navigate(`/bookings?tab=disputes${n.referenceId ? `&disputeId=${n.referenceId}` : ''}`);
       } else if (isBooking) {
-        navigate(`/profile?tab=bookings${n.referenceId ? `&bookingId=${n.referenceId}` : ''}`);
+        navigate(`/bookings?tab=bookings${n.referenceId ? `&bookingId=${n.referenceId}` : ''}`);
       } else if (isWallet) {
-        navigate('/profile?tab=bookings');
+        navigate('/bookings?tab=bookings');
       } else {
-        navigate('/profile');
+        navigate('/bookings');
       }
     }
   };
+
 
   useEffect(() => {
     const handleTabChange = (e) => {
@@ -751,16 +777,16 @@ export default function Navbar() {
 
       {/* Right Controls: Quick Links, Theme Toggle & User Profile */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexShrink: 0 }}>
-        {/* Customer Fast Action Links */}
+        {/* Fast Action Links (Bookings & Help Desk) */}
         {user?.role === 'USER' && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginRight: '0.25rem' }}>
             <button
-              onClick={() => navigate('/profile?tab=bookings')}
+              onClick={() => navigate('/bookings?tab=bookings')}
               className="btn btn-ghost btn-sm"
               style={{
                 fontSize: '0.8rem',
                 fontWeight: 600,
-                color: location.pathname === '/profile' && (location.search.includes('bookings') || !location.search) ? 'var(--primary)' : 'var(--text-main)',
+                color: location.pathname === '/bookings' && (!location.search || location.search.includes('bookings')) ? 'var(--primary)' : 'var(--text-main)',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.35rem',
@@ -772,23 +798,105 @@ export default function Navbar() {
               <span>Bookings</span>
             </button>
             <button
-              onClick={() => navigate('/profile?tab=disputes')}
+              onClick={() => navigate('/bookings?tab=disputes')}
               className="btn btn-ghost btn-sm"
+              title="Help Desk & Issue Tracker"
               style={{
                 fontSize: '0.8rem',
                 fontWeight: 600,
-                color: location.pathname === '/profile' && location.search.includes('disputes') ? '#EF4444' : 'var(--text-main)',
+                color: location.pathname === '/bookings' && location.search.includes('disputes') ? '#6366F1' : 'var(--text-main)',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.35rem',
                 padding: '0.35rem 0.65rem',
-                borderRadius: '8px'
+                borderRadius: '8px',
+                background: location.pathname === '/bookings' && location.search.includes('disputes') ? 'rgba(99, 102, 241, 0.12)' : 'transparent',
+                border: location.pathname === '/bookings' && location.search.includes('disputes') ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid transparent'
               }}
             >
-              <AlertCircle size={13} color="#EF4444" />
-              <span>Tickets & Support</span>
+              <Headphones size={13} color="#6366F1" />
+              <span>Help Desk</span>
             </button>
           </div>
+        )}
+
+        {/* Admin Quick Help Desk Access */}
+        {user?.role === 'ADMIN' && (
+          <button
+            onClick={() => {
+              if (location.pathname !== '/admin') navigate('/admin');
+              setTimeout(() => window.dispatchEvent(new CustomEvent('switch-admin-tab', { detail: { tab: 'disputes' } })), 100);
+            }}
+            className="btn btn-ghost btn-sm"
+            title="Help Desk (Customer & Provider Tickets)"
+            style={{
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              color: '#6366F1',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              padding: '0.35rem 0.65rem',
+              borderRadius: '8px',
+              marginRight: '0.25rem',
+              background: 'rgba(99, 102, 241, 0.1)',
+              border: '1px solid rgba(99, 102, 241, 0.25)'
+            }}
+          >
+            <Headphones size={13} color="#6366F1" />
+            <span>Help Desk</span>
+          </button>
+        )}
+
+        {/* Provider Quick Help Desk Access */}
+        {user?.role === 'PROVIDER' && (
+          <button
+            onClick={() => {
+              if (location.pathname !== '/provider') navigate('/provider');
+              setTimeout(() => window.dispatchEvent(new CustomEvent('switch-provider-tab', { detail: 'discussions' })), 100);
+            }}
+            className="btn btn-ghost btn-sm"
+            title="Help Desk & Partner Support"
+            style={{
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              color: '#6366F1',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              padding: '0.35rem 0.65rem',
+              borderRadius: '8px',
+              marginRight: '0.25rem',
+              background: 'rgba(99, 102, 241, 0.1)',
+              border: '1px solid rgba(99, 102, 241, 0.25)'
+            }}
+          >
+            <Headphones size={13} color="#6366F1" />
+            <span>Help Desk</span>
+          </button>
+        )}
+
+        {/* Guest Quick Help Desk Link */}
+        {!user && (
+          <button
+            onClick={() => navigate('/bookings?tab=disputes')}
+            className="btn btn-ghost btn-sm"
+            title="Help Desk & Customer Support"
+            style={{
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              color: 'var(--text-main)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              padding: '0.35rem 0.65rem',
+              borderRadius: '8px',
+              marginRight: '0.25rem'
+            }}
+          >
+            <Headphones size={13} color="#6366F1" />
+            <span>Help Desk</span>
+          </button>
         )}
         {/* Subtle Dark/Light Mode Toggle */}
         <button
