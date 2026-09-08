@@ -185,10 +185,42 @@ export default function CustomerDashboard({ initialTab }) {
   };
 
   useEffect(() => {
-    if (urlTab && (urlTab === 'bookings' || urlTab === 'disputes' || urlTab === 'profile' || urlTab === 'addresses')) {
-      setActiveTab(urlTab);
+    const tabParam = searchParams.get('tab');
+    const disputeIdParam = searchParams.get('disputeId');
+    const bookingIdParam = searchParams.get('bookingId');
+
+    if (tabParam) {
+      const normalized = tabParam === 'orders' ? 'bookings' : tabParam;
+      if (['bookings', 'disputes', 'profile', 'addresses'].includes(normalized)) {
+        setActiveTab(normalized);
+        if (normalized === 'disputes') {
+          fetchMyDisputes();
+        } else if (normalized === 'addresses') {
+          fetchAddresses();
+        } else if (normalized === 'bookings') {
+          fetchMyBookings();
+        }
+      }
     }
-  }, [urlTab]);
+
+    if (disputeIdParam) {
+      const dId = Number(disputeIdParam);
+      if (!isNaN(dId)) {
+        setSelectedDisputeId(dId);
+      }
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    const bookingIdParam = searchParams.get('bookingId');
+    if (bookingIdParam && bookings.length > 0) {
+      const bId = Number(bookingIdParam);
+      const found = bookings.find(b => b.id === bId);
+      if (found) {
+        setSelectedBooking(found);
+      }
+    }
+  }, [bookings, searchParams]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);

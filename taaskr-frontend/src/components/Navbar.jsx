@@ -92,6 +92,50 @@ export default function Navbar() {
     } catch (e) {}
   };
 
+  const handleNotificationClick = async (n) => {
+    try {
+      if (!n.isRead) {
+        await handleMarkAsRead(n.id);
+      }
+    } catch (e) {}
+    setNotificationsOpen(false);
+
+    const refType = (n.referenceType || '').toUpperCase();
+    const titleLower = (n.title || '').toLowerCase();
+    const msgLower = (n.message || '').toLowerCase();
+
+    const isDispute = refType === 'DISPUTE' || titleLower.includes('dispute') || msgLower.includes('dispute') || titleLower.includes('ticket') || msgLower.includes('complaint');
+    const isBooking = refType === 'BOOKING' || titleLower.includes('booking') || msgLower.includes('booking') || titleLower.includes('otp');
+    const isWallet = refType === 'WALLET' || titleLower.includes('wallet') || titleLower.includes('refund') || msgLower.includes('refund');
+    const isDiscussion = refType === 'DISCUSSION' || titleLower.includes('discussion') || msgLower.includes('discussion') || titleLower.includes('message');
+
+    if (user?.role === 'ADMIN') {
+      navigate('/admin');
+    } else if (user?.role === 'PROVIDER') {
+      if (isDiscussion || isDispute) {
+        if (location.pathname !== '/provider') {
+          navigate('/provider');
+        }
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('switch-provider-tab', { detail: 'discussions' }));
+        }, 150);
+      } else {
+        navigate('/provider');
+      }
+    } else {
+      // Customer role
+      if (isDispute) {
+        navigate(`/profile?tab=disputes${n.referenceId ? `&disputeId=${n.referenceId}` : ''}`);
+      } else if (isBooking) {
+        navigate(`/profile?tab=bookings${n.referenceId ? `&bookingId=${n.referenceId}` : ''}`);
+      } else if (isWallet) {
+        navigate('/profile?tab=bookings');
+      } else {
+        navigate('/profile');
+      }
+    }
+  };
+
   useEffect(() => {
     const handleTabChange = (e) => {
       if (e.detail) {
@@ -705,8 +749,47 @@ export default function Navbar() {
         <div style={{ flex: 1 }} />
       )}
 
-      {/* Right Controls: Theme Toggle & User Profile */}
+      {/* Right Controls: Quick Links, Theme Toggle & User Profile */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexShrink: 0 }}>
+        {/* Customer Fast Action Links */}
+        {user?.role === 'USER' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginRight: '0.25rem' }}>
+            <button
+              onClick={() => navigate('/profile?tab=bookings')}
+              className="btn btn-ghost btn-sm"
+              style={{
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                color: location.pathname === '/profile' && (location.search.includes('bookings') || !location.search) ? 'var(--primary)' : 'var(--text-main)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                padding: '0.35rem 0.65rem',
+                borderRadius: '8px'
+              }}
+            >
+              <Calendar size={13} />
+              <span>Bookings</span>
+            </button>
+            <button
+              onClick={() => navigate('/profile?tab=disputes')}
+              className="btn btn-ghost btn-sm"
+              style={{
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                color: location.pathname === '/profile' && location.search.includes('disputes') ? '#EF4444' : 'var(--text-main)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                padding: '0.35rem 0.65rem',
+                borderRadius: '8px'
+              }}
+            >
+              <AlertCircle size={13} color="#EF4444" />
+              <span>Tickets & Support</span>
+            </button>
+          </div>
+        )}
         {/* Subtle Dark/Light Mode Toggle */}
         <button
           onClick={() => setIsDark(!isDark)}
@@ -822,43 +905,116 @@ export default function Navbar() {
                   )}
                 </div>
 
-                <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
+                <div style={{ maxHeight: '340px', overflowY: 'auto' }}>
                   {notifications.length === 0 ? (
                     <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
-                      No notifications yet
+                      <Bell size={24} style={{ opacity: 0.35, marginBottom: '0.5rem', display: 'inline-block' }} />
+                      <div>No notifications yet</div>
                     </div>
                   ) : (
-                    notifications.map((n) => (
-                      <div
-                        key={n.id}
-                        onClick={() => handleMarkAsRead(n.id)}
-                        style={{
-                          padding: '0.75rem 1rem',
-                          borderBottom: '1px solid var(--border-subtle)',
-                          backgroundColor: n.isRead ? 'transparent' : 'rgba(56, 189, 248, 0.06)',
-                          cursor: 'pointer',
-                          transition: 'background-color 0.15s'
-                        }}
-                      >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-                          <span style={{ fontWeight: n.isRead ? 600 : 700, fontSize: '0.8125rem', color: 'var(--text-main)' }}>
-                            {n.title}
-                          </span>
-                          {!n.isRead && (
-                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#EF4444', flexShrink: 0, marginTop: '4px' }} />
-                          )}
-                        </div>
-                        <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.35 }}>
-                          {n.message}
-                        </p>
-                        {n.createdAt && (
-                          <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                            {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {new Date(n.createdAt).toLocaleDateString()}
+                    notifications.map((n) => {
+                      const refType = (n.referenceType || '').toUpperCase();
+                      const titleLower = (n.title || '').toLowerCase();
+                      const msgLower = (n.message || '').toLowerCase();
+                      const isDispute = refType === 'DISPUTE' || titleLower.includes('dispute') || msgLower.includes('dispute') || titleLower.includes('ticket');
+                      const isBooking = refType === 'BOOKING' || titleLower.includes('booking') || msgLower.includes('booking') || titleLower.includes('otp');
+                      const isWallet = refType === 'WALLET' || titleLower.includes('wallet') || titleLower.includes('refund');
+                      const isDiscussion = refType === 'DISCUSSION' || titleLower.includes('discussion') || msgLower.includes('discussion');
+
+                      return (
+                        <div
+                          key={n.id}
+                          onClick={() => handleNotificationClick(n)}
+                          style={{
+                            padding: '0.75rem 1rem',
+                            borderBottom: '1px solid var(--border-subtle)',
+                            backgroundColor: n.isRead ? 'transparent' : 'rgba(245, 158, 11, 0.08)',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                            display: 'flex',
+                            gap: '0.65rem',
+                            alignItems: 'flex-start'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = n.isRead ? 'var(--bg-hover)' : 'rgba(245, 158, 11, 0.14)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = n.isRead ? 'transparent' : 'rgba(245, 158, 11, 0.08)';
+                          }}
+                        >
+                          <div style={{
+                            width: '28px',
+                            height: '28px',
+                            borderRadius: '6px',
+                            backgroundColor: isDispute ? 'rgba(239, 68, 68, 0.15)' : isWallet ? 'rgba(16, 185, 129, 0.15)' : isDiscussion ? 'rgba(56, 189, 248, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                            color: isDispute ? '#EF4444' : isWallet ? '#10B981' : isDiscussion ? '#38BDF8' : 'var(--primary)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                            marginTop: '2px'
+                          }}>
+                            {isDispute ? <AlertCircle size={15} /> : isWallet ? <CreditCard size={15} /> : isDiscussion ? <MessageSquare size={15} /> : <Calendar size={15} />}
                           </div>
-                        )}
-                      </div>
-                    ))
+
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
+                              <span style={{ fontWeight: n.isRead ? 600 : 700, fontSize: '0.8125rem', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {n.title}
+                              </span>
+                              {!n.isRead && (
+                                <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: 'var(--primary)', flexShrink: 0 }} />
+                              )}
+                            </div>
+                            <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.35 }}>
+                              {n.message}
+                            </p>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.35rem', fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
+                              <span>{n.createdAt ? new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent'}</span>
+                              <span style={{ color: 'var(--primary)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
+                                View Details <ArrowRight size={10} />
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
                   )}
+                </div>
+
+                {/* Dropdown Footer Quick Link */}
+                <div style={{
+                  padding: '0.55rem 1rem',
+                  borderTop: '1px solid var(--border-light)',
+                  backgroundColor: 'var(--bg-subtle)',
+                  textAlign: 'center'
+                }}>
+                  <button
+                    onClick={() => {
+                      setNotificationsOpen(false);
+                      if (user?.role === 'ADMIN') {
+                        navigate('/admin');
+                      } else if (user?.role === 'PROVIDER') {
+                        navigate('/provider');
+                      } else {
+                        navigate('/profile?tab=disputes');
+                      }
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--primary)',
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem'
+                    }}
+                  >
+                    <span>{user?.role === 'ADMIN' ? 'Open Operations & Dispute Desk' : user?.role === 'PROVIDER' ? 'Open Support Console' : 'View All Support & Dispute Tickets'}</span>
+                    <ArrowRight size={12} />
+                  </button>
                 </div>
               </div>
             )}
