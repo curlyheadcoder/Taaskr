@@ -56,11 +56,41 @@ export default function AdminDashboard() {
   const [payoutAdminNotes, setPayoutAdminNotes] = useState('');
   const [submittingPayoutProcess, setSubmittingPayoutProcess] = useState(false);
 
-  // Dispute resolution modal state
+  // Dispute resolution states
   const [resolvingDispute, setResolvingDispute] = useState(null);
+  const [selectedDisputeId, setSelectedDisputeId] = useState(null);
+  const [disputeFilter, setDisputeFilter] = useState('ALL');
+  const [disputeSearch, setDisputeSearch] = useState('');
   const [disputeStatusDecision, setDisputeStatusDecision] = useState('RESOLVED');
   const [disputeResolutionNotes, setDisputeResolutionNotes] = useState('');
+  const [disputeRefundAmount, setDisputeRefundAmount] = useState('');
   const [submittingDisputeResolve, setSubmittingDisputeResolve] = useState(false);
+
+  const filteredDisputes = disputes.filter(d => {
+    if (disputeFilter !== 'ALL' && d.status !== disputeFilter) return false;
+    if (disputeSearch.trim()) {
+      const q = disputeSearch.toLowerCase();
+      const matchId = String(d.id).includes(q);
+      const matchBooking = String(d.bookingId || '').includes(q) || String(d.bookingCode || '').toLowerCase().includes(q) || String(d.serviceName || '').toLowerCase().includes(q);
+      const matchCustomer = String(d.customerName || '').toLowerCase().includes(q) || String(d.customerEmail || '').toLowerCase().includes(q);
+      const matchProvider = String(d.providerName || '').toLowerCase().includes(q) || String(d.providerEmail || '').toLowerCase().includes(q);
+      const matchReason = String(d.reason || '').toLowerCase().includes(q);
+      return matchId || matchBooking || matchCustomer || matchProvider || matchReason;
+    }
+    return true;
+  });
+
+  const activeDispute = disputes.find(d => d.id === selectedDisputeId) 
+    || (filteredDisputes.length > 0 ? filteredDisputes[0] : null);
+
+  // KYC Verification state
+  const [kycDocuments, setKycDocuments] = useState([]);
+  const [kycFilter, setKycFilter] = useState('ALL');
+  const [kycPage, setKycPage] = useState(1);
+  const [verifyingKycDoc, setVerifyingKycDoc] = useState(null);
+  const [kycDecisionStatus, setKycDecisionStatus] = useState('VERIFIED');
+  const [kycRejectionReason, setKycRejectionReason] = useState('');
+  const [submittingKycVerify, setSubmittingKycVerify] = useState(false);
 
   // Provider sub-tabs & remarks states
   const [providerSubTab, setProviderSubTab] = useState('pending');
@@ -98,7 +128,7 @@ export default function AdminDashboard() {
   const loadAdminData = async () => {
     setLoading(true);
     try {
-      const [cats, servs, usersList, providersList, bookingsList, discussionsList, payoutsList, disputesList] = await Promise.all([
+      const [cats, servs, usersList, providersList, bookingsList, discussionsList, payoutsList, disputesList, kycDocs] = await Promise.all([
         api.catalog.getCategories(),
         api.catalog.getServices(),
         api.admin.getUsers(),
@@ -106,7 +136,8 @@ export default function AdminDashboard() {
         api.admin.getAllBookings(),
         api.admin.getDiscussions(),
         api.payouts.getAdminPayouts().catch(() => []),
-        api.disputes.getAllForAdmin().catch(() => [])
+        api.disputes.getAllForAdmin().catch(() => []),
+        api.kyc.getAdminDocuments().catch(() => ({ content: [] }))
       ]);
 
       setCategories(cats || []);
@@ -117,8 +148,12 @@ export default function AdminDashboard() {
       setDiscussions(discussionsList || []);
       setPayouts(payoutsList || []);
       setDisputes(disputesList || []);
+      setKycDocuments((kycDocs && kycDocs.content) ? kycDocs.content : (Array.isArray(kycDocs) ? kycDocs : []));
       if (discussionsList && discussionsList.length > 0 && !selectedDiscussionId) {
         setSelectedDiscussionId(discussionsList[0].id);
+      }
+      if (disputesList && disputesList.length > 0 && !selectedDisputeId) {
+        setSelectedDisputeId(disputesList[0].id);
       }
     } catch (err) {
       console.error('Failed to load admin console data:', err);
@@ -149,23 +184,59 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleResolveDispute = async (e) => {
-    e.preventDefault();
-    if (!resolvingDispute) return;
+  const handleResolveDispute = async (e, disputeToResolve) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const target = disputeToResolve || resolvingDispute || activeDispute;
+    if (!target) return;
     setSubmittingDisputeResolve(true);
     try {
       await api.disputes.resolve(
-        resolvingDispute.id,
+        target.id,
         disputeStatusDecision,
-        disputeResolutionNotes.trim()
+        disputeResolutionNotes.trim(),
+        disputeRefundAmount ? Number(disputeRefundAmount) : undefined
       );
       setResolvingDispute(null);
       setDisputeResolutionNotes('');
+      setDisputeRefundAmount('');
       loadAdminData();
     } catch (err) {
       alert(`Failed to resolve dispute: ${err.message}`);
     } finally {
       setSubmittingDisputeResolve(false);
+    }
+  };
+
+  const handleQuickUpdateDisputeStatus = async (disputeId, newStatus) => {
+    try {
+      await api.disputes.resolve(
+        disputeId,
+        newStatus,
+        `Status updated to ${newStatus} by Admin`
+      );
+      loadAdminData();
+    } catch (err) {
+      alert(`Failed to update dispute status: ${err.message}`);
+    }
+  };
+
+  const handleVerifyKycDocument = async (e) => {
+    e.preventDefault();
+    if (!verifyingKycDoc) return;
+    if (kycDecisionStatus === 'REJECTED' && !kycRejectionReason.trim()) {
+      alert('Rejection reason is required when rejecting a document.');
+      return;
+    }
+    setSubmittingKycVerify(true);
+    try {
+      await api.kyc.verifyDocument(verifyingKycDoc.id, kycDecisionStatus, kycRejectionReason.trim());
+      setVerifyingKycDoc(null);
+      setKycRejectionReason('');
+      loadAdminData();
+    } catch (err) {
+      alert(`Failed to verify KYC document: ${err.message}`);
+    } finally {
+      setSubmittingKycVerify(false);
     }
   };
 
@@ -566,6 +637,29 @@ export default function AdminDashboard() {
                 borderRadius: '10px' 
               }}>
                 {disputes.filter(d => d.status === 'OPEN' || d.status === 'UNDER_REVIEW').length}
+              </span>
+            )}
+          </button>
+
+          {/* KYC Document Verifications */}
+          <button 
+            onClick={() => { setActiveTab('kyc'); setKycPage(1); }}
+            className={`sidebar-item ${activeTab === 'kyc' ? 'active' : ''}`}
+            title="KYC Verifications"
+          >
+            <ShieldCheck size={16} color={kycDocuments.filter(d => d.status === 'PENDING').length > 0 ? '#F59E0B' : 'currentColor'} />
+            <span>KYC Verifications</span>
+            {kycDocuments.filter(d => d.status === 'PENDING').length > 0 && (
+              <span style={{ 
+                marginLeft: 'auto', 
+                background: 'rgba(245, 158, 11, 0.18)', 
+                color: '#D97706', 
+                fontSize: '0.68rem', 
+                fontWeight: 700, 
+                padding: '0.1rem 0.45rem', 
+                borderRadius: '10px' 
+              }}>
+                {kycDocuments.filter(d => d.status === 'PENDING').length}
               </span>
             )}
           </button>
@@ -1419,105 +1513,557 @@ export default function AdminDashboard() {
         )}
 
         {/* ========================================================================= */}
-        {/* TAB: DISPUTES & ISSUES                                                   */}
+        {/* TAB: DISPUTES & ESCALATIONS SPLIT CONSOLE                                */}
         {/* ========================================================================= */}
         {activeTab === 'disputes' && (
-          <div className="panel">
-            <div className="panel-header" style={{ marginBottom: '1rem' }}>
-              <h2 className="panel-title">
-                <AlertCircle size={18} color="#EF4444" />
-                <span>Customer Booking Disputes & Escalations</span>
-              </h2>
-              <span className="badge badge-cancelled">{disputes.length} Disputes</span>
+          <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {/* Header & Metrics Strip */}
+            <div className="panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', padding: '1.25rem 1.5rem' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <AlertCircle size={22} color="#EF4444" />
+                  <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+                    Customer Booking Disputes & Escalations Console
+                  </h2>
+                </div>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', margin: '0.35rem 0 0 0' }}>
+                  Review reported customer complaints, investigate service discrepancies, issue resolution rulings, and authorize refunds.
+                </p>
+              </div>
+
+              {/* Status Filter Chips */}
+              <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                {[
+                  { key: 'ALL', label: `All (${disputes.length})` },
+                  { key: 'OPEN', label: `Open (${disputes.filter(d => d.status === 'OPEN').length})` },
+                  { key: 'UNDER_REVIEW', label: `In-Review (${disputes.filter(d => d.status === 'UNDER_REVIEW').length})` },
+                  { key: 'RESOLVED', label: `Resolved (${disputes.filter(d => d.status === 'RESOLVED').length})` },
+                  { key: 'DISMISSED', label: `Dismissed (${disputes.filter(d => d.status === 'DISMISSED').length})` }
+                ].map((f) => (
+                  <button
+                    key={f.key}
+                    onClick={() => { setDisputeFilter(f.key); setDisputesPage(1); }}
+                    style={{
+                      fontSize: '0.75rem',
+                      padding: '0.35rem 0.75rem',
+                      borderRadius: '6px',
+                      border: '1px solid',
+                      borderColor: disputeFilter === f.key ? 'var(--primary)' : 'var(--border-light)',
+                      background: disputeFilter === f.key ? 'var(--primary-subtle)' : 'transparent',
+                      color: disputeFilter === f.key ? 'var(--primary)' : 'var(--text-muted)',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
+            {/* Main 2-Column Split Console */}
             {disputes.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-state-icon">
-                  <CheckCircle2 size={22} color="var(--success)" />
+              <div className="panel empty-state" style={{ padding: '3.5rem 1.5rem' }}>
+                <div className="empty-state-icon" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
+                  <CheckCircle2 size={32} color="var(--success)" />
                 </div>
                 <h3 className="empty-state-title">No customer disputes</h3>
                 <p className="empty-state-description">Zero unresolved customer complaints or service escalations at this time.</p>
               </div>
             ) : (
-              <div className="table-container">
-                <table className="enterprise-table">
+              <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: '1.25rem', alignItems: 'flex-start' }}>
+                {/* Left Column: Filterable Dispute Cards List */}
+                <div className="panel" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '760px' }}>
+                  {/* Search bar */}
+                  <div style={{ position: 'relative' }}>
+                    <Search size={14} color="var(--text-muted)" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
+                    <input
+                      type="text"
+                      placeholder="Search tickets, bookings, names..."
+                      value={disputeSearch}
+                      onChange={(e) => setDisputeSearch(e.target.value)}
+                      className="form-control"
+                      style={{ paddingLeft: '2rem', fontSize: '0.8125rem' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0', borderBottom: '1px solid var(--border-subtle)', fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                    <span>Showing {filteredDisputes.length} tickets</span>
+                    <span>{disputeFilter !== 'ALL' ? `Filter: ${disputeFilter}` : 'All Statuses'}</span>
+                  </div>
+
+                  {/* Scrollable list */}
+                  <div className="custom-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', overflowY: 'auto', maxHeight: '640px', paddingRight: '0.35rem' }}>
+                    {filteredDisputes.map((disp) => {
+                      const isSelected = (selectedDisputeId || disputes[0]?.id) === disp.id;
+                      let statusBadgeClass = 'badge-pending';
+                      if (disp.status === 'RESOLVED') statusBadgeClass = 'badge-completed';
+                      else if (disp.status === 'UNDER_REVIEW') statusBadgeClass = 'badge-assigned';
+                      else if (disp.status === 'DISMISSED') statusBadgeClass = 'badge-cancelled';
+
+                      return (
+                        <div
+                          key={disp.id}
+                          onClick={() => {
+                            setSelectedDisputeId(disp.id);
+                            setDisputeStatusDecision(disp.status === 'OPEN' ? 'RESOLVED' : disp.status);
+                            setDisputeResolutionNotes(disp.resolution || '');
+                            setDisputeRefundAmount(disp.refundAmount ? String(disp.refundAmount) : '');
+                          }}
+                          style={{
+                            padding: '0.85rem',
+                            borderRadius: '10px',
+                            border: '1px solid',
+                            borderColor: isSelected ? 'var(--primary)' : 'var(--border-light)',
+                            background: isSelected ? 'var(--primary-subtle)' : 'var(--bg-subtle)',
+                            boxShadow: isSelected ? '0 0 12px rgba(37, 99, 235, 0.15)' : 'none',
+                            cursor: 'pointer',
+                            transition: 'all 0.18s ease'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.35rem', gap: '0.4rem' }}>
+                            <strong style={{ fontSize: '0.82rem', color: isSelected ? 'var(--primary)' : 'var(--text-main)', lineHeight: 1.25 }}>
+                              Ticket #{String(disp.id).slice(-6)}
+                            </strong>
+                            <span className={`badge ${statusBadgeClass}`} style={{ fontSize: '0.65rem', padding: '0.1rem 0.35rem', flexShrink: 0 }}>
+                              {disp.status}
+                            </span>
+                          </div>
+
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
+                            <span style={{ color: '#EF4444', fontWeight: 600 }}>
+                              {disp.reason?.replace(/_/g, ' ') || 'General Issue'}
+                            </span>
+                            <span>• Booking #{disp.bookingCode || disp.bookingId}</span>
+                          </div>
+
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-main)', marginBottom: '0.25rem' }}>
+                            <strong>Customer:</strong> {disp.customerName || 'Customer'}
+                            {disp.providerName && <span style={{ color: 'var(--text-muted)' }}> | <strong>Partner:</strong> {disp.providerName}</span>}
+                          </div>
+
+                          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            "{disp.description}"
+                          </p>
+
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+                            {disp.createdAt ? new Date(disp.createdAt).toLocaleDateString() : 'Recent'}
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {filteredDisputes.length === 0 && (
+                      <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
+                        No tickets matching current filters.
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right Column: Active Dispute Resolution Console */}
+                {(() => {
+                  const disp = activeDispute;
+                  if (!disp) {
+                    return (
+                      <div className="panel" style={{ padding: '3rem 1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                        Select a dispute ticket from the left pane to view details and issue resolution.
+                      </div>
+                    );
+                  }
+
+                  let statusBadgeClass = 'badge-pending';
+                  if (disp.status === 'RESOLVED') statusBadgeClass = 'badge-completed';
+                  else if (disp.status === 'UNDER_REVIEW') statusBadgeClass = 'badge-assigned';
+                  else if (disp.status === 'DISMISSED') statusBadgeClass = 'badge-cancelled';
+
+                  return (
+                    <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '1.5rem' }}>
+                      {/* Ticket Header */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1rem' }}>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                            <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+                              Dispute Resolution Console #{String(disp.id).slice(-6)}
+                            </h3>
+                            <span className={`badge ${statusBadgeClass}`}>
+                              {disp.status}
+                            </span>
+                          </div>
+                          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                            Filed on: {disp.createdAt ? new Date(disp.createdAt).toLocaleString() : 'Recent'}
+                          </span>
+                        </div>
+
+                        {/* Quick Status Pill Actions */}
+                        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                          {disp.status === 'OPEN' && (
+                            <button
+                              type="button"
+                              onClick={() => handleQuickUpdateDisputeStatus(disp.id, 'UNDER_REVIEW')}
+                              className="btn btn-secondary btn-sm"
+                              style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem' }}
+                            >
+                              ⏳ Mark In-Review
+                            </button>
+                          )}
+                          {disp.status !== 'RESOLVED' && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setDisputeStatusDecision('RESOLVED');
+                                if (!disputeResolutionNotes.trim()) {
+                                  setDisputeResolutionNotes('Resolved to customer and provider satisfaction after review.');
+                                }
+                              }}
+                              className="btn btn-primary btn-sm"
+                              style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem', background: '#10B981', borderColor: '#10B981' }}
+                            >
+                              ✓ Set Resolved
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Party Intelligence & Booking Info Cards */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.85rem' }}>
+                        <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', fontSize: '0.8125rem' }}>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', display: 'block', marginBottom: '0.35rem' }}>
+                            👤 CUSTOMER DETAILS
+                          </span>
+                          <strong style={{ color: 'var(--text-main)', fontSize: '0.9rem', display: 'block' }}>{disp.customerName || 'Customer'}</strong>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>{disp.customerEmail || 'No email registered'}</span>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>User ID: #{disp.userId || 'N/A'}</span>
+                        </div>
+
+                        <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', fontSize: '0.8125rem' }}>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', display: 'block', marginBottom: '0.35rem' }}>
+                            🛠️ SERVICE PARTNER
+                          </span>
+                          <strong style={{ color: 'var(--text-main)', fontSize: '0.9rem', display: 'block' }}>{disp.providerName || 'Provider Unassigned'}</strong>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>{disp.providerEmail || ''}</span>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>Provider ID: #{disp.providerId || 'N/A'}</span>
+                        </div>
+
+                        <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', fontSize: '0.8125rem' }}>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', display: 'block', marginBottom: '0.35rem' }}>
+                            📋 BOOKING CONTEXT
+                          </span>
+                          <strong style={{ color: 'var(--primary)', fontFamily: 'var(--font-mono)', display: 'block' }}>
+                            #{disp.bookingCode || disp.bookingId}
+                          </strong>
+                          <span style={{ color: 'var(--text-main)', fontSize: '0.78rem', display: 'block' }}>{disp.serviceName || 'On-Demand Service'}</span>
+                          <span className="badge badge-assigned" style={{ fontSize: '0.68rem', marginTop: '0.2rem' }}>
+                            {disp.reason?.replace(/_/g, ' ') || 'General Issue'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Customer Reported Complaint Box */}
+                      <div>
+                        <h4 style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.4rem' }}>
+                          Customer Stated Complaint
+                        </h4>
+                        <div style={{
+                          padding: '1rem',
+                          backgroundColor: 'var(--bg-subtle)',
+                          borderRadius: 'var(--radius-sm)',
+                          border: '1px solid var(--border-light)',
+                          color: 'var(--text-main)',
+                          fontSize: '0.875rem',
+                          lineHeight: 1.5,
+                          whiteSpace: 'pre-wrap'
+                        }}>
+                          "{disp.description}"
+                        </div>
+                      </div>
+
+                      {/* Existing Resolution Banner (if already resolved) */}
+                      {disp.resolution && (
+                        <div style={{
+                          backgroundColor: disp.status === 'RESOLVED' ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-subtle)',
+                          border: `1px solid ${disp.status === 'RESOLVED' ? 'rgba(16, 185, 129, 0.25)' : 'var(--border-light)'}`,
+                          borderRadius: 'var(--radius-sm)',
+                          padding: '1rem'
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: disp.status === 'RESOLVED' ? 'var(--success)' : 'var(--primary)' }}>
+                              Previous Resolution Record:
+                            </span>
+                            {disp.refundAmount && Number(disp.refundAmount) > 0 && (
+                              <span className="badge badge-completed" style={{ fontSize: '0.75rem' }}>
+                                ₹{Number(disp.refundAmount).toLocaleString('en-IN')} Refunded
+                              </span>
+                            )}
+                          </div>
+                          <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-main)', lineHeight: 1.45 }}>
+                            {disp.resolution}
+                          </p>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>
+                            Resolved by {disp.resolvedBy || 'Admin'} on {disp.updatedAt ? new Date(disp.updatedAt).toLocaleDateString() : 'Recent'}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Resolution Submission Console Form */}
+                      <form onSubmit={(e) => handleResolveDispute(e, disp)} style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <ShieldCheck size={16} color="var(--primary)" />
+                          <span>Issue Resolution Ruling & Actions</span>
+                        </h4>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
+                          <div className="form-group" style={{ margin: 0 }}>
+                            <label className="form-label">Decision Status *</label>
+                            <select
+                              className="form-control"
+                              value={disputeStatusDecision}
+                              onChange={(e) => setDisputeStatusDecision(e.target.value)}
+                            >
+                              <option value="RESOLVED">RESOLVED (Action Taken / Solved)</option>
+                              <option value="DISMISSED">DISMISSED (Complaint Invalid / Outside Terms)</option>
+                              <option value="UNDER_REVIEW">UNDER REVIEW (Investigation In-Flight)</option>
+                              <option value="OPEN">OPEN (Re-Opened for Audit)</option>
+                            </select>
+                          </div>
+
+                          <div className="form-group" style={{ margin: 0 }}>
+                            <label className="form-label">Refund Amount (₹ INR - Optional)</label>
+                            <input
+                              type="number"
+                              className="form-control"
+                              placeholder="e.g. 499 or 0"
+                              value={disputeRefundAmount}
+                              onChange={(e) => setDisputeRefundAmount(e.target.value)}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Quick Presets Chips */}
+                        <div>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.35rem' }}>
+                            ⚡ One-Click Resolution Templates:
+                          </span>
+                          <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                            {[
+                              'Full refund approved and issued to customer original payment method.',
+                              'Service revisited and completed to customer satisfaction.',
+                              'Provider counselled on service standards; partial refund credited.',
+                              'Claim investigated; no breach of service terms found. Ticket closed.'
+                            ].map((preset) => (
+                              <button
+                                key={preset}
+                                type="button"
+                                onClick={() => setDisputeResolutionNotes(preset)}
+                                className="btn btn-ghost btn-sm"
+                                style={{ fontSize: '0.7rem', padding: '0.15rem 0.45rem', border: '1px solid var(--border-subtle)' }}
+                              >
+                                {preset.slice(0, 42)}...
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="form-group" style={{ margin: 0 }}>
+                          <label className="form-label">Official Resolution Details & Findings *</label>
+                          <textarea
+                            className="form-control"
+                            rows={3}
+                            placeholder="State the resolution reason, refund decision, or follow-up notes for customer and provider... (Press Enter to submit, Shift+Enter for new line)"
+                            value={disputeResolutionNotes}
+                            onChange={(e) => setDisputeResolutionNotes(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                if (!submittingDisputeResolve && disputeResolutionNotes.trim()) {
+                                  handleResolveDispute(e, disp);
+                                }
+                              }
+                            }}
+                            required
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+                          <button
+                            type="submit"
+                            className="btn btn-primary"
+                            disabled={submittingDisputeResolve || !disputeResolutionNotes.trim()}
+                            style={{ padding: '0.5rem 1.5rem', fontWeight: 600 }}
+                          >
+                            {submittingDisputeResolve ? 'Processing...' : 'Submit Dispute Ruling'}
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ---------------------------------------- */}
+        {/* TAB: KYC VERIFICATIONS CONSOLE          */}
+        {/* ---------------------------------------- */}
+        {activeTab === 'kyc' && (
+          <div className="panel animate-fade-in" style={{ padding: '1.5rem' }}>
+            {/* Header & Metrics Strip */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <ShieldCheck size={22} color="var(--primary)" />
+                  <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+                    Provider KYC & Identity Verification Console
+                  </h2>
+                </div>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', margin: '0.35rem 0 0 0' }}>
+                  Audit, approve, or reject official government identity documents uploaded by service partners.
+                </p>
+              </div>
+
+              {/* Status Filter Chips */}
+              <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                {[
+                  { key: 'ALL', label: `All (${kycDocuments.length})` },
+                  { key: 'PENDING', label: `Pending Review (${kycDocuments.filter(d => d.status === 'PENDING').length})` },
+                  { key: 'VERIFIED', label: `Verified (${kycDocuments.filter(d => d.status === 'VERIFIED').length})` },
+                  { key: 'REJECTED', label: `Rejected (${kycDocuments.filter(d => d.status === 'REJECTED').length})` }
+                ].map(f => (
+                  <button
+                    key={f.key}
+                    onClick={() => { setKycFilter(f.key); setKycPage(1); }}
+                    style={{
+                      fontSize: '0.75rem',
+                      padding: '0.35rem 0.75rem',
+                      borderRadius: '6px',
+                      border: '1px solid',
+                      borderColor: kycFilter === f.key ? 'var(--primary)' : 'var(--border-light)',
+                      background: kycFilter === f.key ? 'var(--primary-subtle)' : 'transparent',
+                      color: kycFilter === f.key ? 'var(--primary)' : 'var(--text-muted)',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Document Verification Table */}
+            {kycDocuments.filter(d => kycFilter === 'ALL' || d.status === kycFilter).length === 0 ? (
+              <div className="empty-state" style={{ padding: '3rem 1rem' }}>
+                <div className="empty-state-icon">
+                  <ShieldCheck size={28} />
+                </div>
+                <h3 className="empty-state-title">No KYC documents in this view</h3>
+                <p className="empty-state-description">
+                  There are no partner documents matching the <strong>{kycFilter}</strong> status filter.
+                </p>
+              </div>
+            ) : (
+              <div style={{ overflowX: 'auto' }}>
+                <table className="table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.8125rem' }}>
                   <thead>
                     <tr>
-                      <th>Dispute ID</th>
-                      <th>Booking Ref</th>
-                      <th>Customer</th>
-                      <th>Provider</th>
-                      <th>Reason Category</th>
-                      <th>Description</th>
+                      <th>Document ID</th>
+                      <th>Partner Details</th>
+                      <th>Document Type</th>
+                      <th>ID Number</th>
+                      <th>Uploaded File</th>
                       <th>Status</th>
+                      <th>Submitted Date</th>
                       <th style={{ textAlign: 'right' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {disputes.slice((disputesPage - 1) * itemsPerPage, disputesPage * itemsPerPage).map((d) => (
-                      <tr key={d.id}>
-                        <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: '#EF4444' }}>
-                          #{String(d.id).slice(-6)}
-                        </td>
-                        <td>
-                          <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{d.serviceName}</div>
-                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                            Booking #{d.bookingId}
-                          </div>
-                        </td>
-                        <td style={{ color: 'var(--text-main)', fontSize: '0.8125rem' }}>
-                          <div>{d.customerName || 'Customer'}</div>
-                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{d.customerEmail || ''}</div>
-                        </td>
-                        <td style={{ color: 'var(--text-main)', fontSize: '0.8125rem' }}>
-                          <div>{d.providerName || 'Provider'}</div>
-                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{d.providerEmail || ''}</div>
-                        </td>
-                        <td>
-                          <span className="badge badge-assigned" style={{ fontSize: '0.6875rem', textTransform: 'capitalize' }}>
-                            {d.reason?.toLowerCase().replace(/_/g, ' ') || 'General'}
-                          </span>
-                        </td>
-                        <td style={{ fontSize: '0.78rem', color: 'var(--text-main)', maxWidth: '240px', lineHeight: 1.35 }}>
-                          <div>"{d.description}"</div>
-                          {d.resolutionNotes && (
-                            <div style={{ marginTop: '0.25rem', fontSize: '0.72rem', color: 'var(--success)' }}>
-                              <strong>Resolution:</strong> {d.resolutionNotes}
+                    {kycDocuments
+                      .filter(d => kycFilter === 'ALL' || d.status === kycFilter)
+                      .slice((kycPage - 1) * itemsPerPage, kycPage * itemsPerPage)
+                      .map((doc) => (
+                        <tr key={doc.id}>
+                          <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--primary)' }}>
+                            #{String(doc.id).slice(-6)}
+                          </td>
+                          <td>
+                            <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{doc.providerName || 'Provider'}</div>
+                            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                              Provider #{doc.providerId}
                             </div>
-                          )}
-                        </td>
-                        <td>
-                          <span className={`badge ${d.status === 'RESOLVED' ? 'badge-completed' : d.status === 'DISMISSED' ? 'badge-cancelled' : 'badge-pending'}`}>
-                            {d.status}
-                          </span>
-                        </td>
-                        <td style={{ textAlign: 'right' }}>
-                          {d.status === 'OPEN' || d.status === 'UNDER_REVIEW' ? (
-                            <button
-                              onClick={() => {
-                                setResolvingDispute(d);
-                                setDisputeStatusDecision('RESOLVED');
-                                setDisputeResolutionNotes('');
-                              }}
-                              className="btn btn-secondary btn-sm"
-                              style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}
-                            >
-                              Resolve
-                            </button>
-                          ) : (
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Closed</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td>
+                            <span className="badge badge-assigned" style={{ fontSize: '0.72rem' }}>
+                              {doc.documentType?.replace(/_/g, ' ')}
+                            </span>
+                          </td>
+                          <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--text-main)' }}>
+                            {doc.documentNumber || '—'}
+                          </td>
+                          <td>
+                            <div style={{ fontSize: '0.78rem', color: 'var(--text-main)', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {doc.originalFileName || 'Document'}
+                            </div>
+                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                              {doc.fileSize ? `${(doc.fileSize / 1024).toFixed(0)} KB` : 'Attached'}
+                            </div>
+                          </td>
+                          <td>
+                            <span className={`badge ${doc.status === 'VERIFIED' ? 'badge-completed' : doc.status === 'REJECTED' ? 'badge-cancelled' : 'badge-pending'}`}>
+                              {doc.status === 'VERIFIED' && '✓ Verified'}
+                              {doc.status === 'PENDING' && '⏳ Pending'}
+                              {doc.status === 'REJECTED' && '✕ Rejected'}
+                            </span>
+                            {doc.status === 'REJECTED' && doc.rejectionReason && (
+                              <div style={{ fontSize: '0.7rem', color: '#ef4444', marginTop: '0.2rem', maxWidth: '180px' }}>
+                                Reason: {doc.rejectionReason}
+                              </div>
+                            )}
+                            {doc.status === 'VERIFIED' && doc.verifiedByName && (
+                              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                                By: {doc.verifiedByName}
+                              </div>
+                            )}
+                          </td>
+                          <td style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                            {doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleDateString() : 'Recent'}
+                          </td>
+                          <td style={{ textAlign: 'right' }}>
+                            <div style={{ display: 'inline-flex', gap: '0.4rem', alignItems: 'center' }}>
+                              <a
+                                href={api.kyc.getDocumentViewUrl(doc.id)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn btn-ghost btn-sm"
+                                style={{ fontSize: '0.72rem', padding: '0.2rem 0.45rem' }}
+                                title="View Document File"
+                              >
+                                View File
+                              </a>
+                              <button
+                                onClick={() => {
+                                  setVerifyingKycDoc(doc);
+                                  setKycDecisionStatus(doc.status === 'VERIFIED' ? 'VERIFIED' : 'VERIFIED');
+                                  setKycRejectionReason(doc.rejectionReason || '');
+                                }}
+                                className="btn btn-secondary btn-sm"
+                                style={{ fontSize: '0.72rem', padding: '0.2rem 0.5rem' }}
+                              >
+                                {doc.status === 'PENDING' ? 'Review' : 'Update Status'}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
                 <Pagination
-                  currentPage={disputesPage}
-                  totalItems={disputes.length}
+                  currentPage={kycPage}
+                  totalItems={kycDocuments.filter(d => kycFilter === 'ALL' || d.status === kycFilter).length}
                   itemsPerPage={itemsPerPage}
-                  onPageChange={setDisputesPage}
+                  onPageChange={setKycPage}
                 />
               </div>
             )}
@@ -1653,6 +2199,133 @@ export default function AdminDashboard() {
                   {submittingDisputeResolve ? 'Saving...' : 'Submit Resolution'}
                 </button>
                 <button type="button" onClick={() => setResolvingDispute(null)} className="btn btn-secondary btn-sm" style={{ flex: 1 }}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Verify KYC Document */}
+      {verifyingKycDoc && (
+        <div className="modal-overlay" onClick={() => setVerifyingKycDoc(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '460px' }}>
+            <div className="modal-header">
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <ShieldCheck size={18} color="var(--primary)" />
+                <span>Verify KYC Document #{String(verifyingKycDoc.id).slice(-6)}</span>
+              </h3>
+              <button onClick={() => setVerifyingKycDoc(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                <X size={16} />
+              </button>
+            </div>
+
+            <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', border: '1px solid var(--border-light)', fontSize: '0.8125rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Provider:</span>
+                <strong style={{ color: 'var(--text-main)' }}>{verifyingKycDoc.providerName} (ID #{verifyingKycDoc.providerId})</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Document Type:</span>
+                <span className="badge badge-assigned">{verifyingKycDoc.documentType?.replace(/_/g, ' ')}</span>
+              </div>
+              {verifyingKycDoc.documentNumber && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>ID / Doc Number:</span>
+                  <strong style={{ fontFamily: 'var(--font-mono)' }}>{verifyingKycDoc.documentNumber}</strong>
+                </div>
+              )}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)' }}>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{verifyingKycDoc.originalFileName}</span>
+                <a
+                  href={api.kyc.getDocumentViewUrl(verifyingKycDoc.id)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-secondary btn-sm"
+                  style={{ fontSize: '0.72rem', padding: '0.15rem 0.45rem' }}
+                >
+                  Open Document File ↗
+                </a>
+              </div>
+            </div>
+
+            <form onSubmit={handleVerifyKycDocument}>
+              <div className="form-group">
+                <label className="form-label">Verification Decision *</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setKycDecisionStatus('VERIFIED')}
+                    style={{
+                      padding: '0.55rem',
+                      borderRadius: 'var(--radius-sm)',
+                      border: `1px solid ${kycDecisionStatus === 'VERIFIED' ? 'var(--success)' : 'var(--border-light)'}`,
+                      backgroundColor: kycDecisionStatus === 'VERIFIED' ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
+                      color: kycDecisionStatus === 'VERIFIED' ? 'var(--success)' : 'var(--text-main)',
+                      fontWeight: 600,
+                      fontSize: '0.8rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ✓ Approve & Verify
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setKycDecisionStatus('REJECTED')}
+                    style={{
+                      padding: '0.55rem',
+                      borderRadius: 'var(--radius-sm)',
+                      border: `1px solid ${kycDecisionStatus === 'REJECTED' ? 'var(--error)' : 'var(--border-light)'}`,
+                      backgroundColor: kycDecisionStatus === 'REJECTED' ? 'rgba(239, 68, 68, 0.15)' : 'transparent',
+                      color: kycDecisionStatus === 'REJECTED' ? 'var(--error)' : 'var(--text-main)',
+                      fontWeight: 600,
+                      fontSize: '0.8rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ✕ Reject Document
+                  </button>
+                </div>
+              </div>
+
+              {kycDecisionStatus === 'REJECTED' && (
+                <div className="form-group">
+                  <label className="form-label">Rejection Reason * (Sent to Partner)</label>
+                  <textarea
+                    className="form-control"
+                    rows={3}
+                    placeholder="e.g. Unclear scan, expired identification card, or name mismatch with partner profile."
+                    value={kycRejectionReason}
+                    onChange={(e) => setKycRejectionReason(e.target.value)}
+                    required
+                  />
+                  <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', marginTop: '0.35rem' }}>
+                    {['Blurry or unreadable photo', 'Expired document', 'Name mismatch with profile', 'Incomplete document sides'].map(sugg => (
+                      <button
+                        key={sugg}
+                        type="button"
+                        onClick={() => setKycRejectionReason(sugg)}
+                        className="btn btn-ghost btn-sm"
+                        style={{ fontSize: '0.68rem', padding: '0.1rem 0.35rem', border: '1px solid var(--border-subtle)' }}
+                      >
+                        {sugg}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.25rem' }}>
+                <button
+                  type="submit"
+                  className={`btn ${kycDecisionStatus === 'VERIFIED' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
+                  style={{ flex: 1, backgroundColor: kycDecisionStatus === 'VERIFIED' ? 'var(--success)' : '#ef4444', color: '#fff' }}
+                  disabled={submittingKycVerify}
+                >
+                  {submittingKycVerify ? 'Saving...' : kycDecisionStatus === 'VERIFIED' ? 'Confirm Verification' : 'Confirm Rejection'}
+                </button>
+                <button type="button" onClick={() => setVerifyingKycDoc(null)} className="btn btn-secondary btn-sm" style={{ flex: 1 }}>
                   Cancel
                 </button>
               </div>

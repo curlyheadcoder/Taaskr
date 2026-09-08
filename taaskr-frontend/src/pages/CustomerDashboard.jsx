@@ -69,6 +69,10 @@ export default function CustomerDashboard({ initialTab }) {
   const [disputeDescription, setDisputeDescription] = useState('');
   const [submittingDispute, setSubmittingDispute] = useState(false);
   const [disputeSuccessMsg, setDisputeSuccessMsg] = useState('');
+  const [myDisputes, setMyDisputes] = useState([]);
+  const [loadingDisputes, setLoadingDisputes] = useState(false);
+  const [selectedDisputeId, setSelectedDisputeId] = useState(null);
+  const [disputeFilter, setDisputeFilter] = useState('ALL');
 
   // Pagination & Modal state
   const [currentPage, setCurrentPage] = useState(1);
@@ -80,6 +84,22 @@ export default function CustomerDashboard({ initialTab }) {
   const [ratingValue, setRatingValue] = useState(5);
   const [reviewText, setReviewText] = useState('');
   const [submittingRating, setSubmittingRating] = useState(false);
+
+  const fetchMyDisputes = async () => {
+    setLoadingDisputes(true);
+    try {
+      const res = await api.disputes.getMyDisputes();
+      const list = Array.isArray(res) ? res : [];
+      setMyDisputes(list);
+      if (list.length > 0) {
+        setSelectedDisputeId((prev) => prev || list[0].id);
+      }
+    } catch (err) {
+      console.error('Failed to load user disputes:', err);
+    } finally {
+      setLoadingDisputes(false);
+    }
+  };
 
   const fetchAddresses = async () => {
     setLoadingAddresses(true);
@@ -140,17 +160,22 @@ export default function CustomerDashboard({ initialTab }) {
   };
 
   const handleCreateDispute = async (e) => {
-    e.preventDefault();
-    if (!disputeModalBooking) return;
+    if (e && e.preventDefault) e.preventDefault();
+    if (!disputeModalBooking || !disputeDescription.trim()) return;
     setSubmittingDispute(true);
     try {
-      await api.disputes.create(disputeModalBooking.id, disputeReason, disputeDescription);
+      const created = await api.disputes.create(disputeModalBooking.id, disputeReason, disputeDescription.trim());
       setDisputeSuccessMsg('Dispute report submitted. Our support team will investigate and follow up.');
       setTimeout(() => {
         setDisputeSuccessMsg('');
         setDisputeModalBooking(null);
         setDisputeDescription('');
-      }, 3000);
+        handleTabChange('disputes');
+        if (created && created.id) {
+          setSelectedDisputeId(created.id);
+        }
+      }, 1500);
+      fetchMyDisputes();
       fetchMyBookings();
     } catch (err) {
       alert(`Failed to submit dispute: ${err.message}`);
@@ -160,7 +185,7 @@ export default function CustomerDashboard({ initialTab }) {
   };
 
   useEffect(() => {
-    if (urlTab && (urlTab === 'bookings' || urlTab === 'profile' || urlTab === 'addresses')) {
+    if (urlTab && (urlTab === 'bookings' || urlTab === 'disputes' || urlTab === 'profile' || urlTab === 'addresses')) {
       setActiveTab(urlTab);
     }
   }, [urlTab]);
@@ -170,6 +195,9 @@ export default function CustomerDashboard({ initialTab }) {
     setSearchParams({ tab });
     if (tab === 'addresses') {
       fetchAddresses();
+    }
+    if (tab === 'disputes') {
+      fetchMyDisputes();
     }
   };
 
@@ -215,6 +243,7 @@ export default function CustomerDashboard({ initialTab }) {
 
   useEffect(() => {
     fetchMyBookings();
+    fetchMyDisputes();
     
     const loadUser = async () => {
       try {
@@ -364,19 +393,33 @@ export default function CustomerDashboard({ initialTab }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>
-            {activeTab === 'profile' ? 'Profile Settings' : activeTab === 'addresses' ? 'Saved Address Book' : 'My Bookings'}
+            {activeTab === 'profile'
+              ? 'Profile Settings'
+              : activeTab === 'addresses'
+              ? 'Saved Address Book'
+              : activeTab === 'disputes'
+              ? 'Disputes & Support Tickets'
+              : 'My Bookings'}
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
             {activeTab === 'profile'
               ? 'Manage your personal details, verified contacts, and default service locations.'
               : activeTab === 'addresses'
               ? 'Manage your saved delivery, home, and office addresses for fast one-click bookings.'
+              : activeTab === 'disputes'
+              ? 'Track resolution status, refunds, and support escalations on your booked services.'
               : 'Track and manage your scheduled services, trips, and payment receipts.'}
           </p>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           {activeTab === 'bookings' && (
             <button onClick={fetchMyBookings} className="btn btn-secondary btn-sm">
+              <RefreshCw size={13} />
+              <span>Refresh</span>
+            </button>
+          )}
+          {activeTab === 'disputes' && (
+            <button onClick={fetchMyDisputes} className="btn btn-secondary btn-sm">
               <RefreshCw size={13} />
               <span>Refresh</span>
             </button>
@@ -427,6 +470,32 @@ export default function CustomerDashboard({ initialTab }) {
           <span className="badge badge-assigned" style={{ fontSize: '0.7rem', padding: '0.1rem 0.45rem' }}>
             {bookings.length}
           </span>
+        </button>
+
+        <button
+          onClick={() => handleTabChange('disputes')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            padding: '0.6rem 1.1rem',
+            border: 'none',
+            background: 'none',
+            borderBottom: activeTab === 'disputes' ? '2px solid var(--primary)' : '2px solid transparent',
+            color: activeTab === 'disputes' ? 'var(--primary)' : 'var(--text-muted)',
+            fontWeight: activeTab === 'disputes' ? 600 : 500,
+            fontSize: '0.875rem',
+            cursor: 'pointer',
+            transition: 'var(--transition-fast)'
+          }}
+        >
+          <AlertCircle size={15} color={myDisputes.length > 0 ? '#EF4444' : undefined} />
+          <span>Disputes & Issues</span>
+          {myDisputes.length > 0 && (
+            <span className="badge badge-cancelled" style={{ fontSize: '0.7rem', padding: '0.1rem 0.45rem' }}>
+              {myDisputes.length}
+            </span>
+          )}
         </button>
 
         <button
@@ -824,6 +893,279 @@ export default function CustomerDashboard({ initialTab }) {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+      ) : activeTab === 'disputes' ? (
+        /* TAB 3: CUSTOMER DISPUTES & ISSUES VIEW */
+        <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          {/* Header Strip with Metrics */}
+          <div className="panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', padding: '1.25rem 1.5rem' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <AlertCircle size={20} color="#EF4444" />
+                <h2 style={{ fontSize: '1.15rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+                  Dispute & Escalation Tracker
+                </h2>
+              </div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.25rem 0 0 0' }}>
+                Track the investigation progress, resolution decisions, and refund settlements for your raised service complaints.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <span className="badge badge-assigned">
+                {myDisputes.length} Total Raised
+              </span>
+              <span className="badge badge-completed">
+                {myDisputes.filter(d => d.status === 'RESOLVED').length} Resolved
+              </span>
+            </div>
+          </div>
+
+          {/* Main 2-Column Split View */}
+          {loadingDisputes ? (
+            <div className="panel" style={{ height: '300px', display: 'flex', flexDirection: 'column', gap: '1rem', justifyContent: 'center', alignItems: 'center' }}>
+              <div className="skeleton" style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
+              <div className="skeleton" style={{ width: '200px', height: '16px' }} />
+            </div>
+          ) : myDisputes.length === 0 ? (
+            <div className="panel empty-state" style={{ padding: '3.5rem 1.5rem' }}>
+              <div className="empty-state-icon" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
+                <CheckCircle2 size={32} color="var(--success)" />
+              </div>
+              <h3 className="empty-state-title">No disputes or open issues</h3>
+              <p className="empty-state-description" style={{ maxWidth: '460px', margin: '0.35rem auto 1.25rem auto' }}>
+                You have not reported any issues with your bookings. If you ever experience quality concerns or billing discrepancies, you can raise a dispute directly from your booking details.
+              </p>
+              <button onClick={() => handleTabChange('bookings')} className="btn btn-primary btn-sm">
+                View My Bookings
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: '1.25rem', alignItems: 'flex-start' }}>
+              {/* Left Pane: Dispute Ticket Cards */}
+              <div className="panel" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '720px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
+                    Your Tickets ({myDisputes.length})
+                  </span>
+
+                  {/* Filter Pills */}
+                  <div style={{ display: 'flex', gap: '0.3rem' }}>
+                    {['ALL', 'OPEN', 'RESOLVED'].map((f) => (
+                      <button
+                        key={f}
+                        onClick={() => setDisputeFilter(f)}
+                        style={{
+                          fontSize: '0.68rem',
+                          padding: '0.2rem 0.55rem',
+                          borderRadius: '6px',
+                          border: '1px solid',
+                          borderColor: disputeFilter === f ? 'var(--primary)' : 'var(--border-light)',
+                          background: disputeFilter === f ? 'var(--primary-subtle)' : 'transparent',
+                          color: disputeFilter === f ? 'var(--primary)' : 'var(--text-muted)',
+                          cursor: 'pointer',
+                          fontWeight: 600,
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        {f}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Dispute Cards Scrollable List */}
+                <div className="custom-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', overflowY: 'auto', maxHeight: '600px', paddingRight: '0.35rem' }}>
+                  {myDisputes
+                    .filter((d) => {
+                      if (disputeFilter === 'OPEN') return d.status === 'OPEN' || d.status === 'UNDER_REVIEW';
+                      if (disputeFilter === 'RESOLVED') return d.status === 'RESOLVED' || d.status === 'DISMISSED';
+                      return true;
+                    })
+                    .map((disp) => {
+                      const isSelected = (selectedDisputeId || myDisputes[0]?.id) === disp.id;
+                      let statusBadgeClass = 'badge-pending';
+                      if (disp.status === 'RESOLVED') statusBadgeClass = 'badge-completed';
+                      else if (disp.status === 'UNDER_REVIEW') statusBadgeClass = 'badge-assigned';
+                      else if (disp.status === 'DISMISSED') statusBadgeClass = 'badge-cancelled';
+
+                      return (
+                        <div
+                          key={disp.id}
+                          onClick={() => setSelectedDisputeId(disp.id)}
+                          style={{
+                            padding: '0.85rem',
+                            borderRadius: '10px',
+                            border: '1px solid',
+                            borderColor: isSelected ? 'var(--primary)' : 'var(--border-light)',
+                            background: isSelected ? 'var(--primary-subtle)' : 'var(--bg-subtle)',
+                            boxShadow: isSelected ? '0 0 12px rgba(37, 99, 235, 0.15)' : 'none',
+                            cursor: 'pointer',
+                            transition: 'all 0.18s ease'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.35rem', gap: '0.4rem' }}>
+                            <strong style={{ fontSize: '0.82rem', color: 'var(--text-main)', lineHeight: 1.25 }}>
+                              Ticket #{String(disp.id).slice(-6)}
+                            </strong>
+                            <span className={`badge ${statusBadgeClass}`} style={{ fontSize: '0.65rem', padding: '0.1rem 0.35rem', flexShrink: 0 }}>
+                              {disp.status}
+                            </span>
+                          </div>
+
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
+                            <span style={{ color: 'var(--primary)', fontWeight: 600 }}>
+                              {disp.reason?.replace(/_/g, ' ') || 'General Issue'}
+                            </span>
+                            {disp.bookingId && (
+                              <span>• Booking #{disp.bookingCode || disp.bookingId}</span>
+                            )}
+                          </div>
+
+                          <p style={{ fontSize: '0.75rem', color: 'var(--text-main)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            "{disp.description}"
+                          </p>
+
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+                            Raised on {disp.createdAt ? new Date(disp.createdAt).toLocaleDateString() : 'Recently'}
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+
+              {/* Right Pane: Selected Dispute Detail View */}
+              {(() => {
+                const activeDisp = myDisputes.find((d) => d.id === (selectedDisputeId || myDisputes[0]?.id));
+                if (!activeDisp) {
+                  return (
+                    <div className="panel" style={{ padding: '3rem 1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                      Select a dispute ticket from the left pane to view details.
+                    </div>
+                  );
+                }
+
+                let statusBadgeClass = 'badge-pending';
+                if (activeDisp.status === 'RESOLVED') statusBadgeClass = 'badge-completed';
+                else if (activeDisp.status === 'UNDER_REVIEW') statusBadgeClass = 'badge-assigned';
+                else if (activeDisp.status === 'DISMISSED') statusBadgeClass = 'badge-cancelled';
+
+                return (
+                  <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '1.5rem' }}>
+                    {/* Header */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1rem' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                          <h3 style={{ fontSize: '1.15rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+                            Dispute Ticket #{String(activeDisp.id).slice(-6)}
+                          </h3>
+                          <span className={`badge ${statusBadgeClass}`}>
+                            {activeDisp.status}
+                          </span>
+                        </div>
+                        <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                          Submitted: {activeDisp.createdAt ? new Date(activeDisp.createdAt).toLocaleString() : 'Recent'}
+                        </span>
+                      </div>
+
+                      {activeDisp.refundAmount && Number(activeDisp.refundAmount) > 0 && (
+                        <div style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '6px', padding: '0.4rem 0.75rem', textAlign: 'right' }}>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block' }}>Settlement Refund</span>
+                          <strong style={{ fontSize: '1rem', color: 'var(--success)' }}>₹{Number(activeDisp.refundAmount).toLocaleString('en-IN')}</strong>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Booking & Service Context Card */}
+                    <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.85rem', fontSize: '0.8125rem' }}>
+                      <div>
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', display: 'block' }}>BOOKING REFERENCE</span>
+                        <strong style={{ color: 'var(--primary)', fontFamily: 'var(--font-mono)' }}>
+                          #{activeDisp.bookingCode || activeDisp.bookingId}
+                        </strong>
+                      </div>
+                      <div>
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', display: 'block' }}>ISSUE CATEGORY</span>
+                        <strong style={{ color: 'var(--text-main)' }}>
+                          {activeDisp.reason?.replace(/_/g, ' ') || 'General Issue'}
+                        </strong>
+                      </div>
+                      {activeDisp.providerName && (
+                        <div>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', display: 'block' }}>SERVICE PROVIDER</span>
+                          <strong style={{ color: 'var(--text-main)' }}>{activeDisp.providerName}</strong>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Customer's Reported Description */}
+                    <div>
+                      <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.4rem' }}>
+                        Your Stated Issue
+                      </h4>
+                      <div style={{
+                        padding: '1rem',
+                        backgroundColor: 'var(--bg-subtle)',
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid var(--border-light)',
+                        color: 'var(--text-main)',
+                        fontSize: '0.875rem',
+                        lineHeight: 1.5,
+                        whiteSpace: 'pre-wrap'
+                      }}>
+                        "{activeDisp.description}"
+                      </div>
+                    </div>
+
+                    {/* Admin Support Resolution Outcome */}
+                    {activeDisp.resolution ? (
+                      <div style={{
+                        backgroundColor: activeDisp.status === 'RESOLVED' ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-subtle)',
+                        border: `1px solid ${activeDisp.status === 'RESOLVED' ? 'rgba(16, 185, 129, 0.25)' : 'var(--border-light)'}`,
+                        borderRadius: 'var(--radius-sm)',
+                        padding: '1.25rem'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.5rem' }}>
+                          <ShieldCheck size={18} color={activeDisp.status === 'RESOLVED' ? 'var(--success)' : 'var(--primary)'} />
+                          <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700, color: activeDisp.status === 'RESOLVED' ? 'var(--success)' : 'var(--text-main)' }}>
+                            Official Support Resolution
+                          </h4>
+                        </div>
+                        <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', color: 'var(--text-main)', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                          {activeDisp.resolution}
+                        </p>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', gap: '1rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.5rem', marginTop: '0.5rem' }}>
+                          <span>Reviewed by: <strong>{activeDisp.resolvedBy || 'Taaskr Governance Team'}</strong></span>
+                          <span>Updated: {activeDisp.updatedAt ? new Date(activeDisp.updatedAt).toLocaleDateString() : 'Recently'}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{
+                        backgroundColor: 'rgba(37, 99, 235, 0.06)',
+                        border: '1px solid rgba(37, 99, 235, 0.2)',
+                        borderRadius: 'var(--radius-sm)',
+                        padding: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem'
+                      }}>
+                        <Clock size={20} color="var(--primary)" />
+                        <div>
+                          <strong style={{ fontSize: '0.84rem', color: 'var(--primary)', display: 'block' }}>
+                            Investigation in Progress
+                          </strong>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                            Our operations and dispute resolution team is currently reviewing your ticket with the assigned partner. You will receive updates directly on this screen.
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>
@@ -1320,9 +1662,17 @@ export default function CustomerDashboard({ initialTab }) {
                   <textarea
                     className="form-control"
                     rows={4}
-                    placeholder="Describe what went wrong in detail..."
+                    placeholder="Describe what went wrong in detail... (Press Enter to submit, Shift+Enter for new line)"
                     value={disputeDescription}
                     onChange={(e) => setDisputeDescription(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        if (!submittingDispute && disputeDescription.trim()) {
+                          handleCreateDispute(e);
+                        }
+                      }
+                    }}
                     required
                   />
                 </div>

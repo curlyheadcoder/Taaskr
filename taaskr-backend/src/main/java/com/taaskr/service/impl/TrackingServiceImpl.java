@@ -32,17 +32,20 @@ public class TrackingServiceImpl implements TrackingService {
     private final BookingRepository bookingRepository;
     private final VehicleRepository vehicleRepository;
     private final MapService mapService;
+    private final org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
 
     public TrackingServiceImpl(UserRepository userRepository,
                                ProviderProfileRepository providerProfileRepository,
                                BookingRepository bookingRepository,
                                VehicleRepository vehicleRepository,
-                               MapService mapService) {
+                               MapService mapService,
+                               org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate) {
         this.userRepository = userRepository;
         this.providerProfileRepository = providerProfileRepository;
         this.bookingRepository = bookingRepository;
         this.vehicleRepository = vehicleRepository;
         this.mapService = mapService;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Override
@@ -69,6 +72,27 @@ public class TrackingServiceImpl implements TrackingService {
             v.setCurrentLatitude(request.getLatitude());
             v.setCurrentLongitude(request.getLongitude());
             vehicleRepository.save(v);
+        }
+
+        // Real-Time STOMP WebSocket broadcast to all active bookings
+        try {
+            List<Booking> activeBookings = bookingRepository.findByProviderIdAndStatusIn(
+                    provider.getId(),
+                    List.of(BookingStatus.ASSIGNED, BookingStatus.ACCEPTED, BookingStatus.IN_PROGRESS, BookingStatus.IN_TRANSIT)
+            );
+            for (Booking b : activeBookings) {
+                messagingTemplate.convertAndSend("/topic/bookings/" + b.getId() + "/location", java.util.Map.of(
+                        "bookingId", b.getId(),
+                        "bookingCode", b.getBookingCode(),
+                        "providerLatitude", request.getLatitude(),
+                        "providerLongitude", request.getLongitude(),
+                        "status", b.getStatus().name(),
+                        "isLive", true,
+                        "timestamp", LocalDateTime.now().toString()
+                ));
+            }
+        } catch (Exception e) {
+            // Log notice without breaking transaction
         }
     }
 

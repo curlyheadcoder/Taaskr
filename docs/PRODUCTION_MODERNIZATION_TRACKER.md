@@ -160,12 +160,23 @@ This tracking document outlines the full roadmap to transition Taaskr from a wor
 ### Phase 3: Real-Time Communication & Media Storage (P3)
 
 #### [TSK-MOD-014] Real-Time WebSockets (STOMP) for Live Dispatch & GPS
-- **Priority**: P3 (Low) | **Status**: `BACKLOG`
-- **Scope**: Spring WebSocket (`@EnableWebSocketMessageBroker`), `LiveTrackingModal.jsx`
+- **Priority**: P3 | **Status**: `COMPLETED` ✅
+- **Scope**: Spring WebSocket (`@EnableWebSocketMessageBroker`), `WebSocketConfig.java`, `TrackingWebSocketController.java`, `TrackingServiceImpl.java`, `LiveTrackingModal.jsx`
+- **Description**: Real-time STOMP messaging broker over `/ws-taaskr` broadcasting live GPS provider coordinates on `/topic/bookings/{bookingId}/location` with automatic 5s background polling fallback.
+- **Acceptance Criteria**:
+  1. STOMP endpoint registered at `/ws-taaskr` with SockJS fallback. (Verified)
+  2. Provider location updates are broadcast to subscribed clients on `/topic/bookings/{bookingId}/location`. (Verified)
+  3. `LiveTrackingModal.jsx` connects via `@stomp/stompjs` + `sockjs-client` with graceful polling fallback. (Verified)
 
-#### [TSK-MOD-015] Provider KYC Document Upload (S3 / Cloudinary)
-- **Priority**: P3 (Low) | **Status**: `BACKLOG`
-- **Scope**: File Storage Service, `ProviderDashboard.jsx`, `AdminDashboard.jsx`
+#### [TSK-MOD-015] Provider KYC Document Upload & Verification Console
+- **Priority**: P3 | **Status**: `COMPLETED` ✅
+- **Scope**: `entity/KycDocument.java`, `enums/KycDocumentType.java`, `enums/KycDocumentStatus.java`, `repository/KycDocumentRepository.java`, `service/KycDocumentService.java`, `controller/KycDocumentController.java`, `ProviderDashboard.jsx`, `AdminDashboard.jsx`
+- **Description**: Multipart file upload service storing encrypted KYC documents (`AADHAAR_FRONT`, `AADHAAR_BACK`, `PAN_CARD`, `DRIVING_LICENSE`, `TRADE_CERTIFICATE`, `OTHER`), secure streaming viewer endpoint, and Admin audit & verification workflow with rejection feedback.
+- **Acceptance Criteria**:
+  1. Provider can upload PDF, PNG, JPG, WEBP documents up to 10MB. (Verified)
+  2. Documents are indexed and stored per provider in `kyc_documents` table with status `PENDING`. (Verified)
+  3. Admin console includes a dedicated "KYC Verifications" tab with inline document viewer, approve, and reject actions with custom feedback. (Verified)
+  4. Unit/integration tests pass with 100% success rate. (Verified)
 
 ---
 
@@ -187,3 +198,5 @@ This tracking document outlines the full roadmap to transition Taaskr from a wor
 | `TC-ADDR-01` | Customer Address Book Management | Add, update, set default, and delete saved addresses | [x] |
 | `TC-PAGE-01` | Spring Data Pageable APIs | Paginated query results with total items, pages, and sorted content | [x] |
 | `TC-INV-01`  | Downloadable PDF Invoice Generation | Branded PDF receipts generated on backend and downloadable from customer UI | [x] |
+| `TC-WS-01`   | Real-Time STOMP WebSockets | Live location broadcasts over `/topic/bookings/{bookingId}/location` with UI map updates | [x] |
+| `TC-KYC-01`  | Provider KYC Upload & Admin Verification | Multipart upload, secure streaming view, and admin approval/rejection audit trail | [x] |

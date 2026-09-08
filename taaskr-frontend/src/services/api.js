@@ -55,6 +55,24 @@ const makeRequest = async (path, options = {}) => {
   return handleResponse(response);
 };
 
+const makeMultipartRequest = async (path, formData, options = {}) => {
+  const token = localStorage.getItem('taaskr_token');
+  const headers = {};
+  if (token && token !== 'undefined' && token !== 'null') {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  const response = await fetch(`${BASE_URL}${path}`, {
+    method: 'POST',
+    body: formData,
+    ...options,
+    headers: {
+      ...headers,
+      ...options.headers
+    }
+  });
+  return handleResponse(response);
+};
+
 // ==========================================
 // API EXPORT MODULES
 // ==========================================
@@ -782,6 +800,40 @@ export const api = {
         method: 'PATCH',
         body: JSON.stringify(payload)
       });
+    }
+  },
+
+  // ----------------------------------------
+  // KYC VERIFICATION & DOCUMENT MANAGEMENT
+  // ----------------------------------------
+  kyc: {
+    upload: async (documentType, file, documentNumber = '') => {
+      const formData = new FormData();
+      formData.append('documentType', documentType);
+      if (documentNumber) formData.append('documentNumber', documentNumber);
+      formData.append('file', file);
+      return makeMultipartRequest('/api/provider/kyc/upload', formData);
+    },
+
+    getMyDocuments: async () => {
+      return makeRequest('/api/provider/kyc/my-documents');
+    },
+
+    getAdminDocuments: async (status = '', page = 0, size = 20) => {
+      const query = new URLSearchParams({ page, size });
+      if (status) query.append('status', status);
+      return makeRequest(`/api/admin/kyc/documents?${query.toString()}`);
+    },
+
+    verifyDocument: async (documentId, status, rejectionReason = '') => {
+      return makeRequest(`/api/admin/kyc/documents/${documentId}/verify`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status, rejectionReason })
+      });
+    },
+
+    getDocumentViewUrl: (documentId) => {
+      return `${BASE_URL}/api/kyc/documents/${documentId}/view`;
     }
   }
 };

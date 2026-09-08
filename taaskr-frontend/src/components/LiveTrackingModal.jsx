@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
 import { api } from '../services/api';
 import { 
   X, Phone, Star, ShieldCheck, MapPin, Navigation, 
@@ -116,15 +118,66 @@ export default function LiveTrackingModal({ bookingId, onClose }) {
     }
   };
 
-  // Initial load + periodic 4-second live polling
+  // Initial load + WebSocket connection with periodic fallback polling
   useEffect(() => {
     fetchTracking(false);
 
+    // 1. Fallback 5-second polling
     const interval = setInterval(() => {
       fetchTracking(true);
-    }, 4000);
+    }, 5000);
 
-    return () => clearInterval(interval);
+    // 2. Real-Time STOMP WebSocket connection
+    let stompClient = null;
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || window.location.origin;
+      const wsUrl = `${baseUrl.replace(/\/$/, '')}/ws-taaskr`;
+
+      stompClient = new Client({
+        webSocketFactory: () => new SockJS(wsUrl),
+        reconnectDelay: 5000,
+        heartbeatIncoming: 4000,
+        heartbeatOutgoing: 4000,
+        onConnect: () => {
+          stompClient.subscribe(`/topic/bookings/${bookingId}/location`, (message) => {
+            try {
+              const body = JSON.parse(message.body);
+              if (body && body.providerLatitude != null && body.providerLongitude != null) {
+                setTrackingData((prev) => {
+                  if (!prev) return prev;
+                  return {
+                    ...prev,
+                    providerLatitude: Number(body.providerLatitude),
+                    providerLongitude: Number(body.providerLongitude),
+                    isLive: true,
+                    status: body.status || prev.status
+                  };
+                });
+                setLastPingTime(new Date());
+              }
+            } catch (e) {
+              console.warn('STOMP message parse error:', e);
+            }
+          });
+        },
+        onStompError: (frame) => {
+          console.warn('STOMP broker error:', frame.headers['message']);
+        }
+      });
+
+      stompClient.activate();
+    } catch (e) {
+      console.warn('WebSocket init notice:', e);
+    }
+
+    return () => {
+      clearInterval(interval);
+      if (stompClient) {
+        try {
+          stompClient.deactivate();
+        } catch (e) {}
+      }
+    };
   }, [bookingId]);
 
   // Provider coordinates (actual or simulated)

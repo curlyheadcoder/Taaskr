@@ -263,4 +263,58 @@ public class ProductionModernizationTests {
         assertNotNull(myBookingsPage);
         assertTrue(myBookingsPage.getTotalElements() >= 1);
     }
+
+    @Autowired
+    private KycDocumentService kycDocumentService;
+
+    @Test
+    void testKycDocumentLifecycle() {
+        // 1. Provider uploads an Aadhaar card
+        org.springframework.mock.web.MockMultipartFile mockFile = new org.springframework.mock.web.MockMultipartFile(
+                "file",
+                "aadhaar_front.png",
+                "image/png",
+                "Sample PNG image bytes for Aadhaar".getBytes()
+        );
+
+        var uploadedDoc = kycDocumentService.uploadDocument(
+                testProviderUser.getEmail(),
+                KycDocumentType.AADHAAR_FRONT,
+                "1234-5678-9012",
+                mockFile
+        );
+
+        assertNotNull(uploadedDoc.getId());
+        assertEquals(KycDocumentType.AADHAAR_FRONT, uploadedDoc.getDocumentType());
+        assertEquals(KycDocumentStatus.PENDING, uploadedDoc.getStatus());
+        assertEquals("1234-5678-9012", uploadedDoc.getDocumentNumber());
+        assertEquals("aadhaar_front.png", uploadedDoc.getOriginalFileName());
+
+        // 2. Provider checks their KYC document list
+        var myDocs = kycDocumentService.getMyDocuments(testProviderUser.getEmail());
+        assertEquals(1, myDocs.size());
+        assertEquals(uploadedDoc.getId(), myDocs.get(0).getId());
+
+        // 3. Admin user setup & document verification
+        User adminUser = new User();
+        adminUser.setName("Super Admin");
+        adminUser.setEmail("admin@taaskr.com");
+        adminUser.setPassword("adminpass");
+        adminUser.setPhone("9999988888");
+        adminUser.setRole(Role.ADMIN);
+        adminUser.setEmailVerified(true);
+        adminUser.setPhoneVerified(true);
+        adminUser = userRepository.save(adminUser);
+
+        var verifyReq = new com.taaskr.dto.kyc.VerifyKycRequest(KycDocumentStatus.VERIFIED, null);
+        var verifiedDoc = kycDocumentService.verifyDocument(uploadedDoc.getId(), verifyReq, adminUser.getEmail());
+
+        assertEquals(KycDocumentStatus.VERIFIED, verifiedDoc.getStatus());
+        assertNotNull(verifiedDoc.getVerifiedAt());
+        assertEquals("Super Admin", verifiedDoc.getVerifiedByName());
+
+        // 4. Admin document query
+        var allDocs = kycDocumentService.getAllDocuments(KycDocumentStatus.VERIFIED, 0, 10);
+        assertTrue(allDocs.getTotalElements() >= 1);
+    }
 }

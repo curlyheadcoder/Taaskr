@@ -135,9 +135,39 @@ export default function ProviderDashboard() {
   const [trackingModalBookingId, setTrackingModalBookingId] = useState(null);
   const watchIdRef = useRef(null);
 
+  // KYC Document Upload & Verification state
+  const [kycDocuments, setKycDocuments] = useState([]);
+  const [selectedKycDocType, setSelectedKycDocType] = useState('AADHAAR_FRONT');
+  const [kycDocNumber, setKycDocNumber] = useState('');
+  const [kycSelectedFile, setKycSelectedFile] = useState(null);
+  const [uploadingKyc, setUploadingKyc] = useState(false);
+  const [kycUploadError, setKycUploadError] = useState('');
+
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 4000);
+  };
+
+  const handleUploadKyc = async (e) => {
+    e.preventDefault();
+    if (!kycSelectedFile) {
+      setKycUploadError('Please select a valid document file (PDF, PNG, JPG, WEBP).');
+      return;
+    }
+    setKycUploadError('');
+    setUploadingKyc(true);
+    try {
+      await api.kyc.upload(selectedKycDocType, kycSelectedFile, kycDocNumber);
+      showNotification('KYC Document uploaded and submitted for review.');
+      setKycSelectedFile(null);
+      setKycDocNumber('');
+      const updatedDocs = await api.kyc.getMyDocuments();
+      setKycDocuments(updatedDocs || []);
+    } catch (err) {
+      setKycUploadError(err.message || 'Failed to upload document.');
+    } finally {
+      setUploadingKyc(false);
+    }
   };
 
   const handleRequestPayout = async (e) => {
@@ -244,6 +274,13 @@ export default function ProviderDashboard() {
         }
       } catch (rErr) {
         console.warn('Provider reviews fetch notice:', rErr);
+      }
+
+      try {
+        const kycList = await api.kyc.getMyDocuments();
+        setKycDocuments(kycList || []);
+      } catch (kErr) {
+        console.warn('KYC documents fetch notice:', kErr);
       }
 
     } catch (err) {
@@ -1202,6 +1239,24 @@ export default function ProviderDashboard() {
           >
             <Settings size={16} />
             <span>Profile & Services</span>
+          </button>
+
+          <button 
+            className={`sidebar-item ${activeTab === 'kyc' ? 'active' : ''}`}
+            onClick={() => setActiveTab('kyc')}
+            title="KYC & Documents"
+          >
+            <ShieldCheck size={16} />
+            <span>KYC & Documents ({kycDocuments.length})</span>
+          </button>
+
+          <button 
+            className={`sidebar-item ${activeTab === 'discussions' ? 'active' : ''}`}
+            onClick={() => setActiveTab('discussions')}
+            title="Support & Discussions"
+          >
+            <MessageSquare size={16} />
+            <span>Support & Help ({discussions.length})</span>
           </button>
         </nav>
       </aside>
@@ -2367,9 +2422,17 @@ export default function ProviderDashboard() {
                               <input
                                 type="text"
                                 className="form-control"
-                                placeholder="Write a courteous response to this customer..."
+                                placeholder="Write a courteous response to this customer... (Press Enter to post)"
                                 value={replyContent}
                                 onChange={(e) => setReplyContent(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    if (!submittingReviewReply && replyContent.trim()) {
+                                      handleReplyReview(rev.id);
+                                    }
+                                  }
+                                }}
                                 style={{ fontSize: '0.78rem' }}
                               />
                               <button
@@ -2826,6 +2889,263 @@ export default function ProviderDashboard() {
                 {savingCategories ? 'Updating...' : 'Update Service Categories'}
               </button>
             </form>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB: KYC & VERIFICATION DOCUMENTS                                         */}
+        {/* ========================================================================= */}
+        {activeTab === 'kyc' && (
+          <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {/* KYC Overview Header */}
+            <div className="panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', padding: '1.25rem 1.5rem' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <ShieldCheck size={22} color="var(--primary)" />
+                  <h2 style={{ fontSize: '1.15rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+                    Partner KYC & Identity Verification
+                  </h2>
+                </div>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.25rem 0 0 0' }}>
+                  Submit official government identity documents to fast-track account approval and unlock priority dispatch.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <span className={`badge ${userProfile?.approved ? 'badge-completed' : 'badge-pending'}`} style={{ padding: '0.4rem 0.75rem', fontSize: '0.8rem' }}>
+                  {userProfile?.approved ? '✓ Account Verified' : '⏳ Verification In Progress'}
+                </span>
+                <span className="badge badge-assigned" style={{ padding: '0.4rem 0.75rem', fontSize: '0.8rem' }}>
+                  {kycDocuments.length} Documents Submitted
+                </span>
+              </div>
+            </div>
+
+            {/* Main 2-Column Split: Upload Form + Document Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(320px, 420px) 1fr', gap: '1.25rem', alignItems: 'flex-start' }}>
+              {/* Left Column: Upload New / Replace Document */}
+              <form onSubmit={handleUploadKyc} className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div className="panel-header" style={{ marginBottom: 0, paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <h3 className="panel-title" style={{ fontSize: '0.95rem' }}>
+                    <Plus size={16} color="var(--primary)" />
+                    <span>Upload Government Document</span>
+                  </h3>
+                </div>
+
+                {kycUploadError && (
+                  <div style={{
+                    backgroundColor: 'var(--error-bg)',
+                    border: '1px solid var(--error-border)',
+                    color: 'var(--error)',
+                    padding: '0.65rem 0.85rem',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: '0.8rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem'
+                  }}>
+                    <AlertCircle size={15} />
+                    <span>{kycUploadError}</span>
+                  </div>
+                )}
+
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Document Type *</label>
+                  <select
+                    className="form-control"
+                    value={selectedKycDocType}
+                    onChange={(e) => setSelectedKycDocType(e.target.value)}
+                    required
+                  >
+                    <option value="AADHAAR_FRONT">Aadhaar Card (Front Side)</option>
+                    <option value="AADHAAR_BACK">Aadhaar Card (Back Side)</option>
+                    <option value="PAN_CARD">PAN Card (Permanent Account Number)</option>
+                    <option value="DRIVING_LICENSE">Driving License (Commercial / Non-Commercial)</option>
+                    <option value="TRADE_CERTIFICATE">Trade / Skill / Professional Certificate</option>
+                    <option value="OTHER">Other Identity / Address Proof</option>
+                  </select>
+                </div>
+
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Document / ID Number (Optional)</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="e.g. 5482-XXXX-XXXX or ABCDE1234F"
+                    value={kycDocNumber}
+                    onChange={(e) => setKycDocNumber(e.target.value)}
+                  />
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.2rem', display: 'block' }}>
+                    Helps speed up verification by our compliance team.
+                  </span>
+                </div>
+
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Select File * (PDF, PNG, JPG, WEBP - Max 10MB)</label>
+                  <div style={{
+                    border: '2px dashed var(--border-light)',
+                    borderRadius: 'var(--radius-sm)',
+                    padding: '1.25rem 1rem',
+                    textAlign: 'center',
+                    backgroundColor: 'var(--bg-subtle)',
+                    cursor: 'pointer',
+                    position: 'relative'
+                  }}>
+                    <input
+                      type="file"
+                      accept=".pdf,.png,.jpg,.jpeg,.webp"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          setKycSelectedFile(e.target.files[0]);
+                          setKycUploadError('');
+                        }
+                      }}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        opacity: 0,
+                        cursor: 'pointer'
+                      }}
+                    />
+                    <FileText size={28} color="var(--primary)" style={{ margin: '0 auto 0.5rem auto' }} />
+                    {kycSelectedFile ? (
+                      <div>
+                        <strong style={{ fontSize: '0.85rem', color: 'var(--text-main)', display: 'block' }}>
+                          {kycSelectedFile.name}
+                        </strong>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                          {(kycSelectedFile.size / 1024 / 1024).toFixed(2)} MB • Ready to upload
+                        </span>
+                      </div>
+                    ) : (
+                      <div>
+                        <span style={{ fontSize: '0.82rem', color: 'var(--text-main)', fontWeight: 600 }}>
+                          Click or Drag file to select
+                        </span>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginTop: '0.2rem' }}>
+                          Clear scan or high-resolution photo of document
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="btn btn-primary btn-sm"
+                  disabled={uploadingKyc || !kycSelectedFile}
+                  style={{ width: '100%', marginTop: '0.5rem' }}
+                >
+                  {uploadingKyc ? 'Uploading & Encrypting...' : 'Submit Document for Verification'}
+                </button>
+
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', lineHeight: 1.4, borderTop: '1px solid var(--border-subtle)', paddingTop: '0.75rem' }}>
+                  🔒 <strong>Privacy Assured:</strong> Uploaded documents are securely encrypted on isolated storage and only accessed by authorized Taaskr compliance auditors for regulatory onboarding.
+                </div>
+              </form>
+
+              {/* Right Column: Submitted Documents List */}
+              <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div className="panel-header" style={{ marginBottom: 0, paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <h3 className="panel-title" style={{ fontSize: '0.95rem' }}>
+                    <ShieldCheck size={16} color="var(--success)" />
+                    <span>Your Verification Records ({kycDocuments.length})</span>
+                  </h3>
+                </div>
+
+                {kycDocuments.length === 0 ? (
+                  <div className="empty-state" style={{ padding: '2.5rem 1rem' }}>
+                    <div className="empty-state-icon">
+                      <FileText size={24} />
+                    </div>
+                    <h3 className="empty-state-title">No KYC documents submitted</h3>
+                    <p className="empty-state-description">
+                      Please upload your Aadhaar card and PAN card using the form on the left to verify your account and accept high-value tasks.
+                    </p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                    {kycDocuments.map((doc) => (
+                      <div
+                        key={doc.id}
+                        style={{
+                          background: 'var(--bg-subtle)',
+                          borderRadius: 'var(--radius-sm)',
+                          border: `1px solid ${doc.status === 'VERIFIED' ? 'rgba(16, 185, 129, 0.3)' : doc.status === 'REJECTED' ? 'rgba(239, 68, 68, 0.3)' : 'var(--border-light)'}`,
+                          padding: '1rem',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.65rem'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                              <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-main)' }}>
+                                {doc.documentType?.replace(/_/g, ' ')}
+                              </h4>
+                              {doc.documentNumber && (
+                                <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', backgroundColor: 'var(--bg-card)', padding: '0.1rem 0.4rem', borderRadius: '4px', border: '1px solid var(--border-subtle)' }}>
+                                  {doc.documentNumber}
+                                </span>
+                              )}
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                              Uploaded: {doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleDateString() : 'Recently'} • {doc.originalFileName || 'File'} ({doc.fileSize ? `${(doc.fileSize / 1024).toFixed(0)} KB` : 'Attached'})
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span className={`badge ${doc.status === 'VERIFIED' ? 'badge-completed' : doc.status === 'REJECTED' ? 'badge-cancelled' : 'badge-pending'}`}>
+                              {doc.status === 'VERIFIED' && '✓ Verified'}
+                              {doc.status === 'PENDING' && '⏳ Pending Review'}
+                              {doc.status === 'REJECTED' && '✕ Rejected'}
+                            </span>
+                            <a
+                              href={api.kyc.getDocumentViewUrl(doc.id)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="btn btn-secondary btn-sm"
+                              style={{ fontSize: '0.72rem', padding: '0.25rem 0.55rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                            >
+                              <ExternalLink size={12} />
+                              <span>View File</span>
+                            </a>
+                          </div>
+                        </div>
+
+                        {/* Rejection Alert if rejected */}
+                        {doc.status === 'REJECTED' && doc.rejectionReason && (
+                          <div style={{
+                            backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                            border: '1px solid rgba(239, 68, 68, 0.25)',
+                            borderRadius: '4px',
+                            padding: '0.55rem 0.75rem',
+                            fontSize: '0.78rem',
+                            color: '#ef4444'
+                          }}>
+                            <strong>Reason for rejection:</strong> {doc.rejectionReason}
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '0.2rem' }}>
+                              Please re-upload a clearer image or document of this type using the form on the left.
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Verified Metadata */}
+                        {doc.status === 'VERIFIED' && doc.verifiedByName && (
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                            Verified by <strong>{doc.verifiedByName}</strong> on {doc.verifiedAt ? new Date(doc.verifiedAt).toLocaleDateString() : ''}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
