@@ -30,17 +30,20 @@ public class PayoutServiceImpl implements PayoutService {
     private final WalletTransactionRepository walletTransactionRepository;
     private final ProviderProfileRepository providerProfileRepository;
     private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
     private final NotificationService notificationService;
 
     public PayoutServiceImpl(PayoutRepository payoutRepository,
                              WalletTransactionRepository walletTransactionRepository,
                              ProviderProfileRepository providerProfileRepository,
                              UserRepository userRepository,
+                             BookingRepository bookingRepository,
                              NotificationService notificationService) {
         this.payoutRepository = payoutRepository;
         this.walletTransactionRepository = walletTransactionRepository;
         this.providerProfileRepository = providerProfileRepository;
         this.userRepository = userRepository;
+        this.bookingRepository = bookingRepository;
         this.notificationService = notificationService;
     }
 
@@ -80,9 +83,20 @@ public class PayoutServiceImpl implements PayoutService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public WalletOverviewResponse getWalletOverview(String providerEmail) {
         ProviderProfile provider = getProviderByEmail(providerEmail);
+
+        // Auto-reconcile completed bookings that have not yet been credited to the wallet
+        List<Booking> providerBookings = bookingRepository.findByProviderIdOrderByCreatedAtDesc(provider.getId());
+        for (Booking b : providerBookings) {
+            if (b.getStatus() == com.taaskr.enums.BookingStatus.COMPLETED &&
+                    (b.getPaymentStatus() == com.taaskr.enums.PaymentStatus.PAID || b.getPaymentMethod() == com.taaskr.enums.PaymentMethod.AFTER_SERVICE) &&
+                    !walletTransactionRepository.existsByBookingIdAndType(b.getId(), WalletTransactionType.EARNING)) {
+                creditBookingEarnings(b);
+            }
+        }
+
         List<WalletTransaction> txns = walletTransactionRepository.findByProviderIdOrderByCreatedAtDesc(provider.getId());
         List<Payout> payouts = payoutRepository.findByProviderIdOrderByRequestedAtDesc(provider.getId());
 
@@ -159,6 +173,13 @@ public class PayoutServiceImpl implements PayoutService {
         payout.setBankIfsc(request.getBankIfsc());
         payout.setBankName(request.getBankName());
         payout.setUpiId(request.getUpiId());
+
+        if (request.getNotes() != null && !request.getNotes().isBlank()) {
+            payout.setAdminNotes(request.getNotes().trim());
+            if (payout.getUpiId() == null && request.getNotes().contains("@")) {
+                payout.setUpiId(request.getNotes().trim());
+            }
+        }
 
         Payout savedPayout = payoutRepository.save(payout);
 

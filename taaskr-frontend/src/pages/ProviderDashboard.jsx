@@ -1939,19 +1939,19 @@ export default function ProviderDashboard() {
                   <div>
                     <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>Lifetime Net</span>
                     <strong style={{ fontSize: '1rem', color: 'var(--text-main)', fontFeatureSettings: 'tnum' }}>
-                      ₹{(walletOverview.totalEarned || 0).toLocaleString('en-IN')}
+                      ₹{(walletOverview.lifetimeEarnings ?? walletOverview.totalEarned ?? 0).toLocaleString('en-IN')}
                     </strong>
                   </div>
                   <div>
                     <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>Pending Payouts</span>
                     <strong style={{ fontSize: '1rem', color: 'var(--warning)', fontFeatureSettings: 'tnum' }}>
-                      ₹{(walletOverview.pendingPayoutsAmount || 0).toLocaleString('en-IN')}
+                      ₹{(walletOverview.pendingPayouts ?? walletOverview.pendingPayoutsAmount ?? 0).toLocaleString('en-IN')}
                     </strong>
                   </div>
                   <div>
                     <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>Total Settled</span>
                     <strong style={{ fontSize: '1rem', color: 'var(--primary)', fontFeatureSettings: 'tnum' }}>
-                      ₹{(walletOverview.totalPaidOut || 0).toLocaleString('en-IN')}
+                      ₹{(walletOverview.totalWithdrawn ?? walletOverview.totalPaidOut ?? 0).toLocaleString('en-IN')}
                     </strong>
                   </div>
                 </div>
@@ -2244,14 +2244,14 @@ export default function ProviderDashboard() {
             </div>
 
             {/* Payout Requests & Status Ledger */}
-            {walletOverview && walletOverview.recentPayouts && walletOverview.recentPayouts.length > 0 && (
+            {walletOverview && (walletOverview.recentPayoutRequests?.length > 0 || walletOverview.recentPayouts?.length > 0) && (
               <div className="panel">
                 <div className="panel-header" style={{ marginBottom: '1rem' }}>
                   <h3 className="panel-title">
                     <DollarSign size={16} color="var(--primary)" />
                     <span>Payout Requests & Settlement Status</span>
                   </h3>
-                  <span className="badge badge-assigned">{walletOverview.recentPayouts.length} Requests</span>
+                  <span className="badge badge-assigned">{(walletOverview.recentPayoutRequests || walletOverview.recentPayouts || []).length} Requests</span>
                 </div>
 
                 <div style={{ overflowX: 'auto' }}>
@@ -2267,7 +2267,7 @@ export default function ProviderDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {walletOverview.recentPayouts.map((p) => (
+                      {(walletOverview.recentPayoutRequests || walletOverview.recentPayouts || []).map((p) => (
                         <tr key={p.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                           <td style={{ padding: '0.65rem 0.5rem', fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--primary)' }}>
                             #{String(p.id).slice(-6)}
@@ -2284,7 +2284,7 @@ export default function ProviderDashboard() {
                             {p.transactionReference || 'Pending Bank Processing'}
                           </td>
                           <td style={{ padding: '0.65rem 0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-                            {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : 'Recent'}
+                            {p.createdAt || p.requestedAt ? new Date(p.createdAt || p.requestedAt).toLocaleDateString() : 'Recent'}
                           </td>
                           <td style={{ padding: '0.65rem 0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
                             {p.processedAt ? new Date(p.processedAt).toLocaleDateString() : '—'}
@@ -3667,22 +3667,25 @@ export default function ProviderDashboard() {
                 <label className="form-label">Withdrawal Amount (₹) *</label>
                 <input
                   type="number"
-                  min="1"
+                  min="100"
                   max={walletOverview?.currentBalance || 100000}
                   className="form-control"
-                  placeholder="e.g. 2500"
+                  placeholder="Min ₹100.00"
                   value={payoutAmount}
                   onChange={(e) => setPayoutAmount(e.target.value)}
                   required
                 />
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginTop: '0.25rem' }}>
+                  Minimum withdrawal threshold: ₹100.00
+                </span>
               </div>
 
               <div className="form-group">
-                <label className="form-label">Payout Notes / Bank Info (Optional)</label>
+                <label className="form-label">Bank / UPI Transfer Details (Optional)</label>
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="e.g. UPI ID: username@okaxis or Bank Account"
+                  placeholder="e.g. UPI ID: partner@okhdfcbank or Bank A/C & IFSC"
                   value={payoutNotes}
                   onChange={(e) => setPayoutNotes(e.target.value)}
                 />
@@ -3693,7 +3696,7 @@ export default function ProviderDashboard() {
                   type="submit"
                   className="btn btn-primary btn-sm"
                   style={{ flex: 1 }}
-                  disabled={submittingPayout || !payoutAmount || Number(payoutAmount) <= 0 || Number(payoutAmount) > (walletOverview?.currentBalance || 0)}
+                  disabled={submittingPayout || !payoutAmount || Number(payoutAmount) < 100 || Number(payoutAmount) > (walletOverview?.currentBalance || 0)}
                 >
                   {submittingPayout ? 'Processing...' : `Submit Request (₹${payoutAmount || 0})`}
                 </button>

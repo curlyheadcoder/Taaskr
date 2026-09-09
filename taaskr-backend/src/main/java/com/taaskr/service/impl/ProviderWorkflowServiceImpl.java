@@ -44,6 +44,7 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
     private final ProviderCategoryRepository providerCategoryRepository;
     private final ServiceCategoryRepository serviceCategoryRepository;
     private final com.taaskr.repository.ProviderServiceRepository providerServiceRepository;
+    private final com.taaskr.service.PayoutService payoutService;
 
     public ProviderWorkflowServiceImpl(UserRepository userRepository,
                                        ProviderProfileRepository providerProfileRepository,
@@ -51,7 +52,8 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
                                        BookingRepository bookingRepository,
                                        ProviderCategoryRepository providerCategoryRepository,
                                        ServiceCategoryRepository serviceCategoryRepository,
-                                       com.taaskr.repository.ProviderServiceRepository providerServiceRepository) {
+                                       com.taaskr.repository.ProviderServiceRepository providerServiceRepository,
+                                       com.taaskr.service.PayoutService payoutService) {
         this.userRepository = userRepository;
         this.providerProfileRepository = providerProfileRepository;
         this.availabilitySlotRepository = availabilitySlotRepository;
@@ -59,6 +61,7 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
         this.providerCategoryRepository = providerCategoryRepository;
         this.serviceCategoryRepository = serviceCategoryRepository;
         this.providerServiceRepository = providerServiceRepository;
+        this.payoutService = payoutService;
     }
 
     @Override
@@ -188,6 +191,12 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
         }
 
         Booking saved = bookingRepository.save(booking);
+
+        if (saved.getStatus() == BookingStatus.COMPLETED &&
+                (saved.getPaymentStatus() == PaymentStatus.PAID || saved.getPaymentMethod() == PaymentMethod.AFTER_SERVICE)) {
+            payoutService.creditBookingEarnings(saved);
+        }
+
         return mapBooking(saved);
     }
 
@@ -206,6 +215,7 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
         
         booking.setPaymentStatus(PaymentStatus.PAID);
         Booking saved = bookingRepository.save(booking);
+        payoutService.creditBookingEarnings(saved);
         return mapBooking(saved);
     }
 

@@ -23,6 +23,9 @@ public class RequestPayoutRequest {
     @Size(max = 100, message = "UPI ID must not exceed 100 characters")
     private String upiId;
 
+    @Size(max = 500, message = "Notes must not exceed 500 characters")
+    private String notes;
+
     public RequestPayoutRequest() {
     }
 
@@ -64,5 +67,13 @@ public class RequestPayoutRequest {
 
     public void setUpiId(String upiId) {
         this.upiId = upiId;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 }

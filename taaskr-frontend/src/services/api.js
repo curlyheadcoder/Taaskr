@@ -742,7 +742,10 @@ export const api = {
     },
 
     requestPayout: async (arg1, arg2) => {
-      const payload = typeof arg1 === 'object' ? arg1 : { amount: Number(arg1), notes: arg2 };
+      const payload = typeof arg1 === 'object' ? { ...arg1 } : { amount: Number(arg1), notes: arg2 };
+      if (typeof arg2 === 'string' && arg2.includes('@') && !payload.upiId) {
+        payload.upiId = arg2.trim();
+      }
       return makeRequest('/api/provider/payouts/request', {
         method: 'POST',
         body: JSON.stringify(payload)
