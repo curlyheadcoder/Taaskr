@@ -43,6 +43,9 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
     @Value("${gemini.api.key:${GEMINI_API_KEY:}}")
     private String geminiApiKey;
 
+    @Value("${openai.api.key:${OPENAI_API_KEY:}}")
+    private String openaiApiKey;
+
     public AiDiagnosticServiceImpl(ServiceRepository serviceRepository,
                                    ServiceCategoryRepository categoryRepository,
                                    BookingService bookingService,
@@ -135,11 +138,24 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
                         return geminiRes;
                     }
                 } catch (Exception e) {
-                    log.warn("Gemini chat API call failed, falling back to real catalog intent engine: {}", e.getMessage());
+                    log.warn("Gemini chat API call failed, trying fallback: {}", e.getMessage());
                 }
             }
 
-            // 2. High-precision Grounded Catalog & Booking Engine
+            // 2. Try OpenAI API if present
+            if (openaiApiKey != null && !openaiApiKey.isBlank()) {
+                try {
+                    AiChatResponse openAiRes = callOpenAiChat(userEmail, query, activeServices, request);
+                    if (openAiRes != null) {
+                        success = true;
+                        return openAiRes;
+                    }
+                } catch (Exception e) {
+                    log.warn("OpenAI chat API call failed, trying fallback: {}", e.getMessage());
+                }
+            }
+
+            // 3. High-precision Grounded Catalog & Booking Engine
             AiChatResponse response = processIntentAndTools(userEmail, query, activeServices, request);
             success = true;
             return response;
@@ -151,6 +167,15 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
 
     private AiChatResponse processIntentAndTools(String userEmail, String query, List<Service> services, AiChatRequest request) {
         String lower = query.toLowerCase().trim();
+
+        // 0. Intent: Greetings & Conversational Chit-Chat ("Hi", "Hello", "Hey", "Good morning", "Help")
+        if (isGreeting(lower)) {
+            AiChatResponse res = new AiChatResponse("Hi there! I'm Taasky, your intelligent AI assistant. How can I help you today? You can ask me to diagnose home repair issues, find verified technicians (AC repair, plumbing, electrician, cleaning), schedule courier delivery, check transparent pricing, or track your orders.");
+            res.setIntent("GREETING");
+            res.setActionType("NONE");
+            res.setQuickReplies(List.of("Kitchen sink pipe is leaking", "AC is not cooling properly", "Send parcel across city", "Show my active bookings"));
+            return res;
+        }
 
         // 1. Intent: User asks about their bookings ("What bookings do I have?", "my bookings", "active orders")
         if (hasWord(lower, "my booking", "my bookings", "active booking", "booking status", "track booking", "what bookings", "show bookings", "my orders")) {
@@ -347,6 +372,97 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
                     return processIntentAndTools(userEmail, query, services, request);
                 }
 
+                if ("GREETING".equalsIgnoreCase(intent)) {
+                    AiChatResponse res = new AiChatResponse(reply.isBlank() ? "Hi! How can I help you with our verified home services or parcel delivery today?" : reply);
+                    res.setIntent("GREETING");
+                    res.setActionType("NONE");
+                    res.setQuickReplies(List.of("Kitchen sink pipe is leaking", "AC is not cooling properly", "Send parcel", "Show active bookings"));
+                    return res;
+                }
+
+                if (serviceId != null && serviceId > 0) {
+                    Optional<Service> sOpt = services.stream().filter(s -> s.getId().equals(serviceId)).findFirst();
+                    if (sOpt.isPresent()) {
+                        Service s = sOpt.get();
+                        AiChatResponse res = new AiChatResponse();
+                        res.setIntent(intent);
+                        res.setReply(reply.isBlank() ? "I recommend " + s.getName() + " (₹" + s.getPrice() + ") for your request." : reply);
+                        res.setServices(List.of(mapServiceToResponse(s)));
+                        res.setTargetServiceId(s.getId());
+                        res.setActionType("BOOK_SERVICE");
+                        res.setQuickReplies(List.of("Book " + s.getName(), "Service Details"));
+                        return res;
+                    }
+                } else if ("UNSUPPORTED".equalsIgnoreCase(intent)) {
+                    AiChatResponse res = new AiChatResponse(reply.isBlank() ? "We currently do not offer this service on Taaskr." : reply);
+                    res.setIntent("UNSUPPORTED");
+                    res.setActionType("NONE");
+                    res.setQuickReplies(List.of("AC Repair", "Send Parcel", "Plumbing", "Electrical"));
+                    return res;
+                }
+            }
+        }
+        return null;
+    }
+
+    private AiChatResponse callOpenAiChat(String userEmail, String query, List<Service> services, AiChatRequest request) throws Exception {
+        String url = "https://api.openai.com/v1/chat/completions";
+
+        String catalogSummary = services.stream()
+                .map(s -> s.getId() + ":" + s.getName() + " (" + s.getCategory().getName() + " - ₹" + s.getPrice() + ")")
+                .collect(Collectors.joining(", "));
+
+        String systemPrompt = String.format(
+                "You are Taasky, the intelligent AI assistant for Taaskr on-demand home services.\n" +
+                "Real Catalog: [%s].\n" +
+                "Location: %s.\n" +
+                "Rules:\n" +
+                "- NEVER hallucinate non-existent services, prices, or fake statuses.\n" +
+                "- If the user wants to send a parcel/package/goods, select an On-Demand Vehicle/Courier service (Electric Bike, Petrol Bike, Mini Truck, etc.).\n" +
+                "- If the user asks about their active bookings, set intent to 'MY_BOOKINGS'.\n" +
+                "- If greeting or pleasantry, set intent to 'GREETING', serviceId to null, and reply warmly.\n" +
+                "- If completely outside home/logistics services, set intent to 'UNSUPPORTED' and serviceId to null.\n" +
+                "- Output ONLY JSON: {\"intent\": \"SEARCH|DETAILS|AVAILABILITY|MY_BOOKINGS|CANCEL|GREETING|UNSUPPORTED\", \"serviceId\": <number or null>, \"reply\": \"<helpful conversational message>\"}",
+                catalogSummary, request != null && request.getCity() != null ? request.getCity() : "Indore"
+        );
+
+        Map<String, Object> body = Map.of(
+                "model", "gpt-4o-mini",
+                "messages", List.of(
+                        Map.of("role", "system", "content", systemPrompt),
+                        Map.of("role", "user", "content", query)
+                ),
+                "temperature", 0.2,
+                "response_format", Map.of("type", "json_object")
+        );
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(openaiApiKey.trim());
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+            JsonNode root = objectMapper.readTree(response.getBody());
+            JsonNode textNode = root.path("choices").get(0).path("message").path("content");
+            if (!textNode.isMissingNode()) {
+                JsonNode parsed = objectMapper.readTree(textNode.asText());
+                String intent = parsed.path("intent").asText("SEARCH");
+                String reply = parsed.path("reply").asText("");
+                Long serviceId = parsed.path("serviceId").isNull() ? null : parsed.path("serviceId").asLong(0);
+
+                if ("MY_BOOKINGS".equalsIgnoreCase(intent) || "CANCEL".equalsIgnoreCase(intent)) {
+                    return processIntentAndTools(userEmail, query, services, request);
+                }
+
+                if ("GREETING".equalsIgnoreCase(intent)) {
+                    AiChatResponse res = new AiChatResponse(reply.isBlank() ? "Hi! How can I help you with our verified home services or parcel delivery today?" : reply);
+                    res.setIntent("GREETING");
+                    res.setActionType("NONE");
+                    res.setQuickReplies(List.of("Kitchen sink pipe is leaking", "AC is not cooling properly", "Send parcel", "Show active bookings"));
+                    return res;
+                }
+
                 if (serviceId != null && serviceId > 0) {
                     Optional<Service> sOpt = services.stream().filter(s -> s.getId().equals(serviceId)).findFirst();
                     if (sOpt.isPresent()) {
@@ -535,6 +651,11 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
     private Service findBestMatchingService(String query, List<Service> services) {
         List<Service> matches = searchCatalogServices(query, services);
         return matches.isEmpty() ? null : matches.get(0);
+    }
+
+    private boolean isGreeting(String text) {
+        String trimmed = text.trim();
+        return hasWord(trimmed, "hi", "hello", "hey", "hola", "namaste", "good morning", "good evening", "good afternoon", "who are you", "what can you do", "what are you", "help", "help me", "start", "menu");
     }
 
     private boolean hasWord(String text, String... words) {
