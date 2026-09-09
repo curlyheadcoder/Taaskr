@@ -248,6 +248,60 @@ public class AiDiagnosticTests {
     }
 
     @Test
+    void testBathroomCleaningDiagnosis() {
+        ServiceCategory plumbingCleaningCat = serviceCategoryRepository.findByNameIgnoreCase("Plumbing & Cleaning").orElseGet(() -> {
+            ServiceCategory cat = new ServiceCategory();
+            cat.setName("Plumbing & Cleaning");
+            cat.setDescription("Cleaning");
+            cat.setActive(true);
+            return serviceCategoryRepository.save(cat);
+        });
+
+        Service bathClean = new Service();
+        bathClean.setName("Bathroom Deep Cleaning & Sanitization");
+        bathClean.setCategory(plumbingCleaningCat);
+        bathClean.setPrice(BigDecimal.valueOf(399));
+        bathClean.setDurationMinutes(90);
+        bathClean.setActive(true);
+        serviceRepository.save(bathClean);
+
+        com.taaskr.dto.ai.AiChatRequest chatReq = new com.taaskr.dto.ai.AiChatRequest("My bathroom needs cleaning");
+        com.taaskr.dto.ai.AiChatResponse chatRes = aiDiagnosticService.chat(null, chatReq);
+
+        assertNotNull(chatRes);
+        assertNotNull(chatRes.getServices());
+        assertFalse(chatRes.getServices().isEmpty());
+        assertEquals("Bathroom Deep Cleaning & Sanitization", chatRes.getServices().get(0).getName(), "Must match Bathroom Deep Cleaning, NOT RO Installation!");
+    }
+
+    @Test
+    void testWallCrackingDiagnosis() {
+        ServiceCategory civilCat = serviceCategoryRepository.findByNameIgnoreCase("Civil & Property Maintenance").orElseGet(() -> {
+            ServiceCategory cat = new ServiceCategory();
+            cat.setName("Civil & Property Maintenance");
+            cat.setDescription("Civil");
+            cat.setActive(true);
+            return serviceCategoryRepository.save(cat);
+        });
+
+        Service masonry = new Service();
+        masonry.setName("Masonry & Brickwork");
+        masonry.setCategory(civilCat);
+        masonry.setPrice(BigDecimal.valueOf(899));
+        masonry.setDurationMinutes(240);
+        masonry.setActive(true);
+        serviceRepository.save(masonry);
+
+        com.taaskr.dto.ai.AiChatRequest chatReq = new com.taaskr.dto.ai.AiChatRequest("My wall is cracking can you suggest me some service");
+        com.taaskr.dto.ai.AiChatResponse chatRes = aiDiagnosticService.chat(null, chatReq);
+
+        assertNotNull(chatRes);
+        assertNotNull(chatRes.getServices());
+        assertFalse(chatRes.getServices().isEmpty());
+        assertEquals("Masonry & Brickwork", chatRes.getServices().get(0).getName(), "Must match Masonry, NOT AC Maintenance!");
+    }
+
+    @Test
     void testChatUnsupportedServiceQuery() {
         com.taaskr.dto.ai.AiChatRequest chatReq = new com.taaskr.dto.ai.AiChatRequest("Can you repair my space rocket or supersonic jet engine?");
         com.taaskr.dto.ai.AiChatResponse chatRes = aiDiagnosticService.chat(null, chatReq);
