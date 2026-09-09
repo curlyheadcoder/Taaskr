@@ -1,11 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 /* ==========================================================================
-   TAASKR DESIGN SYSTEM & THEME TOKENS
+   TAASKR MULTI-PERSONA DESIGN SYSTEM & THEME TOKENS
    ========================================================================== */
 
-:root {
-  /* Default Dark Mode (Mature Obsidian & Warm Amber Theme) */
+/* --------------------------------------------------------------------------
+   1. DEFAULT & CONSUMER THEME (.theme-user / Default)
+   Palette: Warm Amber, Deep Obsidian, Subtle Sapphire
+   -------------------------------------------------------------------------- */
+:root, body.theme-user, body:not(.theme-provider):not(.theme-admin) {
+  /* Dark Mode Default */
   --bg-page: #0F1117;
   --bg-header: #161822;
   --bg-card: #1A1C26;
@@ -15,48 +19,44 @@
   --bg-hover: #222533;
   --bg-active: #2B2E3D;
 
-  /* Typography & Text */
+  /* Typography */
   --text-main: #F4F4F5;
   --text-secondary: #D4D4D8;
   --text-muted: #A1A1AA;
   --text-light: #71717A;
   --text-inverse: #18181B;
 
-  /* Borders & Dividers */
+  /* Borders */
   --border-subtle: #1E202C;
   --border-light: #2A2D3C;
   --border-color: #2A2D3C;
   --border-strong: #383B4E;
   --border-hover: #4E5268;
 
-  /* Brand Primary Accents (Warm Amber) */
+  /* Brand Accents */
   --primary: #F59E0B;
   --primary-hover: #D97706;
   --primary-subtle: rgba(245, 158, 11, 0.14);
   --primary-rgb: 245, 158, 11;
-
-  /* Secondary Accent & Icon Box */
   --secondary-accent: #FBBF24;
   --icon-container: rgba(245, 158, 11, 0.16);
+  --accent-glow: rgba(245, 158, 11, 0.45);
+  --portal-brand: #F59E0B;
 
-  /* Secondary Component Tone */
   --secondary: #1A1C26;
   --secondary-hover: #222533;
   --secondary-subtle: #161822;
 
-  /* Semantic Status Tokens */
+  /* Semantics */
   --success: #10B981;
   --success-bg: rgba(16, 185, 129, 0.15);
   --success-border: rgba(16, 185, 129, 0.35);
-
   --warning: #F59E0B;
   --warning-bg: rgba(245, 158, 11, 0.15);
   --warning-border: rgba(245, 158, 11, 0.35);
-
   --error: #EF4444;
   --error-bg: rgba(239, 68, 68, 0.15);
   --error-border: rgba(239, 68, 68, 0.35);
-
   --info: #D97706;
   --info-bg: rgba(217, 119, 6, 0.15);
   --info-border: rgba(217, 119, 6, 0.35);
@@ -68,7 +68,6 @@
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
   --shadow-xl: 0 16px 36px rgba(0, 0, 0, 0.6);
 
-  /* Radius */
   --radius-xs: 4px;
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -76,15 +75,14 @@
   --radius-xl: 18px;
   --radius-full: 9999px;
 
-  /* Fonts & Transitions */
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
   --transition-fast: all 0.15s ease;
   --transition-smooth: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Light Theme Mode (Warm Ivory & Rich Amber) */
-body:not(.dark) {
+/* Light Theme - User / Consumer */
+body.theme-user:not(.dark), body:not(.theme-provider):not(.theme-admin):not(.dark) {
   --bg-page: #F8F8F6;
   --bg-header: #FFFFFF;
   --bg-card: #FFFFFF;
@@ -110,77 +108,246 @@ body:not(.dark) {
   --primary-hover: #B45309;
   --primary-subtle: #FEF3C7;
   --primary-rgb: 217, 119, 6;
-
   --secondary-accent: #D97706;
   --icon-container: #FEF3C7;
+  --accent-glow: rgba(217, 119, 6, 0.25);
+  --portal-brand: #D97706;
 
   --secondary: #F8F8F6;
   --secondary-hover: #F4F4F5;
   --secondary-subtle: #F8F8F6;
 
-  --success: #15803D;
-  --success-bg: #DCFCE7;
-  --success-border: #86EFAC;
-
-  --warning: #D97706;
-  --warning-bg: #FEF3C7;
-  --warning-border: #FDE68A;
-
-  --error: #DC2626;
-  --error-bg: #FEE2E2;
-  --error-border: #FCA5A5;
-
-  --info: #D97706;
-  --info-bg: #FEF3C7;
-  --info-border: #FDE68A;
-
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
 }
 
-/* Explicit Dark Theme Class */
-body.dark {
-  --bg-page: #0F1117;
-  --bg-header: #161822;
-  --bg-card: #1A1C26;
-  --bg-card-hover: #222533;
-  --bg-card-selected: #2B2E3D;
-  --bg-subtle: #161822;
-  --bg-hover: #222533;
-  --bg-active: #2B2E3D;
+/* --------------------------------------------------------------------------
+   2. PROVIDER PRO THEME (.theme-provider)
+   Palette: Electric Emerald, High-Performance Slate, Neon Mint
+   -------------------------------------------------------------------------- */
+body.theme-provider {
+  --bg-page: #080D12;
+  --bg-header: #0D1520;
+  --bg-card: #111C2A;
+  --bg-card-hover: #172638;
+  --bg-card-selected: #1F324A;
+  --bg-subtle: #0D1520;
+  --bg-hover: #172638;
+  --bg-active: #1F324A;
 
-  --text-main: #F4F4F5;
-  --text-secondary: #D4D4D8;
-  --text-muted: #A1A1AA;
-  --text-light: #71717A;
-  --text-inverse: #18181B;
+  --text-main: #F1F5F9;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+  --text-light: #64748B;
+  --text-inverse: #0F172A;
 
-  --border-subtle: #1E202C;
-  --border-light: #2A2D3C;
-  --border-color: #2A2D3C;
-  --border-strong: #383B4E;
-  --border-hover: #4E5268;
+  --border-subtle: #142030;
+  --border-light: #1E3048;
+  --border-color: #1E3048;
+  --border-strong: #2D486B;
+  --border-hover: #3E6392;
 
-  --primary: #F59E0B;
-  --primary-hover: #D97706;
-  --primary-subtle: rgba(245, 158, 11, 0.14);
-  --primary-rgb: 245, 158, 11;
+  --primary: #10B981;
+  --primary-hover: #059669;
+  --primary-subtle: rgba(16, 185, 129, 0.14);
+  --primary-rgb: 16, 185, 129;
+  --secondary-accent: #34D399;
+  --icon-container: rgba(16, 185, 129, 0.16);
+  --accent-glow: rgba(16, 185, 129, 0.45);
+  --portal-brand: #10B981;
 
-  --secondary-accent: #FBBF24;
-  --icon-container: rgba(245, 158, 11, 0.16);
+  --secondary: #111C2A;
+  --secondary-hover: #172638;
+  --secondary-subtle: #0D1520;
 
-  --secondary: #1A1C26;
-  --secondary-hover: #222533;
-  --secondary-subtle: #161822;
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 16px 36px rgba(0, 0, 0, 0.7);
+}
 
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.25);
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 16px 36px rgba(0, 0, 0, 0.6);
+/* Light Theme - Provider */
+body.theme-provider:not(.dark) {
+  --bg-page: #F0FDF4;
+  --bg-header: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #F7FEE7;
+  --bg-card-selected: #DCFCE7;
+  --bg-subtle: #F0FDF4;
+  --bg-hover: #E2E8F0;
+  --bg-active: #DCFCE7;
+
+  --text-main: #0F172A;
+  --text-secondary: #334155;
+  --text-muted: #64748B;
+  --text-light: #94A3B8;
+  --text-inverse: #FFFFFF;
+
+  --border-subtle: #E2E8F0;
+  --border-light: #BBF7D0;
+  --border-color: #BBF7D0;
+  --border-strong: #86EFAC;
+  --border-hover: #4ADE80;
+
+  --primary: #059669;
+  --primary-hover: #047857;
+  --primary-subtle: #DCFCE7;
+  --primary-rgb: 5, 150, 105;
+  --secondary-accent: #10B981;
+  --icon-container: #DCFCE7;
+  --accent-glow: rgba(5, 150, 105, 0.25);
+  --portal-brand: #059669;
+
+  --secondary: #F0FDF4;
+  --secondary-hover: #DCFCE7;
+  --secondary-subtle: #F0FDF4;
+
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
+}
+
+/* --------------------------------------------------------------------------
+   3. ADMIN OPS & GOVERNANCE THEME (.theme-admin)
+   Palette: Royal Indigo, Deep Slate Cybernetic, Electric Violet
+   -------------------------------------------------------------------------- */
+body.theme-admin {
+  --bg-page: #080A12;
+  --bg-header: #0E1222;
+  --bg-card: #13172E;
+  --bg-card-hover: #1C2242;
+  --bg-card-selected: #252D56;
+  --bg-subtle: #0E1222;
+  --bg-hover: #1C2242;
+  --bg-active: #252D56;
+
+  --text-main: #F8FAFC;
+  --text-secondary: #E2E8F0;
+  --text-muted: #94A3B8;
+  --text-light: #64748B;
+  --text-inverse: #0F172A;
+
+  --border-subtle: #171C36;
+  --border-light: #242C52;
+  --border-color: #242C52;
+  --border-strong: #38437A;
+  --border-hover: #4F5EAC;
+
+  --primary: #6366F1;
+  --primary-hover: #4F46E5;
+  --primary-subtle: rgba(99, 102, 241, 0.14);
+  --primary-rgb: 99, 102, 241;
+  --secondary-accent: #818CF8;
+  --icon-container: rgba(99, 102, 241, 0.16);
+  --accent-glow: rgba(99, 102, 241, 0.45);
+  --portal-brand: #6366F1;
+
+  --secondary: #13172E;
+  --secondary-hover: #1C2242;
+  --secondary-subtle: #0E1222;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 16px 36px rgba(0, 0, 0, 0.7);
+}
+
+/* Light Theme - Admin */
+body.theme-admin:not(.dark) {
+  --bg-page: #F8FAFC;
+  --bg-header: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #EEF2FF;
+  --bg-card-selected: #E0E7FF;
+  --bg-subtle: #F1F5F9;
+  --bg-hover: #E2E8F0;
+  --bg-active: #E0E7FF;
+
+  --text-main: #0F172A;
+  --text-secondary: #334155;
+  --text-muted: #64748B;
+  --text-light: #94A3B8;
+  --text-inverse: #FFFFFF;
+
+  --border-subtle: #E2E8F0;
+  --border-light: #CBD5E1;
+  --border-color: #CBD5E1;
+  --border-strong: #A5B4FC;
+  --border-hover: #818CF8;
+
+  --primary: #4F46E5;
+  --primary-hover: #4338CA;
+  --primary-subtle: #EEF2FF;
+  --primary-rgb: 79, 70, 229;
+  --secondary-accent: #6366F1;
+  --icon-container: #EEF2FF;
+  --accent-glow: rgba(79, 70, 229, 0.25);
+  --portal-brand: #4F46E5;
+
+  --secondary: #F8FAFC;
+  --secondary-hover: #EEF2FF;
+  --secondary-subtle: #F1F5F9;
+
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
+}
+
+/* --------------------------------------------------------------------------
+   LUXURY UTILITIES & GLASSMORPHISM
+   -------------------------------------------------------------------------- */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: var(--transition-smooth);
+}
+
+.glass-panel:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), 0 0 12px var(--primary-subtle);
+}
+
+.glow-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: var(--primary-subtle);
+  color: var(--primary);
+  border: 1px solid rgba(var(--primary-rgb), 0.35);
+  box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.15);
+}
+
+.status-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--primary);
+  box-shadow: 0 0 8px var(--primary);
+  animation: statusPulseAnim 2s infinite ease-in-out;
+}
+
+@keyframes statusPulseAnim {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
 }
 
 /* ==========================================================================

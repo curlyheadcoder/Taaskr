@@ -750,8 +750,14 @@ export default function AdminDashboard() {
       <main className="enterprise-main">
         <div className="enterprise-header">
           <div>
-            <h1>Operations Console</h1>
-            <p>Platform telemetry, catalog control, and provider verification.</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.25rem' }}>
+              <h1 style={{ margin: 0 }}>Operations Console</h1>
+              <span className="glow-pill" style={{ background: 'rgba(99, 102, 241, 0.14)', color: '#818CF8', borderColor: 'rgba(99, 102, 241, 0.4)' }}>
+                <span className="status-pulse-dot" style={{ backgroundColor: '#6366F1', boxShadow: '0 0 8px #6366F1' }} />
+                COMMAND ROOM
+              </span>
+            </div>
+            <p style={{ margin: '0.25rem 0 0 0' }}>Platform telemetry, catalog governance, and provider arbitration.</p>
           </div>
           <button onClick={loadAdminData} className="btn btn-secondary btn-sm">
             <RefreshCw size={13} />

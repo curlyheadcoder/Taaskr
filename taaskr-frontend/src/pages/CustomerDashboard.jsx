@@ -476,16 +476,22 @@ export default function CustomerDashboard({ initialTab }) {
       {/* Header Bar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>
-            {activeTab === 'profile'
-              ? 'Profile Settings'
-              : activeTab === 'addresses'
-              ? 'Saved Address Book'
-              : activeTab === 'disputes'
-              ? 'Disputes & Support Tickets'
-              : 'My Bookings'}
-          </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.25rem' }}>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>
+              {activeTab === 'profile'
+                ? 'Profile Settings'
+                : activeTab === 'addresses'
+                ? 'Saved Address Book'
+                : activeTab === 'disputes'
+                ? 'Disputes & Support Tickets'
+                : 'My Bookings'}
+            </h1>
+            <span className="glow-pill" style={{ background: 'rgba(245, 158, 11, 0.12)', color: '#F59E0B', borderColor: 'rgba(245, 158, 11, 0.35)' }}>
+              <span className="status-pulse-dot" style={{ backgroundColor: '#F59E0B', boxShadow: '0 0 8px #F59E0B' }} />
+              CONSUMER PORTAL
+            </span>
+          </div>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', margin: 0 }}>
             {activeTab === 'profile'
               ? 'Manage your personal details, verified contacts, and default service locations.'
               : activeTab === 'addresses'

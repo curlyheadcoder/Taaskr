@@ -1455,8 +1455,14 @@ export default function ProviderDashboard() {
         {/* Dashboard Header */}
         <div className="enterprise-header">
           <div>
-            <h1>Provider Console</h1>
-            <p>Live job dispatch, fleet status, and schedule management.</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.25rem' }}>
+              <h1 style={{ margin: 0 }}>Provider Console</h1>
+              <span className="glow-pill" style={{ background: 'rgba(16, 185, 129, 0.14)', color: '#10B981', borderColor: 'rgba(16, 185, 129, 0.35)' }}>
+                <span className="status-pulse-dot" style={{ backgroundColor: '#10B981', boxShadow: '0 0 8px #10B981' }} />
+                PRO PARTNER
+              </span>
+            </div>
+            <p style={{ margin: '0.25rem 0 0 0' }}>Live job dispatch, fleet telemetry, and real-time schedule management.</p>
           </div>
           <button onClick={() => loadProviderDashboard(false)} className="btn btn-secondary btn-sm">
             <RefreshCw size={13} />

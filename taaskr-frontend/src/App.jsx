@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -68,6 +68,20 @@ class ErrorBoundary extends Component {
 function AppContent() {
   const location = useLocation();
   const isEnterpriseConsole = location.pathname.startsWith('/admin') || location.pathname.startsWith('/provider');
+
+  useEffect(() => {
+    document.body.classList.remove('theme-user', 'theme-provider', 'theme-admin');
+    if (location.pathname.startsWith('/admin')) {
+      document.body.classList.add('theme-admin');
+      document.title = 'Taaskr Operations Console';
+    } else if (location.pathname.startsWith('/provider')) {
+      document.body.classList.add('theme-provider');
+      document.title = 'Taaskr Pro Partner Portal';
+    } else {
+      document.body.classList.add('theme-user');
+      document.title = 'Taaskr — On-Demand Services Marketplace';
+    }
+  }, [location.pathname]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>

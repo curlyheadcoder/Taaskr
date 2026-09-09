@@ -329,7 +329,12 @@ export default function Navbar() {
           to={user?.role === 'PROVIDER' ? '/provider' : user?.role === 'ADMIN' ? '/admin' : '/'} 
           style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}
         >
-          <TaaskrLogo size={28} withText={true} textSize="1.25rem" />
+          <TaaskrLogo 
+            size={28} 
+            withText={true} 
+            textSize="1.25rem" 
+            variant={user?.role === 'PROVIDER' ? 'provider' : user?.role === 'ADMIN' ? 'admin' : 'user'} 
+          />
         </Link>
 
         {/* Location Selector (User / Guest Only) */}
