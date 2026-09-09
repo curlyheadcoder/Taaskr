@@ -404,6 +404,9 @@ export default function ProviderDashboard() {
   const isProviderVerified = Boolean(userProfile?.emailVerified && userProfile?.phoneVerified);
 
   // Filtered booking collections for tabs
+  const pendingAssignedBookings = assignedBookings.filter(b => 
+    b.status === 'ASSIGNED' || b.status === 'PENDING'
+  );
   const inTransitBookings = assignedBookings.filter(b => 
     b.status === 'ACCEPTED' || 
     b.status === 'IN_TRANSIT' || 
@@ -1183,7 +1186,7 @@ export default function ProviderDashboard() {
             title="My Bookings"
           >
             <Briefcase size={16} />
-            <span>My Bookings ({assignedBookings.length})</span>
+            <span>My Bookings ({pendingAssignedBookings.length})</span>
           </button>
 
           <button 
@@ -1696,30 +1699,35 @@ export default function ProviderDashboard() {
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-main)' }}>
-                Assigned Bookings & Active Trips
-              </h2>
-              <span className="badge badge-assigned">{assignedBookings.length} Total</span>
+              <div>
+                <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>
+                  Assigned Bookings & Pending Acceptance
+                </h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.2rem' }}>
+                  Newly assigned customer bookings awaiting your review. Once accepted, tasks automatically move to In-Transit.
+                </p>
+              </div>
+              <span className="badge badge-assigned">{pendingAssignedBookings.length} Pending</span>
             </div>
 
-            {assignedBookings.length === 0 ? (
+            {pendingAssignedBookings.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-state-icon">
                   <Briefcase size={20} />
                 </div>
-                <h3 className="empty-state-title">No assigned bookings</h3>
+                <h3 className="empty-state-title">No pending assigned bookings</h3>
                 <p className="empty-state-description">
-                  You do not have any active jobs assigned yet. Claim available jobs from the Task Feed.
+                  You do not have any new assigned jobs awaiting acceptance. Check the Task Feed for available jobs or In-Transit for active jobs.
                 </p>
               </div>
             ) : (
               <div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1rem' }}>
-                  {assignedBookings.slice((bookingsPage - 1) * itemsPerPage, bookingsPage * itemsPerPage).map(renderJobCard)}
+                  {pendingAssignedBookings.slice((bookingsPage - 1) * itemsPerPage, bookingsPage * itemsPerPage).map(renderJobCard)}
                 </div>
                 <Pagination
                   currentPage={bookingsPage}
-                  totalItems={assignedBookings.length}
+                  totalItems={pendingAssignedBookings.length}
                   itemsPerPage={itemsPerPage}
                   onPageChange={setBookingsPage}
                 />
