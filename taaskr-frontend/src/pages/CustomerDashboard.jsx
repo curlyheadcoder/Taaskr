@@ -86,7 +86,7 @@ export default function CustomerDashboard({ initialTab }) {
 
   // Pagination & Modal state
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+  const itemsPerPage = 10;
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentRestrictedBooking, setPaymentRestrictedBooking] = useState(null);
 

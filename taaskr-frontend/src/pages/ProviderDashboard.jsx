@@ -14,7 +14,8 @@ import {
   Star, Briefcase, Calendar, CheckSquare, Settings, User, RefreshCw,
   DollarSign, ExternalLink, Power, TrendingUp, BarChart3, PieChart,
   PanelLeftClose, PanelLeftOpen, Wallet, Award, ArrowUpRight, Banknote, Play,
-  MessageSquare, Send, MessageCircle, HelpCircle, Headphones, FileText, Radio, Activity
+  MessageSquare, Send, MessageCircle, HelpCircle, Headphones, FileText, Radio, Activity,
+  Landmark, Smartphone
 } from 'lucide-react';
 
 export default function ProviderDashboard() {
@@ -109,7 +110,11 @@ export default function ProviderDashboard() {
   const [walletOverview, setWalletOverview] = useState(null);
   const [showPayoutModal, setShowPayoutModal] = useState(false);
   const [payoutAmount, setPayoutAmount] = useState('');
-  const [payoutNotes, setPayoutNotes] = useState('');
+  const [payoutMethod, setPayoutMethod] = useState('BANK'); // 'BANK' | 'UPI'
+  const [payoutUpiId, setPayoutUpiId] = useState('');
+  const [payoutBankAcc, setPayoutBankAcc] = useState('');
+  const [payoutBankIfsc, setPayoutBankIfsc] = useState('');
+  const [payoutBankName, setPayoutBankName] = useState('');
   const [submittingPayout, setSubmittingPayout] = useState(false);
 
   // Reviews state
@@ -172,14 +177,49 @@ export default function ProviderDashboard() {
 
   const handleRequestPayout = async (e) => {
     e.preventDefault();
-    if (!payoutAmount || Number(payoutAmount) <= 0) return;
+    const amountNum = Number(payoutAmount);
+    if (!payoutAmount || amountNum < 100) {
+      showNotification('Minimum payout withdrawal is ₹100.00', 'error');
+      return;
+    }
+    if (amountNum > (walletOverview?.currentBalance || 0)) {
+      showNotification('Requested amount exceeds available balance', 'error');
+      return;
+    }
+
+    if (payoutMethod === 'UPI') {
+      if (!payoutUpiId.trim()) {
+        showNotification('Please enter a valid UPI ID (e.g. name@okhdfcbank)', 'error');
+        return;
+      }
+    } else {
+      if (!payoutBankAcc.trim() || !payoutBankIfsc.trim()) {
+        showNotification('Please enter your Bank Account Number and IFSC Code', 'error');
+        return;
+      }
+    }
+
     setSubmittingPayout(true);
     try {
-      await api.payouts.requestPayout(Number(payoutAmount), payoutNotes);
+      const payoutPayload = {
+        amount: amountNum,
+        upiId: payoutMethod === 'UPI' ? payoutUpiId.trim() : null,
+        bankAccountNumber: payoutMethod === 'BANK' ? payoutBankAcc.trim() : null,
+        bankIfsc: payoutMethod === 'BANK' ? payoutBankIfsc.trim().toUpperCase() : null,
+        bankName: payoutMethod === 'BANK' ? payoutBankName.trim() : null,
+        notes: payoutMethod === 'UPI'
+          ? `UPI: ${payoutUpiId.trim()}`
+          : `Bank: ${payoutBankAcc.trim()} / IFSC: ${payoutBankIfsc.trim().toUpperCase()}${payoutBankName.trim() ? ' (' + payoutBankName.trim() + ')' : ''}`
+      };
+
+      await api.payouts.requestPayout(payoutPayload);
       showNotification('Payout request submitted successfully.');
       setShowPayoutModal(false);
       setPayoutAmount('');
-      setPayoutNotes('');
+      setPayoutUpiId('');
+      setPayoutBankAcc('');
+      setPayoutBankIfsc('');
+      setPayoutBankName('');
       const updatedWallet = await api.payouts.getWalletOverview();
       setWalletOverview(updatedWallet);
     } catch (err) {
@@ -3663,8 +3703,8 @@ export default function ProviderDashboard() {
             </div>
 
             <form onSubmit={handleRequestPayout}>
-              <div className="form-group">
-                <label className="form-label">Withdrawal Amount (₹) *</label>
+              <div className="form-group" style={{ marginBottom: '1rem' }}>
+                <label className="form-label" style={{ fontWeight: 600, fontSize: '0.8125rem' }}>Withdrawal Amount (₹) *</label>
                 <input
                   type="number"
                   min="100"
@@ -3680,23 +3720,143 @@ export default function ProviderDashboard() {
                 </span>
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Bank / UPI Transfer Details (Optional)</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="e.g. UPI ID: partner@okhdfcbank or Bank A/C & IFSC"
-                  value={payoutNotes}
-                  onChange={(e) => setPayoutNotes(e.target.value)}
-                />
+              {/* Settlement Transfer Method Selection */}
+              <div className="form-group" style={{ marginBottom: '1rem' }}>
+                <label className="form-label" style={{ fontWeight: 600, fontSize: '0.8125rem', marginBottom: '0.4rem', display: 'block' }}>
+                  Settlement Method *
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setPayoutMethod('BANK')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.4rem',
+                      padding: '0.6rem 0.5rem',
+                      borderRadius: 'var(--radius-sm)',
+                      fontSize: '0.8125rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      border: payoutMethod === 'BANK' ? '2px solid var(--primary)' : '1px solid var(--border-light)',
+                      backgroundColor: payoutMethod === 'BANK' ? 'rgba(56, 189, 248, 0.12)' : 'var(--bg-subtle)',
+                      color: payoutMethod === 'BANK' ? 'var(--primary)' : 'var(--text-muted)',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <Landmark size={15} />
+                    <span>Bank Transfer</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPayoutMethod('UPI')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.4rem',
+                      padding: '0.6rem 0.5rem',
+                      borderRadius: 'var(--radius-sm)',
+                      fontSize: '0.8125rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      border: payoutMethod === 'UPI' ? '2px solid var(--primary)' : '1px solid var(--border-light)',
+                      backgroundColor: payoutMethod === 'UPI' ? 'rgba(56, 189, 248, 0.12)' : 'var(--bg-subtle)',
+                      color: payoutMethod === 'UPI' ? 'var(--primary)' : 'var(--text-muted)',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <Smartphone size={15} />
+                    <span>UPI Transfer</span>
+                  </button>
+                </div>
               </div>
+
+              {payoutMethod === 'BANK' ? (
+                <div style={{
+                  padding: '0.85rem',
+                  borderRadius: 'var(--radius-sm)',
+                  backgroundColor: 'var(--bg-subtle)',
+                  border: '1px solid var(--border-light)',
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.75rem'
+                }}>
+                  <div>
+                    <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600 }}>Bank Account Number *</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="e.g. 50100234567890"
+                      value={payoutBankAcc}
+                      onChange={(e) => setPayoutBankAcc(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                    <div>
+                      <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600 }}>IFSC Code *</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="e.g. HDFC0001234"
+                        value={payoutBankIfsc}
+                        onChange={(e) => setPayoutBankIfsc(e.target.value.toUpperCase())}
+                        style={{ textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600 }}>Bank Name</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="e.g. HDFC Bank"
+                        value={payoutBankName}
+                        onChange={(e) => setPayoutBankName(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div style={{
+                  padding: '0.85rem',
+                  borderRadius: 'var(--radius-sm)',
+                  backgroundColor: 'var(--bg-subtle)',
+                  border: '1px solid var(--border-light)',
+                  marginBottom: '1rem'
+                }}>
+                  <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600 }}>UPI ID / VPA *</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="e.g. partner@okhdfcbank or 9876543210@paytm"
+                    value={payoutUpiId}
+                    onChange={(e) => setPayoutUpiId(e.target.value)}
+                    required
+                  />
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem', display: 'block' }}>
+                    Settlement will be transferred instantly to this UPI Virtual Payment Address.
+                  </span>
+                </div>
+              )}
 
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.25rem' }}>
                 <button
                   type="submit"
                   className="btn btn-primary btn-sm"
                   style={{ flex: 1 }}
-                  disabled={submittingPayout || !payoutAmount || Number(payoutAmount) < 100 || Number(payoutAmount) > (walletOverview?.currentBalance || 0)}
+                  disabled={
+                    submittingPayout ||
+                    !payoutAmount ||
+                    Number(payoutAmount) < 100 ||
+                    Number(payoutAmount) > (walletOverview?.currentBalance || 0) ||
+                    (payoutMethod === 'UPI' ? !payoutUpiId.trim() : (!payoutBankAcc.trim() || !payoutBankIfsc.trim()))
+                  }
                 >
                   {submittingPayout ? 'Processing...' : `Submit Request (₹${payoutAmount || 0})`}
                 </button>

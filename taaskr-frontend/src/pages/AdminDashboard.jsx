@@ -44,14 +44,21 @@ export default function AdminDashboard() {
   const [discussionsPage, setDiscussionsPage] = useState(1);
   const [payoutsPage, setPayoutsPage] = useState(1);
   const [disputesPage, setDisputesPage] = useState(1);
-  const itemsPerPage = 8;
+  const itemsPerPage = 10;
 
   // Tabs: 'analytics', 'observability', 'catalog', 'providers', 'providers_pending', 'providers_approved', 'bookings', 'users', 'discussions', 'payouts', 'disputes'
   const [activeTab, setActiveTab] = useState('analytics');
 
+  // Notification Toast state
+  const [notification, setNotification] = useState(null);
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 4500);
+  };
+
   // Payout processing modal state
   const [processingPayout, setProcessingPayout] = useState(null);
-  const [payoutStatusDecision, setPayoutStatusDecision] = useState('COMPLETED');
+  const [payoutStatusDecision, setPayoutStatusDecision] = useState('PROCESSED');
   const [payoutTxRef, setPayoutTxRef] = useState('');
   const [payoutAdminNotes, setPayoutAdminNotes] = useState('');
   const [submittingPayoutProcess, setSubmittingPayoutProcess] = useState(false);
@@ -192,12 +199,13 @@ export default function AdminDashboard() {
         payoutTxRef.trim(),
         payoutAdminNotes.trim()
       );
+      showNotification(`Payout #${processingPayout.id} updated to ${payoutStatusDecision} successfully.`);
       setProcessingPayout(null);
       setPayoutTxRef('');
       setPayoutAdminNotes('');
       loadAdminData();
     } catch (err) {
-      alert(`Failed to process payout: ${err.message}`);
+      showNotification(`Failed to process payout: ${err.message}`, 'error');
     } finally {
       setSubmittingPayoutProcess(false);
     }
@@ -215,12 +223,13 @@ export default function AdminDashboard() {
         disputeResolutionNotes.trim(),
         disputeRefundAmount ? Number(disputeRefundAmount) : undefined
       );
+      showNotification(`Dispute #${target.id} resolved as ${disputeStatusDecision}.`);
       setResolvingDispute(null);
       setDisputeResolutionNotes('');
       setDisputeRefundAmount('');
       loadAdminData();
     } catch (err) {
-      alert(`Failed to resolve dispute: ${err.message}`);
+      showNotification(`Failed to resolve dispute: ${err.message}`, 'error');
     } finally {
       setSubmittingDisputeResolve(false);
     }
@@ -238,7 +247,7 @@ export default function AdminDashboard() {
       setDisputes(prev => prev.map(d => d.id === updated.id ? updated : d));
       setTimeout(scrollToChatBottom, 60);
     } catch (err) {
-      alert(err.message || 'Failed to send reply to customer');
+      showNotification(err.message || 'Failed to send reply to customer', 'error');
     } finally {
       setSubmittingCustomerReply(false);
     }
@@ -251,9 +260,10 @@ export default function AdminDashboard() {
         newStatus,
         `Status updated to ${newStatus} by Admin`
       );
+      showNotification(`Dispute #${disputeId} status updated to ${newStatus}.`);
       loadAdminData();
     } catch (err) {
-      alert(`Failed to update dispute status: ${err.message}`);
+      showNotification(`Failed to update dispute status: ${err.message}`, 'error');
     }
   };
 
@@ -261,17 +271,18 @@ export default function AdminDashboard() {
     e.preventDefault();
     if (!verifyingKycDoc) return;
     if (kycDecisionStatus === 'REJECTED' && !kycRejectionReason.trim()) {
-      alert('Rejection reason is required when rejecting a document.');
+      showNotification('Rejection reason is required when rejecting a document.', 'error');
       return;
     }
     setSubmittingKycVerify(true);
     try {
       await api.kyc.verifyDocument(verifyingKycDoc.id, kycDecisionStatus, kycRejectionReason.trim());
+      showNotification(`Document ${kycDecisionStatus === 'VERIFIED' ? 'verified' : 'rejected'} successfully.`);
       setVerifyingKycDoc(null);
       setKycRejectionReason('');
       loadAdminData();
     } catch (err) {
-      alert(`Failed to verify KYC document: ${err.message}`);
+      showNotification(`Failed to verify KYC document: ${err.message}`, 'error');
     } finally {
       setSubmittingKycVerify(false);
     }
@@ -559,6 +570,69 @@ export default function AdminDashboard() {
 
   return (
     <div className="enterprise-layout admin-theme animate-fade-in">
+      {/* Floating Notification Toast */}
+      {notification && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          padding: '0.85rem 1.15rem',
+          borderRadius: 'var(--radius-md)',
+          backgroundColor: 'rgba(15, 23, 42, 0.96)',
+          color: '#ffffff',
+          border: `1px solid ${notification.type === 'error' ? '#ef4444' : '#10b981'}`,
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.6)',
+          backdropFilter: 'blur(12px)',
+          fontSize: '0.875rem',
+          fontWeight: 500,
+          maxWidth: '440px',
+          animation: 'fadeIn 0.2s ease-out'
+        }}>
+          <div style={{
+            width: '28px',
+            height: '28px',
+            borderRadius: '50%',
+            backgroundColor: notification.type === 'error' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+            color: notification.type === 'error' ? '#ef4444' : '#10b981',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0
+          }}>
+            {notification.type === 'error' ? <AlertCircle size={16} /> : <CheckCircle2 size={16} />}
+          </div>
+          <div style={{ flex: 1, lineHeight: 1.4 }}>
+            <div style={{ fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: notification.type === 'error' ? '#ef4444' : '#10b981' }}>
+              {notification.type === 'error' ? 'Action Notice' : 'Success'}
+            </div>
+            <div style={{ color: '#f8fafc', fontSize: '0.8125rem', marginTop: '1px' }}>
+              {notification.message}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setNotification(null)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'rgba(255, 255, 255, 0.6)',
+              cursor: 'pointer',
+              padding: '0.2rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '4px'
+            }}
+          >
+            <X size={15} />
+          </button>
+        </div>
+      )}
+
       {/* Enterprise Sidebar */}
       <aside className={`enterprise-sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
         <div style={{
@@ -1329,22 +1403,30 @@ export default function AdminDashboard() {
                           {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : 'Recent'}
                         </td>
                         <td>
-                          <span className={`badge ${p.status === 'COMPLETED' ? 'badge-completed' : p.status === 'REJECTED' ? 'badge-cancelled' : 'badge-pending'}`}>
+                          <span className={`badge ${p.status === 'COMPLETED' || p.status === 'PROCESSED' ? 'badge-completed' : p.status === 'REJECTED' ? 'badge-cancelled' : 'badge-pending'}`}>
                             {p.status}
                           </span>
                         </td>
-                        <td style={{ fontSize: '0.75rem', color: 'var(--text-muted)', maxWidth: '200px' }}>
+                        <td style={{ fontSize: '0.75rem', color: 'var(--text-muted)', maxWidth: '220px' }}>
                           {p.transactionReference ? (
-                            <div><strong>UTR:</strong> {p.transactionReference}</div>
+                            <div style={{ color: 'var(--text-main)' }}><strong>UTR:</strong> {p.transactionReference}</div>
                           ) : null}
-                          {p.notes ? <div>{p.notes}</div> : '—'}
+                          {p.upiId && <div><strong>UPI:</strong> <span style={{ color: 'var(--primary)', fontFamily: 'var(--font-mono)' }}>{p.upiId}</span></div>}
+                          {p.bankAccountNumber && (
+                            <div>
+                              <strong>A/C:</strong> {p.bankAccountNumber}
+                              {p.bankIfsc ? <span style={{ fontFamily: 'var(--font-mono)', marginLeft: '4px' }}>({p.bankIfsc})</span> : null}
+                              {p.bankName ? ` - ${p.bankName}` : ''}
+                            </div>
+                          )}
+                          {p.notes && !p.upiId && !p.bankAccountNumber ? <div>{p.notes}</div> : null}
                         </td>
                         <td style={{ textAlign: 'right' }}>
-                          {p.status === 'REQUESTED' || p.status === 'PROCESSING' ? (
+                          {p.status === 'REQUESTED' || p.status === 'APPROVED' || p.status === 'PROCESSING' ? (
                             <button
                               onClick={() => {
                                 setProcessingPayout(p);
-                                setPayoutStatusDecision('COMPLETED');
+                                setPayoutStatusDecision('PROCESSED');
                                 setPayoutTxRef('');
                                 setPayoutAdminNotes('');
                               }}
@@ -2619,8 +2701,20 @@ export default function AdminDashboard() {
                 <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Requested Amount:</span>
                 <strong style={{ color: 'var(--success)', fontSize: '1rem' }}>₹{processingPayout.amount?.toLocaleString('en-IN')}</strong>
               </div>
-              {processingPayout.notes && (
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              {processingPayout.upiId && (
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                  <strong>UPI ID:</strong> <span style={{ color: 'var(--primary)', fontFamily: 'var(--font-mono)' }}>{processingPayout.upiId}</span>
+                </div>
+              )}
+              {processingPayout.bankAccountNumber && (
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                  <strong>Bank Account:</strong> {processingPayout.bankAccountNumber}
+                  {processingPayout.bankIfsc ? <span style={{ fontFamily: 'var(--font-mono)', marginLeft: '4px' }}>({processingPayout.bankIfsc})</span> : null}
+                  {processingPayout.bankName ? ` - ${processingPayout.bankName}` : ''}
+                </div>
+              )}
+              {processingPayout.notes && !processingPayout.upiId && !processingPayout.bankAccountNumber && (
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
                   <strong>Bank / UPI Info:</strong> {processingPayout.notes}
                 </div>
               )}
@@ -2630,9 +2724,10 @@ export default function AdminDashboard() {
               <div className="form-group">
                 <label className="form-label">Payout Action</label>
                 <select className="form-control" value={payoutStatusDecision} onChange={(e) => setPayoutStatusDecision(e.target.value)}>
+                  <option value="PROCESSED">Approve & Mark Transferred (PROCESSED)</option>
                   <option value="COMPLETED">Approve & Mark Transferred (COMPLETED)</option>
-                  <option value="PROCESSING">Mark Processing in Bank</option>
-                  <option value="REJECTED">Reject Payout Request</option>
+                  <option value="APPROVED">Mark Approved / Processing</option>
+                  <option value="REJECTED">Reject Payout Request (Refund Wallet)</option>
                 </select>
               </div>
 

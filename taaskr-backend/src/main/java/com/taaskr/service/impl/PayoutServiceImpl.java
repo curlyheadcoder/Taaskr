@@ -113,12 +113,12 @@ public class PayoutServiceImpl implements PayoutService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal totalWithdrawn = payouts.stream()
-                .filter(p -> p.getStatus() == PayoutStatus.PROCESSED)
+                .filter(p -> p.getStatus() == PayoutStatus.PROCESSED || p.getStatus() == PayoutStatus.COMPLETED)
                 .map(Payout::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal pendingPayouts = payouts.stream()
-                .filter(p -> p.getStatus() == PayoutStatus.REQUESTED || p.getStatus() == PayoutStatus.APPROVED)
+                .filter(p -> p.getStatus() == PayoutStatus.REQUESTED || p.getStatus() == PayoutStatus.APPROVED || p.getStatus() == PayoutStatus.PROCESSING)
                 .map(Payout::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -137,7 +137,7 @@ public class PayoutServiceImpl implements PayoutService {
                 .collect(Collectors.toList());
 
         List<PayoutResponse> recentPayoutResponses = payouts.stream()
-                .limit(10)
+                .limit(20)
                 .map(this::mapToPayoutResponse)
                 .collect(Collectors.toList());
 
@@ -233,7 +233,7 @@ public class PayoutServiceImpl implements PayoutService {
         Payout payout = payoutRepository.findById(payoutId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Payout request not found"));
 
-        if (payout.getStatus() == PayoutStatus.PROCESSED || payout.getStatus() == PayoutStatus.REJECTED) {
+        if (payout.getStatus() == PayoutStatus.PROCESSED || payout.getStatus() == PayoutStatus.COMPLETED || payout.getStatus() == PayoutStatus.REJECTED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payout is already finalized as " + payout.getStatus());
         }
 
@@ -260,7 +260,7 @@ public class PayoutServiceImpl implements PayoutService {
         Payout saved = payoutRepository.save(payout);
 
         if (payout.getProvider() != null && payout.getProvider().getUser() != null) {
-            String message = request.getStatus() == PayoutStatus.PROCESSED
+            String message = (request.getStatus() == PayoutStatus.PROCESSED || request.getStatus() == PayoutStatus.COMPLETED)
                     ? "Your payout of ₹" + payout.getAmount() + " has been processed! Ref: " + (request.getTransactionReference() != null ? request.getTransactionReference() : "N/A")
                     : "Your payout request #" + payout.getId() + " was updated to " + request.getStatus();
             notificationService.sendNotification(

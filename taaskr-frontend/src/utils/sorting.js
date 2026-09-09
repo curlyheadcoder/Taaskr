@@ -1,40 +1,28 @@
 /**
- * Utility to prioritize active and pending tasks forward,
- * while moving completed and cancelled tasks to the end.
+ * Utility to sort bookings in reverse chronological order
+ * (most recent bookings appear on top).
  */
 export const sortBookingsByStatusPriority = (bookings = []) => {
-  const getPriority = (status) => {
-    switch (status) {
-      case 'IN_TRANSIT':
-      case 'IN_PROGRESS':
-        return 1;
-      case 'PENDING':
-        return 2;
-      case 'ASSIGNED':
-        return 3;
-      case 'ACCEPTED':
-        return 4;
-      case 'COMPLETED':
-        return 5;
-      case 'CANCELLED':
-      case 'REJECTED':
-        return 6;
-      default:
-        return 3;
-    }
-  };
-
   return [...bookings].sort((a, b) => {
-    const pA = getPriority(a.status);
-    const pB = getPriority(b.status);
-
-    if (pA !== pB) {
-      return pA - pB;
+    // 1. Primary sort: creation timestamp (newest first)
+    const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    if (timeA !== timeB && !isNaN(timeA) && !isNaN(timeB)) {
+      return timeB - timeA;
     }
 
-    // Within same priority, sort newest first
-    const timeA = new Date(a.createdAt || a.bookingDate || 0).getTime();
-    const timeB = new Date(b.createdAt || b.bookingDate || 0).getTime();
-    return timeB - timeA;
+    // 2. Secondary sort: booking ID descending (higher ID = newer)
+    const idA = Number(a.id) || 0;
+    const idB = Number(b.id) || 0;
+    if (idA !== idB) {
+      return idB - idA;
+    }
+
+    // 3. Fallback: scheduled bookingDate + startTime
+    const schedA = new Date(`${a.bookingDate || '1970-01-01'}T${a.startTime || '00:00:00'}`).getTime();
+    const schedB = new Date(`${b.bookingDate || '1970-01-01'}T${b.startTime || '00:00:00'}`).getTime();
+    return schedB - schedA;
   });
 };
+
+export const sortBookingsByRecent = sortBookingsByStatusPriority;
