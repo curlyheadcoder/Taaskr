@@ -526,7 +526,6 @@ export default function ProviderDashboard() {
 
   const handleMarkCompleted = async (jobOrId) => {
     const bookingId = typeof jobOrId === 'object' ? jobOrId.id : jobOrId;
-    const bookingObj = typeof jobOrId === 'object' ? jobOrId : [...assignedBookings, ...availableTasks].find(j => j.id === bookingId);
 
     if (!isProviderVerified) {
       showNotification('Please verify both your email and phone number before updating task status.', 'error');
@@ -537,12 +536,6 @@ export default function ProviderDashboard() {
       await api.provider.updateStatus(bookingId, 'COMPLETED');
       showNotification('Task marked as Completed. Ready for payment collection.');
       await loadProviderDashboard(false);
-
-      // Auto-trigger Collect Cash modal if cash on delivery & payment pending
-      if (bookingObj && bookingObj.paymentMethod === 'AFTER_SERVICE' && bookingObj.paymentStatus !== 'PAID') {
-        setCollectCashBooking({ ...bookingObj, status: 'COMPLETED' });
-        setShowCollectCashModal(true);
-      }
     } catch (err) {
       showNotification(`Action failed: ${err.message}`, 'error');
     } finally {
@@ -590,12 +583,6 @@ export default function ProviderDashboard() {
       await api.provider.updateStatus(booking.id, 'COMPLETED');
       showNotification(`Job #${String(booking.id).slice(-6)} marked as COMPLETED.`);
       await loadProviderDashboard(false);
-      
-      // Auto open collect cash modal if it is after service cash
-      if (booking.paymentMethod === 'AFTER_SERVICE' && booking.paymentStatus !== 'PAID') {
-        setCollectCashBooking({ ...booking, status: 'COMPLETED' });
-        setShowCollectCashModal(true);
-      }
     } catch (err) {
       showNotification(`Failed to complete job: ${err.message}`, 'error');
     }
