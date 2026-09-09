@@ -761,7 +761,12 @@ export const api = {
     },
 
     processAdminPayout: async (payoutId, arg1, arg2, arg3) => {
-      const payload = typeof arg1 === 'object' ? arg1 : { status: arg1, transactionReference: arg2, adminNotes: arg3 };
+      const payload = typeof arg1 === 'object' ? { ...arg1 } : { status: arg1, transactionReference: arg2, adminNotes: arg3 };
+      if (payload.status === 'COMPLETED') {
+        payload.status = 'PROCESSED';
+      } else if (payload.status === 'PROCESSING') {
+        payload.status = 'APPROVED';
+      }
       return makeRequest(`/api/admin/payouts/${payoutId}/process`, {
         method: 'PATCH',
         body: JSON.stringify(payload)
