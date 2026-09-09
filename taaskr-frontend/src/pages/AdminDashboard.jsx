@@ -553,10 +553,10 @@ export default function AdminDashboard() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', overflow: 'hidden' }}>
               <div style={{
                 width: '32px', height: '32px', borderRadius: 'var(--radius-sm)',
-                backgroundColor: 'rgba(59, 130, 246, 0.12)', color: 'var(--primary)', display: 'flex',
+                backgroundColor: 'rgba(139, 92, 246, 0.16)', color: '#8B5CF6', display: 'flex',
                 alignItems: 'center', justifyContent: 'center', flexShrink: 0
               }}>
-                <ShieldCheck size={18} />
+                <ShieldCheck size={18} color="#8B5CF6" />
               </div>
               <div style={{ overflow: 'hidden' }}>
                 <div style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '0.875rem', lineHeight: 1.1, whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
@@ -752,8 +752,8 @@ export default function AdminDashboard() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.25rem' }}>
               <h1 style={{ margin: 0 }}>Operations Console</h1>
-              <span className="glow-pill" style={{ background: 'rgba(99, 102, 241, 0.14)', color: '#818CF8', borderColor: 'rgba(99, 102, 241, 0.4)' }}>
-                <span className="status-pulse-dot" style={{ backgroundColor: '#6366F1', boxShadow: '0 0 8px #6366F1' }} />
+              <span className="glow-pill" style={{ background: 'rgba(139, 92, 246, 0.16)', color: '#A78BFA', borderColor: 'rgba(139, 92, 246, 0.45)' }}>
+                <span className="status-pulse-dot" style={{ backgroundColor: '#8B5CF6', boxShadow: '0 0 8px #8B5CF6' }} />
                 COMMAND ROOM
               </span>
             </div>

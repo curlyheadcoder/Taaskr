@@ -539,19 +539,19 @@ export default function Navbar() {
               borderRadius: '24px',
               fontSize: '0.875rem',
               fontWeight: 600,
-              color: location.pathname === '/admin' ? '#818cf8' : 'var(--text-main)',
-              backgroundColor: location.pathname === '/admin' ? 'rgba(99, 102, 241, 0.12)' : 'var(--bg-subtle)',
-              border: location.pathname === '/admin' ? '1px solid rgba(99, 102, 241, 0.4)' : '1px solid var(--border-light)',
+              color: location.pathname === '/admin' ? '#A78BFA' : 'var(--text-main)',
+              backgroundColor: location.pathname === '/admin' ? 'rgba(139, 92, 246, 0.16)' : 'var(--bg-subtle)',
+              border: location.pathname === '/admin' ? '1px solid rgba(139, 92, 246, 0.45)' : '1px solid var(--border-light)',
               textDecoration: 'none',
               letterSpacing: '0.01em',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.45rem',
               transition: 'all 0.2s ease',
-              boxShadow: location.pathname === '/admin' ? '0 0 12px rgba(99, 102, 241, 0.15)' : 'none'
+              boxShadow: location.pathname === '/admin' ? '0 0 14px rgba(139, 92, 246, 0.22)' : 'none'
             }}
           >
-            <ShieldCheck size={16} />
+            <ShieldCheck size={16} color="#8B5CF6" />
             <span>Admin Console</span>
           </Link>
         </div>
@@ -571,18 +571,18 @@ export default function Navbar() {
               fontSize: '0.875rem',
               fontWeight: 600,
               cursor: 'pointer',
-              color: (location.pathname === '/provider' && providerTab !== 'discussions') ? '#34d399' : 'var(--text-main)',
-              backgroundColor: (location.pathname === '/provider' && providerTab !== 'discussions') ? 'rgba(16, 185, 129, 0.14)' : 'var(--bg-subtle)',
-              border: (location.pathname === '/provider' && providerTab !== 'discussions') ? '1px solid rgba(16, 185, 129, 0.45)' : '1px solid var(--border-light)',
+              color: (location.pathname === '/provider' && providerTab !== 'discussions') ? 'var(--primary)' : 'var(--text-main)',
+              backgroundColor: (location.pathname === '/provider' && providerTab !== 'discussions') ? 'var(--primary-subtle)' : 'var(--bg-subtle)',
+              border: (location.pathname === '/provider' && providerTab !== 'discussions') ? '1px solid rgba(245, 158, 11, 0.45)' : '1px solid var(--border-light)',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.45rem',
               letterSpacing: '0.01em',
               transition: 'all 0.2s ease',
-              boxShadow: (location.pathname === '/provider' && providerTab !== 'discussions') ? '0 0 14px rgba(16, 185, 129, 0.2)' : 'none'
+              boxShadow: (location.pathname === '/provider' && providerTab !== 'discussions') ? '0 0 12px rgba(245, 158, 11, 0.2)' : 'none'
             }}
           >
-            <Briefcase size={15} />
+            <Briefcase size={15} color="var(--primary)" />
             <span>Provider Console</span>
           </button>
           <button
@@ -599,18 +599,18 @@ export default function Navbar() {
               fontSize: '0.875rem',
               fontWeight: 600,
               cursor: 'pointer',
-              color: (location.pathname === '/provider' && providerTab === 'discussions') ? '#34d399' : 'var(--text-main)',
-              backgroundColor: (location.pathname === '/provider' && providerTab === 'discussions') ? 'rgba(16, 185, 129, 0.14)' : 'var(--bg-subtle)',
-              border: (location.pathname === '/provider' && providerTab === 'discussions') ? '1px solid rgba(16, 185, 129, 0.45)' : '1px solid var(--border-light)',
+              color: (location.pathname === '/provider' && providerTab === 'discussions') ? 'var(--primary)' : 'var(--text-main)',
+              backgroundColor: (location.pathname === '/provider' && providerTab === 'discussions') ? 'var(--primary-subtle)' : 'var(--bg-subtle)',
+              border: (location.pathname === '/provider' && providerTab === 'discussions') ? '1px solid rgba(245, 158, 11, 0.45)' : '1px solid var(--border-light)',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.45rem',
               letterSpacing: '0.01em',
               transition: 'all 0.2s ease',
-              boxShadow: (location.pathname === '/provider' && providerTab === 'discussions') ? '0 0 14px rgba(16, 185, 129, 0.2)' : 'none'
+              boxShadow: (location.pathname === '/provider' && providerTab === 'discussions') ? '0 0 12px rgba(245, 158, 11, 0.2)' : 'none'
             }}
           >
-            <MessageSquare size={15} />
+            <MessageSquare size={15} color="var(--primary)" />
             <span>Connect with Admin</span>
           </button>
         </div>
@@ -839,20 +839,20 @@ export default function Navbar() {
             style={{
               fontSize: '0.8rem',
               fontWeight: 600,
-              color: '#818cf8',
+              color: '#A78BFA',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.4rem',
               padding: '0.35rem 0.85rem',
               borderRadius: '20px',
               marginRight: '0.35rem',
-              backgroundColor: 'rgba(99, 102, 241, 0.12)',
-              border: '1px solid rgba(99, 102, 241, 0.35)',
+              backgroundColor: 'rgba(139, 92, 246, 0.16)',
+              border: '1px solid rgba(139, 92, 246, 0.45)',
               transition: 'all 0.2s ease',
-              boxShadow: '0 0 12px rgba(99, 102, 241, 0.15)'
+              boxShadow: '0 0 14px rgba(139, 92, 246, 0.22)'
             }}
           >
-            <Headphones size={14} color="#818cf8" />
+            <Headphones size={14} color="#A78BFA" />
             <span>Help Desk</span>
           </button>
         )}
@@ -869,20 +869,20 @@ export default function Navbar() {
             style={{
               fontSize: '0.8rem',
               fontWeight: 600,
-              color: providerTab === 'discussions' ? '#34d399' : 'var(--text-main)',
+              color: providerTab === 'discussions' ? 'var(--primary)' : 'var(--text-main)',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.4rem',
               padding: '0.35rem 0.85rem',
               borderRadius: '20px',
               marginRight: '0.35rem',
-              backgroundColor: providerTab === 'discussions' ? 'rgba(16, 185, 129, 0.14)' : 'var(--bg-subtle)',
-              border: providerTab === 'discussions' ? '1px solid rgba(16, 185, 129, 0.45)' : '1px solid var(--border-light)',
+              backgroundColor: providerTab === 'discussions' ? 'var(--primary-subtle)' : 'var(--bg-subtle)',
+              border: providerTab === 'discussions' ? '1px solid rgba(245, 158, 11, 0.45)' : '1px solid var(--border-light)',
               transition: 'all 0.2s ease',
-              boxShadow: providerTab === 'discussions' ? '0 0 12px rgba(16, 185, 129, 0.2)' : 'none'
+              boxShadow: providerTab === 'discussions' ? '0 0 12px rgba(245, 158, 11, 0.2)' : 'none'
             }}
           >
-            <Headphones size={14} color={providerTab === 'discussions' ? '#34d399' : '#10B981'} />
+            <Headphones size={14} color="var(--primary)" />
             <span>Help Desk</span>
           </button>
         )}

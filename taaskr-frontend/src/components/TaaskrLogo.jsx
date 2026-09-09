@@ -52,26 +52,26 @@ export default function TaaskrLogo({
     brandConfig = {
       name: 'provider',
       label: 'Pro',
-      primary: '#10B981',
-      primaryLight: '#6EE7B7',
-      primaryDark: '#059669',
-      glow: '#10B981',
-      badgeBg: 'rgba(16, 185, 129, 0.14)',
-      badgeBorder: 'rgba(16, 185, 129, 0.4)',
-      badgeColor: '#10B981',
+      primary: '#F59E0B',
+      primaryLight: '#FDE68A',
+      primaryDark: '#D97706',
+      glow: '#F59E0B',
+      badgeBg: 'rgba(245, 158, 11, 0.14)',
+      badgeBorder: 'rgba(245, 158, 11, 0.4)',
+      badgeColor: '#F59E0B',
       tagText: 'PRO'
     };
   } else if (effectiveVariant === 'admin') {
     brandConfig = {
       name: 'admin',
       label: 'Operations',
-      primary: '#6366F1',
-      primaryLight: '#A5B4FC',
-      primaryDark: '#4F46E5',
-      glow: '#6366F1',
-      badgeBg: 'rgba(99, 102, 241, 0.14)',
-      badgeBorder: 'rgba(99, 102, 241, 0.4)',
-      badgeColor: '#818CF8',
+      primary: '#8B5CF6',
+      primaryLight: '#C084FC',
+      primaryDark: '#6D28D9',
+      glow: '#8B5CF6',
+      badgeBg: 'rgba(139, 92, 246, 0.16)',
+      badgeBorder: 'rgba(139, 92, 246, 0.45)',
+      badgeColor: '#A78BFA',
       tagText: 'OPS'
     };
   }
