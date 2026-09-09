@@ -305,10 +305,12 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
             Service top = matchedServices.get(0);
             res.setTargetServiceId(top.getId());
 
-            if (matchedServices.size() == 1) {
-                if (hasWord(lower, "hot air", "warm air", "not cooling", "cooling", "ac not working")) {
-                    res.setReply("An AC blowing hot or warm air is usually due to low refrigerant levels, a dirty air filter, or compressor issues. I recommend our verified AC Repair service (₹" + top.getPrice() + ") to inspect and resolve this.");
-                } else if (hasWord(lower, "leak", "leaking", "pipe", "burst", "water overflowing")) {
+            if (containsAny(lower, "spark", "sparking", "fire", "short circuit", "shock", "burning", "smoke")) {
+                res.setReply("⚠️ SAFETY FIRST: Please turn off your main MCB/power switch immediately to prevent electrical hazard or fire. I recommend our verified " + top.getName() + " (₹" + top.getPrice() + ") for emergency dispatch.");
+            } else if (matchedServices.size() == 1) {
+                if (containsAny(lower, "hot air", "warm air", "not cooling", "cooling", "ac not working")) {
+                    res.setReply("An AC blowing hot or warm air is usually due to low refrigerant levels, a dirty air filter, or compressor issues. I recommend our verified " + top.getName() + " (₹" + top.getPrice() + ") to inspect and resolve this.");
+                } else if (containsAny(lower, "leak", "leaking", "pipe", "burst", "water overflowing", "tap dripping")) {
                     res.setReply("A water leak can cause property damage if left unattended. I recommend our verified " + top.getName() + " (₹" + top.getPrice() + ") to quickly seal and fix the issue.");
                 } else {
                     res.setReply("I found the exact verified service for your request: " + top.getName() + " (₹" + top.getPrice() + ").");
@@ -344,6 +346,7 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
                 "Location: %s.\n" +
                 "Rules:\n" +
                 "- NEVER hallucinate services, prices, or fake statuses.\n" +
+                "- When the issue relates to electrical sparks, switchboards, wiring, MCB, or shocks, match Switchboard & Wiring Repair (NOT AC or other appliances!).\n" +
                 "- If the user wants to send a parcel/package/goods, select an On-Demand Vehicle/Courier service (Electric Bike, Petrol Bike, Mini Truck, etc.).\n" +
                 "- If the user asks about bookings, set intent to 'MY_BOOKINGS'.\n" +
                 "- If service is completely outside home/logistics services, set intent to 'UNSUPPORTED' and serviceId to null.\n" +
@@ -426,6 +429,7 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
                 "Location: %s.\n" +
                 "Rules:\n" +
                 "- NEVER hallucinate non-existent services, prices, or fake statuses.\n" +
+                "- When the issue relates to electrical sparks, switchboards, wiring, MCB, or shocks, match Switchboard & Wiring Repair (NOT AC or other appliances!).\n" +
                 "- If the user wants to send a parcel/package/goods, select an On-Demand Vehicle/Courier service (Electric Bike, Petrol Bike, Mini Truck, etc.).\n" +
                 "- If the user asks about their active bookings, set intent to 'MY_BOOKINGS'.\n" +
                 "- If greeting or pleasantry, set intent to 'GREETING', serviceId to null, and reply warmly.\n" +
@@ -505,15 +509,15 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
     }
 
     private boolean isUnsupportedDomain(String text) {
-        return hasWord(text, "spaceship", "rocket", "supersonic", "jet engine", "airplane", "aeroplane", "aircraft", "helicopter", "submarine", "train", "passport", "visa", "flight ticket", "hotel booking", "astrology", "crypto", "stock market", "casino");
+        return containsAny(text, "spaceship", "rocket", "supersonic", "jet engine", "airplane", "aeroplane", "aircraft", "helicopter", "submarine", "train", "passport", "visa", "flight ticket", "hotel booking", "astrology", "crypto", "stock market", "casino");
     }
 
     private List<Service> searchCatalogServices(String query, List<Service> services) {
         String lower = query.toLowerCase().trim();
         List<Service> results = new ArrayList<>();
 
-        // Parcel / courier priority
-        if (hasWord(lower, "parcel", "courier", "document", "small parcel", "send package", "across the city")) {
+        // 1. Parcel / Courier Priority
+        if (containsAny(lower, "parcel", "courier", "document", "small parcel", "send package", "send parcel", "across the city", "deliver package")) {
             for (Service s : services) {
                 String n = s.getName().toLowerCase();
                 if (n.contains("bike") || n.contains("courier") || n.contains("rickshaw") || n.contains("parcel")) {
@@ -523,8 +527,8 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
             if (!results.isEmpty()) return results;
         }
 
-        // Heavy moving / shifting priority
-        if (hasWord(lower, "shifting", "furniture", "heavy", "sofa", "office move", "truck", "tempo")) {
+        // 2. Heavy moving / shifting / transport
+        if (containsAny(lower, "shifting", "furniture move", "heavy load", "sofa shifting", "office move", "truck", "tempo", "luggage transport")) {
             for (Service s : services) {
                 String n = s.getName().toLowerCase();
                 if (n.contains("mini truck") || n.contains("truck") || n.contains("loading") || n.contains("tempo")) {
@@ -534,44 +538,115 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
             if (!results.isEmpty()) return results;
         }
 
-        // 1. AC & Cooling domain with intent disambiguation
-        if (hasWord(lower, "ac", "air condition", "air conditioner", "cooling", "warm air", "hot air", "hvac", "split ac", "window ac")) {
-            List<Service> acServices = new ArrayList<>();
+        // 3. Electrical Switchboard & Spark & Short Circuit Priority (EXACT ISOLATION FROM APPLIANCES)
+        if (containsAny(lower, "switchboard", "switch board", "switch", "spark", "sparking", "short circuit", "mcb", "fuse", "electric shock", "wire burning", "wiring", "socket", "plug point", "tripping")) {
             for (Service s : services) {
                 String n = s.getName().toLowerCase();
-                // Ensure whole-word 'ac' or 'air condition' so words like 'machine' are NOT matched
-                if (hasWord(n, "ac", "hvac") || n.contains("air condition") || n.contains("air conditioner") || (hasWord(n, "cooling") && !n.contains("machine"))) {
-                    acServices.add(s);
+                if (n.contains("switchboard") || n.contains("switch board") || n.contains("wiring") || n.contains("short circuit") || n.contains("fuse") || n.contains("spark")) {
+                    results.add(s);
                 }
             }
-
-            if (!acServices.isEmpty()) {
-                if (hasWord(lower, "install", "installation", "mounting", "fit new", "new ac", "uninstallation")) {
-                    List<Service> installOnly = acServices.stream().filter(s -> s.getName().toLowerCase().contains("install")).toList();
-                    if (!installOnly.isEmpty()) return installOnly;
-                }
-                // When asking for repair / blowing hot air / not cooling / broken / gas / maintenance, return ONLY AC Repair!
-                if (hasWord(lower, "hot air", "warm air", "not cooling", "cooling", "leak", "broken", "repair", "noise", "smell", "gas", "fan", "fuse", "servicing", "service", "maintenance", "filter", "not working")) {
-                    List<Service> repairOnly = acServices.stream().filter(s -> s.getName().toLowerCase().contains("repair") || s.getName().toLowerCase().contains("service")).toList();
-                    if (!repairOnly.isEmpty()) return repairOnly;
-                }
-                return acServices;
-            }
-        }
-
-        // 2. Washing Machine & Laundry Appliances
-        if (hasWord(lower, "washing machine", "washer", "dryer", "laundry", "spin", "drum")) {
+            if (!results.isEmpty()) return results;
+            // Fallback to general electrician service if specific name not found
             for (Service s : services) {
                 String n = s.getName().toLowerCase();
-                if (n.contains("washing machine") || n.contains("dryer")) {
+                String c = s.getCategory() != null ? s.getCategory().getName().toLowerCase() : "";
+                if ((n.contains("electric") || c.equals("electrician")) && !n.contains("ac") && !n.contains("washing") && !n.contains("refrigerator")) {
                     results.add(s);
                 }
             }
             if (!results.isEmpty()) return results;
         }
 
-        // 3. Refrigerator / Fridge
-        if (hasWord(lower, "refrigerator", "fridge", "freezer", "ice maker")) {
+        // 4. Ceiling & Exhaust Fan
+        if (containsAny(lower, "fan", "ceiling fan", "exhaust fan", "regulator")) {
+            for (Service s : services) {
+                String n = s.getName().toLowerCase();
+                if (n.contains("fan")) {
+                    results.add(s);
+                }
+            }
+            if (!results.isEmpty()) return results;
+        }
+
+        // 5. Geyser & Water Heater
+        if (containsAny(lower, "geyser", "water heater", "hot water", "immersion rod")) {
+            for (Service s : services) {
+                String n = s.getName().toLowerCase();
+                if (n.contains("geyser") || n.contains("water heater")) {
+                    results.add(s);
+                }
+            }
+            if (!results.isEmpty()) return results;
+        }
+
+        // 6. Inverter & Battery
+        if (containsAny(lower, "inverter", "battery backup", "ups backup")) {
+            for (Service s : services) {
+                String n = s.getName().toLowerCase();
+                if (n.contains("inverter") || n.contains("battery")) {
+                    results.add(s);
+                }
+            }
+            if (!results.isEmpty()) return results;
+        }
+
+        // 7. RO & Water Purifier
+        if (containsAny(lower, "ro", "water purifier", "purifier", "filter change", "tds")) {
+            if (containsAny(lower, "install", "installation", "fitting", "mount")) {
+                List<Service> installOnly = services.stream().filter(s -> s.getName().toLowerCase().contains("ro") && s.getName().toLowerCase().contains("install")).toList();
+                if (!installOnly.isEmpty()) return installOnly;
+            }
+            for (Service s : services) {
+                String n = s.getName().toLowerCase();
+                if (n.contains("ro ") || n.contains("ro water") || n.contains("purifier")) {
+                    results.add(s);
+                }
+            }
+            if (!results.isEmpty()) return results;
+        }
+
+        // 8. AC & Cooling Domain
+        if (containsAny(lower, "ac", "air condition", "air conditioner", "cooling", "warm air", "hot air", "hvac", "split ac", "window ac", "compressor", "freon", "refrigerant")) {
+            List<Service> acServices = new ArrayList<>();
+            for (Service s : services) {
+                String n = s.getName().toLowerCase();
+                if (hasWord(n, "ac", "hvac") || n.contains("air condition") || n.contains("air conditioner") || (hasWord(n, "cooling") && !n.contains("machine"))) {
+                    acServices.add(s);
+                }
+            }
+
+            if (!acServices.isEmpty()) {
+                if (containsAny(lower, "install", "installation", "mounting", "fit new", "new ac", "uninstallation")) {
+                    List<Service> installOnly = acServices.stream().filter(s -> s.getName().toLowerCase().contains("install")).toList();
+                    if (!installOnly.isEmpty()) return installOnly;
+                }
+                if (containsAny(lower, "maintain", "maintenance", "servicing", "service", "tune up", "filter cleaning", "routine")) {
+                    List<Service> maintOnly = acServices.stream().filter(s -> s.getName().toLowerCase().contains("maintenance")).toList();
+                    if (!maintOnly.isEmpty()) return maintOnly;
+                }
+                // When asking for repair / hot air / not cooling / broken / gas leak, return ONLY AC Repair!
+                if (containsAny(lower, "hot air", "warm air", "not cooling", "cooling", "leak", "broken", "repair", "noise", "smell", "gas", "fan", "not working")) {
+                    List<Service> repairOnly = acServices.stream().filter(s -> s.getName().toLowerCase().contains("repair")).toList();
+                    if (!repairOnly.isEmpty()) return repairOnly;
+                }
+                return acServices;
+            }
+        }
+
+        // 9. Washing Machine & Laundry Appliances
+        if (containsAny(lower, "washing machine", "washer", "dryer", "laundry", "spin", "drum")) {
+            for (Service s : services) {
+                String n = s.getName().toLowerCase();
+                if (n.contains("washing machine") || n.contains("washer")) {
+                    results.add(s);
+                }
+            }
+            if (!results.isEmpty()) return results;
+        }
+
+        // 10. Refrigerator / Fridge
+        if (containsAny(lower, "refrigerator", "fridge", "freezer", "ice maker", "defrost")) {
             for (Service s : services) {
                 String n = s.getName().toLowerCase();
                 if (n.contains("refrigerator") || n.contains("fridge")) {
@@ -581,70 +656,93 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
             if (!results.isEmpty()) return results;
         }
 
-        // 4. Plumbing domain
-        if (hasWord(lower, "plumb", "plumber", "pipe", "leak", "tap", "sink", "faucet", "drain", "toilet", "flush", "water tank", "seepage")) {
-            if (hasWord(lower, "pipe", "sink", "leak", "leakage", "burst", "drain", "water tank", "seepage")) {
+        // 11. Microwave / Oven
+        if (containsAny(lower, "microwave", "oven", "otg", "magnetron")) {
+            for (Service s : services) {
+                String n = s.getName().toLowerCase();
+                if (n.contains("microwave") || n.contains("otg")) {
+                    results.add(s);
+                }
+            }
+            if (!results.isEmpty()) return results;
+        }
+
+        // 12. Plumbing domain
+        if (containsAny(lower, "plumb", "plumber", "pipe", "leak", "leaking", "tap", "sink", "faucet", "drain", "drainage", "toilet", "flush", "water tank", "seepage", "overflow")) {
+            if (containsAny(lower, "tap", "faucet", "dripping tap", "tap leak")) {
+                List<Service> tapOnly = services.stream().filter(s -> s.getName().toLowerCase().contains("tap") || s.getName().toLowerCase().contains("faucet") || s.getName().toLowerCase().contains("valve")).toList();
+                if (!tapOnly.isEmpty()) return tapOnly;
+            }
+            if (containsAny(lower, "drain", "clog", "choked", "blockage", "clogged")) {
+                List<Service> drainOnly = services.stream().filter(s -> s.getName().toLowerCase().contains("drain") || s.getName().toLowerCase().contains("blockage") || s.getName().toLowerCase().contains("clog")).toList();
+                if (!drainOnly.isEmpty()) return drainOnly;
+            }
+            if (containsAny(lower, "pipe", "sink", "leak", "leakage", "burst", "water tank", "seepage")) {
                 List<Service> pipeOnly = services.stream().filter(s -> s.getName().toLowerCase().contains("pipe") || s.getName().toLowerCase().contains("leak")).toList();
                 if (!pipeOnly.isEmpty()) return pipeOnly;
             }
-            if (hasWord(lower, "tap", "faucet", "dripping")) {
-                List<Service> tapOnly = services.stream().filter(s -> s.getName().toLowerCase().contains("tap") || s.getName().toLowerCase().contains("faucet")).toList();
-                if (!tapOnly.isEmpty()) return tapOnly;
-            }
             for (Service s : services) {
                 String n = s.getName().toLowerCase();
-                String c = s.getCategory().getName().toLowerCase();
-                if (c.contains("plumb") || hasWord(n, "pipe", "tap", "leak", "sink", "drain", "toilet", "plumbing", "faucet")) {
+                String c = s.getCategory() != null ? s.getCategory().getName().toLowerCase() : "";
+                if (c.contains("plumb") || containsAny(n, "pipe", "tap", "leak", "sink", "drain", "toilet", "plumbing", "faucet")) {
                     results.add(s);
                 }
             }
             if (!results.isEmpty()) return results;
         }
 
-        // 5. Electric domain
-        if (hasWord(lower, "electr", "electrician", "spark", "wire", "switch", "switchboard", "fuse", "fan", "short circuit", "mcb", "inverter")) {
+        // 13. Cleaning domain
+        if (containsAny(lower, "clean", "cleaning", "maid", "mop", "housekeeping", "dust", "sanitization", "sanitize")) {
+            if (containsAny(lower, "bathroom", "washroom", "toilet", "tiles")) {
+                List<Service> bath = services.stream().filter(s -> s.getName().toLowerCase().contains("bathroom")).toList();
+                if (!bath.isEmpty()) return bath;
+            }
+            if (containsAny(lower, "kitchen", "chimney", "grease", "stove")) {
+                List<Service> kitchen = services.stream().filter(s -> s.getName().toLowerCase().contains("kitchen") || s.getName().toLowerCase().contains("chimney")).toList();
+                if (!kitchen.isEmpty()) return kitchen;
+            }
+            if (containsAny(lower, "sofa", "carpet", "couch", "mattress", "shampoo")) {
+                List<Service> sofa = services.stream().filter(s -> s.getName().toLowerCase().contains("sofa") || s.getName().toLowerCase().contains("carpet")).toList();
+                if (!sofa.isEmpty()) return sofa;
+            }
+            if (containsAny(lower, "full home", "house cleaning", "entire house", "deep clean", "home clean")) {
+                List<Service> fullHome = services.stream().filter(s -> s.getName().toLowerCase().contains("full home")).toList();
+                if (!fullHome.isEmpty()) return fullHome;
+            }
             for (Service s : services) {
                 String n = s.getName().toLowerCase();
-                String c = s.getCategory().getName().toLowerCase();
-                if (c.contains("elect") || hasWord(n, "switch", "switchboard", "fan", "wire", "wiring", "spark", "circuit", "fuse", "mcb", "electrician")) {
+                if (n.contains("clean")) {
                     results.add(s);
                 }
             }
             if (!results.isEmpty()) return results;
         }
 
-        // 6. Cleaning domain
-        if (hasWord(lower, "clean", "cleaning", "maid", "mop", "housekeeping", "dust", "sofa cleaning", "bathroom cleaning")) {
+        // 14. Pest Control domain
+        if (containsAny(lower, "pest", "cockroach", "termite", "bed bug", "insects", "ants", "rodent", "bugs", "rat")) {
+            if (containsAny(lower, "termite", "wood borer")) {
+                List<Service> term = services.stream().filter(s -> s.getName().toLowerCase().contains("termite")).toList();
+                if (!term.isEmpty()) return term;
+            }
+            if (containsAny(lower, "bed bug", "bedbug", "bug")) {
+                List<Service> bug = services.stream().filter(s -> s.getName().toLowerCase().contains("bed bug")).toList();
+                if (!bug.isEmpty()) return bug;
+            }
             for (Service s : services) {
                 String n = s.getName().toLowerCase();
-                String c = s.getCategory().getName().toLowerCase();
-                if (c.contains("clean") || n.contains("clean")) {
+                if (n.contains("pest") || n.contains("cockroach")) {
                     results.add(s);
                 }
             }
             if (!results.isEmpty()) return results;
         }
 
-        // 7. Security / Smart Lock / CCTV
-        if (hasWord(lower, "security", "guard", "cctv", "camera", "doorbell", "smart lock", "lock")) {
-            for (Service s : services) {
-                String n = s.getName().toLowerCase();
-                String c = s.getCategory().getName().toLowerCase();
-                if (c.contains("security") || hasWord(n, "security", "cctv", "camera", "lock", "guard", "doorbell")) {
-                    results.add(s);
-                }
-            }
-            if (!results.isEmpty()) return results;
-        }
-
-        // 8. General token matching across services
+        // 15. General token matching fallback
         for (Service s : services) {
             String nameLower = s.getName().toLowerCase();
-            String catLower = s.getCategory().getName().toLowerCase();
-
             for (String word : lower.split("[\\s,.]+")) {
                 if (word.length() < 4) continue;
-                if (hasWord(nameLower, word) || hasWord(catLower, word)) {
+                if (nameLower.contains(word)) {
                     if (!results.contains(s)) results.add(s);
                 }
             }
@@ -661,6 +759,15 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
     private boolean isGreeting(String text) {
         String trimmed = text.trim();
         return hasWord(trimmed, "hi", "hello", "hey", "hola", "namaste", "good morning", "good evening", "good afternoon", "who are you", "what can you do", "what are you", "help", "help me", "start", "menu");
+    }
+
+    private boolean containsAny(String text, String... keywords) {
+        for (String kw : keywords) {
+            if (text.contains(kw.toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean hasWord(String text, String... words) {

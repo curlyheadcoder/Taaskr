@@ -138,6 +138,17 @@ public class AiDiagnosticTests {
     }
 
     @Test
+    void testSwitchBoardSparkingChatDiagnosis() {
+        com.taaskr.dto.ai.AiChatRequest chatReq = new com.taaskr.dto.ai.AiChatRequest("Switch board is sparking.");
+        com.taaskr.dto.ai.AiChatResponse chatRes = aiDiagnosticService.chat(null, chatReq);
+        assertNotNull(chatRes);
+        assertNotNull(chatRes.getServices());
+        assertFalse(chatRes.getServices().isEmpty());
+        assertEquals(electricService.getId(), chatRes.getServices().get(0).getId(), "Must match Switchboard electric service, NOT AC Installation!");
+        assertTrue(chatRes.getReply().contains("SAFETY FIRST") || chatRes.getReply().contains("MCB") || chatRes.getReply().contains("Switchboard"));
+    }
+
+    @Test
     void testParcelTransportDiagnosis() {
         ServiceCategory vehicleCat = new ServiceCategory();
         vehicleCat.setName("On-Demand Vehicle");
