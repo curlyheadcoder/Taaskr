@@ -14,7 +14,7 @@ import {
   Star, Briefcase, Calendar, CheckSquare, Settings, User, RefreshCw,
   DollarSign, ExternalLink, Power, TrendingUp, BarChart3, PieChart,
   PanelLeftClose, PanelLeftOpen, Wallet, Award, ArrowUpRight, Banknote, Play,
-  MessageSquare, Send, MessageCircle, HelpCircle, Headphones, FileText, Radio
+  MessageSquare, Send, MessageCircle, HelpCircle, Headphones, FileText, Radio, Activity
 } from 'lucide-react';
 
 export default function ProviderDashboard() {
