@@ -126,42 +126,42 @@ body.theme-user:not(.dark), body:not(.theme-provider):not(.theme-admin):not(.dar
 
 /* --------------------------------------------------------------------------
    2. PROVIDER PRO THEME (.theme-provider)
-   Palette: Electric Emerald, High-Performance Slate, Neon Mint
+   Palette: Electric Teal & Cyber Mint, High-Performance Obsidian, Emerald Glow
    -------------------------------------------------------------------------- */
 body.theme-provider {
-  --bg-page: #080D12;
-  --bg-header: #0D1520;
-  --bg-card: #111C2A;
-  --bg-card-hover: #172638;
-  --bg-card-selected: #1F324A;
-  --bg-subtle: #0D1520;
-  --bg-hover: #172638;
-  --bg-active: #1F324A;
+  --bg-page: #041215;
+  --bg-header: #081B1F;
+  --bg-card: #0D262C;
+  --bg-card-hover: #12343C;
+  --bg-card-selected: #18444E;
+  --bg-subtle: #081B1F;
+  --bg-hover: #12343C;
+  --bg-active: #18444E;
 
-  --text-main: #F1F5F9;
-  --text-secondary: #CBD5E1;
+  --text-main: #F0FDFA;
+  --text-secondary: #CCFBF1;
   --text-muted: #94A3B8;
   --text-light: #64748B;
-  --text-inverse: #0F172A;
+  --text-inverse: #041215;
 
-  --border-subtle: #142030;
-  --border-light: #1E3048;
-  --border-color: #1E3048;
-  --border-strong: #2D486B;
-  --border-hover: #3E6392;
+  --border-subtle: #0F2F37;
+  --border-light: #16424D;
+  --border-color: #16424D;
+  --border-strong: #236170;
+  --border-hover: #318296;
 
-  --primary: #10B981;
-  --primary-hover: #059669;
-  --primary-subtle: rgba(16, 185, 129, 0.14);
-  --primary-rgb: 16, 185, 129;
-  --secondary-accent: #34D399;
-  --icon-container: rgba(16, 185, 129, 0.16);
-  --accent-glow: rgba(16, 185, 129, 0.45);
-  --portal-brand: #10B981;
+  --primary: #14B8A6;
+  --primary-hover: #0D9488;
+  --primary-subtle: rgba(20, 184, 166, 0.15);
+  --primary-rgb: 20, 184, 166;
+  --secondary-accent: #2DD4BF;
+  --icon-container: rgba(20, 184, 166, 0.18);
+  --accent-glow: rgba(20, 184, 166, 0.5);
+  --portal-brand: #14B8A6;
 
-  --secondary: #111C2A;
-  --secondary-hover: #172638;
-  --secondary-subtle: #0D1520;
+  --secondary: #0D262C;
+  --secondary-hover: #12343C;
+  --secondary-subtle: #081B1F;
 
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.45);
@@ -172,39 +172,39 @@ body.theme-provider {
 
 /* Light Theme - Provider */
 body.theme-provider:not(.dark) {
-  --bg-page: #F0FDF4;
+  --bg-page: #F0FDFA;
   --bg-header: #FFFFFF;
   --bg-card: #FFFFFF;
-  --bg-card-hover: #F7FEE7;
-  --bg-card-selected: #DCFCE7;
-  --bg-subtle: #F0FDF4;
-  --bg-hover: #E2E8F0;
-  --bg-active: #DCFCE7;
+  --bg-card-hover: #E6FFFA;
+  --bg-card-selected: #CCFBF1;
+  --bg-subtle: #F0FDFA;
+  --bg-hover: #E6FFFA;
+  --bg-active: #CCFBF1;
 
   --text-main: #0F172A;
-  --text-secondary: #334155;
+  --text-secondary: #134E4A;
   --text-muted: #64748B;
   --text-light: #94A3B8;
   --text-inverse: #FFFFFF;
 
-  --border-subtle: #E2E8F0;
-  --border-light: #BBF7D0;
-  --border-color: #BBF7D0;
-  --border-strong: #86EFAC;
-  --border-hover: #4ADE80;
+  --border-subtle: #F0FDFA;
+  --border-light: #CCFBF1;
+  --border-color: #CCFBF1;
+  --border-strong: #99F6E4;
+  --border-hover: #5EEAD4;
 
-  --primary: #059669;
-  --primary-hover: #047857;
-  --primary-subtle: #DCFCE7;
-  --primary-rgb: 5, 150, 105;
-  --secondary-accent: #10B981;
-  --icon-container: #DCFCE7;
-  --accent-glow: rgba(5, 150, 105, 0.25);
-  --portal-brand: #059669;
+  --primary: #0D9488;
+  --primary-hover: #0F766E;
+  --primary-subtle: #CCFBF1;
+  --primary-rgb: 13, 148, 136;
+  --secondary-accent: #14B8A6;
+  --icon-container: #CCFBF1;
+  --accent-glow: rgba(13, 148, 136, 0.25);
+  --portal-brand: #0D9488;
 
-  --secondary: #F0FDF4;
-  --secondary-hover: #DCFCE7;
-  --secondary-subtle: #F0FDF4;
+  --secondary: #F0FDFA;
+  --secondary-hover: #CCFBF1;
+  --secondary-subtle: #F0FDFA;
 
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
@@ -2011,64 +2011,72 @@ body:not(.dark) .hero-physics-tile {
    -------------------------------------------------------------------------- */
 .provider-theme,
 body.theme-provider {
-  --primary: #10B981;
-  --primary-hover: #059669;
-  --primary-subtle: rgba(16, 185, 129, 0.14);
-  --primary-rgb: 16, 185, 129;
-  --secondary-accent: #34D399;
-  --icon-container: rgba(16, 185, 129, 0.16);
-  --accent-glow: rgba(16, 185, 129, 0.45);
-  --portal-brand: #10B981;
+  --primary: #0D9488;
+  --primary-hover: #0F766E;
+  --primary-subtle: rgba(13, 148, 136, 0.14);
+  --primary-rgb: 13, 148, 136;
+  --secondary-accent: #14B8A6;
+  --icon-container: rgba(13, 148, 136, 0.16);
+  --accent-glow: rgba(13, 148, 136, 0.45);
+  --portal-brand: #0D9488;
+}
+
+body.dark.theme-provider,
+body.dark .provider-theme {
+  --primary: #14B8A6;
+  --primary-hover: #0D9488;
+  --primary-subtle: rgba(20, 184, 166, 0.15);
+  --primary-rgb: 20, 184, 166;
 }
 
 .provider-theme .enterprise-sidebar .sidebar-item.active,
 body.theme-provider .enterprise-sidebar .sidebar-item.active {
-  background: rgba(16, 185, 129, 0.16) !important;
-  border-color: rgba(16, 185, 129, 0.5) !important;
-  color: #10B981 !important;
-  box-shadow: 0 0 14px rgba(16, 185, 129, 0.25) !important;
+  background: rgba(13, 148, 136, 0.16) !important;
+  border-color: rgba(13, 148, 136, 0.5) !important;
+  color: var(--primary) !important;
+  box-shadow: 0 0 14px rgba(13, 148, 136, 0.25) !important;
   font-weight: 600 !important;
 }
 
 .provider-theme .enterprise-sidebar .sidebar-item:hover,
 body.theme-provider .enterprise-sidebar .sidebar-item:hover {
-  border-color: rgba(16, 185, 129, 0.4) !important;
-  color: #10B981 !important;
+  border-color: rgba(13, 148, 136, 0.4) !important;
+  color: var(--primary) !important;
 }
 
 .provider-theme .btn-primary,
 body.theme-provider .btn-primary {
-  background: #10B981 !important;
-  border: 1px solid #059669 !important;
+  background: var(--primary) !important;
+  border: 1px solid var(--primary-hover) !important;
   color: #ffffff !important;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35) !important;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.35) !important;
 }
 
 .provider-theme .btn-primary:hover:not(:disabled),
 body.theme-provider .btn-primary:hover:not(:disabled) {
-  background: #059669 !important;
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45) !important;
+  background: var(--primary-hover) !important;
+  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.45) !important;
   transform: translateY(-1px);
 }
 
 .provider-theme .stat-card-modern,
 body.theme-provider .stat-card-modern {
-  border-left: 3.5px solid #10B981 !important;
+  border-left: 3.5px solid var(--primary) !important;
   box-shadow: var(--shadow-sm);
 }
 
 .provider-theme .badge-assigned,
 body.theme-provider .badge-assigned {
-  background: rgba(16, 185, 129, 0.14) !important;
-  color: #10B981 !important;
-  border: 1px solid rgba(16, 185, 129, 0.4) !important;
+  background: rgba(13, 148, 136, 0.14) !important;
+  color: var(--primary) !important;
+  border: 1px solid rgba(13, 148, 136, 0.4) !important;
 }
 
 .provider-theme .badge-accepted,
 body.theme-provider .badge-accepted {
-  background: rgba(16, 185, 129, 0.14) !important;
-  color: #10B981 !important;
-  border: 1px solid rgba(16, 185, 129, 0.4) !important;
+  background: rgba(13, 148, 136, 0.14) !important;
+  color: var(--primary) !important;
+  border: 1px solid rgba(13, 148, 136, 0.4) !important;
 }
 
 .provider-theme .form-control:focus,
@@ -2077,13 +2085,13 @@ body.theme-provider .form-control:focus,
 body.theme-provider .form-input:focus,
 .provider-theme .form-select:focus,
 body.theme-provider .form-select:focus {
-  border-color: #10B981 !important;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18) !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.18) !important;
 }
 
 .provider-theme .form-checkbox,
 body.theme-provider .form-checkbox {
-  accent-color: #10B981 !important;
+  accent-color: var(--primary) !important;
 }
 
 /* --------------------------------------------------------------------------

@@ -1121,10 +1121,10 @@ export default function ProviderDashboard() {
             <div className="sidebar-user-info" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', overflow: 'hidden' }}>
               <div style={{
                 width: '36px', height: '36px', borderRadius: 'var(--radius-sm)',
-                backgroundColor: 'rgba(16, 185, 129, 0.16)', color: '#10B981', display: 'flex',
+                backgroundColor: 'var(--primary-subtle)', color: 'var(--primary)', display: 'flex',
                 alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.95rem',
                 flexShrink: 0,
-                border: '1px solid rgba(16, 185, 129, 0.35)'
+                border: '1px solid rgba(var(--primary-rgb), 0.35)'
               }}>
                 {userProfile?.name?.charAt(0) || 'P'}
               </div>
@@ -1134,14 +1134,14 @@ export default function ProviderDashboard() {
                 </div>
                 <span style={{ 
                   fontSize: '0.6875rem', 
-                  color: userProfile?.approved ? '#10B981' : '#F59E0B', 
+                  color: userProfile?.approved ? 'var(--primary)' : '#D97706', 
                   fontWeight: 600, 
                   display: 'flex', 
                   alignItems: 'center', 
                   gap: '0.25rem', 
                   marginTop: '0.15rem' 
                 }}>
-                  <span className="badge-dot" style={{ backgroundColor: userProfile?.approved ? '#10B981' : '#F59E0B' }} /> 
+                  <span className="badge-dot" style={{ backgroundColor: userProfile?.approved ? 'var(--primary)' : '#F59E0B' }} /> 
                   {userProfile?.approved ? 'Active Partner Pro' : 'Pending Verification'}
                 </span>
               </div>
@@ -1458,8 +1458,8 @@ export default function ProviderDashboard() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.25rem' }}>
               <h1 style={{ margin: 0 }}>Provider Console</h1>
-              <span className="glow-pill" style={{ background: 'rgba(16, 185, 129, 0.14)', color: '#10B981', borderColor: 'rgba(16, 185, 129, 0.35)' }}>
-                <span className="status-pulse-dot" style={{ backgroundColor: '#10B981', boxShadow: '0 0 8px #10B981' }} />
+              <span className="glow-pill" style={{ background: 'var(--primary-subtle)', color: 'var(--primary)', borderColor: 'rgba(var(--primary-rgb), 0.35)' }}>
+                <span className="status-pulse-dot" style={{ backgroundColor: 'var(--primary)', boxShadow: '0 0 8px var(--primary)' }} />
                 PRO PARTNER
               </span>
             </div>
