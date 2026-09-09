@@ -106,10 +106,12 @@ export default function AdminDashboard() {
   // Provider Raised Tickets / Discussions states
   const [selectedDiscussionId, setSelectedDiscussionId] = useState(null);
   const [adminReplyText, setAdminReplyText] = useState('');
+  const [adminProviderChatText, setAdminProviderChatText] = useState('');
   const [discussionFilter, setDiscussionFilter] = useState('ALL');
   const [providerTicketSearch, setProviderTicketSearch] = useState('');
   const [providerResolutionStatus, setProviderResolutionStatus] = useState('RESOLVED');
   const [submittingAdminReply, setSubmittingAdminReply] = useState(false);
+  const [submittingProviderChat, setSubmittingProviderChat] = useState(false);
 
   const filteredDiscussions = discussions.filter(d => {
     if (discussionFilter !== 'ALL' && d.status !== discussionFilter) return false;
@@ -434,6 +436,24 @@ export default function AdminDashboard() {
   // ----------------------------------------
   // PARTNER DESK / DISCUSSION OPERATIONS
   // ----------------------------------------
+  const handleSendProviderChat = async (e, customTargetId) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const targetId = customTargetId || selectedDiscussionId || activeDiscussion?.id;
+    if (!targetId || !adminProviderChatText.trim() || submittingProviderChat) return;
+    const text = adminProviderChatText.trim();
+    setSubmittingProviderChat(true);
+    setAdminProviderChatText('');
+    try {
+      const updated = await api.admin.replyDiscussion(targetId, text);
+      setDiscussions(prev => prev.map(d => d.id === updated.id ? updated : d));
+      setTimeout(scrollToChatBottom, 60);
+    } catch (err) {
+      alert(err.message || 'Failed to send message to provider');
+    } finally {
+      setSubmittingProviderChat(false);
+    }
+  };
+
   const handleAdminSendReply = async (e, customTargetId, customText) => {
     if (e && e.preventDefault) e.preventDefault();
     const targetId = customTargetId || selectedDiscussionId;
@@ -2280,6 +2300,39 @@ export default function AdminDashboard() {
                               )}
                             </div>
                           </div>
+
+                          {/* Conversational Reply Input for Ongoing Discussion with Provider */}
+                          {d.status !== 'CLOSED' && (
+                            <form onSubmit={(e) => handleSendProviderChat(e, d.id)} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end', marginTop: '0.25rem' }}>
+                              <div className="form-group" style={{ margin: 0, flex: 1 }}>
+                                <textarea
+                                  className="form-control"
+                                  rows={2}
+                                  placeholder="Type a message or response to provider in this thread..."
+                                  value={adminProviderChatText}
+                                  onChange={(e) => setAdminProviderChatText(e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                      e.preventDefault();
+                                      if (!submittingProviderChat && adminProviderChatText.trim()) {
+                                        handleSendProviderChat(e, d.id);
+                                      }
+                                    }
+                                  }}
+                                  style={{ resize: 'none', fontSize: '0.84rem' }}
+                                />
+                              </div>
+                              <button
+                                type="submit"
+                                className="btn btn-primary"
+                                disabled={submittingProviderChat || !adminProviderChatText.trim()}
+                                style={{ padding: '0.65rem 1.25rem', height: 'fit-content', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600, background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', border: 'none' }}
+                              >
+                                <Send size={15} />
+                                <span>{submittingProviderChat ? 'Sending...' : 'Send Message'}</span>
+                              </button>
+                            </form>
+                          )}
 
                           {/* Provider Resolution Ruling & Actions Form */}
                           <form onSubmit={(e) => handleResolveProviderTicket(e, d)} style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>

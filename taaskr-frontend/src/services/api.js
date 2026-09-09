@@ -44,70 +44,33 @@ const handleResponse = async (res) => {
   return res.json();
 };
 
-let activePendingRequests = 0;
-let slowTimer = null;
-
-const startRequestWatch = () => {
-  activePendingRequests++;
-  if (!slowTimer) {
-    slowTimer = setTimeout(() => {
-      if (activePendingRequests > 0 && typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('taaskr-server-waking', { detail: { waking: true } }));
-      }
-    }, 2200);
-  }
-};
-
-const endRequestWatch = () => {
-  activePendingRequests = Math.max(0, activePendingRequests - 1);
-  if (activePendingRequests === 0) {
-    if (slowTimer) {
-      clearTimeout(slowTimer);
-      slowTimer = null;
-    }
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('taaskr-server-waking', { detail: { waking: false } }));
-    }
-  }
-};
-
 const makeRequest = async (path, options = {}) => {
-  startRequestWatch();
-  try {
-    const response = await fetch(`${BASE_URL}${path}`, {
-      ...options,
-      headers: {
-        ...getHeaders(),
-        ...options.headers
-      }
-    });
-    return await handleResponse(response);
-  } finally {
-    endRequestWatch();
-  }
+  const response = await fetch(`${BASE_URL}${path}`, {
+    ...options,
+    headers: {
+      ...getHeaders(),
+      ...options.headers
+    }
+  });
+  return handleResponse(response);
 };
 
 const makeMultipartRequest = async (path, formData, options = {}) => {
-  startRequestWatch();
-  try {
-    const token = localStorage.getItem('taaskr_token');
-    const headers = {};
-    if (token && token !== 'undefined' && token !== 'null') {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    const response = await fetch(`${BASE_URL}${path}`, {
-      method: 'POST',
-      body: formData,
-      ...options,
-      headers: {
-        ...headers,
-        ...options.headers
-      }
-    });
-    return await handleResponse(response);
-  } finally {
-    endRequestWatch();
+  const token = localStorage.getItem('taaskr_token');
+  const headers = {};
+  if (token && token !== 'undefined' && token !== 'null') {
+    headers['Authorization'] = `Bearer ${token}`;
   }
+  const response = await fetch(`${BASE_URL}${path}`, {
+    method: 'POST',
+    body: formData,
+    ...options,
+    headers: {
+      ...headers,
+      ...options.headers
+    }
+  });
+  return handleResponse(response);
 };
 
 // ==========================================

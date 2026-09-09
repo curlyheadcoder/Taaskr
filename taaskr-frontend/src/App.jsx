@@ -1,4 +1,4 @@
-import React, { Component, useEffect, useState, Suspense, lazy } from 'react';
+import React, { Component, useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -92,16 +92,7 @@ class ErrorBoundary extends Component {
 
 function AppContent() {
   const location = useLocation();
-  const [isServerWaking, setIsServerWaking] = useState(false);
   const isEnterpriseConsole = location.pathname.startsWith('/admin') || location.pathname.startsWith('/provider');
-
-  useEffect(() => {
-    const handleWaking = (e) => {
-      setIsServerWaking(!!e.detail?.waking);
-    };
-    window.addEventListener('taaskr-server-waking', handleWaking);
-    return () => window.removeEventListener('taaskr-server-waking', handleWaking);
-  }, []);
 
   useEffect(() => {
     document.body.classList.remove('theme-user', 'theme-provider', 'theme-admin');
@@ -119,25 +110,6 @@ function AppContent() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      {isServerWaking && (
-        <div style={{
-          backgroundColor: '#F59E0B',
-          color: '#78350F',
-          padding: '0.5rem 1rem',
-          fontSize: '0.85rem',
-          fontWeight: 600,
-          textAlign: 'center',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '0.5rem',
-          zIndex: 9999,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-        }}>
-          <span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>⚡</span>
-          <span>Connecting to cloud backend... Free-tier server is spinning up. Thank you for your patience!</span>
-        </div>
-      )}
       <Navbar />
       
       {/* Main Content Area */}
