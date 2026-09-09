@@ -1,21 +1,46 @@
-import React, { Component, useEffect } from 'react';
+import React, { Component, useEffect, useState, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import AiAssistantModal from './components/AiAssistantModal';
 import Footer from './components/Footer';
 
-// Page Views
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import ForgotPassword from './pages/ForgotPassword';
-import VerifyEmail from './pages/VerifyEmail';
-import ServiceDetails from './pages/ServiceDetails';
-import BookingFlow from './pages/BookingFlow';
-import CustomerDashboard from './pages/CustomerDashboard';
-import ProviderDashboard from './pages/ProviderDashboard';
-import AdminDashboard from './pages/AdminDashboard';
+// Page Views (Code-Split via dynamic imports for fast initial load)
+const Home = lazy(() => import('./pages/Home'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
+const ServiceDetails = lazy(() => import('./pages/ServiceDetails'));
+const BookingFlow = lazy(() => import('./pages/BookingFlow'));
+const CustomerDashboard = lazy(() => import('./pages/CustomerDashboard'));
+const ProviderDashboard = lazy(() => import('./pages/ProviderDashboard'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+
+function RouteLoadingFallback() {
+  return (
+    <div style={{
+      minHeight: '60vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '1rem',
+      color: 'var(--text-muted)'
+    }}>
+      <div style={{
+        width: '40px',
+        height: '40px',
+        border: '3px solid rgba(245, 158, 11, 0.2)',
+        borderTopColor: '#F59E0B',
+        borderRadius: '50%',
+        animation: 'spin 0.8s linear infinite'
+      }} />
+      <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+      <p style={{ fontSize: '0.9rem', fontWeight: 500, letterSpacing: '0.02em' }}>Loading...</p>
+    </div>
+  );
+}
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -67,7 +92,16 @@ class ErrorBoundary extends Component {
 
 function AppContent() {
   const location = useLocation();
+  const [isServerWaking, setIsServerWaking] = useState(false);
   const isEnterpriseConsole = location.pathname.startsWith('/admin') || location.pathname.startsWith('/provider');
+
+  useEffect(() => {
+    const handleWaking = (e) => {
+      setIsServerWaking(!!e.detail?.waking);
+    };
+    window.addEventListener('taaskr-server-waking', handleWaking);
+    return () => window.removeEventListener('taaskr-server-waking', handleWaking);
+  }, []);
 
   useEffect(() => {
     document.body.classList.remove('theme-user', 'theme-provider', 'theme-admin');
@@ -85,70 +119,91 @@ function AppContent() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      {isServerWaking && (
+        <div style={{
+          backgroundColor: '#F59E0B',
+          color: '#78350F',
+          padding: '0.5rem 1rem',
+          fontSize: '0.85rem',
+          fontWeight: 600,
+          textAlign: 'center',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '0.5rem',
+          zIndex: 9999,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+        }}>
+          <span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>⚡</span>
+          <span>Connecting to cloud backend... Free-tier server is spinning up. Thank you for your patience!</span>
+        </div>
+      )}
       <Navbar />
       
       {/* Main Content Area */}
       <div style={{ flex: 1, paddingBottom: isEnterpriseConsole ? '0' : '3rem' }}>
         <ErrorBoundary>
-          <Routes>
-            {/* Public Access Routes */}
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/verify-email" element={<VerifyEmail />} />
-            <Route path="/verify-phone" element={<VerifyEmail />} />
-            <Route path="/services/:serviceId" element={<ServiceDetails />} />
+          <Suspense fallback={<RouteLoadingFallback />}>
+            <Routes>
+              {/* Public Access Routes */}
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/verify-phone" element={<VerifyEmail />} />
+              <Route path="/services/:serviceId" element={<ServiceDetails />} />
 
-            {/* Protected Customer Routes */}
-            <Route
-              path="/booking-flow"
-              element={
-                <ProtectedRoute allowedRoles={['USER']}>
-                  <BookingFlow />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/bookings"
-              element={
-                <ProtectedRoute allowedRoles={['USER']}>
-                  <CustomerDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute allowedRoles={['USER']}>
-                  <CustomerDashboard initialTab="profile" />
-                </ProtectedRoute>
-              }
-            />
+              {/* Protected Customer Routes */}
+              <Route
+                path="/booking-flow"
+                element={
+                  <ProtectedRoute allowedRoles={['USER']}>
+                    <BookingFlow />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/bookings"
+                element={
+                  <ProtectedRoute allowedRoles={['USER']}>
+                    <CustomerDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute allowedRoles={['USER']}>
+                    <CustomerDashboard initialTab="profile" />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Protected Provider Dashboard */}
-            <Route
-              path="/provider"
-              element={
-                <ProtectedRoute allowedRoles={['PROVIDER']}>
-                  <ProviderDashboard />
-                </ProtectedRoute>
-              }
-            />
+              {/* Protected Provider Dashboard */}
+              <Route
+                path="/provider"
+                element={
+                  <ProtectedRoute allowedRoles={['PROVIDER']}>
+                    <ProviderDashboard />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Protected Admin Console */}
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute allowedRoles={['ADMIN']}>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
+              {/* Protected Admin Console */}
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute allowedRoles={['ADMIN']}>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Fallback Catch-All Route */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+              {/* Fallback Catch-All Route */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
         </ErrorBoundary>
       </div>
 
