@@ -689,6 +689,7 @@ export default function AdminDashboard() {
             )}
           </button>
 
+          {/* Help Desk (Customer & Provider Tickets) */}
           <button 
             onClick={() => { setActiveTab('disputes'); }}
             className={`sidebar-item ${activeTab === 'disputes' ? 'active' : ''}`}

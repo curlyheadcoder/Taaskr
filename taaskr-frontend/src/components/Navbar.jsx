@@ -804,17 +804,19 @@ export default function Navbar() {
               style={{
                 fontSize: '0.8rem',
                 fontWeight: 600,
-                color: location.pathname === '/bookings' && location.search.includes('disputes') ? '#6366F1' : 'var(--text-main)',
+                color: location.pathname === '/bookings' && location.search.includes('disputes') ? 'var(--primary)' : 'var(--text-main)',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.35rem',
-                padding: '0.35rem 0.65rem',
-                borderRadius: '8px',
-                background: location.pathname === '/bookings' && location.search.includes('disputes') ? 'rgba(99, 102, 241, 0.12)' : 'transparent',
-                border: location.pathname === '/bookings' && location.search.includes('disputes') ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid transparent'
+                padding: '0.35rem 0.75rem',
+                borderRadius: '20px',
+                backgroundColor: location.pathname === '/bookings' && location.search.includes('disputes') ? 'rgba(79, 70, 229, 0.14)' : 'var(--bg-subtle)',
+                border: location.pathname === '/bookings' && location.search.includes('disputes') ? '1px solid rgba(79, 70, 229, 0.35)' : '1px solid var(--border-light)',
+                transition: 'all 0.2s ease',
+                boxShadow: location.pathname === '/bookings' && location.search.includes('disputes') ? '0 0 10px rgba(79, 70, 229, 0.15)' : 'none'
               }}
             >
-              <Headphones size={13} color="#6366F1" />
+              <Headphones size={14} color="var(--primary)" />
               <span>Help Desk</span>
             </button>
           </div>
@@ -832,18 +834,20 @@ export default function Navbar() {
             style={{
               fontSize: '0.8rem',
               fontWeight: 600,
-              color: '#6366F1',
+              color: '#818cf8',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '0.35rem',
-              padding: '0.35rem 0.65rem',
-              borderRadius: '8px',
-              marginRight: '0.25rem',
-              background: 'rgba(99, 102, 241, 0.1)',
-              border: '1px solid rgba(99, 102, 241, 0.25)'
+              gap: '0.4rem',
+              padding: '0.35rem 0.85rem',
+              borderRadius: '20px',
+              marginRight: '0.35rem',
+              backgroundColor: 'rgba(99, 102, 241, 0.12)',
+              border: '1px solid rgba(99, 102, 241, 0.35)',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 0 12px rgba(99, 102, 241, 0.15)'
             }}
           >
-            <Headphones size={13} color="#6366F1" />
+            <Headphones size={14} color="#818cf8" />
             <span>Help Desk</span>
           </button>
         )}
@@ -860,18 +864,20 @@ export default function Navbar() {
             style={{
               fontSize: '0.8rem',
               fontWeight: 600,
-              color: '#6366F1',
+              color: providerTab === 'discussions' ? '#34d399' : 'var(--text-main)',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '0.35rem',
-              padding: '0.35rem 0.65rem',
-              borderRadius: '8px',
-              marginRight: '0.25rem',
-              background: 'rgba(99, 102, 241, 0.1)',
-              border: '1px solid rgba(99, 102, 241, 0.25)'
+              gap: '0.4rem',
+              padding: '0.35rem 0.85rem',
+              borderRadius: '20px',
+              marginRight: '0.35rem',
+              backgroundColor: providerTab === 'discussions' ? 'rgba(16, 185, 129, 0.14)' : 'var(--bg-subtle)',
+              border: providerTab === 'discussions' ? '1px solid rgba(16, 185, 129, 0.45)' : '1px solid var(--border-light)',
+              transition: 'all 0.2s ease',
+              boxShadow: providerTab === 'discussions' ? '0 0 12px rgba(16, 185, 129, 0.2)' : 'none'
             }}
           >
-            <Headphones size={13} color="#6366F1" />
+            <Headphones size={14} color={providerTab === 'discussions' ? '#34d399' : '#10B981'} />
             <span>Help Desk</span>
           </button>
         )}
@@ -888,13 +894,15 @@ export default function Navbar() {
               color: 'var(--text-main)',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '0.35rem',
-              padding: '0.35rem 0.65rem',
-              borderRadius: '8px',
-              marginRight: '0.25rem'
+              gap: '0.4rem',
+              padding: '0.35rem 0.75rem',
+              borderRadius: '20px',
+              marginRight: '0.25rem',
+              backgroundColor: 'var(--bg-subtle)',
+              border: '1px solid var(--border-light)'
             }}
           >
-            <Headphones size={13} color="#6366F1" />
+            <Headphones size={14} color="var(--primary)" />
             <span>Help Desk</span>
           </button>
         )}
