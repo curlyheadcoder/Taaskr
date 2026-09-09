@@ -556,7 +556,7 @@ export default function Navbar() {
           </Link>
         </div>
       ) : user && user.role === 'PROVIDER' ? (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.65rem', flex: 1 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
           <button
             type="button"
             onClick={() => {
@@ -566,7 +566,7 @@ export default function Navbar() {
               window.dispatchEvent(new CustomEvent('switch-provider-tab', { detail: 'tasks' }));
             }}
             style={{
-              padding: '0.45rem 1.25rem',
+              padding: '0.45rem 1.35rem',
               borderRadius: '24px',
               fontSize: '0.875rem',
               fontWeight: 600,
@@ -579,39 +579,11 @@ export default function Navbar() {
               gap: '0.45rem',
               letterSpacing: '0.01em',
               transition: 'all 0.2s ease',
-              boxShadow: (location.pathname === '/provider' && providerTab !== 'discussions') ? '0 0 12px rgba(var(--primary-rgb), 0.22)' : 'none'
+              boxShadow: (location.pathname === '/provider' && providerTab !== 'discussions') ? '0 0 14px rgba(var(--primary-rgb), 0.22)' : 'none'
             }}
           >
-            <Briefcase size={15} color="var(--primary)" />
+            <Briefcase size={16} color="var(--primary)" />
             <span>Provider Console</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              if (location.pathname !== '/provider') {
-                navigate('/provider');
-              }
-              window.dispatchEvent(new CustomEvent('switch-provider-tab', { detail: 'discussions' }));
-            }}
-            style={{
-              padding: '0.45rem 1.15rem',
-              borderRadius: '24px',
-              fontSize: '0.875rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              color: (location.pathname === '/provider' && providerTab === 'discussions') ? 'var(--primary)' : 'var(--text-main)',
-              backgroundColor: (location.pathname === '/provider' && providerTab === 'discussions') ? 'var(--primary-subtle)' : 'var(--bg-subtle)',
-              border: (location.pathname === '/provider' && providerTab === 'discussions') ? '1px solid rgba(var(--primary-rgb), 0.45)' : '1px solid var(--border-light)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.45rem',
-              letterSpacing: '0.01em',
-              transition: 'all 0.2s ease',
-              boxShadow: (location.pathname === '/provider' && providerTab === 'discussions') ? '0 0 12px rgba(var(--primary-rgb), 0.22)' : 'none'
-            }}
-          >
-            <MessageSquare size={15} color="var(--primary)" />
-            <span>Connect with Admin</span>
           </button>
         </div>
       ) : isCustomerView ? (

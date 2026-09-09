@@ -1250,15 +1250,6 @@ export default function ProviderDashboard() {
             <ShieldCheck size={16} />
             <span>KYC & Documents ({kycDocuments.length})</span>
           </button>
-
-          <button 
-            className={`sidebar-item ${activeTab === 'discussions' ? 'active' : ''}`}
-            onClick={() => setActiveTab('discussions')}
-            title="Support & Discussions"
-          >
-            <MessageSquare size={16} />
-            <span>Support & Help ({discussions.length})</span>
-          </button>
         </nav>
       </aside>
 
