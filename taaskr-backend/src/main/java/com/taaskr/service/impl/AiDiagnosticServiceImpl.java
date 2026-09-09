@@ -305,7 +305,15 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
             Service top = matchedServices.get(0);
             res.setTargetServiceId(top.getId());
 
-            if (isVehicleQuery(lower)) {
+            if (matchedServices.size() == 1) {
+                if (hasWord(lower, "hot air", "warm air", "not cooling", "cooling", "ac not working")) {
+                    res.setReply("An AC blowing hot or warm air is usually due to low refrigerant levels, a dirty air filter, or compressor issues. I recommend our verified AC Repair service (₹" + top.getPrice() + ") to inspect and resolve this.");
+                } else if (hasWord(lower, "leak", "leaking", "pipe", "burst", "water overflowing")) {
+                    res.setReply("A water leak can cause property damage if left unattended. I recommend our verified " + top.getName() + " (₹" + top.getPrice() + ") to quickly seal and fix the issue.");
+                } else {
+                    res.setReply("I found the exact verified service for your request: " + top.getName() + " (₹" + top.getPrice() + ").");
+                }
+            } else if (isVehicleQuery(lower)) {
                 res.setReply("Here are our intra-city on-demand delivery and vehicle transport services for your parcel/goods:");
             } else {
                 res.setReply("I found the following verified services matching your request:");
@@ -527,7 +535,7 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
         }
 
         // 1. AC & Cooling domain with intent disambiguation
-        if (hasWord(lower, "ac", "air condition", "air conditioner", "cooling", "warm air", "hvac", "split ac", "window ac")) {
+        if (hasWord(lower, "ac", "air condition", "air conditioner", "cooling", "warm air", "hot air", "hvac", "split ac", "window ac")) {
             List<Service> acServices = new ArrayList<>();
             for (Service s : services) {
                 String n = s.getName().toLowerCase();
@@ -538,25 +546,14 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
             }
 
             if (!acServices.isEmpty()) {
-                if (hasWord(lower, "install", "installation", "mounting", "fit new", "new ac", "living room")) {
-                    acServices.sort((a, b) -> {
-                        boolean aMatch = a.getName().toLowerCase().contains("install");
-                        boolean bMatch = b.getName().toLowerCase().contains("install");
-                        return Boolean.compare(bMatch, aMatch);
-                    });
-                } else if (hasWord(lower, "maintenance", "servicing", "service", "filter", "routine", "checkup")) {
-                    acServices.sort((a, b) -> {
-                        boolean aMatch = a.getName().toLowerCase().contains("maintenance") || a.getName().toLowerCase().contains("service");
-                        boolean bMatch = b.getName().toLowerCase().contains("maintenance") || b.getName().toLowerCase().contains("service");
-                        return Boolean.compare(bMatch, aMatch);
-                    });
-                } else {
-                    // Default repair priority for "not working", "warm air", "repair", "broken", "issue", "cooling"
-                    acServices.sort((a, b) -> {
-                        boolean aMatch = a.getName().toLowerCase().contains("repair");
-                        boolean bMatch = b.getName().toLowerCase().contains("repair");
-                        return Boolean.compare(bMatch, aMatch);
-                    });
+                if (hasWord(lower, "install", "installation", "mounting", "fit new", "new ac", "uninstallation")) {
+                    List<Service> installOnly = acServices.stream().filter(s -> s.getName().toLowerCase().contains("install")).toList();
+                    if (!installOnly.isEmpty()) return installOnly;
+                }
+                // When asking for repair / blowing hot air / not cooling / broken / gas / maintenance, return ONLY AC Repair!
+                if (hasWord(lower, "hot air", "warm air", "not cooling", "cooling", "leak", "broken", "repair", "noise", "smell", "gas", "fan", "fuse", "servicing", "service", "maintenance", "filter", "not working")) {
+                    List<Service> repairOnly = acServices.stream().filter(s -> s.getName().toLowerCase().contains("repair") || s.getName().toLowerCase().contains("service")).toList();
+                    if (!repairOnly.isEmpty()) return repairOnly;
                 }
                 return acServices;
             }
@@ -586,6 +583,14 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
 
         // 4. Plumbing domain
         if (hasWord(lower, "plumb", "plumber", "pipe", "leak", "tap", "sink", "faucet", "drain", "toilet", "flush", "water tank", "seepage")) {
+            if (hasWord(lower, "pipe", "sink", "leak", "leakage", "burst", "drain", "water tank", "seepage")) {
+                List<Service> pipeOnly = services.stream().filter(s -> s.getName().toLowerCase().contains("pipe") || s.getName().toLowerCase().contains("leak")).toList();
+                if (!pipeOnly.isEmpty()) return pipeOnly;
+            }
+            if (hasWord(lower, "tap", "faucet", "dripping")) {
+                List<Service> tapOnly = services.stream().filter(s -> s.getName().toLowerCase().contains("tap") || s.getName().toLowerCase().contains("faucet")).toList();
+                if (!tapOnly.isEmpty()) return tapOnly;
+            }
             for (Service s : services) {
                 String n = s.getName().toLowerCase();
                 String c = s.getCategory().getName().toLowerCase();
