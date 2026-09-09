@@ -150,11 +150,13 @@ public class AiDiagnosticTests {
 
     @Test
     void testParcelTransportDiagnosis() {
-        ServiceCategory vehicleCat = new ServiceCategory();
-        vehicleCat.setName("On-Demand Vehicle");
-        vehicleCat.setDescription("Vehicle Transport");
-        vehicleCat.setActive(true);
-        vehicleCat = serviceCategoryRepository.save(vehicleCat);
+        ServiceCategory vehicleCat = serviceCategoryRepository.findByNameIgnoreCase("On-Demand Vehicle").orElseGet(() -> {
+            ServiceCategory cat = new ServiceCategory();
+            cat.setName("On-Demand Vehicle");
+            cat.setDescription("Vehicle Transport");
+            cat.setActive(true);
+            return serviceCategoryRepository.save(cat);
+        });
 
         Service courierService = new Service();
         courierService.setName("Electric Bike (Courier)");
@@ -172,11 +174,13 @@ public class AiDiagnosticTests {
 
     @Test
     void testChatParcelQueryReturnsRealVehicleServices() {
-        ServiceCategory vehicleCat = new ServiceCategory();
-        vehicleCat.setName("On-Demand Vehicle");
-        vehicleCat.setDescription("Vehicle Transport");
-        vehicleCat.setActive(true);
-        vehicleCat = serviceCategoryRepository.save(vehicleCat);
+        ServiceCategory vehicleCat = serviceCategoryRepository.findByNameIgnoreCase("On-Demand Vehicle").orElseGet(() -> {
+            ServiceCategory cat = new ServiceCategory();
+            cat.setName("On-Demand Vehicle");
+            cat.setDescription("Vehicle Transport");
+            cat.setActive(true);
+            return serviceCategoryRepository.save(cat);
+        });
 
         Service courier = new Service();
         courier.setName("Electric Bike (Courier)");
@@ -195,6 +199,52 @@ public class AiDiagnosticTests {
         assertEquals("Electric Bike (Courier)", chatRes.getServices().get(0).getName());
         assertTrue(chatRes.getReply().contains("Electric Bike") || chatRes.getReply().contains("parcel") || chatRes.getReply().contains("Vehicle"), 
                 "Reply should reference actual logistics service, not construction materials");
+    }
+
+    @Test
+    void testFurnitureMovingQueryReturnsVehicleAndNeverRO() {
+        ServiceCategory vehicleCat = serviceCategoryRepository.findByNameIgnoreCase("Logistics").orElseGet(() -> {
+            ServiceCategory cat = new ServiceCategory();
+            cat.setName("Logistics");
+            cat.setDescription("Intra-city on-demand transport");
+            cat.setActive(true);
+            return serviceCategoryRepository.save(cat);
+        });
+
+        Service miniTruck = new Service();
+        miniTruck.setName("Mini Truck");
+        miniTruck.setCategory(vehicleCat);
+        miniTruck.setPrice(BigDecimal.valueOf(250));
+        miniTruck.setDurationMinutes(90);
+        miniTruck.setActive(true);
+        serviceRepository.save(miniTruck);
+
+        ServiceCategory applianceCat = serviceCategoryRepository.findByNameIgnoreCase("Appliances & Electrical").orElseGet(() -> {
+            ServiceCategory cat = new ServiceCategory();
+            cat.setName("Appliances & Electrical");
+            cat.setDescription("Appliances");
+            cat.setActive(true);
+            return serviceCategoryRepository.save(cat);
+        });
+
+        Service roService = new Service();
+        roService.setName("RO Installation");
+        roService.setCategory(applianceCat);
+        roService.setPrice(BigDecimal.valueOf(399));
+        roService.setDurationMinutes(60);
+        roService.setActive(true);
+        serviceRepository.save(roService);
+
+        com.taaskr.dto.ai.AiChatRequest chatReq = new com.taaskr.dto.ai.AiChatRequest("I have to move my furniture from Nanda Nagar to Bhawarkua");
+        com.taaskr.dto.ai.AiChatResponse chatRes = aiDiagnosticService.chat(null, chatReq);
+
+        assertNotNull(chatRes);
+        assertNotNull(chatRes.getServices());
+        assertFalse(chatRes.getServices().isEmpty(), "Should return vehicle services for moving");
+        assertEquals("Mini Truck", chatRes.getServices().get(0).getName(), "Must match Mini Truck, NOT RO Installation!");
+        assertNotEquals("RO Installation", chatRes.getServices().get(0).getName());
+        assertTrue(chatRes.getReply().contains("moving") || chatRes.getReply().contains("transport") || chatRes.getReply().contains("vehicle"),
+                "Reply should mention furniture moving / transport");
     }
 
     @Test
