@@ -571,18 +571,18 @@ export default function Navbar() {
               fontSize: '0.875rem',
               fontWeight: 600,
               cursor: 'pointer',
-              color: (location.pathname === '/provider' && providerTab !== 'discussions') ? 'var(--primary)' : 'var(--text-main)',
-              backgroundColor: (location.pathname === '/provider' && providerTab !== 'discussions') ? 'var(--primary-subtle)' : 'var(--bg-subtle)',
-              border: (location.pathname === '/provider' && providerTab !== 'discussions') ? '1px solid rgba(245, 158, 11, 0.45)' : '1px solid var(--border-light)',
+              color: (location.pathname === '/provider' && providerTab !== 'discussions') ? '#10B981' : 'var(--text-main)',
+              backgroundColor: (location.pathname === '/provider' && providerTab !== 'discussions') ? 'rgba(16, 185, 129, 0.16)' : 'var(--bg-subtle)',
+              border: (location.pathname === '/provider' && providerTab !== 'discussions') ? '1px solid rgba(16, 185, 129, 0.45)' : '1px solid var(--border-light)',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.45rem',
               letterSpacing: '0.01em',
               transition: 'all 0.2s ease',
-              boxShadow: (location.pathname === '/provider' && providerTab !== 'discussions') ? '0 0 12px rgba(245, 158, 11, 0.2)' : 'none'
+              boxShadow: (location.pathname === '/provider' && providerTab !== 'discussions') ? '0 0 12px rgba(16, 185, 129, 0.22)' : 'none'
             }}
           >
-            <Briefcase size={15} color="var(--primary)" />
+            <Briefcase size={15} color="#10B981" />
             <span>Provider Console</span>
           </button>
           <button
@@ -599,18 +599,18 @@ export default function Navbar() {
               fontSize: '0.875rem',
               fontWeight: 600,
               cursor: 'pointer',
-              color: (location.pathname === '/provider' && providerTab === 'discussions') ? 'var(--primary)' : 'var(--text-main)',
-              backgroundColor: (location.pathname === '/provider' && providerTab === 'discussions') ? 'var(--primary-subtle)' : 'var(--bg-subtle)',
-              border: (location.pathname === '/provider' && providerTab === 'discussions') ? '1px solid rgba(245, 158, 11, 0.45)' : '1px solid var(--border-light)',
+              color: (location.pathname === '/provider' && providerTab === 'discussions') ? '#10B981' : 'var(--text-main)',
+              backgroundColor: (location.pathname === '/provider' && providerTab === 'discussions') ? 'rgba(16, 185, 129, 0.16)' : 'var(--bg-subtle)',
+              border: (location.pathname === '/provider' && providerTab === 'discussions') ? '1px solid rgba(16, 185, 129, 0.45)' : '1px solid var(--border-light)',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.45rem',
               letterSpacing: '0.01em',
               transition: 'all 0.2s ease',
-              boxShadow: (location.pathname === '/provider' && providerTab === 'discussions') ? '0 0 12px rgba(245, 158, 11, 0.2)' : 'none'
+              boxShadow: (location.pathname === '/provider' && providerTab === 'discussions') ? '0 0 12px rgba(16, 185, 129, 0.22)' : 'none'
             }}
           >
-            <MessageSquare size={15} color="var(--primary)" />
+            <MessageSquare size={15} color="#10B981" />
             <span>Connect with Admin</span>
           </button>
         </div>
@@ -869,20 +869,20 @@ export default function Navbar() {
             style={{
               fontSize: '0.8rem',
               fontWeight: 600,
-              color: providerTab === 'discussions' ? 'var(--primary)' : 'var(--text-main)',
+              color: providerTab === 'discussions' ? '#10B981' : 'var(--text-main)',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.4rem',
               padding: '0.35rem 0.85rem',
               borderRadius: '20px',
               marginRight: '0.35rem',
-              backgroundColor: providerTab === 'discussions' ? 'var(--primary-subtle)' : 'var(--bg-subtle)',
-              border: providerTab === 'discussions' ? '1px solid rgba(245, 158, 11, 0.45)' : '1px solid var(--border-light)',
+              backgroundColor: providerTab === 'discussions' ? 'rgba(16, 185, 129, 0.16)' : 'var(--bg-subtle)',
+              border: providerTab === 'discussions' ? '1px solid rgba(16, 185, 129, 0.45)' : '1px solid var(--border-light)',
               transition: 'all 0.2s ease',
-              boxShadow: providerTab === 'discussions' ? '0 0 12px rgba(245, 158, 11, 0.2)' : 'none'
+              boxShadow: providerTab === 'discussions' ? '0 0 12px rgba(16, 185, 129, 0.22)' : 'none'
             }}
           >
-            <Headphones size={14} color="var(--primary)" />
+            <Headphones size={14} color="#10B981" />
             <span>Help Desk</span>
           </button>
         )}

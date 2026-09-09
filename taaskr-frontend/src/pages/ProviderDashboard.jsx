@@ -1121,9 +1121,10 @@ export default function ProviderDashboard() {
             <div className="sidebar-user-info" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', overflow: 'hidden' }}>
               <div style={{
                 width: '36px', height: '36px', borderRadius: 'var(--radius-sm)',
-                backgroundColor: 'var(--primary-subtle)', color: 'var(--primary)', display: 'flex',
+                backgroundColor: 'rgba(16, 185, 129, 0.16)', color: '#10B981', display: 'flex',
                 alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.95rem',
-                flexShrink: 0
+                flexShrink: 0,
+                border: '1px solid rgba(16, 185, 129, 0.35)'
               }}>
                 {userProfile?.name?.charAt(0) || 'P'}
               </div>
@@ -1133,15 +1134,15 @@ export default function ProviderDashboard() {
                 </div>
                 <span style={{ 
                   fontSize: '0.6875rem', 
-                  color: userProfile?.approved ? 'var(--success)' : '#D97706', 
+                  color: userProfile?.approved ? '#10B981' : '#F59E0B', 
                   fontWeight: 600, 
                   display: 'flex', 
                   alignItems: 'center', 
                   gap: '0.25rem', 
                   marginTop: '0.15rem' 
                 }}>
-                  <span className="badge-dot" style={{ backgroundColor: userProfile?.approved ? 'var(--success)' : '#F59E0B' }} /> 
-                  {userProfile?.approved ? 'Active Partner' : 'Pending Verification'}
+                  <span className="badge-dot" style={{ backgroundColor: userProfile?.approved ? '#10B981' : '#F59E0B' }} /> 
+                  {userProfile?.approved ? 'Active Partner Pro' : 'Pending Verification'}
                 </span>
               </div>
             </div>

@@ -1,14 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 /* ==========================================================================
-   TAASKR DESIGN SYSTEM & THEME TOKENS
+   TAASKR MULTI-PERSONA DESIGN SYSTEM & THEME TOKENS
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   1. UNIFIED MAIN THEME (User & Provider Portals)
+   1. CONSUMER / USER THEME (.theme-user / Default)
    Palette: Warm Amber, Deep Obsidian, Subtle Gold
    -------------------------------------------------------------------------- */
-:root, body.theme-user, body.theme-provider, body:not(.theme-admin) {
+:root, body.theme-user, body:not(.theme-provider):not(.theme-admin) {
   /* Dark Mode Default */
   --bg-page: #0F1117;
   --bg-header: #161822;
@@ -81,8 +81,8 @@
   --transition-smooth: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Light Theme - User & Provider */
-body.theme-user:not(.dark), body.theme-provider:not(.dark), body:not(.theme-admin):not(.dark) {
+/* Light Theme - User / Consumer */
+body.theme-user:not(.dark), body:not(.theme-provider):not(.theme-admin):not(.dark) {
   --bg-page: #F8F8F6;
   --bg-header: #FFFFFF;
   --bg-card: #FFFFFF;
@@ -125,7 +125,96 @@ body.theme-user:not(.dark), body.theme-provider:not(.dark), body:not(.theme-admi
 }
 
 /* --------------------------------------------------------------------------
-   2. ADMIN OPS & GOVERNANCE THEME (.theme-admin)
+   2. PROVIDER PRO THEME (.theme-provider)
+   Palette: Electric Emerald, High-Performance Slate, Neon Mint
+   -------------------------------------------------------------------------- */
+body.theme-provider {
+  --bg-page: #080D12;
+  --bg-header: #0D1520;
+  --bg-card: #111C2A;
+  --bg-card-hover: #172638;
+  --bg-card-selected: #1F324A;
+  --bg-subtle: #0D1520;
+  --bg-hover: #172638;
+  --bg-active: #1F324A;
+
+  --text-main: #F1F5F9;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+  --text-light: #64748B;
+  --text-inverse: #0F172A;
+
+  --border-subtle: #142030;
+  --border-light: #1E3048;
+  --border-color: #1E3048;
+  --border-strong: #2D486B;
+  --border-hover: #3E6392;
+
+  --primary: #10B981;
+  --primary-hover: #059669;
+  --primary-subtle: rgba(16, 185, 129, 0.14);
+  --primary-rgb: 16, 185, 129;
+  --secondary-accent: #34D399;
+  --icon-container: rgba(16, 185, 129, 0.16);
+  --accent-glow: rgba(16, 185, 129, 0.45);
+  --portal-brand: #10B981;
+
+  --secondary: #111C2A;
+  --secondary-hover: #172638;
+  --secondary-subtle: #0D1520;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 16px 36px rgba(0, 0, 0, 0.7);
+}
+
+/* Light Theme - Provider */
+body.theme-provider:not(.dark) {
+  --bg-page: #F0FDF4;
+  --bg-header: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #F7FEE7;
+  --bg-card-selected: #DCFCE7;
+  --bg-subtle: #F0FDF4;
+  --bg-hover: #E2E8F0;
+  --bg-active: #DCFCE7;
+
+  --text-main: #0F172A;
+  --text-secondary: #334155;
+  --text-muted: #64748B;
+  --text-light: #94A3B8;
+  --text-inverse: #FFFFFF;
+
+  --border-subtle: #E2E8F0;
+  --border-light: #BBF7D0;
+  --border-color: #BBF7D0;
+  --border-strong: #86EFAC;
+  --border-hover: #4ADE80;
+
+  --primary: #059669;
+  --primary-hover: #047857;
+  --primary-subtle: #DCFCE7;
+  --primary-rgb: 5, 150, 105;
+  --secondary-accent: #10B981;
+  --icon-container: #DCFCE7;
+  --accent-glow: rgba(5, 150, 105, 0.25);
+  --portal-brand: #059669;
+
+  --secondary: #F0FDF4;
+  --secondary-hover: #DCFCE7;
+  --secondary-subtle: #F0FDF4;
+
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
+}
+
+/* --------------------------------------------------------------------------
+   3. ADMIN OPS & GOVERNANCE THEME (.theme-admin)
    Palette: Royal Purple & Electric Indigo, Cybernetic Obsidian, Amethyst Glow
    -------------------------------------------------------------------------- */
 body.theme-admin {
@@ -1924,47 +2013,77 @@ body:not(.dark) .hero-physics-tile {
 body.theme-provider {
   --primary: #10B981;
   --primary-hover: #059669;
-  --primary-subtle: rgba(16, 185, 129, 0.12);
+  --primary-subtle: rgba(16, 185, 129, 0.14);
   --primary-rgb: 16, 185, 129;
-  --secondary-accent: #059669;
-  --icon-container: rgba(16, 185, 129, 0.14);
+  --secondary-accent: #34D399;
+  --icon-container: rgba(16, 185, 129, 0.16);
+  --accent-glow: rgba(16, 185, 129, 0.45);
+  --portal-brand: #10B981;
 }
 
 .provider-theme .enterprise-sidebar .sidebar-item.active,
 body.theme-provider .enterprise-sidebar .sidebar-item.active {
-  background: rgba(245, 158, 11, 0.14) !important;
-  border-color: rgba(245, 158, 11, 0.45) !important;
-  color: var(--primary) !important;
-  box-shadow: 0 0 12px rgba(245, 158, 11, 0.2) !important;
+  background: rgba(16, 185, 129, 0.16) !important;
+  border-color: rgba(16, 185, 129, 0.5) !important;
+  color: #10B981 !important;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.25) !important;
   font-weight: 600 !important;
+}
+
+.provider-theme .enterprise-sidebar .sidebar-item:hover,
+body.theme-provider .enterprise-sidebar .sidebar-item:hover {
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  color: #10B981 !important;
 }
 
 .provider-theme .btn-primary,
 body.theme-provider .btn-primary {
-  background: var(--primary) !important;
-  border: 1px solid var(--primary-hover) !important;
+  background: #10B981 !important;
+  border: 1px solid #059669 !important;
   color: #ffffff !important;
-  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.25) !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35) !important;
 }
 
 .provider-theme .btn-primary:hover:not(:disabled),
 body.theme-provider .btn-primary:hover:not(:disabled) {
-  background: var(--primary-hover) !important;
-  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.35) !important;
+  background: #059669 !important;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45) !important;
   transform: translateY(-1px);
 }
 
 .provider-theme .stat-card-modern,
 body.theme-provider .stat-card-modern {
-  border-left: 3.5px solid var(--primary) !important;
+  border-left: 3.5px solid #10B981 !important;
   box-shadow: var(--shadow-sm);
 }
 
 .provider-theme .badge-assigned,
 body.theme-provider .badge-assigned {
-  background: rgba(245, 158, 11, 0.12) !important;
-  color: var(--primary) !important;
-  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+  background: rgba(16, 185, 129, 0.14) !important;
+  color: #10B981 !important;
+  border: 1px solid rgba(16, 185, 129, 0.4) !important;
+}
+
+.provider-theme .badge-accepted,
+body.theme-provider .badge-accepted {
+  background: rgba(16, 185, 129, 0.14) !important;
+  color: #10B981 !important;
+  border: 1px solid rgba(16, 185, 129, 0.4) !important;
+}
+
+.provider-theme .form-control:focus,
+body.theme-provider .form-control:focus,
+.provider-theme .form-input:focus,
+body.theme-provider .form-input:focus,
+.provider-theme .form-select:focus,
+body.theme-provider .form-select:focus {
+  border-color: #10B981 !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18) !important;
+}
+
+.provider-theme .form-checkbox,
+body.theme-provider .form-checkbox {
+  accent-color: #10B981 !important;
 }
 
 /* --------------------------------------------------------------------------
