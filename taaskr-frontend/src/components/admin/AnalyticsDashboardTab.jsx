@@ -89,15 +89,22 @@ export default function AnalyticsDashboardTab({
     });
 
     // Helper to get booking date timestamp
+    // IMPORTANT: parse "YYYY-MM-DD" as LOCAL midnight (not UTC midnight)
+    // new Date("2026-09-10") = midnight UTC = 05:30 IST next day → wrong for IST users
+    // new Date(2026, 8, 10) = midnight in browser's local timezone (IST) → correct
     const getBookingTime = (b) => {
       if (b.bookingDate) {
-        const dt = new Date(b.bookingDate);
-        if (!isNaN(dt.getTime())) {
-          if (b.startTime) {
-            const parts = b.startTime.split(':');
-            dt.setHours(parseInt(parts[0] || 0), parseInt(parts[1] || 0));
+        const parts = b.bookingDate.split('-');
+        if (parts.length === 3) {
+          const [year, month, day] = parts.map(Number);
+          const dt = new Date(year, month - 1, day, 0, 0, 0); // local midnight
+          if (!isNaN(dt.getTime())) {
+            if (b.startTime) {
+              const tp = b.startTime.split(':');
+              dt.setHours(parseInt(tp[0] || 0, 10), parseInt(tp[1] || 0, 10), 0, 0);
+            }
+            return dt;
           }
-          return dt;
         }
       }
       if (b.createdAt) {

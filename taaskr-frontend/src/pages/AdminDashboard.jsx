@@ -46,6 +46,10 @@ export default function AdminDashboard() {
   const [disputesPage, setDisputesPage] = useState(1);
   const itemsPerPage = 10;
 
+  // All Bookings tab search & filter
+  const [bookingSearch, setBookingSearch] = useState('');
+  const [bookingStatusFilter, setBookingStatusFilter] = useState('ALL');
+
   // Tabs: 'analytics', 'observability', 'catalog', 'providers', 'providers_pending', 'providers_approved', 'bookings', 'users', 'discussions', 'payouts', 'disputes'
   const [activeTab, setActiveTab] = useState('analytics');
 
@@ -1352,6 +1356,140 @@ export default function AdminDashboard() {
             )}
           </div>
         )}
+
+        {/* ========================================================================= */}
+        {/* TAB: ALL BOOKINGS                                                        */}
+        {/* ========================================================================= */}
+        {activeTab === 'bookings' && (() => {
+          const STATUS_OPTS = ['ALL','PENDING','ASSIGNED','ACCEPTED','IN_TRANSIT','IN_PROGRESS','COMPLETED','CANCELLED'];
+          const filteredBookings = bookings.filter(b => {
+            if (bookingStatusFilter !== 'ALL' && b.status !== bookingStatusFilter) return false;
+            if (bookingSearch.trim()) {
+              const q = bookingSearch.toLowerCase();
+              return (
+                String(b.bookingCode || '').toLowerCase().includes(q) ||
+                String(b.serviceName || '').toLowerCase().includes(q) ||
+                String(b.userName || '').toLowerCase().includes(q) ||
+                String(b.providerName || '').toLowerCase().includes(q) ||
+                String(b.city || '').toLowerCase().includes(q)
+              );
+            }
+            return true;
+          });
+          const pagedBookings = filteredBookings.slice((bookingsPage - 1) * itemsPerPage, bookingsPage * itemsPerPage);
+          const badgeClass = s => {
+            if (s === 'COMPLETED') return 'badge-completed';
+            if (s === 'CANCELLED') return 'badge-cancelled';
+            if (s === 'IN_PROGRESS' || s === 'IN_TRANSIT') return 'badge-in-progress';
+            if (s === 'ACCEPTED') return 'badge-accepted';
+            if (s === 'ASSIGNED') return 'badge-assigned';
+            return 'badge-pending';
+          };
+          const payBadge = s => s === 'PAID' ? 'badge-completed' : s === 'FAILED' ? 'badge-cancelled' : 'badge-pending';
+          return (
+            <div className="panel">
+              {/* Header */}
+              <div className="panel-header" style={{ marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+                <h2 className="panel-title">
+                  <Calendar size={18} color="var(--primary)" />
+                  <span>All Bookings</span>
+                </h2>
+                <span className="badge badge-assigned">{filteredBookings.length} of {bookings.length}</span>
+              </div>
+
+              {/* Search & Filter Bar */}
+              <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
+                  <Search size={14} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Search by code, service, customer, provider…"
+                    value={bookingSearch}
+                    onChange={e => { setBookingSearch(e.target.value); setBookingsPage(1); }}
+                    style={{ paddingLeft: '2.25rem', height: '36px', fontSize: '0.8125rem' }}
+                  />
+                </div>
+                <select
+                  className="form-control"
+                  value={bookingStatusFilter}
+                  onChange={e => { setBookingStatusFilter(e.target.value); setBookingsPage(1); }}
+                  style={{ width: 'auto', minWidth: '150px', height: '36px', fontSize: '0.8125rem' }}
+                >
+                  {STATUS_OPTS.map(s => <option key={s} value={s}>{s === 'ALL' ? 'All Statuses' : s.replace('_', ' ')}</option>)}
+                </select>
+              </div>
+
+              {filteredBookings.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-state-icon"><Calendar size={22} /></div>
+                  <h3 className="empty-state-title">{bookingSearch || bookingStatusFilter !== 'ALL' ? 'No matching bookings' : 'No bookings yet'}</h3>
+                  <p className="empty-state-description">Bookings placed by customers will appear here.</p>
+                </div>
+              ) : (
+                <div className="table-container">
+                  <table className="enterprise-table">
+                    <thead>
+                      <tr>
+                        <th>Code</th>
+                        <th>Service</th>
+                        <th>Customer</th>
+                        <th>Provider</th>
+                        <th>Date &amp; Time</th>
+                        <th>Amount</th>
+                        <th>Payment</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pagedBookings.map(b => (
+                        <tr key={b.id}>
+                          <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--primary)', whiteSpace: 'nowrap' }}>
+                            #{b.bookingCode || b.id}
+                          </td>
+                          <td style={{ fontWeight: 500, color: 'var(--text-main)', maxWidth: '140px' }}>
+                            <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.serviceName || '—'}</div>
+                            {b.categoryName && <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{b.categoryName}</div>}
+                          </td>
+                          <td>
+                            <div style={{ fontWeight: 500, color: 'var(--text-main)' }}>{b.userName || '—'}</div>
+                            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{b.city || ''}</div>
+                          </td>
+                          <td style={{ color: b.providerName ? 'var(--text-main)' : 'var(--text-muted)', fontSize: '0.8125rem' }}>
+                            {b.providerName || 'Unassigned'}
+                          </td>
+                          <td style={{ whiteSpace: 'nowrap', color: 'var(--text-muted)', fontSize: '0.78rem' }}>
+                            {b.bookingDate || '—'}<br />
+                            {b.startTime ? formatLocalTime(b.startTime) : ''}
+                          </td>
+                          <td style={{ fontWeight: 700, color: 'var(--text-main)', fontFeatureSettings: 'tnum', whiteSpace: 'nowrap' }}>
+                            ₹{Number(b.finalAmount || b.totalAmount || 0).toLocaleString('en-IN')}
+                          </td>
+                          <td>
+                            <span className={`badge ${payBadge(b.paymentStatus)}`} style={{ fontSize: '0.65rem' }}>
+                              {b.paymentStatus || 'PENDING'}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`badge ${badgeClass(b.status)}`} style={{ fontSize: '0.65rem' }}>
+                              {b.status?.replace('_', ' ') || '—'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <Pagination
+                    currentPage={bookingsPage}
+                    totalItems={filteredBookings.length}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setBookingsPage}
+                  />
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* ========================================================================= */}
         {/* TAB: PAYOUT SETTLEMENTS                                                  */}
