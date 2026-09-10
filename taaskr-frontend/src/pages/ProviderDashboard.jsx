@@ -2409,15 +2409,23 @@ export default function ProviderDashboard() {
                             #{String(tx.id).slice(-6)}
                           </td>
                           <td style={{ padding: '0.65rem 0.5rem' }}>
-                            <span className={`badge ${tx.type === 'EARNING_CREDIT' ? 'badge-completed' : 'badge-pending'}`}>
-                              {tx.type === 'EARNING_CREDIT' ? 'Net Credit' : tx.type}
+                            <span className={`badge ${
+                              tx.type === 'EARNING' ? 'badge-completed' 
+                              : tx.type === 'COMMISSION' ? 'badge-pending'
+                              : tx.type === 'PAYOUT_WITHDRAWAL' ? 'badge-cancelled'
+                              : 'badge-assigned'
+                            }`}>
+                              {tx.type === 'EARNING' ? 'EARNING'
+                               : tx.type === 'COMMISSION' ? 'COMMISSION'
+                               : tx.type === 'PAYOUT_WITHDRAWAL' ? 'PAYOUT_WITHDRAWAL'
+                               : tx.type}
                             </span>
                           </td>
-                          <td style={{ padding: '0.65rem 0.5rem', fontWeight: 700, color: tx.type === 'EARNING_CREDIT' ? 'var(--success)' : 'var(--error)', fontFeatureSettings: 'tnum' }}>
-                            {tx.type === 'EARNING_CREDIT' ? '+' : '-'}₹{tx.netAmount?.toLocaleString('en-IN')}
+                          <td style={{ padding: '0.65rem 0.5rem', fontWeight: 700, color: tx.type === 'EARNING' ? 'var(--success)' : 'var(--error)', fontFeatureSettings: 'tnum' }}>
+                            {tx.type === 'EARNING' ? '+' : '-'}₹{Number(tx.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                           <td style={{ padding: '0.65rem 0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-                            {tx.commissionAmount ? `₹${tx.commissionAmount} (15%)` : '—'}
+                            {tx.type === 'COMMISSION' ? `₹${Number(tx.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })} (15%)` : '—'}
                           </td>
                           <td style={{ padding: '0.65rem 0.5rem', color: 'var(--text-main)', fontSize: '0.78rem' }}>
                             {tx.description}
