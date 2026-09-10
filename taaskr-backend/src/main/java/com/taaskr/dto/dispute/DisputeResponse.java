@@ -9,11 +9,19 @@ public class DisputeResponse {
     private Long id;
     private Long bookingId;
     private String bookingCode;
+    private String serviceName;
+    private BigDecimal bookingAmount;
     private Long userId;
     private String userName;
     private String userEmail;
+    private String userPhone;
+    private String customerName;
+    private String customerEmail;
+    private String customerPhone;
     private Long providerId;
     private String providerName;
+    private String providerEmail;
+    private String providerPhone;
     private String reason;
     private String description;
     private DisputeStatus status;
@@ -26,44 +34,60 @@ public class DisputeResponse {
     public DisputeResponse() {
     }
 
-    public DisputeResponse(Long id, Long bookingId, String bookingCode, Long userId, String userName, String userEmail, Long providerId, String providerName, String reason, String description, DisputeStatus status, String resolution, BigDecimal refundAmount, String resolvedBy, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.id = id;
-        this.bookingId = bookingId;
-        this.bookingCode = bookingCode;
-        this.userId = userId;
-        this.userName = userName;
-        this.userEmail = userEmail;
-        this.providerId = providerId;
-        this.providerName = providerName;
-        this.reason = reason;
-        this.description = description;
-        this.status = status;
-        this.resolution = resolution;
-        this.refundAmount = refundAmount;
-        this.resolvedBy = resolvedBy;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
-
     public static DisputeResponse fromEntity(com.taaskr.entity.Dispute d) {
-        return new DisputeResponse(
-                d.getId(),
-                d.getBooking() != null ? d.getBooking().getId() : null,
-                d.getBooking() != null ? d.getBooking().getBookingCode() : null,
-                d.getUser() != null ? d.getUser().getId() : null,
-                d.getUser() != null ? d.getUser().getName() : null,
-                d.getUser() != null ? d.getUser().getEmail() : null,
-                d.getProvider() != null ? d.getProvider().getId() : null,
-                (d.getProvider() != null && d.getProvider().getUser() != null) ? d.getProvider().getUser().getName() : null,
-                d.getReason(),
-                d.getDescription(),
-                d.getStatus(),
-                d.getResolution(),
-                d.getRefundAmount(),
-                d.getResolvedBy(),
-                d.getCreatedAt(),
-                d.getUpdatedAt()
-        );
+        DisputeResponse res = new DisputeResponse();
+        res.setId(d.getId());
+
+        if (d.getBooking() != null) {
+            res.setBookingId(d.getBooking().getId());
+            res.setBookingCode(d.getBooking().getBookingCode());
+            res.setBookingAmount(d.getBooking().getFinalAmount() != null ? d.getBooking().getFinalAmount() : d.getBooking().getTotalAmount());
+            if (d.getBooking().getService() != null) {
+                res.setServiceName(d.getBooking().getService().getName());
+            }
+        }
+
+        // Customer Details Resolution (Primary user or fallback to booking user)
+        com.taaskr.entity.User custUser = d.getUser();
+        if (custUser == null && d.getBooking() != null) {
+            custUser = d.getBooking().getUser();
+        }
+
+        if (custUser != null) {
+            res.setUserId(custUser.getId());
+            res.setUserName(custUser.getName());
+            res.setUserEmail(custUser.getEmail());
+            res.setUserPhone(custUser.getPhone());
+            res.setCustomerName(custUser.getName());
+            res.setCustomerEmail(custUser.getEmail());
+            res.setCustomerPhone(custUser.getPhone());
+        }
+
+        // Provider Details Resolution (Primary provider or fallback to booking provider)
+        com.taaskr.entity.ProviderProfile provProfile = d.getProvider();
+        if (provProfile == null && d.getBooking() != null) {
+            provProfile = d.getBooking().getProvider();
+        }
+
+        if (provProfile != null) {
+            res.setProviderId(provProfile.getId());
+            if (provProfile.getUser() != null) {
+                res.setProviderName(provProfile.getUser().getName());
+                res.setProviderEmail(provProfile.getUser().getEmail());
+                res.setProviderPhone(provProfile.getUser().getPhone());
+            }
+        }
+
+        res.setReason(d.getReason());
+        res.setDescription(d.getDescription());
+        res.setStatus(d.getStatus());
+        res.setResolution(d.getResolution());
+        res.setRefundAmount(d.getRefundAmount());
+        res.setResolvedBy(d.getResolvedBy());
+        res.setCreatedAt(d.getCreatedAt());
+        res.setUpdatedAt(d.getUpdatedAt());
+
+        return res;
     }
 
     public Long getId() {
@@ -192,5 +216,69 @@ public class DisputeResponse {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+    }
+
+    public BigDecimal getBookingAmount() {
+        return bookingAmount;
+    }
+
+    public void setBookingAmount(BigDecimal bookingAmount) {
+        this.bookingAmount = bookingAmount;
+    }
+
+    public String getUserPhone() {
+        return userPhone;
+    }
+
+    public void setUserPhone(String userPhone) {
+        this.userPhone = userPhone;
+    }
+
+    public String getCustomerName() {
+        return customerName != null ? customerName : userName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getCustomerEmail() {
+        return customerEmail != null ? customerEmail : userEmail;
+    }
+
+    public void setCustomerEmail(String customerEmail) {
+        this.customerEmail = customerEmail;
+    }
+
+    public String getCustomerPhone() {
+        return customerPhone != null ? customerPhone : userPhone;
+    }
+
+    public void setCustomerPhone(String customerPhone) {
+        this.customerPhone = customerPhone;
+    }
+
+    public String getProviderEmail() {
+        return providerEmail;
+    }
+
+    public void setProviderEmail(String providerEmail) {
+        this.providerEmail = providerEmail;
+    }
+
+    public String getProviderPhone() {
+        return providerPhone;
+    }
+
+    public void setProviderPhone(String providerPhone) {
+        this.providerPhone = providerPhone;
     }
 }

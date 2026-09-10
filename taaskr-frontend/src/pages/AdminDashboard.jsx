@@ -84,7 +84,9 @@ export default function AdminDashboard() {
       const q = disputeSearch.toLowerCase();
       const matchId = String(d.id).includes(q);
       const matchBooking = String(d.bookingId || '').includes(q) || String(d.bookingCode || '').toLowerCase().includes(q) || String(d.serviceName || '').toLowerCase().includes(q);
-      const matchCustomer = String(d.customerName || '').toLowerCase().includes(q) || String(d.customerEmail || '').toLowerCase().includes(q);
+      const matchCustomer = String(d.customerName || d.userName || '').toLowerCase().includes(q) || 
+                            String(d.customerEmail || d.userEmail || '').toLowerCase().includes(q) ||
+                            String(d.customerPhone || d.userPhone || '').toLowerCase().includes(q);
       const matchProvider = String(d.providerName || '').toLowerCase().includes(q) || String(d.providerEmail || '').toLowerCase().includes(q);
       const matchReason = String(d.reason || '').toLowerCase().includes(q);
       return matchId || matchBooking || matchCustomer || matchProvider || matchReason;
@@ -1675,8 +1677,8 @@ export default function AdminDashboard() {
                               </div>
 
                               <div style={{ fontSize: '0.75rem', color: 'var(--text-main)', marginBottom: '0.25rem' }}>
-                                <strong>Customer:</strong> {disp.customerName || 'Customer'}
-                                {disp.providerName && <span style={{ color: 'var(--text-muted)' }}> | <strong>Partner:</strong> {disp.providerName}</span>}
+                                <strong>Customer:</strong> {disp.customerName || disp.userName || 'Customer'}
+                                {(disp.providerName) && <span style={{ color: 'var(--text-muted)' }}> | <strong>Partner:</strong> {disp.providerName}</span>}
                               </div>
 
                               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -1712,7 +1714,7 @@ export default function AdminDashboard() {
                       let statusBadgeClass = 'badge-pending';
                       if (disp.status === 'RESOLVED') statusBadgeClass = 'badge-completed';
                       else if (disp.status === 'UNDER_REVIEW') statusBadgeClass = 'badge-assigned';
-                      else if (disp.status === 'DISMISSED') statusBadgeClass = 'badge-cancelled';
+                      else if (disp.status === 'DISMISSED' || disp.status === 'REJECTED') statusBadgeClass = 'badge-cancelled';
 
                       return (
                         <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '1.5rem' }}>
@@ -1768,8 +1770,17 @@ export default function AdminDashboard() {
                               <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', display: 'block', marginBottom: '0.35rem' }}>
                                 👤 CUSTOMER DETAILS
                               </span>
-                              <strong style={{ color: 'var(--text-main)', fontSize: '0.9rem', display: 'block' }}>{disp.customerName || 'Customer'}</strong>
-                              <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>{disp.customerEmail || 'No email registered'}</span>
+                              <strong style={{ color: 'var(--text-main)', fontSize: '0.9rem', display: 'block' }}>
+                                {disp.customerName || disp.userName || 'Customer'}
+                              </strong>
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>
+                                {disp.customerEmail || disp.userEmail || 'No email registered'}
+                              </span>
+                              {(disp.customerPhone || disp.userPhone) && (
+                                <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>
+                                  📞 {disp.customerPhone || disp.userPhone}
+                                </span>
+                              )}
                               <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>User ID: #{disp.userId || 'N/A'}</span>
                             </div>
 
@@ -1777,8 +1788,17 @@ export default function AdminDashboard() {
                               <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', display: 'block', marginBottom: '0.35rem' }}>
                                 🛠️ SERVICE PARTNER
                               </span>
-                              <strong style={{ color: 'var(--text-main)', fontSize: '0.9rem', display: 'block' }}>{disp.providerName || 'Provider Unassigned'}</strong>
-                              <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>{disp.providerEmail || ''}</span>
+                              <strong style={{ color: 'var(--text-main)', fontSize: '0.9rem', display: 'block' }}>
+                                {disp.providerName || 'Provider Unassigned'}
+                              </strong>
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>
+                                {disp.providerEmail || ''}
+                              </span>
+                              {disp.providerPhone && (
+                                <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block' }}>
+                                  📞 {disp.providerPhone}
+                                </span>
+                              )}
                               <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>Provider ID: #{disp.providerId || 'N/A'}</span>
                             </div>
 
@@ -1789,7 +1809,14 @@ export default function AdminDashboard() {
                               <strong style={{ color: 'var(--primary)', fontFamily: 'var(--font-mono)', display: 'block' }}>
                                 #{disp.bookingCode || disp.bookingId}
                               </strong>
-                              <span style={{ color: 'var(--text-main)', fontSize: '0.78rem', display: 'block' }}>{disp.serviceName || 'On-Demand Service'}</span>
+                              <span style={{ color: 'var(--text-main)', fontSize: '0.78rem', display: 'block' }}>
+                                {disp.serviceName || 'On-Demand Service'}
+                              </span>
+                              {disp.bookingAmount != null && (
+                                <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', display: 'block' }}>
+                                  Total: ₹{disp.bookingAmount}
+                                </span>
+                              )}
                               <span className="badge badge-assigned" style={{ fontSize: '0.68rem', marginTop: '0.2rem' }}>
                                 {disp.reason?.replace(/_/g, ' ') || 'General Issue'}
                               </span>
@@ -1816,7 +1843,7 @@ export default function AdminDashboard() {
                                   conversationList.push({
                                     id: `desc-${index}`,
                                     senderRole: role,
-                                    senderName: role === 'ADMIN' ? '🛡️ Admin Support' : `👤 ${disp.customerName || 'Customer'}`,
+                                    senderName: role === 'ADMIN' ? '🛡️ Admin Support' : `👤 ${disp.customerName || disp.userName || 'Customer'}`,
                                     message: match[3],
                                     timestamp: timeStr
                                   });
@@ -1824,7 +1851,7 @@ export default function AdminDashboard() {
                                   conversationList.push({
                                     id: `initial-${index}`,
                                     senderRole: 'USER',
-                                    senderName: `👤 ${disp.customerName || 'Customer'} (Initial Stated Complaint)`,
+                                    senderName: `👤 ${disp.customerName || disp.userName || 'Customer'} (Initial Stated Complaint)`,
                                     message: trimmed,
                                     timestamp: disp.createdAt ? new Date(disp.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent'
                                   });
@@ -2782,11 +2809,14 @@ export default function AdminDashboard() {
             <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', border: '1px solid var(--border-light)', fontSize: '0.8125rem' }}>
               <div style={{ marginBottom: '0.35rem' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Customer: </span>
-                <strong>{resolvingDispute.customerName}</strong> ({resolvingDispute.customerEmail})
+                <strong>{resolvingDispute.customerName || resolvingDispute.userName || 'Customer'}</strong> ({resolvingDispute.customerEmail || resolvingDispute.userEmail || 'No email'})
+                {(resolvingDispute.customerPhone || resolvingDispute.userPhone) && (
+                  <span style={{ color: 'var(--text-muted)' }}> • 📞 {resolvingDispute.customerPhone || resolvingDispute.userPhone}</span>
+                )}
               </div>
               <div style={{ marginBottom: '0.35rem' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Provider: </span>
-                <strong>{resolvingDispute.providerName}</strong> ({resolvingDispute.providerEmail})
+                <strong>{resolvingDispute.providerName || 'Provider Unassigned'}</strong> {resolvingDispute.providerEmail && `(${resolvingDispute.providerEmail})`}
               </div>
               <div style={{ marginTop: '0.5rem', fontStyle: 'italic', color: 'var(--text-main)' }}>
                 "{resolvingDispute.description}"

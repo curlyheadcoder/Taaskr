@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
-import { formatLocalTime } from '../utils/time';
+import { formatLocalTime, isBookingInFuture, getTimeUntilBooking } from '../utils/time';
 import { sortBookingsByStatusPriority } from '../utils/sorting';
 import Pagination from '../components/Pagination';
 import PaymentRestrictionModal from '../components/PaymentRestrictionModal';
@@ -548,6 +548,15 @@ export default function ProviderDashboard() {
     const isVehicleJob = typeof jobOrId === 'object' ? Boolean(jobOrId.dropAddress) : false;
     const targetStatus = isVehicleJob ? 'IN_TRANSIT' : 'IN_PROGRESS';
 
+    const job = typeof jobOrId === 'object' 
+      ? jobOrId 
+      : assignedBookings.find(b => b.id === bookingId);
+
+    if (job && isBookingInFuture(job.bookingDate, job.startTime)) {
+      showNotification(`Cannot start work before the assigned time: ${job.bookingDate} at ${formatLocalTime(job.startTime)}.`, 'error');
+      return;
+    }
+
     if (!isProviderVerified) {
       showNotification('Please verify both your email and phone number before updating task status.', 'error');
       return;
@@ -1027,17 +1036,50 @@ export default function ProviderDashboard() {
               )}
 
               {/* Step 2: ACCEPTED -> Start Work / Start Transit ONLY */}
-              {job.status === 'ACCEPTED' && (
-                <button 
-                  onClick={() => handleStartInTransit(job)} 
-                  className="btn btn-primary btn-sm"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600 }}
-                  disabled={isActionLoading}
-                >
-                  <Play size={13} fill="currentColor" />
-                  <span>{isActionLoading ? 'Starting...' : (job.dropAddress ? 'Start Transit' : 'Start Work')}</span>
-                </button>
-              )}
+              {job.status === 'ACCEPTED' && (() => {
+                const isFuture = isBookingInFuture(job.bookingDate, job.startTime);
+                const timeUntil = getTimeUntilBooking(job.bookingDate, job.startTime);
+                return (
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                    <button 
+                      onClick={() => handleStartInTransit(job)} 
+                      className="btn btn-primary btn-sm"
+                      style={{ 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        gap: '0.35rem', 
+                        fontWeight: 600,
+                        ...(isFuture ? { opacity: 0.65, cursor: 'not-allowed', filter: 'grayscale(0.3)' } : {})
+                      }}
+                      disabled={isActionLoading || isFuture}
+                      title={isFuture ? `Cannot start work before scheduled time: ${job.bookingDate} at ${formatLocalTime(job.startTime)}` : ''}
+                    >
+                      <Play size={13} fill="currentColor" />
+                      <span>{isActionLoading ? 'Starting...' : (job.dropAddress ? 'Start Transit' : 'Start Work')}</span>
+                    </button>
+                    {isFuture && (
+                      <span 
+                        style={{ 
+                          fontSize: '0.72rem', 
+                          fontWeight: 600, 
+                          color: '#f59e0b',
+                          backgroundColor: 'rgba(245, 158, 11, 0.12)', 
+                          padding: '0.2rem 0.5rem', 
+                          borderRadius: '4px',
+                          border: '1px solid rgba(245, 158, 11, 0.25)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.25rem'
+                        }}
+                        title={`Assigned booking date & time: ${job.bookingDate} at ${formatLocalTime(job.startTime)}`}
+                      >
+                        <Clock size={11} />
+                        <span>{timeUntil || `Starts at ${formatLocalTime(job.startTime)}`}</span>
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Step 3: IN_PROGRESS or IN_TRANSIT -> Mark as Completed */}
               {(job.status === 'IN_TRANSIT' || job.status === 'IN_PROGRESS') && (

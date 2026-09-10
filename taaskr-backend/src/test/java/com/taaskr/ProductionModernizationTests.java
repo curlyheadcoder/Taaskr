@@ -76,6 +76,9 @@ public class ProductionModernizationTests {
     @Autowired
     private BookingService bookingService;
 
+    @Autowired
+    private ProviderWorkflowService providerWorkflowService;
+
     private User testCustomer;
     private User testProviderUser;
     private ProviderProfile testProvider;
@@ -316,5 +319,57 @@ public class ProductionModernizationTests {
         // 4. Admin document query
         var allDocs = kycDocumentService.getAllDocuments(KycDocumentStatus.VERIFIED, 0, 10);
         assertTrue(allDocs.getTotalElements() >= 1);
+    }
+
+    @Test
+    void testFutureBookingCannotBeStartedBeforeScheduledTime() {
+        // Create a booking for tomorrow at 14:00
+        Booking futureBooking = new Booking();
+        futureBooking.setBookingCode("TSK-FUTURE-01");
+        futureBooking.setUser(testCustomer);
+        futureBooking.setProvider(testProvider);
+        futureBooking.setService(testService);
+        futureBooking.setBookingDate(LocalDate.now().plusDays(1));
+        futureBooking.setStartTime(LocalTime.of(14, 0));
+        futureBooking.setEndTime(LocalTime.of(15, 0));
+        futureBooking.setAddress("456 Future Lane");
+        futureBooking.setCity("Indore");
+        futureBooking.setPincode("452001");
+        futureBooking.setStatus(BookingStatus.ASSIGNED);
+        futureBooking.setPaymentMethod(PaymentMethod.ONLINE);
+        futureBooking.setPaymentStatus(PaymentStatus.PAID);
+        futureBooking.setTotalAmount(BigDecimal.valueOf(499.00));
+        futureBooking.setFinalAmount(BigDecimal.valueOf(499.00));
+        Booking savedFutureBooking = bookingRepository.save(futureBooking);
+        final Long futureBookingId = savedFutureBooking.getId();
+
+        // 1. Provider accepts the future task -> must succeed
+        var acceptedResponse = providerWorkflowService.acceptBooking(testProviderUser.getEmail(), futureBookingId);
+        assertEquals(BookingStatus.ACCEPTED, acceptedResponse.getStatus());
+
+        // 2. Provider tries to start work (IN_PROGRESS) on future task -> must throw BadRequestException
+        var startRequest = new com.taaskr.dto.provider.UpdateProviderBookingStatusRequest();
+        startRequest.setStatus(BookingStatus.IN_PROGRESS);
+
+        var ex = assertThrows(com.taaskr.exception.BadRequestException.class, () -> {
+            providerWorkflowService.updateBookingStatus(testProviderUser.getEmail(), futureBookingId, startRequest);
+        });
+        assertTrue(ex.getMessage().contains("Cannot start work before the assigned booking time"));
+
+        // 3. Provider tries to start transit (IN_TRANSIT) on future task -> must also throw BadRequestException
+        var transitRequest = new com.taaskr.dto.provider.UpdateProviderBookingStatusRequest();
+        transitRequest.setStatus(BookingStatus.IN_TRANSIT);
+
+        var exTransit = assertThrows(com.taaskr.exception.BadRequestException.class, () -> {
+            providerWorkflowService.updateBookingStatus(testProviderUser.getEmail(), futureBookingId, transitRequest);
+        });
+        assertTrue(exTransit.getMessage().contains("Cannot start work before the assigned booking time"));
+
+        // 4. Update the booking date/time to the past/current moment -> provider can now start work
+        savedFutureBooking.setBookingDate(LocalDate.now().minusDays(1));
+        bookingRepository.save(savedFutureBooking);
+
+        var startedResponse = providerWorkflowService.updateBookingStatus(testProviderUser.getEmail(), futureBookingId, startRequest);
+        assertEquals(BookingStatus.IN_PROGRESS, startedResponse.getStatus());
     }
 }

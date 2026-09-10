@@ -183,6 +183,17 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
         if(!isValidTransition(current, target)){
             throw new BadRequestException("Invalid booking status from " + current + " to " + target);
         }
+
+        if (target == BookingStatus.IN_PROGRESS || target == BookingStatus.IN_TRANSIT) {
+            if (booking.getBookingDate() != null && booking.getStartTime() != null) {
+                java.time.LocalDateTime scheduledStart = java.time.LocalDateTime.of(booking.getBookingDate(), booking.getStartTime());
+                if (java.time.LocalDateTime.now().isBefore(scheduledStart)) {
+                    throw new BadRequestException("Cannot start work before the assigned booking time: " 
+                            + booking.getBookingDate() + " at " + booking.getStartTime());
+                }
+            }
+        }
+
         booking.setStatus(target);
 
         if(target == BookingStatus.COMPLETED){
