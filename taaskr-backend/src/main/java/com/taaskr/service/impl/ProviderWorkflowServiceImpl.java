@@ -187,7 +187,8 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
         if (target == BookingStatus.IN_PROGRESS || target == BookingStatus.IN_TRANSIT) {
             if (booking.getBookingDate() != null && booking.getStartTime() != null) {
                 java.time.LocalDateTime scheduledStart = java.time.LocalDateTime.of(booking.getBookingDate(), booking.getStartTime());
-                if (java.time.LocalDateTime.now().isBefore(scheduledStart)) {
+                java.time.LocalDateTime nowIST = java.time.LocalDateTime.now(java.time.ZoneId.of("Asia/Kolkata"));
+                if (nowIST.isBefore(scheduledStart)) {
                     throw new BadRequestException("Cannot start work before the assigned booking time: " 
                             + booking.getBookingDate() + " at " + booking.getStartTime());
                 }
