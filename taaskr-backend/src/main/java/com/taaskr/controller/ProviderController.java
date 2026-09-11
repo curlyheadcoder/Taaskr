@@ -106,6 +106,17 @@ public class ProviderController {
         return providerWorkflowService.updateMyCategories(authentication.getName(), request);
     }
 
+    @GetMapping("/bank-details")
+    public com.taaskr.dto.provider.ProviderBankDetailsResponse getBankDetails(Authentication authentication) {
+        return providerWorkflowService.getBankDetails(authentication.getName());
+    }
+
+    @PutMapping("/bank-details")
+    public com.taaskr.dto.provider.ProviderBankDetailsResponse updateBankDetails(@Valid @RequestBody com.taaskr.dto.provider.UpdateBankDetailsRequest request,
+                                                                                 Authentication authentication) {
+        return providerWorkflowService.updateBankDetails(authentication.getName(), request);
+    }
+
     // ----------------------------------------
     // PARTNER DISCUSSION & ADMIN CONNECT
     // ----------------------------------------

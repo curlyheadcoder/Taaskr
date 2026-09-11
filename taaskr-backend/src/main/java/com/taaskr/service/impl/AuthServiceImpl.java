@@ -470,4 +470,20 @@ public class AuthServiceImpl implements AuthService {
                 Boolean.TRUE.equals(savedUser.getPhoneVerified())
         );
     }
+
+    @Override
+    @Transactional
+    public AuthMessageResponse changePassword(String email, ChangePasswordRequest request) {
+        User user = userRepository.findByEmail(email.trim().toLowerCase())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new BadRequestException("Current password is incorrect");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        return new AuthMessageResponse(true, "Password updated successfully!", user.getEmail(), user.getPhone(), null);
+    }
 }

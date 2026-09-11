@@ -11,7 +11,7 @@ import {
   Calendar, Clock, CreditCard, Star, Truck, MapPin, User, 
   ExternalLink, AlertCircle, CheckCircle2, ChevronRight, X, 
   RefreshCw, FileText, Settings, ShieldCheck, Mail, Phone, 
-  Check, Save, Lock, Navigation, Compass, MessageSquare, Send, Headphones
+  Check, Save, Lock, Navigation, Compass, MessageSquare, Send, Headphones, Heart
 } from 'lucide-react';
 
 
@@ -51,6 +51,18 @@ export default function CustomerDashboard({ initialTab }) {
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileSuccessMsg, setProfileSuccessMsg] = useState('');
   const [profileErrorMsg, setProfileErrorMsg] = useState('');
+
+  // Favorites state
+  const [favorites, setFavorites] = useState([]);
+  const [loadingFavorites, setLoadingFavorites] = useState(false);
+
+  // Password Change state
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordSuccessMsg, setPasswordSuccessMsg] = useState('');
+  const [passwordErrorMsg, setPasswordErrorMsg] = useState('');
 
   // Address Book state
   const [addresses, setAddresses] = useState([]);
@@ -236,6 +248,50 @@ export default function CustomerDashboard({ initialTab }) {
     }
   };
 
+  const fetchFavorites = async () => {
+    setLoadingFavorites(true);
+    try {
+      const res = await api.favorites.getAll();
+      if (Array.isArray(res)) setFavorites(res);
+    } catch (e) {
+      console.warn('Failed to load favorites:', e);
+    } finally {
+      setLoadingFavorites(false);
+    }
+  };
+
+  const handleRemoveFavorite = async (serviceId) => {
+    try {
+      await api.favorites.remove(serviceId);
+      setFavorites(prev => prev.filter(s => s.id !== serviceId));
+    } catch (e) {
+      alert(`Failed to remove favorite: ${e.message}`);
+    }
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setPasswordSuccessMsg('');
+    setPasswordErrorMsg('');
+    if (newPassword !== confirmPassword) {
+      setPasswordErrorMsg('New passwords do not match');
+      return;
+    }
+    setChangingPassword(true);
+    try {
+      await api.auth.changePassword(currentPassword, newPassword);
+      setPasswordSuccessMsg('Password updated successfully!');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setTimeout(() => setPasswordSuccessMsg(''), 4000);
+    } catch (err) {
+      setPasswordErrorMsg(err.message || 'Failed to update password');
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
   useEffect(() => {
     const tabParam = searchParams.get('tab');
     const disputeIdParam = searchParams.get('disputeId');
@@ -243,12 +299,14 @@ export default function CustomerDashboard({ initialTab }) {
 
     if (tabParam) {
       const normalized = tabParam === 'orders' ? 'bookings' : tabParam;
-      if (['bookings', 'disputes', 'profile', 'addresses'].includes(normalized)) {
+      if (['bookings', 'disputes', 'profile', 'addresses', 'favorites'].includes(normalized)) {
         setActiveTab(normalized);
         if (normalized === 'disputes') {
           fetchMyDisputes();
         } else if (normalized === 'addresses') {
           fetchAddresses();
+        } else if (normalized === 'favorites') {
+          fetchFavorites();
         } else if (normalized === 'bookings') {
           fetchMyBookings();
         }
@@ -282,6 +340,9 @@ export default function CustomerDashboard({ initialTab }) {
     }
     if (tab === 'disputes') {
       fetchMyDisputes();
+    }
+    if (tab === 'favorites') {
+      fetchFavorites();
     }
   };
 
@@ -613,6 +674,32 @@ export default function CustomerDashboard({ initialTab }) {
         </button>
 
         <button
+          onClick={() => handleTabChange('favorites')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            padding: '0.6rem 1.1rem',
+            border: 'none',
+            background: 'none',
+            borderBottom: activeTab === 'favorites' ? '2px solid var(--primary)' : '2px solid transparent',
+            color: activeTab === 'favorites' ? 'var(--primary)' : 'var(--text-muted)',
+            fontWeight: activeTab === 'favorites' ? 600 : 500,
+            fontSize: '0.875rem',
+            cursor: 'pointer',
+            transition: 'var(--transition-fast)'
+          }}
+        >
+          <Heart size={15} color="#EF4444" />
+          <span>Favorites</span>
+          {favorites.length > 0 && (
+            <span className="badge badge-assigned" style={{ fontSize: '0.7rem', padding: '0.1rem 0.45rem' }}>
+              {favorites.length}
+            </span>
+          )}
+        </button>
+
+        <button
           onClick={() => handleTabChange('profile')}
           style={{
             display: 'flex',
@@ -890,6 +977,131 @@ export default function CustomerDashboard({ initialTab }) {
               <span>{savingProfile ? 'Saving Changes...' : 'Save Profile Settings'}</span>
             </button>
           </form>
+
+          {/* Account Password Change Panel */}
+          <div className="panel" style={{ marginTop: '1.5rem' }}>
+            <div className="panel-header" style={{ marginBottom: '1.25rem' }}>
+              <h3 className="panel-title">
+                <Lock size={16} color="var(--primary)" />
+                <span>Change Account Password</span>
+              </h3>
+            </div>
+
+            {passwordSuccessMsg && (
+              <div style={{ padding: '0.75rem 1rem', background: 'var(--success-bg)', border: '1px solid var(--success-border)', color: 'var(--success)', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', fontSize: '0.8125rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <CheckCircle2 size={16} />
+                <span>{passwordSuccessMsg}</span>
+              </div>
+            )}
+
+            {passwordErrorMsg && (
+              <div style={{ padding: '0.75rem 1rem', background: 'var(--error-bg)', border: '1px solid var(--error-border)', color: 'var(--error)', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', fontSize: '0.8125rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <AlertCircle size={16} />
+                <span>{passwordErrorMsg}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleChangePassword}>
+              <div className="form-group">
+                <label className="form-label">Current Password *</label>
+                <input
+                  type="password"
+                  className="form-control"
+                  placeholder="Enter your current password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">New Password *</label>
+                  <input
+                    type="password"
+                    className="form-control"
+                    placeholder="Min 6 characters"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Confirm New Password *</label>
+                  <input
+                    type="password"
+                    className="form-control"
+                    placeholder="Repeat new password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="btn btn-secondary"
+                style={{ width: '100%', padding: '0.65rem' }}
+                disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword}
+              >
+                <Lock size={15} />
+                <span>{changingPassword ? 'Updating Password...' : 'Update Password'}</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      ) : activeTab === 'favorites' ? (
+        /* TAB 5: BOOKMARKED FAVORITES */
+        <div className="panel">
+          <div className="panel-header" style={{ marginBottom: '1.25rem' }}>
+            <h3 className="panel-title">
+              <Heart size={18} color="#EF4444" fill="#EF4444" />
+              <span>Bookmarked & Favorite Services</span>
+            </h3>
+            <span className="badge badge-completed">{favorites.length} Saved Services</span>
+          </div>
+
+          {loadingFavorites ? (
+            <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)' }}>
+              <RefreshCw size={24} className="spin" style={{ marginBottom: '0.5rem' }} />
+              <div>Loading your bookmarked services...</div>
+            </div>
+          ) : favorites.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-state-icon">
+                <Heart size={22} color="#EF4444" />
+              </div>
+              <h3 className="empty-state-title">No favorite services saved</h3>
+              <p className="empty-state-description">Explore our catalog and click the heart icon on any service to bookmark it here for fast 1-click repeat bookings.</p>
+              <Link to="/" className="btn btn-primary btn-sm" style={{ marginTop: '0.75rem' }}>Browse Service Catalog</Link>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+              {favorites.map(service => (
+                <div key={service.id} className="card" style={{ padding: '1.25rem', border: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                      <span className="badge badge-assigned" style={{ fontSize: '0.7rem' }}>{service.categoryName || 'Home Service'}</span>
+                      <button onClick={() => handleRemoveFavorite(service.id)} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '0.2rem' }} title="Remove favorite">
+                        <Heart size={18} fill="#EF4444" color="#EF4444" />
+                      </button>
+                    </div>
+                    <h4 style={{ margin: '0 0 0.4rem 0', fontSize: '1rem', color: 'var(--text-main)' }}>{service.name}</h4>
+                    <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: '0 0 1rem 0', lineClamp: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{service.description}</p>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.75rem' }}>
+                    <div>
+                      <span style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--primary)' }}>₹{service.price}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '0.3rem' }}>({service.estimatedMinutes} mins)</span>
+                    </div>
+                    <Link to={`/booking?serviceId=${service.id}`} className="btn btn-primary btn-sm">Book Now</Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       ) : activeTab === 'addresses' ? (
         /* TAB 2: SAVED ADDRESS BOOK */

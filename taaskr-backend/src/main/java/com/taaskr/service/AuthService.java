@@ -15,5 +15,6 @@ public interface AuthService {
     AuthMessageResponse forgotPassword(ForgotPasswordRequest request);
     AuthMessageResponse resetPassword(ResetPasswordRequest request);
     AuthMessageResponse resendOtp(SendOtpRequest request);
-    MeResponse updateProfile(String email, UpdateUserProfileRequest request);
+    AuthMessageResponse updateProfile(String email, UpdateUserProfileRequest request);
+    AuthMessageResponse changePassword(String email, ChangePasswordRequest request);
 }

@@ -41,4 +41,8 @@ public interface ProviderWorkflowService {
     List<CategoryResponse> getMyCategories(String providerEmail);
     
     List<CategoryResponse> updateMyCategories(String providerEmail, UpdateProviderCategoriesRequest request);
+
+    com.taaskr.dto.provider.ProviderBankDetailsResponse getBankDetails(String providerEmail);
+
+    com.taaskr.dto.provider.ProviderBankDetailsResponse updateBankDetails(String providerEmail, com.taaskr.dto.provider.UpdateBankDetailsRequest request);
 }

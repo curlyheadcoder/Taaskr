@@ -132,6 +132,14 @@ export default function ProviderDashboard() {
   const [availStart, setAvailStart] = useState('09:00');
   const [availEnd, setAvailEnd] = useState('11:00');
 
+  // Provider Bank & Payout Details state
+  const [bankAccNumber, setBankAccNumber] = useState('');
+  const [bankIfsc, setBankIfsc] = useState('');
+  const [bankName, setBankName] = useState('');
+  const [accHolderName, setAccHolderName] = useState('');
+  const [upiId, setUpiId] = useState('');
+  const [savingBankDetails, setSavingBankDetails] = useState(false);
+
   // Live GPS Location Broadcasting state
   const [isBroadcastingLocation, setIsBroadcastingLocation] = useState(false);
   const [lastBroadcastCoords, setLastBroadcastCoords] = useState(null);
@@ -674,6 +682,25 @@ export default function ProviderDashboard() {
       showNotification(`Failed to update profile: ${err.message}`, 'error');
     } finally {
       setSavingProfile(false);
+    }
+  };
+
+  const handleSaveBankDetails = async (e) => {
+    e.preventDefault();
+    setSavingBankDetails(true);
+    try {
+      await api.provider.updateBankDetails({
+        bankAccountNumber: bankAccNumber.trim(),
+        bankIfsc: bankIfsc.trim().toUpperCase(),
+        bankName: bankName.trim(),
+        accountHolderName: accHolderName.trim(),
+        upiId: upiId.trim()
+      });
+      showNotification('Bank Account & UPI Payout settings updated.');
+    } catch (err) {
+      showNotification(`Failed to save bank details: ${err.message}`, 'error');
+    } finally {
+      setSavingBankDetails(false);
     }
   };
 

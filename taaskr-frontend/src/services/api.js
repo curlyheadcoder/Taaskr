@@ -173,6 +173,13 @@ export const api = {
       });
     },
 
+    changePassword: async (currentPassword, newPassword) => {
+      return makeRequest('/api/auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify({ currentPassword, newPassword })
+      });
+    },
+
     logout: () => {
       localStorage.removeItem('taaskr_token');
       localStorage.removeItem('taaskr_current_user');
@@ -273,6 +280,17 @@ export const api = {
 
     updateProfile: async (data) => {
       return makeRequest('/api/provider/profile', {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+    },
+
+    getBankDetails: async () => {
+      return makeRequest('/api/provider/bank-details');
+    },
+
+    updateBankDetails: async (data) => {
+      return makeRequest('/api/provider/bank-details', {
         method: 'PUT',
         body: JSON.stringify(data)
       });
@@ -850,6 +868,31 @@ export const api = {
 
     getDocumentViewUrl: (documentId) => {
       return `${BASE_URL}/api/kyc/documents/${documentId}/view`;
+    }
+  },
+
+  // ----------------------------------------
+  // FAVORITE SERVICES & BOOKMARKS
+  // ----------------------------------------
+  favorites: {
+    getAll: async () => {
+      return makeRequest('/api/favorites');
+    },
+
+    check: async (serviceId) => {
+      return makeRequest(`/api/favorites/check/${serviceId}`);
+    },
+
+    add: async (serviceId) => {
+      return makeRequest(`/api/favorites/${serviceId}`, {
+        method: 'POST'
+      });
+    },
+
+    remove: async (serviceId) => {
+      return makeRequest(`/api/favorites/${serviceId}`, {
+        method: 'DELETE'
+      });
     }
   }
 };

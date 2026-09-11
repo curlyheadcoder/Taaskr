@@ -46,6 +46,21 @@ public class ProviderProfile {
     @Column
     private java.time.LocalDateTime locationUpdatedAt;
 
+    @Column(length = 50)
+    private String bankAccountNumber;
+
+    @Column(length = 20)
+    private String bankIfsc;
+
+    @Column(length = 100)
+    private String bankName;
+
+    @Column(length = 100)
+    private String accountHolderName;
+
+    @Column(length = 100)
+    private String upiId;
+
     public ProviderProfile() {
     }
 
@@ -159,5 +174,45 @@ public class ProviderProfile {
 
     public void setLocationUpdatedAt(java.time.LocalDateTime locationUpdatedAt) {
         this.locationUpdatedAt = locationUpdatedAt;
+    }
+
+    public String getBankAccountNumber() {
+        return bankAccountNumber;
+    }
+
+    public void setBankAccountNumber(String bankAccountNumber) {
+        this.bankAccountNumber = bankAccountNumber;
+    }
+
+    public String getBankIfsc() {
+        return bankIfsc;
+    }
+
+    public void setBankIfsc(String bankIfsc) {
+        this.bankIfsc = bankIfsc;
+    }
+
+    public String getBankName() {
+        return bankName;
+    }
+
+    public void setBankName(String bankName) {
+        this.bankName = bankName;
+    }
+
+    public String getAccountHolderName() {
+        return accountHolderName;
+    }
+
+    public void setAccountHolderName(String accountHolderName) {
+        this.accountHolderName = accountHolderName;
+    }
+
+    public String getUpiId() {
+        return upiId;
+    }
+
+    public void setUpiId(String upiId) {
+        this.upiId = upiId;
     }
 }

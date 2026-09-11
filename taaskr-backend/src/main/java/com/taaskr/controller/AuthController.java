@@ -52,6 +52,15 @@ public class AuthController {
         return authService.updateProfile(authentication.getName(), request);
     }
 
+    @PostMapping("/change-password")
+    public AuthMessageResponse changePassword(@Valid @RequestBody ChangePasswordRequest request, Authentication authentication) {
+        if (authentication == null) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.UNAUTHORIZED, "User not authenticated");
+        }
+        return authService.changePassword(authentication.getName(), request);
+    }
+
     @PostMapping("/send-verification-otp")
     public AuthMessageResponse sendVerificationOtp(@Valid @RequestBody ForgotPasswordRequest request) {
         return authService.sendVerificationOtp(request.getEmail());

@@ -487,4 +487,38 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
         
         return getMyCategories(providerEmail);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public com.taaskr.dto.provider.ProviderBankDetailsResponse getBankDetails(String providerEmail) {
+        ProviderProfile provider = getProviderByEmail(providerEmail);
+        return new com.taaskr.dto.provider.ProviderBankDetailsResponse(
+                provider.getBankAccountNumber(),
+                provider.getBankIfsc(),
+                provider.getBankName(),
+                provider.getAccountHolderName(),
+                provider.getUpiId()
+        );
+    }
+
+    @Override
+    @Transactional
+    public com.taaskr.dto.provider.ProviderBankDetailsResponse updateBankDetails(String providerEmail, com.taaskr.dto.provider.UpdateBankDetailsRequest request) {
+        ProviderProfile provider = getProviderByEmail(providerEmail);
+
+        if (request.getBankAccountNumber() != null) provider.setBankAccountNumber(request.getBankAccountNumber().trim());
+        if (request.getBankIfsc() != null) provider.setBankIfsc(request.getBankIfsc().trim().toUpperCase());
+        if (request.getBankName() != null) provider.setBankName(request.getBankName().trim());
+        if (request.getAccountHolderName() != null) provider.setAccountHolderName(request.getAccountHolderName().trim());
+        if (request.getUpiId() != null) provider.setUpiId(request.getUpiId().trim());
+
+        ProviderProfile saved = providerProfileRepository.save(provider);
+        return new com.taaskr.dto.provider.ProviderBankDetailsResponse(
+                saved.getBankAccountNumber(),
+                saved.getBankIfsc(),
+                saved.getBankName(),
+                saved.getAccountHolderName(),
+                saved.getUpiId()
+        );
+    }
 }
