@@ -112,6 +112,13 @@ export default function ServiceDetails() {
   const availableSlots = getAvailableSlots(selectedDate);
   const [selectedTime, setSelectedTime] = useState(availableSlots[0]?.value || '09:00');
 
+  // Standard Service Location State
+  const [stdAddress, setStdAddress] = useState('');
+  const [stdCity, setStdCity] = useState('Indore');
+  const [stdPincode, setStdPincode] = useState('452001');
+  const [stdCoords, setStdCoords] = useState({ latitude: 22.7196, longitude: 75.8577 });
+  const [showStdMap, setShowStdMap] = useState(false);
+
   // Vehicle Transport Specific State
   const [isVehicleCategory, setIsVehicleCategory] = useState(false);
   const [pickupAddress, setPickupAddress] = useState('');
@@ -282,7 +289,12 @@ export default function ServiceDetails() {
         serviceName: service.name,
         price: service.price,
         bookingDate: selectedDate,
-        startTime: finalStartTime
+        startTime: finalStartTime,
+        pickupAddress: stdAddress,
+        pickupCity: stdCity,
+        pickupPincode: stdPincode,
+        pickupLatitude: stdCoords?.latitude,
+        pickupLongitude: stdCoords?.longitude
       }
     });
   };
@@ -715,6 +727,55 @@ export default function ServiceDetails() {
               </h3>
             </div>
 
+            {/* Location Input with Map Pin Picker */}
+            <div className="form-group" style={{ marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                <label className="form-label" style={{ margin: 0 }}>Service Location Address</label>
+                <button
+                  type="button"
+                  onClick={() => setShowStdMap(true)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--primary)',
+                    cursor: 'pointer',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.25rem'
+                  }}
+                >
+                  <Navigation size={13} />
+                  <span>Pick on Map</span>
+                </button>
+              </div>
+              <input
+                type="text"
+                placeholder="Flat/House No, Building, Street, Landmark"
+                className="form-control"
+                value={stdAddress}
+                onChange={(e) => setStdAddress(e.target.value)}
+              />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginTop: '0.5rem' }}>
+                <input
+                  type="text"
+                  placeholder="City (e.g. Indore)"
+                  className="form-control"
+                  value={stdCity}
+                  onChange={(e) => setStdCity(e.target.value)}
+                />
+                <input
+                  type="text"
+                  placeholder="Pincode (e.g. 452001)"
+                  className="form-control"
+                  value={stdPincode}
+                  onChange={(e) => setStdPincode(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Date Selection */}
             <div className="form-group">
               <label className="form-label">Select Date (IST)</label>
               <input
@@ -726,8 +787,22 @@ export default function ServiceDetails() {
               />
             </div>
 
+            {/* Custom Time Selection */}
+            <div className="form-group" style={{ marginBottom: '1rem' }}>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <Clock size={14} color="var(--primary)" />
+                <span>Custom Appointment Time</span>
+              </label>
+              <input
+                type="time"
+                className="form-control"
+                value={selectedTime}
+                onChange={(e) => setSelectedTime(e.target.value)}
+              />
+            </div>
+
             <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-              <label className="form-label">Available Time Windows</label>
+              <label className="form-label">Or Select Standard Time Window</label>
               {availableSlots.length === 0 ? (
                 <div style={{ padding: '0.875rem', borderRadius: 'var(--radius-sm)', background: 'var(--bg-subtle)', border: '1px solid var(--border-light)', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
                   All time windows for today are closed. Please select tomorrow or a future date to book.
@@ -777,6 +852,23 @@ export default function ServiceDetails() {
               <ArrowRight size={15} />
             </button>
           </div>
+
+          {/* Standard Service Location Picker Modal */}
+          {showStdMap && (
+            <LocationPicker
+              isOpen={showStdMap}
+              onClose={() => setShowStdMap(false)}
+              initialLat={stdCoords?.latitude || 22.7196}
+              initialLng={stdCoords?.longitude || 75.8577}
+              onSelectLocation={(loc) => {
+                if (loc.address) setStdAddress(loc.address);
+                if (loc.city) setStdCity(loc.city);
+                if (loc.pincode) setStdPincode(loc.pincode);
+                setStdCoords({ latitude: loc.lat, longitude: loc.lng });
+                setShowStdMap(false);
+              }}
+            />
+          )}
         </div>
       )}
 

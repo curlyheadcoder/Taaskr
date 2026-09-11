@@ -253,6 +253,11 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
     public List<ProviderBookingResponse> getAvailableTasks(String providerEmail) {
         ProviderProfile provider = getProviderByEmail(providerEmail);
         
+        // If provider is offline, no available tasks are shown
+        if (!Boolean.TRUE.equals(provider.getIsOnline())) {
+            return List.of();
+        }
+
         List<Long> providerCategoryIds = providerCategoryRepository.findByProviderId(provider.getId())
                 .stream().map(pc -> pc.getCategory().getId()).toList();
                 
@@ -263,12 +268,15 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
         List<Booking> pendingBookings = bookingRepository.findByStatusAndCityAndServiceCategoryIdInOrderByCreatedAtDesc(
                 BookingStatus.PENDING, provider.getCity(), providerCategoryIds);
 
-        return pendingBookings.stream().filter(booking -> {
-            java.time.LocalTime endTime = booking.getStartTime().plusMinutes(booking.getService().getDurationMinutes());
-            boolean hasOverlap = bookingRepository.existsByProviderIdAndBookingDateAndStartTimeLessThanAndEndTimeGreaterThan(
-                    provider.getId(), booking.getBookingDate(), endTime, booking.getStartTime());
-            return !hasOverlap;
-        }).map(this::mapBooking).toList();
+        // Return only tasks that are PENDING, unassigned (provider == null), and have not been accepted by anyone
+        return pendingBookings.stream()
+                .filter(booking -> booking.getProvider() == null)
+                .filter(booking -> {
+                    java.time.LocalTime endTime = booking.getStartTime().plusMinutes(booking.getService().getDurationMinutes());
+                    boolean hasOverlap = bookingRepository.existsByProviderIdAndBookingDateAndStartTimeLessThanAndEndTimeGreaterThan(
+                            provider.getId(), booking.getBookingDate(), endTime, booking.getStartTime());
+                    return !hasOverlap;
+                }).map(this::mapBooking).toList();
     }
 
     @Override
@@ -276,6 +284,10 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
     public ProviderBookingResponse claimTask(String providerEmail, Long bookingId) {
         ProviderProfile provider = getApprovedProviderByEmail(providerEmail);
         
+        if (!Boolean.TRUE.equals(provider.getIsOnline())) {
+            throw new BadRequestException("You must be ONLINE to claim tasks");
+        }
+
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
                 
@@ -284,7 +296,7 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
         }
         
         if (booking.getProvider() != null) {
-            throw new BadRequestException("This booking has already been assigned");
+            throw new BadRequestException("This booking has already been accepted by another provider");
         }
 
         java.time.LocalTime endTime = booking.getStartTime().plusMinutes(booking.getService().getDurationMinutes());

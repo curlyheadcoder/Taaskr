@@ -555,7 +555,8 @@ export default function ProviderDashboard() {
     try {
       const updated = await api.provider.toggleOnlineStatus(targetOnline);
       setUserProfile(prev => ({ ...prev, isOnline: updated.isOnline }));
-      showNotification(updated.isOnline ? 'You are now ONLINE. You will receive active task alerts.' : 'You are now OFFLINE. Rest mode active.');
+      showNotification(updated.isOnline ? 'You are now ONLINE. Active task requests are now visible.' : 'You are now OFFLINE. Rest mode active.');
+      await loadProviderDashboard(false);
     } catch (err) {
       showNotification(`Failed to update status: ${err.message}`, 'error');
     }
