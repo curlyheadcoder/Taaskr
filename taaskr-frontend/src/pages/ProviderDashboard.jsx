@@ -2403,38 +2403,60 @@ export default function ProviderDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {walletOverview.recentTransactions.map((tx) => (
-                        <tr key={tx.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                          <td style={{ padding: '0.65rem 0.5rem', fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--text-muted)' }}>
-                            #{String(tx.id).slice(-6)}
-                          </td>
-                          <td style={{ padding: '0.65rem 0.5rem' }}>
-                            <span className={`badge ${
-                              tx.type === 'EARNING' ? 'badge-completed' 
-                              : tx.type === 'COMMISSION' ? 'badge-pending'
-                              : tx.type === 'PAYOUT_WITHDRAWAL' ? 'badge-cancelled'
-                              : 'badge-assigned'
-                            }`}>
-                              {tx.type === 'EARNING' ? 'EARNING'
-                               : tx.type === 'COMMISSION' ? 'COMMISSION'
-                               : tx.type === 'PAYOUT_WITHDRAWAL' ? 'PAYOUT_WITHDRAWAL'
-                               : tx.type}
-                            </span>
-                          </td>
-                          <td style={{ padding: '0.65rem 0.5rem', fontWeight: 700, color: tx.type === 'EARNING' ? 'var(--success)' : 'var(--error)', fontFeatureSettings: 'tnum' }}>
-                            {tx.type === 'EARNING' ? '+' : '-'}₹{Number(tx.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </td>
-                          <td style={{ padding: '0.65rem 0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-                            {tx.type === 'COMMISSION' ? `₹${Number(tx.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })} (15%)` : '—'}
-                          </td>
-                          <td style={{ padding: '0.65rem 0.5rem', color: 'var(--text-main)', fontSize: '0.78rem' }}>
-                            {tx.description}
-                          </td>
-                          <td style={{ padding: '0.65rem 0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-                            {tx.createdAt ? new Date(tx.createdAt).toLocaleDateString() : 'Recent'}
-                          </td>
-                        </tr>
-                      ))}
+                      {walletOverview.recentTransactions.map((tx) => {
+                        const rawAmt = tx.amount ?? tx.netAmount ?? tx.grossAmount ?? 0;
+                        const numAmt = Math.abs(Number(rawAmt) || 0);
+                        const isEarning = tx.type === 'EARNING' || tx.type === 'EARNING_CREDIT' || tx.type === 'CREDIT';
+
+                        // Parse Commission Fee from description e.g. "Fee: ₹134.85" or calculate 15% platform commission
+                        let commissionVal = null;
+                        if (tx.type === 'COMMISSION') {
+                          commissionVal = numAmt;
+                        } else if (tx.commissionAmount != null) {
+                          commissionVal = Math.abs(Number(tx.commissionAmount));
+                        } else if (tx.description) {
+                          const match = tx.description.match(/Fee:\s*₹?\s*([0-9,.]+)/i);
+                          if (match) {
+                            commissionVal = parseFloat(match[1].replace(/,/g, ''));
+                          }
+                        }
+                        if (commissionVal == null && isEarning && numAmt > 0) {
+                          commissionVal = (numAmt * 15) / 85;
+                        }
+
+                        return (
+                          <tr key={tx.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                            <td style={{ padding: '0.65rem 0.5rem', fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--text-muted)' }}>
+                              #{String(tx.id).slice(-6)}
+                            </td>
+                            <td style={{ padding: '0.65rem 0.5rem' }}>
+                              <span className={`badge ${
+                                isEarning ? 'badge-completed' 
+                                : tx.type === 'COMMISSION' ? 'badge-pending'
+                                : tx.type === 'PAYOUT_WITHDRAWAL' ? 'badge-cancelled'
+                                : 'badge-assigned'
+                              }`}>
+                                {isEarning ? 'EARNING'
+                                 : tx.type === 'COMMISSION' ? 'COMMISSION'
+                                 : tx.type === 'PAYOUT_WITHDRAWAL' ? 'PAYOUT_WITHDRAWAL'
+                                 : tx.type}
+                              </span>
+                            </td>
+                            <td style={{ padding: '0.65rem 0.5rem', fontWeight: 700, color: isEarning ? 'var(--success)' : 'var(--error)', fontFeatureSettings: 'tnum' }}>
+                              {isEarning ? '+' : '-'}₹{numAmt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </td>
+                            <td style={{ padding: '0.65rem 0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                              {commissionVal != null && commissionVal > 0 ? `₹${commissionVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (15%)` : '—'}
+                            </td>
+                            <td style={{ padding: '0.65rem 0.5rem', color: 'var(--text-main)', fontSize: '0.78rem' }}>
+                              {tx.description}
+                            </td>
+                            <td style={{ padding: '0.65rem 0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                              {tx.createdAt ? new Date(tx.createdAt).toLocaleDateString() : 'Recent'}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
