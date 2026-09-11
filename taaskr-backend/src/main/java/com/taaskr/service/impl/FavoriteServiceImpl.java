@@ -75,14 +75,13 @@ public class FavoriteServiceImpl implements FavoriteService {
     private ServiceResponse mapToServiceResponse(Service s) {
         return new ServiceResponse(
                 s.getId(),
-                s.getCategory() != null ? s.getCategory().getId() : null,
-                s.getCategory() != null ? s.getCategory().getName() : null,
                 s.getName(),
                 s.getDescription(),
                 s.getPrice(),
-                s.getEstimatedMinutes(),
-                s.getActive(),
-                s.getIconUrl()
+                s.getDurationMinutes(),
+                s.getCategory() != null ? s.getCategory().getId() : null,
+                s.getCategory() != null ? s.getCategory().getName() : null,
+                s.getActive()
         );
     }
 }

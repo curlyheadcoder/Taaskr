@@ -21,7 +21,7 @@ import com.taaskr.repository.UserRepository;
 import com.taaskr.repository.ProviderCategoryRepository;
 import com.taaskr.repository.ServiceCategoryRepository;
 import com.taaskr.service.ProviderWorkflowService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
 import com.taaskr.dto.provider.ProviderProfileResponse;
