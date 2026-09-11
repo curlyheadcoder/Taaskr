@@ -16,6 +16,7 @@ public class ProviderProfileResponse {
     private Boolean emailVerified;
     private Boolean phoneVerified;
     private String adminRemarks;
+    private Boolean isOnline;
 
     public ProviderProfileResponse() {}
 
@@ -36,6 +37,14 @@ public class ProviderProfileResponse {
                                    Integer experienceYears, String city, String pincode,
                                    Boolean approved, Double rating, Integer totalJobs, String bio,
                                    Boolean emailVerified, Boolean phoneVerified, String adminRemarks) {
+        this(id, userId, name, email, phone, experienceYears, city, pincode, approved, rating, totalJobs, bio, emailVerified, phoneVerified, adminRemarks, true);
+    }
+
+    public ProviderProfileResponse(Long id, Long userId, String name, String email, String phone,
+                                   Integer experienceYears, String city, String pincode,
+                                   Boolean approved, Double rating, Integer totalJobs, String bio,
+                                   Boolean emailVerified, Boolean phoneVerified, String adminRemarks,
+                                   Boolean isOnline) {
         this.id = id;
         this.userId = userId;
         this.name = name;
@@ -51,6 +60,7 @@ public class ProviderProfileResponse {
         this.emailVerified = emailVerified;
         this.phoneVerified = phoneVerified;
         this.adminRemarks = adminRemarks;
+        this.isOnline = isOnline;
     }
 
     public Long getId() { return id; }
@@ -83,4 +93,7 @@ public class ProviderProfileResponse {
     public void setPhoneVerified(Boolean phoneVerified) { this.phoneVerified = phoneVerified; }
     public String getAdminRemarks() { return adminRemarks; }
     public void setAdminRemarks(String adminRemarks) { this.adminRemarks = adminRemarks; }
+    public Boolean getIsOnline() { return isOnline != null ? isOnline : true; }
+    public void setIsOnline(Boolean isOnline) { this.isOnline = isOnline; }
+}
 }

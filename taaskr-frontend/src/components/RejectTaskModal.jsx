@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AlertTriangle, X, ShieldAlert, CheckCircle2 } from 'lucide-react';
 
 export default function RejectTaskModal({
@@ -8,7 +8,25 @@ export default function RejectTaskModal({
   onConfirm,
   loading = false
 }) {
+  const [reason, setReason] = useState('');
+  const [reasonError, setReasonError] = useState('');
+
   if (!isOpen || !booking) return null;
+
+  const handleConfirm = () => {
+    if (!reason || !reason.trim()) {
+      setReasonError('Please state why you are rejecting this task.');
+      return;
+    }
+    setReasonError('');
+    onConfirm(booking.id, reason.trim());
+  };
+
+  const handleClose = () => {
+    setReason('');
+    setReasonError('');
+    onClose();
+  };
 
   return (
     <div
@@ -24,7 +42,7 @@ export default function RejectTaskModal({
         padding: '1rem',
         animation: 'fadeIn 0.2s ease-out'
       }}
-      onClick={loading ? undefined : onClose}
+      onClick={loading ? undefined : handleClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -42,7 +60,7 @@ export default function RejectTaskModal({
       >
         {/* Close button */}
         <button
-          onClick={onClose}
+          onClick={handleClose}
           disabled={loading}
           style={{
             position: 'absolute',
@@ -85,7 +103,7 @@ export default function RejectTaskModal({
               Reject Task Assignment
             </h3>
             <span style={{ fontSize: '0.8rem', color: '#EF4444', fontWeight: 600 }}>
-              Partner Dispatch Confirmation
+              Partner Rejection Feedback
             </span>
           </div>
         </div>
@@ -103,7 +121,7 @@ export default function RejectTaskModal({
             color: 'var(--text-main)'
           }}
         >
-          Are you sure you want to reject this assigned task? It will be unassigned and returned to the active dispatch pool for other partners.
+          Please provide feedback on why you are rejecting this assigned task. This helps our dispatch team reassign the order effectively.
         </div>
 
         {/* Task Details Preview */}
@@ -125,27 +143,50 @@ export default function RejectTaskModal({
             <span style={{ color: 'var(--text-muted)' }}>Customer:</span>
             <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{booking.userName || booking.customerName || 'Customer'}</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', alignItems: 'center' }}>
-            <span style={{ color: 'var(--text-muted)' }}>Contact:</span>
-            <span style={{ color: '#38bdf8', fontWeight: 600 }}>{booking.userPhone || booking.customerPhone || '+91 99999 99992'}</span>
-          </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
             <span style={{ color: 'var(--text-muted)' }}>Payout:</span>
             <strong style={{ color: 'var(--text-main)' }}>₹{booking.finalAmount}</strong>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ color: 'var(--text-muted)' }}>Address:</span>
-            <span style={{ color: 'var(--text-main)', textAlign: 'right', maxWidth: '65%' }}>
-              {booking.address}, {booking.city}
+        </div>
+
+        {/* Reason Input Field */}
+        <div style={{ marginBottom: '1.25rem' }}>
+          <label style={{ display: 'block', fontSize: '0.825rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '0.4rem' }}>
+            Reason for Rejection <span style={{ color: '#ef4444' }}>*</span>
+          </label>
+          <textarea
+            value={reason}
+            onChange={(e) => {
+              setReason(e.target.value);
+              if (e.target.value.trim()) setReasonError('');
+            }}
+            placeholder="e.g. Vehicle issue, required spare parts unavailable, emergency situation..."
+            rows={3}
+            disabled={loading}
+            style={{
+              width: '100%',
+              padding: '0.65rem 0.85rem',
+              borderRadius: '8px',
+              background: 'rgba(255,255,255,0.05)',
+              border: reasonError ? '1px solid #ef4444' : '1px solid var(--border-light, rgba(255,255,255,0.15))',
+              color: 'var(--text-main)',
+              fontSize: '0.85rem',
+              outline: 'none',
+              resize: 'vertical'
+            }}
+          />
+          {reasonError && (
+            <span style={{ color: '#ef4444', fontSize: '0.775rem', marginTop: '0.3rem', display: 'block' }}>
+              {reasonError}
             </span>
-          </div>
+          )}
         </div>
 
         {/* Action Buttons */}
         <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             disabled={loading}
             className="btn btn-secondary"
             style={{ padding: '0.55rem 1rem', fontSize: '0.85rem' }}
@@ -154,7 +195,7 @@ export default function RejectTaskModal({
           </button>
           <button
             type="button"
-            onClick={() => onConfirm(booking.id)}
+            onClick={handleConfirm}
             disabled={loading}
             className="btn btn-danger"
             style={{

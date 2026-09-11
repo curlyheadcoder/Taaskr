@@ -160,13 +160,21 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
     @Override
     @Transactional
     public ProviderBookingResponse rejectBooking(String providerEmail, Long bookingId) {
+        return rejectBooking(providerEmail, bookingId, null);
+    }
+
+    @Override
+    @Transactional
+    public ProviderBookingResponse rejectBooking(String providerEmail, Long bookingId, String reason) {
         ProviderProfile provider = getProviderByEmail(providerEmail);
         Booking booking = getProviderBooking(provider.getId(), bookingId);
 
-        if(booking.getStatus() != BookingStatus.ASSIGNED){
-            throw new BadRequestException("Only Assigned bookings can be rejected");
+        if(booking.getStatus() != BookingStatus.ASSIGNED && booking.getStatus() != BookingStatus.PENDING){
+            throw new BadRequestException("Only Pending or Assigned bookings can be rejected");
         }
         booking.setStatus(BookingStatus.REJECTED);
+        booking.setCancellationReason(reason != null && !reason.isBlank() ? reason.trim() : "Rejected by service provider");
+        booking.setCancelledByRole("PROVIDER");
         Booking saved = bookingRepository.save(booking);
         return mapBooking(saved);
     }
@@ -196,6 +204,15 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
         }
 
         booking.setStatus(target);
+
+        if (target == BookingStatus.REJECTED || target == BookingStatus.CANCELLED) {
+            if (request.getReason() != null && !request.getReason().isBlank()) {
+                booking.setCancellationReason(request.getReason().trim());
+            } else if (booking.getCancellationReason() == null) {
+                booking.setCancellationReason("Cancelled/Rejected by provider");
+            }
+            booking.setCancelledByRole("PROVIDER");
+        }
 
         if(target == BookingStatus.COMPLETED){
             provider.setTotalJobs(provider.getTotalJobs() + 1);
@@ -397,7 +414,19 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
             response.setVehicleRegistrationNumber(booking.getVehicle().getRegistrationNumber());
         }
 
+        response.setCancellationReason(booking.getCancellationReason());
+        response.setCancelledByRole(booking.getCancelledByRole());
+
         return response;
+    }
+
+    @Override
+    @Transactional
+    public ProviderProfileResponse updateOnlineStatus(String providerEmail, boolean isOnline) {
+        ProviderProfile provider = getProviderByEmail(providerEmail);
+        provider.setIsOnline(isOnline);
+        providerProfileRepository.save(provider);
+        return mapProfileResponse(provider);
     }
 
     @Override
@@ -449,7 +478,8 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
                 provider.getBio(),
                 Boolean.TRUE.equals(provider.getUser().getEmailVerified()),
                 Boolean.TRUE.equals(provider.getUser().getPhoneVerified()),
-                provider.getAdminRemarks()
+                provider.getAdminRemarks(),
+                provider.getIsOnline()
         );
     }
 

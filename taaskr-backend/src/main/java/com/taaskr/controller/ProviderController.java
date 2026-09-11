@@ -74,8 +74,24 @@ public class ProviderController {
 
     @PutMapping("/bookings/{bookingId}/reject")
     public ProviderBookingResponse rejectBooking(@PathVariable Long bookingId,
+                                                 @RequestParam(required = false) String reason,
                                                  Authentication authentication) {
-        return providerWorkflowService.rejectBooking(authentication.getName(), bookingId);
+        return providerWorkflowService.rejectBooking(authentication.getName(), bookingId, reason);
+    }
+
+    @PutMapping("/status/online")
+    public ProviderProfileResponse setOnline(Authentication authentication) {
+        return providerWorkflowService.updateOnlineStatus(authentication.getName(), true);
+    }
+
+    @PutMapping("/status/offline")
+    public ProviderProfileResponse setOffline(Authentication authentication) {
+        return providerWorkflowService.updateOnlineStatus(authentication.getName(), false);
+    }
+
+    @PutMapping("/status")
+    public ProviderProfileResponse toggleOnline(@RequestParam boolean online, Authentication authentication) {
+        return providerWorkflowService.updateOnlineStatus(authentication.getName(), online);
     }
 
     @PutMapping("/bookings/{bookingId}/payment-received")

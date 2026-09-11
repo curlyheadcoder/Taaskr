@@ -358,23 +358,30 @@ export const api = {
       });
     },
 
-    rejectBooking: async (bookingId) => {
-      return makeRequest(`/api/provider/bookings/${bookingId}/reject`, {
+    toggleOnlineStatus: async (isOnline) => {
+      return makeRequest(`/api/provider/status?online=${isOnline}`, {
         method: 'PUT'
       });
     },
 
-    updateBookingStatus: async (bookingId, status) => {
-      return makeRequest(`/api/provider/bookings/${bookingId}/status`, {
-        method: 'PUT',
-        body: JSON.stringify({ status })
+    rejectBooking: async (bookingId, reason = '') => {
+      const url = reason ? `/api/provider/bookings/${bookingId}/reject?reason=${encodeURIComponent(reason)}` : `/api/provider/bookings/${bookingId}/reject`;
+      return makeRequest(url, {
+        method: 'PUT'
       });
     },
 
-    updateStatus: async (bookingId, status) => {
+    updateBookingStatus: async (bookingId, status, reason = '') => {
       return makeRequest(`/api/provider/bookings/${bookingId}/status`, {
         method: 'PUT',
-        body: JSON.stringify({ status })
+        body: JSON.stringify({ status, reason })
+      });
+    },
+
+    updateStatus: async (bookingId, status, reason = '') => {
+      return makeRequest(`/api/provider/bookings/${bookingId}/status`, {
+        method: 'PUT',
+        body: JSON.stringify({ status, reason })
       });
     },
 

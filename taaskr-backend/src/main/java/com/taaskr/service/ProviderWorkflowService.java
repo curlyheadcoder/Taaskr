@@ -45,4 +45,8 @@ public interface ProviderWorkflowService {
     com.taaskr.dto.provider.ProviderBankDetailsResponse getBankDetails(String providerEmail);
 
     com.taaskr.dto.provider.ProviderBankDetailsResponse updateBankDetails(String providerEmail, com.taaskr.dto.provider.UpdateBankDetailsRequest request);
+
+    ProviderProfileResponse updateOnlineStatus(String providerEmail, boolean isOnline);
+
+    ProviderBookingResponse rejectBooking(String providerEmail, Long bookingId, String reason);
 }

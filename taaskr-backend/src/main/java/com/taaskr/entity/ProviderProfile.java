@@ -61,6 +61,12 @@ public class ProviderProfile {
     @Column(length = 100)
     private String upiId;
 
+    @Column(nullable = false)
+    private Boolean isOnline = true;
+
+    @Column
+    private java.time.LocalDateTime lastOnlineAt;
+
     public ProviderProfile() {
     }
 
@@ -214,5 +220,24 @@ public class ProviderProfile {
 
     public void setUpiId(String upiId) {
         this.upiId = upiId;
+    }
+
+    public Boolean getIsOnline() {
+        return isOnline != null ? isOnline : true;
+    }
+
+    public void setIsOnline(Boolean isOnline) {
+        this.isOnline = isOnline;
+        if (Boolean.TRUE.equals(isOnline)) {
+            this.lastOnlineAt = java.time.LocalDateTime.now();
+        }
+    }
+
+    public java.time.LocalDateTime getLastOnlineAt() {
+        return lastOnlineAt;
+    }
+
+    public void setLastOnlineAt(java.time.LocalDateTime lastOnlineAt) {
+        this.lastOnlineAt = lastOnlineAt;
     }
 }

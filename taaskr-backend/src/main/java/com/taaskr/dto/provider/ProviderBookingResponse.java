@@ -52,6 +52,8 @@ public class ProviderBookingResponse {
     private String notes;
 
     private LocalDateTime createdAt;
+    private String cancellationReason;
+    private String cancelledByRole;
 
     public ProviderBookingResponse() {
     }
@@ -342,5 +344,21 @@ public class ProviderBookingResponse {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getCancellationReason() {
+        return cancellationReason;
+    }
+
+    public void setCancellationReason(String cancellationReason) {
+        this.cancellationReason = cancellationReason;
+    }
+
+    public String getCancelledByRole() {
+        return cancelledByRole;
+    }
+
+    public void setCancelledByRole(String cancelledByRole) {
+        this.cancelledByRole = cancelledByRole;
     }
 }

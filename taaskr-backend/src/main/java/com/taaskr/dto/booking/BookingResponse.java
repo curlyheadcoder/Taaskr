@@ -61,6 +61,9 @@ public class BookingResponse {
     private Integer rating;
     private String review;
 
+    private String cancellationReason;
+    private String cancelledByRole;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -437,5 +440,21 @@ public class BookingResponse {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getCancellationReason() {
+        return cancellationReason;
+    }
+
+    public void setCancellationReason(String cancellationReason) {
+        this.cancellationReason = cancellationReason;
+    }
+
+    public String getCancelledByRole() {
+        return cancelledByRole;
+    }
+
+    public void setCancelledByRole(String cancelledByRole) {
+        this.cancelledByRole = cancelledByRole;
     }
 }

@@ -36,6 +36,8 @@ export default function BookingFlow() {
     packageWeightKg, packageDescription, distanceKm, vehicleType
   } = bookingState;
 
+  const [selectedDate, setSelectedDate] = useState(bookingDate || new Date().toISOString().split('T')[0]);
+  const [selectedTime, setSelectedTime] = useState(startTime || '10:00');
   const [address, setAddress] = useState(pickupAddress || '');
   const [city, setCity] = useState(pickupCity || 'Indore');
   const [pincode, setPincode] = useState(pickupPincode || '452001');
@@ -85,13 +87,13 @@ export default function BookingFlow() {
     prefillUser();
   }, [pickupCity, pickupPincode]);
 
-  // Fetch Providers whenever Location changes (for standard services)
+  // Fetch Providers whenever Location or Custom Time changes
   useEffect(() => {
-    if (!isVehicle && serviceId && bookingDate && startTime && city && pincode) {
+    if (!isVehicle && serviceId && selectedDate && selectedTime && city && pincode) {
       const fetchProviders = async () => {
         setIsFetchingProviders(true);
         try {
-          const providers = await api.bookings.getAvailableProviders(serviceId, city, pincode, bookingDate, startTime);
+          const providers = await api.bookings.getAvailableProviders(serviceId, city, pincode, selectedDate, selectedTime);
           setAvailableProviders(providers || []);
           setSelectedProviderId(null);
         } catch (err) {
@@ -107,7 +109,7 @@ export default function BookingFlow() {
       
       return () => clearTimeout(delayDebounceFn);
     }
-  }, [isVehicle, serviceId, bookingDate, startTime, city, pincode]);
+  }, [isVehicle, serviceId, selectedDate, selectedTime, city, pincode]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -129,17 +131,17 @@ export default function BookingFlow() {
 
     setLoading(true);
     try {
-      // Ensure startTime is not in the past if booking for today
-      let safeStartTime = startTime;
+      // Ensure selectedTime is not in the past if booking for today
+      let safeStartTime = selectedTime;
       const istDateFormatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' });
       const todayIST = istDateFormatter.format(new Date());
 
-      if (bookingDate === todayIST) {
+      if (selectedDate === todayIST) {
         const istTimeFormatter = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: false });
         const [currH, currM] = istTimeFormatter.format(new Date()).split(':').map(Number);
         const currMins = currH * 60 + currM;
 
-        const [startH, startM] = (startTime || '00:00').split(':').map(Number);
+        const [startH, startM] = (selectedTime || '00:00').split(':').map(Number);
         const startMins = (startH || 0) * 60 + (startM || 0);
 
         if (startMins <= currMins) {
@@ -153,7 +155,7 @@ export default function BookingFlow() {
       const payload = {
         serviceId: Number(serviceId),
         providerId: selectedProviderId ? Number(selectedProviderId) : null,
-        bookingDate,
+        bookingDate: selectedDate,
         startTime: safeStartTime,
         paymentMethod: paymentMethod === 'after_service' ? 'AFTER_SERVICE' : 'ONLINE',
         address,
@@ -500,6 +502,39 @@ export default function BookingFlow() {
             />
           </div>
 
+          {/* Custom Date & Time Selection */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <Calendar size={13} color="var(--primary)" />
+                <span>Service Date *</span>
+              </label>
+              <input
+                type="date"
+                className="form-control"
+                value={selectedDate}
+                min={new Date().toISOString().split('T')[0]}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                disabled={loading}
+                required
+              />
+            </div>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <Clock size={13} color="var(--primary)" />
+                <span>Custom Time *</span>
+              </label>
+              <input
+                type="time"
+                className="form-control"
+                value={selectedTime}
+                onChange={(e) => setSelectedTime(e.target.value)}
+                disabled={loading}
+                required
+              />
+            </div>
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">City *</label>
@@ -527,6 +562,47 @@ export default function BookingFlow() {
               />
             </div>
           </div>
+
+          {/* Universal Map Location Pin Picker */}
+          <div style={{ marginBottom: '1rem' }}>
+            <button
+              type="button"
+              onClick={() => setShowMap(true)}
+              className="btn btn-secondary btn-sm"
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.4rem',
+                padding: '0.55rem',
+                fontSize: '0.8125rem',
+                borderColor: coordinates ? 'var(--primary)' : 'var(--border-light)',
+                backgroundColor: coordinates ? 'var(--primary-subtle)' : 'var(--bg-subtle)',
+                color: coordinates ? 'var(--primary)' : 'var(--text-main)'
+              }}
+            >
+              <Navigation size={14} />
+              <span>{coordinates ? `Exact Map Pin Set (${coordinates.latitude.toFixed(4)}, ${coordinates.longitude.toFixed(4)})` : 'Set Location Pin on Interactive Map'}</span>
+            </button>
+          </div>
+
+          {/* Location Picker Modal */}
+          {showMap && (
+            <LocationPicker
+              isOpen={showMap}
+              onClose={() => setShowMap(false)}
+              initialLat={coordinates?.latitude || 22.7196}
+              initialLng={coordinates?.longitude || 75.8577}
+              onSelectLocation={(loc) => {
+                if (loc.address) setAddress(loc.address);
+                if (loc.city) setCity(loc.city);
+                if (loc.pincode) setPincode(loc.pincode);
+                setCoordinates({ latitude: loc.lat, longitude: loc.lng });
+                setShowMap(false);
+              }}
+            />
+          )}
 
           {isVehicle && dropAddress && (
             <div style={{ padding: '0.75rem', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', marginBottom: '1rem' }}>

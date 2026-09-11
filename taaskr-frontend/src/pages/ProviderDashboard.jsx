@@ -536,10 +536,10 @@ export default function ProviderDashboard() {
     setShowRejectModal(true);
   };
 
-  const handleConfirmReject = async (bookingId) => {
+  const handleConfirmReject = async (bookingId, reason) => {
     setModalSubmitting(true);
     try {
-      await api.provider.rejectBooking(bookingId);
+      await api.provider.rejectBooking(bookingId, reason);
       showNotification('Job rejected and returned to dispatch pool.');
       setShowRejectModal(false);
       setRejectingBooking(null);
@@ -548,6 +548,16 @@ export default function ProviderDashboard() {
       showNotification(`Action failed: ${err.message}`, 'error');
     } finally {
       setModalSubmitting(false);
+    }
+  };
+
+  const handleToggleOnlineStatus = async (targetOnline) => {
+    try {
+      const updated = await api.provider.toggleOnlineStatus(targetOnline);
+      setUserProfile(prev => ({ ...prev, isOnline: updated.isOnline }));
+      showNotification(updated.isOnline ? 'You are now ONLINE. You will receive active task alerts.' : 'You are now OFFLINE. Rest mode active.');
+    } catch (err) {
+      showNotification(`Failed to update status: ${err.message}`, 'error');
     }
   };
 
@@ -1555,10 +1565,41 @@ export default function ProviderDashboard() {
             </div>
             <p style={{ margin: '0.25rem 0 0 0' }}>Live job dispatch, fleet telemetry, and real-time schedule management.</p>
           </div>
-          <button onClick={() => loadProviderDashboard(false)} className="btn btn-secondary btn-sm">
-            <RefreshCw size={13} />
-            <span>Refresh Data</span>
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <button
+              onClick={() => handleToggleOnlineStatus(!userProfile?.isOnline)}
+              className="btn btn-sm"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.45rem 0.95rem',
+                borderRadius: '20px',
+                fontWeight: 700,
+                fontSize: '0.8125rem',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                backgroundColor: userProfile?.isOnline ? 'rgba(16, 185, 129, 0.15)' : 'rgba(100, 116, 139, 0.2)',
+                color: userProfile?.isOnline ? '#10b981' : '#94a3b8',
+                border: userProfile?.isOnline ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(148, 163, 184, 0.3)',
+                boxShadow: userProfile?.isOnline ? '0 0 12px rgba(16, 185, 129, 0.25)' : 'none'
+              }}
+            >
+              <span style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: userProfile?.isOnline ? '#10b981' : '#94a3b8',
+                boxShadow: userProfile?.isOnline ? '0 0 8px #10b981' : 'none',
+                display: 'inline-block'
+              }} />
+              <span>{userProfile?.isOnline ? 'YOU ARE ONLINE' : 'YOU ARE OFFLINE'}</span>
+            </button>
+            <button onClick={() => loadProviderDashboard(false)} className="btn btn-secondary btn-sm">
+              <RefreshCw size={13} />
+              <span>Refresh Data</span>
+            </button>
+          </div>
         </div>
 
         {/* Key Metrics Strip */}
@@ -3972,6 +4013,18 @@ export default function ProviderDashboard() {
           </div>
         </div>
       )}
+
+      {/* Reject Task Confirmation Modal */}
+      <RejectTaskModal
+        isOpen={showRejectModal}
+        onClose={() => {
+          setShowRejectModal(false);
+          setRejectingBooking(null);
+        }}
+        booking={rejectingBooking}
+        onConfirm={handleConfirmReject}
+        loading={modalSubmitting}
+      />
     </div>
   );
 }

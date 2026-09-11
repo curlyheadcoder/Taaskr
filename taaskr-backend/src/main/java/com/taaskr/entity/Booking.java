@@ -99,6 +99,12 @@ public class Booking {
     @Column(nullable = false, length = 30)
     private BookingStatus status;
 
+    @Column(length = 500)
+    private String cancellationReason;
+
+    @Column(length = 50)
+    private String cancelledByRole;
+
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
@@ -410,5 +416,21 @@ public class Booking {
 
     public void setVehicle(Vehicle vehicle) {
         this.vehicle = vehicle;
+    }
+
+    public String getCancellationReason() {
+        return cancellationReason;
+    }
+
+    public void setCancellationReason(String cancellationReason) {
+        this.cancellationReason = cancellationReason;
+    }
+
+    public String getCancelledByRole() {
+        return cancelledByRole;
+    }
+
+    public void setCancelledByRole(String cancelledByRole) {
+        this.cancelledByRole = cancelledByRole;
     }
 }
