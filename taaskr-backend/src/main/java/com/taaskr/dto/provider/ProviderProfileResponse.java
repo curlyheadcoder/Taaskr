@@ -96,4 +96,3 @@ public class ProviderProfileResponse {
     public Boolean getIsOnline() { return isOnline != null ? isOnline : true; }
     public void setIsOnline(Boolean isOnline) { this.isOnline = isOnline; }
 }
-}
