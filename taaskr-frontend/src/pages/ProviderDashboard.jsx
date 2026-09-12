@@ -290,84 +290,64 @@ export default function ProviderDashboard() {
       setEditPincode(user.pincode || '');
       setEditBio(user.bio || '');
 
-      const slots = await api.provider.getAvailability();
-      setAvailability(slots || []);
+      // Execute all independent API fetches concurrently in parallel
+      const [
+        slotsRes,
+        bookingsRes,
+        tasksRes,
+        myCatsRes,
+        allCatsRes,
+        vehiclesRes,
+        discRes,
+        walletRes,
+        reviewsRes,
+        kycRes,
+        bankRes
+      ] = await Promise.allSettled([
+        api.provider.getAvailability(),
+        api.provider.getBookings(),
+        api.provider.getAvailableTasks(),
+        api.provider.getCategories(),
+        api.catalog.getCategories(),
+        api.vehicle.getMyVehicles().catch(() => api.vehicle.getMyVehicle()),
+        api.provider.getDiscussions(),
+        api.payouts.getWalletOverview(),
+        user?.id ? api.reviews.getByProvider(user.id) : Promise.resolve([]),
+        api.kyc.getMyDocuments(),
+        api.provider.getBankDetails()
+      ]);
 
-      const bookingsList = await api.provider.getBookings();
-      setAssignedBookings(sortBookingsByStatusPriority(bookingsList || []));
-
-      const tasksList = await api.provider.getAvailableTasks();
-      setAvailableTasks((tasksList || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
-
-      const myCats = await api.provider.getCategories();
-      setSelectedCategoryIds((myCats || []).map(c => c.id));
-
-      const allCats = await api.catalog.getCategories();
-      setAvailableCategories((allCats || []).filter(c => c.active !== false));
-
-      try {
-        const vehicles = await api.vehicle.getMyVehicles();
-        if (Array.isArray(vehicles)) {
-          setMyVehicles(vehicles);
-        }
-      } catch (e) {
-        try {
-          const single = await api.vehicle.getMyVehicle();
-          if (single) setMyVehicles([single]);
-        } catch (err2) {
-          setMyVehicles([]);
-        }
+      if (slotsRes.status === 'fulfilled') setAvailability(slotsRes.value || []);
+      if (bookingsRes.status === 'fulfilled') setAssignedBookings(sortBookingsByStatusPriority(bookingsRes.value || []));
+      if (tasksRes.status === 'fulfilled') setAvailableTasks((tasksRes.value || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+      if (myCatsRes.status === 'fulfilled') setSelectedCategoryIds((myCatsRes.value || []).map(c => c.id));
+      if (allCatsRes.status === 'fulfilled') setAvailableCategories((allCatsRes.value || []).filter(c => c.active !== false));
+      if (vehiclesRes.status === 'fulfilled') {
+        const v = vehiclesRes.value;
+        setMyVehicles(Array.isArray(v) ? v : v ? [v] : []);
       }
-
-      try {
-        const discList = await api.provider.getDiscussions();
-        setDiscussions(discList || []);
-        if (discList && discList.length > 0 && !selectedDiscussionId) {
+      if (discRes.status === 'fulfilled') {
+        const discList = discRes.value || [];
+        setDiscussions(discList);
+        if (discList.length > 0 && !selectedDiscussionId) {
           setSelectedDiscussionId(discList[0].id);
         }
-      } catch (dErr) {
-        console.warn('Discussions fetch notice:', dErr);
       }
+      if (walletRes.status === 'fulfilled') setWalletOverview(walletRes.value);
+      if (reviewsRes.status === 'fulfilled') setProviderReviews(reviewsRes.value || []);
+      if (kycRes.status === 'fulfilled') setKycDocuments(kycRes.value || []);
+      if (bankRes.status === 'fulfilled' && bankRes.value) {
+        const bankData = bankRes.value;
+        setBankAccNumber(bankData.bankAccountNumber || '');
+        setBankIfsc(bankData.bankIfsc || '');
+        setBankName(bankData.bankName || '');
+        setAccHolderName(bankData.accountHolderName || '');
+        setUpiId(bankData.upiId || '');
 
-      try {
-        const wallet = await api.payouts.getWalletOverview();
-        setWalletOverview(wallet);
-      } catch (wErr) {
-        console.warn('Wallet overview fetch notice:', wErr);
-      }
-
-      try {
-        if (user?.id) {
-          const revs = await api.reviews.getByProvider(user.id);
-          setProviderReviews(revs || []);
-        }
-      } catch (rErr) {
-        console.warn('Provider reviews fetch notice:', rErr);
-      }
-
-      try {
-        const kycList = await api.kyc.getMyDocuments();
-        setKycDocuments(kycList || []);
-      } catch (kErr) {
-        console.warn('KYC documents fetch notice:', kErr);
-      }
-
-      try {
-        const bankData = await api.provider.getBankDetails();
-        if (bankData) {
-          setBankAccNumber(bankData.bankAccountNumber || '');
-          setBankIfsc(bankData.bankIfsc || '');
-          setBankName(bankData.bankName || '');
-          setAccHolderName(bankData.accountHolderName || '');
-          setUpiId(bankData.upiId || '');
-
-          if (!payoutBankAcc) setPayoutBankAcc(bankData.bankAccountNumber || '');
-          if (!payoutBankIfsc) setPayoutBankIfsc(bankData.bankIfsc || '');
-          if (!payoutBankName) setPayoutBankName(bankData.bankName || '');
-          if (!payoutUpiId) setPayoutUpiId(bankData.upiId || '');
-        }
-      } catch (bErr) {
-        console.warn('Bank details fetch notice:', bErr);
+        if (!payoutBankAcc) setPayoutBankAcc(bankData.bankAccountNumber || '');
+        if (!payoutBankIfsc) setPayoutBankIfsc(bankData.bankIfsc || '');
+        if (!payoutBankName) setPayoutBankName(bankData.bankName || '');
+        if (!payoutUpiId) setPayoutUpiId(bankData.upiId || '');
       }
 
     } catch (err) {
