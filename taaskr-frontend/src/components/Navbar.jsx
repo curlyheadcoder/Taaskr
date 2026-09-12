@@ -315,13 +315,17 @@ export default function Navbar() {
       top: 0,
       zIndex: 50,
       backgroundColor: 'var(--bg-header)',
+      backdropFilter: 'blur(16px)',
+      WebkitBackdropFilter: 'blur(16px)',
       borderBottom: '1px solid var(--border-light)',
+      boxShadow: 'var(--shadow-xs)',
       padding: '0 1.25rem',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
       gap: '1rem',
-      height: '58px'
+      height: '58px',
+      transition: 'var(--transition-smooth)'
     }}>
       {/* Left Section: Brand Logo & Navigation Links */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexShrink: 0 }}>
