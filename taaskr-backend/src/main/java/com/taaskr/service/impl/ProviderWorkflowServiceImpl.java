@@ -21,6 +21,8 @@ import com.taaskr.repository.UserRepository;
 import com.taaskr.repository.ProviderCategoryRepository;
 import com.taaskr.repository.ServiceCategoryRepository;
 import com.taaskr.service.ProviderWorkflowService;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -548,11 +550,41 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
     public com.taaskr.dto.provider.ProviderBankDetailsResponse updateBankDetails(String providerEmail, com.taaskr.dto.provider.UpdateBankDetailsRequest request) {
         ProviderProfile provider = getProviderByEmail(providerEmail);
 
-        if (request.getBankAccountNumber() != null) provider.setBankAccountNumber(request.getBankAccountNumber().trim());
-        if (request.getBankIfsc() != null) provider.setBankIfsc(request.getBankIfsc().trim().toUpperCase());
-        if (request.getBankName() != null) provider.setBankName(request.getBankName().trim());
-        if (request.getAccountHolderName() != null) provider.setAccountHolderName(request.getAccountHolderName().trim());
-        if (request.getUpiId() != null) provider.setUpiId(request.getUpiId().trim());
+        if (request.getBankAccountNumber() != null && !request.getBankAccountNumber().isBlank()) {
+            String acc = request.getBankAccountNumber().trim();
+            if (!acc.matches("^[0-9]{9,18}$")) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bank account number must be between 9 and 18 numeric digits");
+            }
+            provider.setBankAccountNumber(acc);
+        }
+        if (request.getBankIfsc() != null && !request.getBankIfsc().isBlank()) {
+            String ifsc = request.getBankIfsc().trim().toUpperCase();
+            if (!ifsc.matches("^[A-Z]{4}0[A-Z0-9]{6}$")) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid IFSC Code format. Must be 11 characters (e.g. HDFC0001234)");
+            }
+            provider.setBankIfsc(ifsc);
+        }
+        if (request.getBankName() != null && !request.getBankName().isBlank()) {
+            String name = request.getBankName().trim();
+            if (!name.matches("^[a-zA-Z\\s\\.\\&\\-]{2,100}$")) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bank name contains invalid characters");
+            }
+            provider.setBankName(name);
+        }
+        if (request.getAccountHolderName() != null && !request.getAccountHolderName().isBlank()) {
+            String holder = request.getAccountHolderName().trim();
+            if (!holder.matches("^[a-zA-Z\\s\\.\\-]{2,100}$")) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Account holder name contains invalid characters");
+            }
+            provider.setAccountHolderName(holder);
+        }
+        if (request.getUpiId() != null && !request.getUpiId().isBlank()) {
+            String upi = request.getUpiId().trim();
+            if (!upi.matches("^[a-zA-Z0-9.\\-_]{2,256}@[a-zA-Z][a-zA-Z0-9]{2,64}$")) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid UPI ID format. Example: name@okhdfcbank or 9876543210@paytm");
+            }
+            provider.setUpiId(upi);
+        }
 
         ProviderProfile saved = providerProfileRepository.save(provider);
         return new com.taaskr.dto.provider.ProviderBankDetailsResponse(

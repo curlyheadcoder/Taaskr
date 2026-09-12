@@ -165,14 +165,48 @@ public class PayoutServiceImpl implements PayoutService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient wallet balance for this withdrawal");
         }
 
+        boolean hasUpi = request.getUpiId() != null && !request.getUpiId().isBlank();
+        boolean hasBank = request.getBankAccountNumber() != null && !request.getBankAccountNumber().isBlank();
+
+        if (!hasUpi && !hasBank) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Either Bank Account details or UPI ID must be provided");
+        }
+
+        if (hasUpi) {
+            String upi = request.getUpiId().trim();
+            if (!upi.matches("^[a-zA-Z0-9.\\-_]{2,256}@[a-zA-Z][a-zA-Z0-9]{2,64}$")) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid UPI ID format. Example: name@okhdfcbank or 9876543210@paytm");
+            }
+        }
+
+        if (hasBank) {
+            String acc = request.getBankAccountNumber().trim();
+            if (!acc.matches("^[0-9]{9,18}$")) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bank account number must be between 9 and 18 numeric digits");
+            }
+            if (request.getBankIfsc() == null || request.getBankIfsc().isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "IFSC Code is required for bank transfer");
+            }
+            String ifsc = request.getBankIfsc().trim().toUpperCase();
+            if (!ifsc.matches("^[A-Z]{4}0[A-Z0-9]{6}$")) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid IFSC Code format. Must be 11 characters (e.g. HDFC0001234)");
+            }
+            if (request.getBankName() != null && !request.getBankName().isBlank()) {
+                String name = request.getBankName().trim();
+                if (!name.matches("^[a-zA-Z\\s\\.\\&\\-]{2,100}$")) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bank name contains invalid characters");
+                }
+            }
+        }
+
         Payout payout = new Payout();
         payout.setProvider(provider);
         payout.setAmount(request.getAmount());
         payout.setStatus(PayoutStatus.REQUESTED);
-        payout.setBankAccountNumber(request.getBankAccountNumber());
-        payout.setBankIfsc(request.getBankIfsc());
-        payout.setBankName(request.getBankName());
-        payout.setUpiId(request.getUpiId());
+        payout.setBankAccountNumber(hasBank ? request.getBankAccountNumber().trim() : null);
+        payout.setBankIfsc(hasBank ? request.getBankIfsc().trim().toUpperCase() : null);
+        payout.setBankName(hasBank && request.getBankName() != null ? request.getBankName().trim() : null);
+        payout.setUpiId(hasUpi ? request.getUpiId().trim() : null);
 
         if (request.getNotes() != null && !request.getNotes().isBlank()) {
             payout.setAdminNotes(request.getNotes().trim());

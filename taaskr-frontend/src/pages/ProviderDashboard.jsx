@@ -196,13 +196,34 @@ export default function ProviderDashboard() {
     }
 
     if (payoutMethod === 'UPI') {
-      if (!payoutUpiId.trim()) {
+      const upi = payoutUpiId.trim();
+      if (!upi) {
         showNotification('Please enter a valid UPI ID (e.g. name@okhdfcbank)', 'error');
         return;
       }
+      if (!/^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z][a-zA-Z0-9]{2,64}$/.test(upi)) {
+        showNotification('Invalid UPI ID format (e.g. name@okhdfcbank or 9876543210@paytm)', 'error');
+        return;
+      }
     } else {
-      if (!payoutBankAcc.trim() || !payoutBankIfsc.trim()) {
+      const acc = payoutBankAcc.trim();
+      const ifsc = payoutBankIfsc.trim().toUpperCase();
+      const bName = payoutBankName.trim();
+
+      if (!acc || !ifsc) {
         showNotification('Please enter your Bank Account Number and IFSC Code', 'error');
+        return;
+      }
+      if (!/^[0-9]{9,18}$/.test(acc)) {
+        showNotification('Bank Account Number must be between 9 and 18 digits (numbers only)', 'error');
+        return;
+      }
+      if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)) {
+        showNotification('Invalid IFSC Code format. Must be 11 characters (e.g. HDFC0001234)', 'error');
+        return;
+      }
+      if (bName && !/^[a-zA-Z\s\.\&\-]{2,100}$/.test(bName)) {
+        showNotification('Bank Name contains invalid characters', 'error');
         return;
       }
     }
@@ -329,6 +350,24 @@ export default function ProviderDashboard() {
         setKycDocuments(kycList || []);
       } catch (kErr) {
         console.warn('KYC documents fetch notice:', kErr);
+      }
+
+      try {
+        const bankData = await api.provider.getBankDetails();
+        if (bankData) {
+          setBankAccNumber(bankData.bankAccountNumber || '');
+          setBankIfsc(bankData.bankIfsc || '');
+          setBankName(bankData.bankName || '');
+          setAccHolderName(bankData.accountHolderName || '');
+          setUpiId(bankData.upiId || '');
+
+          if (!payoutBankAcc) setPayoutBankAcc(bankData.bankAccountNumber || '');
+          if (!payoutBankIfsc) setPayoutBankIfsc(bankData.bankIfsc || '');
+          if (!payoutBankName) setPayoutBankName(bankData.bankName || '');
+          if (!payoutUpiId) setPayoutUpiId(bankData.upiId || '');
+        }
+      } catch (bErr) {
+        console.warn('Bank details fetch notice:', bErr);
       }
 
     } catch (err) {
@@ -698,14 +737,35 @@ export default function ProviderDashboard() {
 
   const handleSaveBankDetails = async (e) => {
     e.preventDefault();
+    if (bankAccNumber.trim() && !/^[0-9]{9,18}$/.test(bankAccNumber.trim())) {
+      showNotification('Bank Account Number must be between 9 and 18 numeric digits', 'error');
+      return;
+    }
+    if (bankIfsc.trim() && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(bankIfsc.trim().toUpperCase())) {
+      showNotification('Invalid IFSC Code format. Must be 11 characters (e.g. HDFC0001234)', 'error');
+      return;
+    }
+    if (bankName.trim() && !/^[a-zA-Z\s\.\&\-]{2,100}$/.test(bankName.trim())) {
+      showNotification('Bank Name contains invalid characters', 'error');
+      return;
+    }
+    if (accHolderName.trim() && !/^[a-zA-Z\s\.\-]{2,100}$/.test(accHolderName.trim())) {
+      showNotification('Account Holder Name contains invalid characters', 'error');
+      return;
+    }
+    if (upiId.trim() && !/^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z][a-zA-Z0-9]{2,64}$/.test(upiId.trim())) {
+      showNotification('Invalid UPI ID format (e.g. name@okhdfcbank or 9876543210@paytm)', 'error');
+      return;
+    }
+
     setSavingBankDetails(true);
     try {
       await api.provider.updateBankDetails({
-        bankAccountNumber: bankAccNumber.trim(),
-        bankIfsc: bankIfsc.trim().toUpperCase(),
-        bankName: bankName.trim(),
-        accountHolderName: accHolderName.trim(),
-        upiId: upiId.trim()
+        bankAccountNumber: bankAccNumber.trim() || null,
+        bankIfsc: bankIfsc.trim().toUpperCase() || null,
+        bankName: bankName.trim() || null,
+        accountHolderName: accHolderName.trim() || null,
+        upiId: upiId.trim() || null
       });
       showNotification('Bank Account & UPI Payout settings updated.');
     } catch (err) {
@@ -3063,6 +3123,108 @@ export default function ProviderDashboard() {
                 {savingCategories ? 'Updating...' : 'Update Service Categories'}
               </button>
             </form>
+
+            {/* Bank Account & UPI Payout Details Panel */}
+            <form onSubmit={handleSaveBankDetails} className="panel" style={{ gridColumn: 'span 2' }}>
+              <div className="panel-header">
+                <h2 className="panel-title">
+                  <CreditCard size={16} color="var(--primary)" />
+                  <span>Saved Settlement Bank & UPI Payout Settings</span>
+                </h2>
+              </div>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '1rem' }}>
+                Your default bank account and UPI details used for partner revenue payouts and direct settlements.
+              </p>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600 }}>Bank Account Number</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="e.g. 50100234567890 (9-18 digits)"
+                    value={bankAccNumber}
+                    onChange={(e) => setBankAccNumber(e.target.value.replace(/\D/g, '').slice(0, 18))}
+                  />
+                  {bankAccNumber.trim() && !/^[0-9]{9,18}$/.test(bankAccNumber.trim()) && (
+                    <span style={{ fontSize: '0.7rem', color: '#ef4444', marginTop: '0.2rem', display: 'block' }}>
+                      Must be 9 to 18 digits (numbers only).
+                    </span>
+                  )}
+                </div>
+
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600 }}>IFSC Code</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="e.g. HDFC0001234 (11 characters)"
+                    value={bankIfsc}
+                    onChange={(e) => setBankIfsc(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 11))}
+                    style={{ textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}
+                  />
+                  {bankIfsc.trim() && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(bankIfsc.trim().toUpperCase()) && (
+                    <span style={{ fontSize: '0.7rem', color: '#ef4444', marginTop: '0.2rem', display: 'block' }}>
+                      Must be 11 characters (4 letters, '0', 6 alphanumeric).
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600 }}>Bank Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="e.g. HDFC Bank"
+                    value={bankName}
+                    onChange={(e) => setBankName(e.target.value)}
+                  />
+                  {bankName.trim() && !/^[a-zA-Z\s\.\&\-]{2,100}$/.test(bankName.trim()) && (
+                    <span style={{ fontSize: '0.7rem', color: '#ef4444', marginTop: '0.2rem', display: 'block' }}>
+                      Letters only (2-100 chars).
+                    </span>
+                  )}
+                </div>
+
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600 }}>Account Holder Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="e.g. Jainesh Sharma"
+                    value={accHolderName}
+                    onChange={(e) => setAccHolderName(e.target.value)}
+                  />
+                  {accHolderName.trim() && !/^[a-zA-Z\s\.\-]{2,100}$/.test(accHolderName.trim()) && (
+                    <span style={{ fontSize: '0.7rem', color: '#ef4444', marginTop: '0.2rem', display: 'block' }}>
+                      Letters only.
+                    </span>
+                  )}
+                </div>
+
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600 }}>UPI Virtual ID (VPA)</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="e.g. partner@okhdfcbank"
+                    value={upiId}
+                    onChange={(e) => setUpiId(e.target.value.trim())}
+                  />
+                  {upiId.trim() && !/^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z][a-zA-Z0-9]{2,64}$/.test(upiId.trim()) && (
+                    <span style={{ fontSize: '0.7rem', color: '#ef4444', marginTop: '0.2rem', display: 'block' }}>
+                      Format: username@handle
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <button type="submit" className="btn btn-primary btn-sm" disabled={savingBankDetails}>
+                {savingBankDetails ? 'Saving Settings...' : 'Save Payout & Bank Settings'}
+              </button>
+            </form>
           </div>
         )}
 
@@ -3931,11 +4093,20 @@ export default function ProviderDashboard() {
                     <input
                       type="text"
                       className="form-control"
-                      placeholder="e.g. 50100234567890"
+                      placeholder="e.g. 50100234567890 (9 to 18 digits)"
                       value={payoutBankAcc}
-                      onChange={(e) => setPayoutBankAcc(e.target.value)}
+                      onChange={(e) => setPayoutBankAcc(e.target.value.replace(/\D/g, '').slice(0, 18))}
                       required
                     />
+                    {payoutBankAcc.trim() && !/^[0-9]{9,18}$/.test(payoutBankAcc.trim()) ? (
+                      <span style={{ fontSize: '0.7rem', color: '#ef4444', marginTop: '0.25rem', display: 'block' }}>
+                        ✕ Account Number must contain 9 to 18 digits (numbers only).
+                      </span>
+                    ) : payoutBankAcc.trim() ? (
+                      <span style={{ fontSize: '0.7rem', color: 'var(--success)', marginTop: '0.25rem', display: 'block' }}>
+                        ✓ Valid account number format
+                      </span>
+                    ) : null}
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
@@ -3946,10 +4117,19 @@ export default function ProviderDashboard() {
                         className="form-control"
                         placeholder="e.g. HDFC0001234"
                         value={payoutBankIfsc}
-                        onChange={(e) => setPayoutBankIfsc(e.target.value.toUpperCase())}
+                        onChange={(e) => setPayoutBankIfsc(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 11))}
                         style={{ textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}
                         required
                       />
+                      {payoutBankIfsc.trim() && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(payoutBankIfsc.trim().toUpperCase()) ? (
+                        <span style={{ fontSize: '0.7rem', color: '#ef4444', marginTop: '0.25rem', display: 'block' }}>
+                          ✕ 11 chars (4 letters, '0', 6 alphanumeric).
+                        </span>
+                      ) : payoutBankIfsc.trim() ? (
+                        <span style={{ fontSize: '0.7rem', color: 'var(--success)', marginTop: '0.25rem', display: 'block' }}>
+                          ✓ Valid IFSC Code format
+                        </span>
+                      ) : null}
                     </div>
                     <div>
                       <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600 }}>Bank Name</label>
@@ -3960,6 +4140,11 @@ export default function ProviderDashboard() {
                         value={payoutBankName}
                         onChange={(e) => setPayoutBankName(e.target.value)}
                       />
+                      {payoutBankName.trim() && !/^[a-zA-Z\s\.\&\-]{2,100}$/.test(payoutBankName.trim()) ? (
+                        <span style={{ fontSize: '0.7rem', color: '#ef4444', marginTop: '0.25rem', display: 'block' }}>
+                          ✕ Invalid bank name.
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                 </div>
@@ -3977,12 +4162,22 @@ export default function ProviderDashboard() {
                     className="form-control"
                     placeholder="e.g. partner@okhdfcbank or 9876543210@paytm"
                     value={payoutUpiId}
-                    onChange={(e) => setPayoutUpiId(e.target.value)}
+                    onChange={(e) => setPayoutUpiId(e.target.value.trim())}
                     required
                   />
-                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem', display: 'block' }}>
-                    Settlement will be transferred instantly to this UPI Virtual Payment Address.
-                  </span>
+                  {payoutUpiId.trim() && !/^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z][a-zA-Z0-9]{2,64}$/.test(payoutUpiId.trim()) ? (
+                    <span style={{ fontSize: '0.7rem', color: '#ef4444', marginTop: '0.25rem', display: 'block' }}>
+                      ✕ Invalid UPI ID format. E.g. name@okhdfcbank or 9876543210@paytm
+                    </span>
+                  ) : payoutUpiId.trim() ? (
+                    <span style={{ fontSize: '0.7rem', color: 'var(--success)', marginTop: '0.25rem', display: 'block' }}>
+                      ✓ Valid UPI ID format
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem', display: 'block' }}>
+                      Settlement will be transferred instantly to this UPI Virtual Payment Address.
+                    </span>
+                  )}
                 </div>
               )}
 
@@ -3996,7 +4191,11 @@ export default function ProviderDashboard() {
                     !payoutAmount ||
                     Number(payoutAmount) < 100 ||
                     Number(payoutAmount) > (walletOverview?.currentBalance || 0) ||
-                    (payoutMethod === 'UPI' ? !payoutUpiId.trim() : (!payoutBankAcc.trim() || !payoutBankIfsc.trim()))
+                    (payoutMethod === 'UPI'
+                      ? !/^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z][a-zA-Z0-9]{2,64}$/.test(payoutUpiId.trim())
+                      : (!/^[0-9]{9,18}$/.test(payoutBankAcc.trim()) ||
+                         !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(payoutBankIfsc.trim().toUpperCase()) ||
+                         (payoutBankName.trim() && !/^[a-zA-Z\s\.\&\-]{2,100}$/.test(payoutBankName.trim()))))
                   }
                 >
                   {submittingPayout ? 'Processing...' : `Submit Request (₹${payoutAmount || 0})`}
