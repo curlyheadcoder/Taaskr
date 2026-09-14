@@ -50,7 +50,52 @@ export default function AdminDashboard() {
   const [bookingSearch, setBookingSearch] = useState('');
   const [bookingStatusFilter, setBookingStatusFilter] = useState('ALL');
 
-  // Tabs: 'analytics', 'observability', 'catalog', 'providers', 'providers_pending', 'providers_approved', 'bookings', 'users', 'discussions', 'payouts', 'disputes'
+  // Service Experts state
+  const [experts, setExperts] = useState(() => {
+    try {
+      const saved = localStorage.getItem('taaskr_registered_experts');
+      return saved ? JSON.parse(saved) : [
+        { id: 1, name: 'Vikramaditya Sharma', category: 'Vehicle & Auto Care', title: 'Senior Automotive Diagnostics Lead', phone: '+91 98765-43210', experience: '14 Yrs', status: 'ACTIVE' },
+        { id: 2, name: 'Rajesh Kumar', category: 'Appliances & Electrical', title: 'Principal HVAC & Electrical Engineer', phone: '+91 98765-43211', experience: '12 Yrs', status: 'ACTIVE' },
+        { id: 3, name: 'Rameshwar Patel', category: 'Plumbing & Cleaning', title: 'Master Hydraulic & Seepage Inspector', phone: '+91 98765-43212', experience: '15 Yrs', status: 'ACTIVE' }
+      ];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  const [newExpName, setNewExpName] = useState('');
+  const [newExpTitle, setNewExpTitle] = useState('');
+  const [newExpCategory, setNewExpCategory] = useState('Vehicle & Auto Care');
+  const [newExpPhone, setNewExpPhone] = useState('');
+  const [newExpExperience, setNewExpExperience] = useState('5 Yrs');
+
+  const handleAddExpert = (e) => {
+    e.preventDefault();
+    if (!newExpName.trim() || !newExpPhone.trim()) {
+      showNotification('Please enter expert name and phone number', 'error');
+      return;
+    }
+    const newExpert = {
+      id: Date.now(),
+      name: newExpName.trim(),
+      title: newExpTitle.trim() || 'Category Service Expert',
+      category: newExpCategory,
+      phone: newExpPhone.trim(),
+      experience: newExpExperience,
+      status: 'ACTIVE'
+    };
+    const updated = [newExpert, ...experts];
+    setExperts(updated);
+    localStorage.getItem('taaskr_registered_experts');
+    localStorage.setItem('taaskr_registered_experts', JSON.stringify(updated));
+    showNotification(`Registered Service Expert ${newExpert.name} successfully!`);
+    setNewExpName('');
+    setNewExpTitle('');
+    setNewExpPhone('');
+  };
+
+  // Tabs: 'analytics', 'observability', 'catalog', 'providers', 'providers_pending', 'providers_approved', 'experts', 'bookings', 'users', 'discussions', 'payouts', 'disputes'
   const [activeTab, setActiveTab] = useState('analytics');
 
   // Notification Toast state
@@ -766,6 +811,27 @@ export default function AdminDashboard() {
               borderRadius: '10px' 
             }}>
               {approvedProviders.length}
+            </span>
+          </button>
+
+          {/* Registered Category Service Experts */}
+          <button 
+            onClick={() => setActiveTab('experts')}
+            className={`sidebar-item ${activeTab === 'experts' ? 'active' : ''}`}
+            title="Registered Service Experts"
+          >
+            <UserCheck size={16} />
+            <span>Service Experts</span>
+            <span style={{ 
+              marginLeft: 'auto', 
+              background: 'rgba(245, 158, 11, 0.18)', 
+              color: '#D97706', 
+              fontSize: '0.68rem', 
+              fontWeight: 700, 
+              padding: '0.1rem 0.45rem', 
+              borderRadius: '10px' 
+            }}>
+              {experts.length}
             </span>
           </button>
 
@@ -1535,6 +1601,163 @@ export default function AdminDashboard() {
             </div>
           );
         })()}
+
+        {/* ========================================================================= */}
+        {/* TAB: REGISTERED DOMAIN SERVICE EXPERTS                                    */}
+        {/* ========================================================================= */}
+        {activeTab === 'experts' && (
+          <div className="panel animate-fade-in">
+            <div className="panel-header" style={{ marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <h2 className="panel-title">
+                <UserCheck size={20} color="var(--primary)" />
+                <span>Service Experts Authority Directory</span>
+              </h2>
+              <span className="badge badge-assigned">{experts.length} Registered Experts</span>
+            </div>
+
+            {/* Register New Service Expert Form */}
+            <div style={{ padding: '1.25rem', borderRadius: '16px', backgroundColor: 'var(--bg-subtle, #1e293b)', border: '1px solid var(--border-light, #334155)', marginBottom: '1.5rem' }}>
+              <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 800, color: 'var(--text-main, #ffffff)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Plus size={18} color="#f59e0b" />
+                <span>Register New Category Service Expert</span>
+              </h3>
+              <form onSubmit={handleAddExpert} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.85rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main, #ffffff)', marginBottom: '0.35rem' }}>
+                    Expert Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Vikramaditya Sharma"
+                    value={newExpName}
+                    onChange={(e) => setNewExpName(e.target.value)}
+                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '10px', border: '1px solid #334155', backgroundColor: '#0f172a', color: '#ffffff', fontSize: '0.85rem' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main, #ffffff)', marginBottom: '0.35rem' }}>
+                    Title / Specialization *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Senior Automotive Lead"
+                    value={newExpTitle}
+                    onChange={(e) => setNewExpTitle(e.target.value)}
+                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '10px', border: '1px solid #334155', backgroundColor: '#0f172a', color: '#ffffff', fontSize: '0.85rem' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main, #ffffff)', marginBottom: '0.35rem' }}>
+                    Mapped Service Category *
+                  </label>
+                  <select
+                    value={newExpCategory}
+                    onChange={(e) => setNewExpCategory(e.target.value)}
+                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '10px', border: '1px solid #334155', backgroundColor: '#0f172a', color: '#ffffff', fontSize: '0.85rem', colorScheme: 'dark' }}
+                  >
+                    <option value="Vehicle & Auto Care">Vehicle & Auto Care</option>
+                    <option value="Appliances & Electrical">Appliances & Electrical</option>
+                    <option value="Plumbing & Cleaning">Plumbing & Cleaning</option>
+                    <option value="Salon & Massage / Wellness">Salon & Massage / Wellness</option>
+                    <option value="Civil & Property Maintenance">Civil & Property Maintenance</option>
+                    <option value="Tech & Home Automation">Tech & Home Automation</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main, #ffffff)', marginBottom: '0.35rem' }}>
+                    Phone Contact Number *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="+91 98765-43210"
+                    value={newExpPhone}
+                    onChange={(e) => setNewExpPhone(e.target.value)}
+                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '10px', border: '1px solid #334155', backgroundColor: '#0f172a', color: '#ffffff', fontSize: '0.85rem' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main, #ffffff)', marginBottom: '0.35rem' }}>
+                    Experience *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 10 Yrs"
+                    value={newExpExperience}
+                    onChange={(e) => setNewExpExperience(e.target.value)}
+                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '10px', border: '1px solid #334155', backgroundColor: '#0f172a', color: '#ffffff', fontSize: '0.85rem' }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                  <button
+                    type="submit"
+                    style={{
+                      width: '100%',
+                      padding: '0.6rem 1rem',
+                      borderRadius: '10px',
+                      border: 'none',
+                      backgroundColor: '#f59e0b',
+                      color: '#ffffff',
+                      fontWeight: 800,
+                      fontSize: '0.85rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    + Register Expert Authority
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Experts Table */}
+            <div className="table-container">
+              <table className="enterprise-table">
+                <thead>
+                  <tr>
+                    <th>Expert Name</th>
+                    <th>Category</th>
+                    <th>Title / Specialization</th>
+                    <th>Contact Phone</th>
+                    <th>Experience</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {experts.map(exp => (
+                    <tr key={exp.id}>
+                      <td style={{ fontWeight: 700, color: 'var(--text-main, #ffffff)' }}>
+                        {exp.name}
+                      </td>
+                      <td>
+                        <span className="badge badge-assigned">{exp.category}</span>
+                      </td>
+                      <td style={{ color: 'var(--text-muted, #94a3b8)', fontSize: '0.82rem' }}>
+                        {exp.title}
+                      </td>
+                      <td style={{ fontWeight: 600, color: '#f59e0b' }}>
+                        {exp.phone}
+                      </td>
+                      <td style={{ fontWeight: 600 }}>
+                        {exp.experience}
+                      </td>
+                      <td>
+                        <span className="badge badge-completed" style={{ fontSize: '0.65rem' }}>
+                          {exp.status || 'ACTIVE'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         {/* ========================================================================= */}
         {/* TAB: PAYOUT SETTLEMENTS                                                  */}
