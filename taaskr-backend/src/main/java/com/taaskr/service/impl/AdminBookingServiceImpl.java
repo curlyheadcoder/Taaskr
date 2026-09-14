@@ -14,9 +14,12 @@ import java.util.List;
 public class AdminBookingServiceImpl implements AdminBookingService {
 
     private final BookingRepository bookingRepository;
+    private final com.taaskr.repository.ProviderProfileRepository providerProfileRepository;
 
-    public AdminBookingServiceImpl(BookingRepository bookingRepository) {
+    public AdminBookingServiceImpl(BookingRepository bookingRepository,
+                                  com.taaskr.repository.ProviderProfileRepository providerProfileRepository) {
         this.bookingRepository = bookingRepository;
+        this.providerProfileRepository = providerProfileRepository;
     }
 
     @Transactional(readOnly = true)
@@ -34,6 +37,22 @@ public class AdminBookingServiceImpl implements AdminBookingService {
     public com.taaskr.dto.common.PageResponse<AdminBookingResponse> getAllBookings(org.springframework.data.domain.Pageable pageable) {
         org.springframework.data.domain.Page<Booking> page = bookingRepository.findAll(pageable);
         return com.taaskr.dto.common.PageResponse.of(page, this::mapToResponse);
+    }
+
+    @Transactional
+    @Override
+    public AdminBookingResponse assignProviderToBooking(Long bookingId, Long providerId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new com.taaskr.exception.ResourceNotFoundException("Booking not found"));
+        ProviderProfile provider = providerProfileRepository.findById(providerId)
+                .orElseThrow(() -> new com.taaskr.exception.ResourceNotFoundException("Provider not found"));
+
+        booking.setProvider(provider);
+        if (booking.getStatus() == com.taaskr.enums.BookingStatus.PENDING) {
+            booking.setStatus(com.taaskr.enums.BookingStatus.ASSIGNED);
+        }
+        Booking saved = bookingRepository.save(booking);
+        return mapToResponse(saved);
     }
 
     private AdminBookingResponse mapToResponse(Booking booking) {

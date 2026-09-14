@@ -2295,4 +2295,23 @@ body.dark .admin-theme *::-webkit-scrollbar-thumb {
   background: rgba(99, 102, 241, 0.45);
 }
 
+/* Force High Contrast Select & Form Control Legibility */
+select option {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+  padding: 8px 12px;
+}
+
+input[type="text"],
+input[type="date"],
+select,
+textarea {
+  color-scheme: dark !important;
+}
+
+::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+}
+
 

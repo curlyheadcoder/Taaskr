@@ -488,6 +488,12 @@ export const api = {
       return makeRequest('/api/admin/bookings');
     },
 
+    assignProviderToBooking: async (bookingId, providerId) => {
+      return makeRequest(`/api/admin/bookings/${bookingId}/assign/${providerId}`, {
+        method: 'PUT'
+      });
+    },
+
     getAnalytics: async (days = 30) => {
       return makeRequest(`/api/admin/analytics/overview?days=${days}`);
     },

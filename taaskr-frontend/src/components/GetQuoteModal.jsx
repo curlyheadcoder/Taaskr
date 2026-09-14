@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   X, PhoneCall, Home, ShieldCheck, Clock, Calendar, MapPin, 
-  ChevronRight, Sparkles, CheckCircle2, AlertCircle, Tag
+  ChevronRight, Sparkles, CheckCircle2, AlertCircle, Tag, UserCheck, Star, Award
 } from 'lucide-react';
+import { getExpertsByCategory } from '../data/expertsData';
 
 export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, categories = [] }) {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
 
   const [selectedCatId, setSelectedCatId] = useState(initialCategoryId || availableCategories[0]?.id || 'appliances_electrical');
   const [quoteType, setQuoteType] = useState('CALL'); // 'CALL' or 'IN_HOUSE'
+  const [selectedExpertId, setSelectedExpertId] = useState('');
   const [description, setDescription] = useState('');
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [selectedTime, setSelectedTime] = useState('10:00');
@@ -62,6 +64,9 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
   const currentCategory = availableCategories.find(c => String(c.id) === String(selectedCatId)) || availableCategories[0];
   const catName = currentCategory?.name || 'Selected Category';
 
+  const categoryExperts = getExpertsByCategory(selectedCatId);
+  const activeExpert = categoryExperts.find(e => e.id === selectedExpertId) || categoryExperts[0];
+
   const handleProceed = (e) => {
     e.preventDefault();
     if (!selectedCatId) {
@@ -75,6 +80,7 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
 
     const typeLabel = quoteType === 'CALL' ? 'Consultation on Call' : 'In-House Inspection';
     const fullServiceName = `${catName} - ${typeLabel}`;
+    const expertNote = activeExpert ? `Assigned Expert: ${activeExpert.name} (${activeExpert.title})` : 'Auto-Assigned Senior Expert';
 
     const bookingState = {
       serviceId: null,
@@ -86,8 +92,9 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
       pickupAddress: address,
       pickupCity: city,
       pickupPincode: pincode,
-      packageDescription: description ? `[Quote Requirement - ${typeLabel}]: ${description}` : `Quote & Inspection Request (${typeLabel})`,
+      packageDescription: `[${typeLabel}] ${expertNote}. Requirement: ${description || 'Expert consultation & diagnostic quote request.'}`,
       quoteType: quoteType,
+      expertInfo: activeExpert,
       isQuoteBooking: true
     };
 
@@ -103,8 +110,8 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.8)',
-        backdropFilter: 'blur(8px)',
+        backgroundColor: 'rgba(15, 23, 42, 0.85)',
+        backdropFilter: 'blur(10px)',
         zIndex: 9999,
         display: 'flex',
         alignItems: 'center',
@@ -117,12 +124,12 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
       <div 
         style={{
           width: '100%',
-          maxWidth: '560px',
-          maxHeight: '90vh',
-          backgroundColor: 'var(--bg-card, #0f172a)',
-          color: 'var(--text-main, #f8fafc)',
+          maxWidth: '600px',
+          maxHeight: '92vh',
+          backgroundColor: '#0f172a',
+          color: '#ffffff',
           borderRadius: '20px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border-light, rgba(255, 255, 255, 0.15))',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.15)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -139,28 +146,28 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+            borderBottom: '1px solid rgba(255, 255, 255, 0.12)'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div 
               style={{
-                width: '40px',
-                height: '40px',
+                width: '42px',
+                height: '42px',
                 borderRadius: '12px',
                 background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 4px 12px rgba(245, 158, 11, 0.35)'
+                boxShadow: '0 4px 14px rgba(245, 158, 11, 0.4)'
               }}
             >
-              <Sparkles size={20} color="#ffffff" />
+              <Sparkles size={22} color="#ffffff" />
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#ffffff' }}>
-                  Get Custom Quote & Inspection
+                  Connect with Category Expert
                 </h3>
                 <span 
                   style={{
@@ -168,7 +175,7 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
                     color: '#ffffff',
                     fontSize: '0.72rem',
                     fontWeight: 700,
-                    padding: '0.15rem 0.5rem',
+                    padding: '0.15rem 0.55rem',
                     borderRadius: '12px',
                     textTransform: 'uppercase',
                     letterSpacing: '0.04em'
@@ -178,7 +185,7 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
                 </span>
               </div>
               <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.8125rem', color: '#94a3b8' }}>
-                Expert guidance, diagnosis & upfront written quotation
+                Speak directly with a domain expert & get upfront diagnostic quote
               </p>
             </div>
           </div>
@@ -189,8 +196,8 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
               background: 'rgba(255, 255, 255, 0.1)',
               border: 'none',
               borderRadius: '50%',
-              width: '32px',
-              height: '32px',
+              width: '34px',
+              height: '34px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -227,13 +234,14 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
 
           {/* 1. Category Selection */}
           <div style={{ marginBottom: '1.25rem' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#f8fafc', marginBottom: '0.4rem' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#ffffff', marginBottom: '0.4rem' }}>
               1. Select Service Category *
             </label>
             <select
               value={selectedCatId}
               onChange={(e) => {
                 setSelectedCatId(e.target.value);
+                setSelectedExpertId('');
                 setErrorMsg('');
               }}
               style={{
@@ -259,7 +267,7 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
 
           {/* 2. Choose Consultation Type (₹99) */}
           <div style={{ marginBottom: '1.25rem' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#f8fafc', marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#ffffff', marginBottom: '0.5rem' }}>
               2. Select Consultation Option (Flat ₹99) *
             </label>
 
@@ -285,7 +293,7 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
                   <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#fbbf24' }}>₹99</span>
                 </div>
                 <p style={{ margin: 0, fontSize: '0.78rem', color: '#e2e8f0', lineHeight: 1.45 }}>
-                  Speak directly with an expert technician over phone for recommendations & parts estimate.
+                  Direct phone call consultation with verified domain expert for diagnostic advice & parts estimate.
                 </p>
                 {quoteType === 'CALL' && (
                   <div style={{ position: 'absolute', top: '8px', right: '8px', color: '#fbbf24' }}>
@@ -315,7 +323,7 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
                   <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#38bdf8' }}>₹99</span>
                 </div>
                 <p style={{ margin: 0, fontSize: '0.78rem', color: '#e2e8f0', lineHeight: 1.45 }}>
-                  Certified technician visits your location to inspect, perform diagnostics & issue quote.
+                  Doorstep visit by certified technician to inspect location, diagnose issue & issue formal quote.
                 </p>
                 {quoteType === 'IN_HOUSE' && (
                   <div style={{ position: 'absolute', top: '8px', right: '8px', color: '#38bdf8' }}>
@@ -326,16 +334,80 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
             </div>
           </div>
 
-          {/* 3. Requirement / Notes Description */}
+          {/* 3. Verified Domain Experts Selection */}
           <div style={{ marginBottom: '1.25rem' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#f8fafc', marginBottom: '0.4rem' }}>
-              3. Describe Your Issue / Requirement (Optional)
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#ffffff', margin: 0 }}>
+                3. Choose Available Domain Expert *
+              </label>
+              <span style={{ fontSize: '0.75rem', color: '#f59e0b', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                <Award size={14} /> Verified Senior Pros
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+              {categoryExperts.map((exp) => {
+                const isSelected = (selectedExpertId === exp.id) || (!selectedExpertId && exp.id === categoryExperts[0].id);
+                return (
+                  <div
+                    key={exp.id}
+                    onClick={() => setSelectedExpertId(exp.id)}
+                    style={{
+                      border: isSelected ? '2px solid #f59e0b' : '1px solid #334155',
+                      backgroundColor: isSelected ? 'rgba(245, 158, 11, 0.12)' : '#1e293b',
+                      borderRadius: '14px',
+                      padding: '0.75rem 0.9rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.85rem',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <img 
+                      src={exp.avatar} 
+                      alt={exp.name} 
+                      style={{ width: '46px', height: '46px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #f59e0b' }} 
+                    />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <h4 style={{ margin: 0, fontSize: '0.92rem', fontWeight: 800, color: '#ffffff' }}>{exp.name}</h4>
+                        <span style={{ fontSize: '0.72rem', backgroundColor: 'rgba(245, 158, 11, 0.2)', color: '#fbbf24', fontWeight: 700, padding: '0.1rem 0.45rem', borderRadius: '8px' }}>
+                          {exp.experienceYears}+ yrs exp
+                        </span>
+                      </div>
+                      <p style={{ margin: '0.15rem 0 0.3rem 0', fontSize: '0.78rem', color: '#cbd5e1' }}>{exp.title}</p>
+                      <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                        {exp.specialties.slice(0, 2).map((s, idx) => (
+                          <span key={idx} style={{ fontSize: '0.68rem', backgroundColor: 'rgba(255, 255, 255, 0.08)', color: '#94a3b8', padding: '0.1rem 0.4rem', borderRadius: '6px' }}>
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.2rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', color: '#fbbf24', fontSize: '0.8rem', fontWeight: 800 }}>
+                        <Star size={13} fill="#fbbf24" />
+                        <span>{exp.rating}</span>
+                      </div>
+                      <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: isSelected ? '5px solid #f59e0b' : '2px solid #64748b', backgroundColor: '#0f172a' }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 4. Requirement Description */}
+          <div style={{ marginBottom: '1.25rem' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#ffffff', marginBottom: '0.4rem' }}>
+              4. Describe Your Issue / Requirement (Optional)
             </label>
             <textarea
-              rows={3}
+              rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe your specific issue or custom service requirement details..."
+              placeholder="Describe your specific requirement or issue details for the expert..."
               style={{
                 width: '100%',
                 padding: '0.7rem 0.9rem',
@@ -350,10 +422,10 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
             />
           </div>
 
-          {/* 4. Preferred Date & Time Slot */}
+          {/* 5. Date & Time Slot */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#f8fafc', marginBottom: '0.4rem' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#ffffff', marginBottom: '0.4rem' }}>
                 Preferred Date *
               </label>
               <input
@@ -375,7 +447,7 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
               />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#f8fafc', marginBottom: '0.4rem' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#ffffff', marginBottom: '0.4rem' }}>
                 Time Slot *
               </label>
               <select
@@ -404,9 +476,9 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
             </div>
           </div>
 
-          {/* 5. Address Details */}
+          {/* 6. Address Details */}
           <div style={{ marginBottom: '1.25rem' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#f8fafc', marginBottom: '0.4rem' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#ffffff', marginBottom: '0.4rem' }}>
               Address / Location *
             </label>
             <input
@@ -474,18 +546,18 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
               alignItems: 'center',
               justifyContent: 'space-around',
               fontSize: '0.78rem',
-              color: '#f8fafc',
+              color: '#ffffff',
               fontWeight: 600,
               marginBottom: '1rem'
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              <ShieldCheck size={15} color="#38bdf8" />
-              <span>Aadhaar Verified Pros</span>
+              <UserCheck size={15} color="#38bdf8" />
+              <span>Assigned Domain Expert</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
               <Tag size={15} color="#f59e0b" />
-              <span>₹99 Flat Fee</span>
+              <span>₹99 Consultation</span>
             </div>
           </div>
 
@@ -510,7 +582,7 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
               transition: 'all 0.2s ease'
             }}
           >
-            <span>Book Quote Request for ₹99</span>
+            <span>Book Consultation with Expert for ₹99</span>
             <ChevronRight size={18} />
           </button>
         </form>

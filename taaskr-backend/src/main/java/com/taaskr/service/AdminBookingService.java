@@ -11,4 +11,6 @@ public interface AdminBookingService {
     List<AdminBookingResponse> getAllBookings();
 
     PageResponse<AdminBookingResponse> getAllBookings(Pageable pageable);
+
+    AdminBookingResponse assignProviderToBooking(Long bookingId, Long providerId);
 }

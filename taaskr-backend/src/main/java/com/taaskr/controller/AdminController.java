@@ -142,6 +142,12 @@ public class AdminController {
         return adminBookingService.getAllBookings(pageable);
     }
 
+    @PutMapping("/bookings/{bookingId}/assign/{providerId}")
+    public AdminBookingResponse assignProviderToBooking(@PathVariable Long bookingId,
+                                                         @PathVariable Long providerId) {
+        return adminBookingService.assignProviderToBooking(bookingId, providerId);
+    }
+
     // ----------------------------------------
     // PARTNER DISCUSSIONS & DESK
     // ----------------------------------------
