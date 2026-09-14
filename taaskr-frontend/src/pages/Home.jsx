@@ -3,6 +3,8 @@ import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { api } from '../services/api';
 import Pagination from '../components/Pagination';
 import GetQuoteModal from '../components/GetQuoteModal';
+import VehicleVariantModal from '../components/VehicleVariantModal';
+import { VEHICLE_AUTO_CARE_SERVICES } from '../data/vehicleAutoCareData';
 import {
   Search, ShieldCheck, Tag, CreditCard, Star, LayoutList,
   Droplets, Zap, Paintbrush, Leaf, Truck, Settings,
@@ -1073,6 +1075,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [quoteModalCatId, setQuoteModalCatId] = useState(null);
+  const [selectedVehicleUmbrella, setSelectedVehicleUmbrella] = useState(null);
+  const [isVehicleModalOpen, setIsVehicleModalOpen] = useState(false);
   const [currentLocation, setCurrentLocation] = useState(() => {
     try {
       const saved = localStorage.getItem('taaskr_location');
@@ -2548,73 +2552,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Category Specific Get Quote Featured Banner */}
-        {selectedCategory && (
-          <div 
-            style={{
-              background: 'linear-gradient(135deg, rgba(217, 119, 6, 0.12) 0%, rgba(180, 83, 9, 0.05) 100%)',
-              border: '1px solid rgba(217, 119, 6, 0.3)',
-              borderRadius: '16px',
-              padding: '1.15rem 1.4rem',
-              marginBottom: '1.5rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: '1rem'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-              <div 
-                style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '12px',
-                  background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
-                  color: '#ffffff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 4px 12px rgba(217, 119, 6, 0.3)'
-                }}
-              >
-                <Phone size={20} />
-              </div>
-              <div>
-                <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-main)' }}>
-                  Need a Custom Quote or Inspection for {categories.find(c => c.id === selectedCategory)?.name}?
-                </h4>
-                <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.825rem', color: 'var(--text-muted)' }}>
-                  Book a <strong>Consultation on Call (₹99)</strong> or <strong>In-House Doorstep Inspection (₹99)</strong> with an Aadhaar-verified expert.
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setQuoteModalCatId(selectedCategory);
-                setIsQuoteModalOpen(true);
-              }}
-              style={{
-                padding: '0.6rem 1.1rem',
-                borderRadius: '12px',
-                border: 'none',
-                backgroundColor: '#d97706',
-                color: '#ffffff',
-                fontSize: '0.85rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                boxShadow: '0 4px 12px rgba(217, 119, 6, 0.25)'
-              }}
-            >
-              <span>Get Quote for ₹99</span>
-              <ChevronRight size={16} />
-            </button>
-          </div>
-        )}
+
 
         {/* Dynamic Services Grid Header */}
         {selectedCategory ? (
@@ -2646,6 +2584,98 @@ export default function Home() {
             <p className="empty-state-description" style={{ fontSize: '0.875rem', color: 'var(--text-muted)', maxWidth: '440px', margin: '0 auto' }}>
               Click on any service category tile above to view available verified professionals, transparent pricing, and instant booking options.
             </p>
+          </div>
+        ) : (selectedCategory === 'vehicle_autocare' || categories.find(c => c.id === selectedCategory)?.name?.toLowerCase().includes('vehicle') || categories.find(c => c.id === selectedCategory)?.name?.toLowerCase().includes('auto care')) ? (
+          /* Umbrella Services Grid for Vehicle & Auto Care */
+          <div>
+            <div className="grid-cols-4">
+              {VEHICLE_AUTO_CARE_SERVICES.map((umbrella) => {
+                const optionCount = umbrella.options.length;
+                return (
+                  <div
+                    key={umbrella.id}
+                    className="service-card"
+                    style={{
+                      '--service-color': '#0284C7',
+                      '--service-primary': '#0284C7',
+                      '--service-glow': 'rgba(2, 132, 199, 0.25)',
+                      '--service-bg': 'rgba(2, 132, 199, 0.08)',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => {
+                      setSelectedVehicleUmbrella(umbrella);
+                      setIsVehicleModalOpen(true);
+                    }}
+                  >
+                    <div className="service-card-image-box" style={{ position: 'relative' }}>
+                      <img
+                        src={umbrella.image}
+                        alt={umbrella.name}
+                        className="service-card-img"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=600&q=80';
+                        }}
+                      />
+                      <span 
+                        style={{
+                          position: 'absolute',
+                          top: '10px',
+                          right: '10px',
+                          backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                          color: '#ffffff',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          padding: '0.2rem 0.55rem',
+                          borderRadius: '12px',
+                          backdropFilter: 'blur(4px)',
+                          zIndex: 2
+                        }}
+                      >
+                        {optionCount} Options
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
+                      <h3 className="service-card-title">{umbrella.name}</h3>
+                    </div>
+
+                    <span className="service-category-tag" style={{ color: '#0284C7', backgroundColor: 'rgba(2, 132, 199, 0.1)', border: '1px solid rgba(2, 132, 199, 0.3)' }}>
+                      Vehicle & Auto Care
+                    </span>
+
+                    <p className="service-card-desc" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.4, marginBottom: '0.85rem' }}>
+                      {umbrella.description}
+                    </p>
+
+                    <div className="service-card-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '0.75rem', borderTop: '1px solid var(--border-subtle)' }}>
+                      <div>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>
+                          Starting from
+                        </div>
+                        <span className="service-price" style={{ color: '#0284C7', fontWeight: 800 }}>
+                          ₹{umbrella.startingPrice}
+                        </span>
+                      </div>
+
+                      <button 
+                        type="button"
+                        className="service-cta" 
+                        style={{ backgroundColor: '#0284C7', color: '#ffffff' }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedVehicleUmbrella(umbrella);
+                          setIsVehicleModalOpen(true);
+                        }}
+                      >
+                        <span>Options</span> <ChevronRight size={14} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         ) : loading ? (
           <div className="grid-cols-4">
@@ -2876,6 +2906,12 @@ export default function Home() {
         onClose={() => setIsQuoteModalOpen(false)} 
         initialCategoryId={quoteModalCatId} 
         categories={categories} 
+      />
+
+      <VehicleVariantModal
+        isOpen={isVehicleModalOpen}
+        onClose={() => setIsVehicleModalOpen(false)}
+        umbrellaService={selectedVehicleUmbrella}
       />
     </div>
   );
