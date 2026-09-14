@@ -1266,14 +1266,20 @@ export default function Home() {
     'deep home & bathroom cleaning': 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80',
 
     // 3. Pest Control
-    'general pest & cockroach control': 'https://images.unsplash.com/photo-1587293852726-70cdb56c2866?auto=format&fit=crop&w=600&q=80',
-    'cockroach control': 'https://images.unsplash.com/photo-1587293852726-70cdb56c2866?auto=format&fit=crop&w=600&q=80',
-    'termite & wood borer treatment': 'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?auto=format&fit=crop&w=600&q=80',
-    'termite control': 'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?auto=format&fit=crop&w=600&q=80',
-    'bed bug eradication treatment': 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=600&q=80',
-    'bed bug control': 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=600&q=80',
-    'mosquito & flying insect control': 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&q=80',
-    'mosquito control': 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&q=80',
+    'home pest control': '/home-pest-control.jpg',
+    'general pest & cockroach control': '/home-pest-control.jpg',
+    'cockroach control': '/home-pest-control.jpg',
+    'pest control': '/home-pest-control.jpg',
+    'rodent control': '/rodent-control.jpg',
+    'rodent & rat control': '/rodent-control.jpg',
+    'rat control': '/rodent-control.jpg',
+    'termite control': '/termite-control.jpg',
+    'termite & wood borer treatment': '/termite-control.jpg',
+    'bed bug control': '/bed-bug-control.jpg',
+    'bed bug eradication treatment': '/bed-bug-control.jpg',
+    'mosquito & fly control': '/mosquito-control.jpg',
+    'mosquito & flying insect control': '/mosquito-control.jpg',
+    'mosquito control': '/mosquito-control.jpg',
 
     // 4. Unisex Salon & Wellness
     "men's haircut & beard styling": 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80',
@@ -1387,8 +1393,16 @@ export default function Home() {
 
     // 2. Intelligent keyword fallback if exact name not in map
     if (!serviceImage) {
-      if (name.includes('pest') || name.includes('cockroach') || name.includes('termite') || name.includes('bed bug') || name.includes('mosquito')) {
-        serviceImage = 'https://images.unsplash.com/photo-1587293852726-70cdb56c2866?auto=format&fit=crop&w=600&q=80';
+      if (name.includes('rodent') || name.includes('rat') || name.includes('mouse') || name.includes('mice')) {
+        serviceImage = '/rodent-control.jpg';
+      } else if (name.includes('termite') || name.includes('wood borer')) {
+        serviceImage = '/termite-control.jpg';
+      } else if (name.includes('mosquito') || name.includes('fly') || name.includes('flies')) {
+        serviceImage = '/mosquito-control.jpg';
+      } else if (name.includes('bed bug') || name.includes('bedbug')) {
+        serviceImage = '/bed-bug-control.jpg';
+      } else if (name.includes('pest') || name.includes('cockroach') || name.includes('ant') || name.includes('spider') || name.includes('insect')) {
+        serviceImage = '/home-pest-control.jpg';
       } else if (name.includes('car ') || name.includes('bike wash') || name.includes('detailing') || name.includes('jump start')) {
         serviceImage = 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=600&q=80';
       } else if (name.includes('laptop') || name.includes('pc ') || name.includes('computer') || name.includes('router') || name.includes('tv ') || name.includes('printer')) {
