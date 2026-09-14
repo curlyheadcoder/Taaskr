@@ -57,6 +57,20 @@ export default function BookingFlow() {
   const [availableProviders, setAvailableProviders] = useState([]);
   const [selectedProviderId, setSelectedProviderId] = useState(null);
   const [isFetchingProviders, setIsFetchingProviders] = useState(false);
+  const [quoteServiceId, setQuoteServiceId] = useState(serviceId || null);
+
+  useEffect(() => {
+    if (!serviceId) {
+      api.catalog.getServices().then(servs => {
+        if (Array.isArray(servs) && servs.length > 0) {
+          const match = servs.find(s => (s.categoryName || '').toLowerCase().includes((bookingState.categoryName || '').toLowerCase()));
+          setQuoteServiceId(match ? match.id : servs[0].id);
+        } else {
+          setQuoteServiceId(1);
+        }
+      }).catch(() => setQuoteServiceId(1));
+    }
+  }, [serviceId, bookingState.categoryName]);
 
   useEffect(() => {
     const prefillUser = async () => {
@@ -113,7 +127,9 @@ export default function BookingFlow() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!serviceId) {
+    const activeServiceId = serviceId || quoteServiceId || 1;
+
+    if (!activeServiceId && !serviceName && !bookingState.isQuoteBooking) {
       alert('Invalid session. Please start booking from the service page.');
       navigate('/');
       return;
@@ -153,7 +169,7 @@ export default function BookingFlow() {
       }
 
       const payload = {
-        serviceId: Number(serviceId),
+        serviceId: Number(activeServiceId),
         providerId: selectedProviderId ? Number(selectedProviderId) : null,
         bookingDate: selectedDate,
         startTime: safeStartTime,
@@ -163,7 +179,7 @@ export default function BookingFlow() {
         pincode,
         latitude: coordinates?.latitude,
         longitude: coordinates?.longitude,
-        notes: isVehicle && packageDescription ? `${notes ? notes + ' | ' : ''}Cargo: ${packageDescription}` : notes
+        notes: bookingState.isQuoteBooking ? `[Quote Request - ₹99]: ${serviceName} | ${notes || ''}` : (isVehicle && packageDescription ? `${notes ? notes + ' | ' : ''}Cargo: ${packageDescription}` : notes)
       };
 
       if (isVehicle) {
@@ -261,7 +277,7 @@ export default function BookingFlow() {
     }
   };
 
-  if (!serviceId) {
+  if (!serviceId && !serviceName && !bookingState.isQuoteBooking) {
     return (
       <div className="app-container" style={{ padding: '4rem 1rem' }}>
         <div className="empty-state">

@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import LocationPicker from '../components/LocationPicker';
+import GetQuoteModal from '../components/GetQuoteModal';
 import { 
   Truck, MapPin, Package, ShieldCheck, CheckCircle2, Clock, 
   AlertCircle, ArrowRight, ChevronRight, RefreshCw, Calendar, 
-  Info, Check, Navigation, Star, MessageSquare
+  Info, Check, Navigation, Star, MessageSquare, Phone
 } from 'lucide-react';
 
 export default function ServiceDetails() {
@@ -16,6 +17,7 @@ export default function ServiceDetails() {
   const [error, setError] = useState('');
   const [reviews, setReviews] = useState([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
+  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -700,6 +702,47 @@ export default function ServiceDetails() {
               </div>
             </div>
 
+            {/* Get Quote Banner for ₹99 */}
+            <div 
+              style={{
+                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.04) 100%)',
+                border: '1px solid rgba(245, 158, 11, 0.3)',
+                borderRadius: '12px',
+                padding: '0.85rem 1rem',
+                marginBottom: '1.25rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '0.75rem'
+              }}
+            >
+              <div>
+                <div style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                  Need an In-House Inspection or Call Advice First?
+                </div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                  Book expert consultation on call or doorstep inspection for <strong>flat ₹99</strong>.
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsQuoteModalOpen(true)}
+                style={{
+                  padding: '0.45rem 0.85rem',
+                  borderRadius: '10px',
+                  border: 'none',
+                  backgroundColor: '#d97706',
+                  color: '#ffffff',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                Get Quote ₹99
+              </button>
+            </div>
+
             <h3 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '0.35rem' }}>
               Scope of Work
             </h3>
@@ -998,6 +1041,12 @@ export default function ServiceDetails() {
           </div>
         )}
       </div>
+
+      <GetQuoteModal 
+        isOpen={isQuoteModalOpen} 
+        onClose={() => setIsQuoteModalOpen(false)} 
+        initialCategoryId={service?.categoryId || 'appliances_electrical'} 
+      />
     </div>
   );
 }

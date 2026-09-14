@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { api } from '../services/api';
 import Pagination from '../components/Pagination';
+import GetQuoteModal from '../components/GetQuoteModal';
 import {
   Search, ShieldCheck, Tag, CreditCard, Star, LayoutList,
   Droplets, Zap, Paintbrush, Leaf, Truck, Settings,
@@ -1070,6 +1071,8 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+  const [quoteModalCatId, setQuoteModalCatId] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(() => {
     try {
       const saved = localStorage.getItem('taaskr_location');
@@ -2479,6 +2482,31 @@ export default function Home() {
               )}
             </p>
           </div>
+          <button
+            type="button"
+            onClick={() => {
+              setQuoteModalCatId(selectedCategory || 'appliances_electrical');
+              setIsQuoteModalOpen(true);
+            }}
+            style={{
+              padding: '0.65rem 1.15rem',
+              borderRadius: '12px',
+              border: 'none',
+              background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+              color: '#ffffff',
+              fontSize: '0.875rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              boxShadow: '0 4px 14px rgba(217, 119, 6, 0.3)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <Phone size={16} />
+            <span>Get Quote & Inspection (₹99)</span>
+          </button>
         </div>
 
         {/* Clean Responsive Category Tiles Grid with Squircle Icon Badge */}
@@ -2519,6 +2547,74 @@ export default function Home() {
             })}
           </div>
         </div>
+
+        {/* Category Specific Get Quote Featured Banner */}
+        {selectedCategory && (
+          <div 
+            style={{
+              background: 'linear-gradient(135deg, rgba(217, 119, 6, 0.12) 0%, rgba(180, 83, 9, 0.05) 100%)',
+              border: '1px solid rgba(217, 119, 6, 0.3)',
+              borderRadius: '16px',
+              padding: '1.15rem 1.4rem',
+              marginBottom: '1.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '1rem'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+              <div 
+                style={{
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(217, 119, 6, 0.3)'
+                }}
+              >
+                <Phone size={20} />
+              </div>
+              <div>
+                <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                  Need a Custom Quote or Inspection for {categories.find(c => c.id === selectedCategory)?.name}?
+                </h4>
+                <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.825rem', color: 'var(--text-muted)' }}>
+                  Book a <strong>Consultation on Call (₹99)</strong> or <strong>In-House Doorstep Inspection (₹99)</strong> with an Aadhaar-verified expert.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setQuoteModalCatId(selectedCategory);
+                setIsQuoteModalOpen(true);
+              }}
+              style={{
+                padding: '0.6rem 1.1rem',
+                borderRadius: '12px',
+                border: 'none',
+                backgroundColor: '#d97706',
+                color: '#ffffff',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                boxShadow: '0 4px 12px rgba(217, 119, 6, 0.25)'
+              }}
+            >
+              <span>Get Quote for ₹99</span>
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        )}
 
         {/* Dynamic Services Grid Header */}
         {selectedCategory ? (
@@ -2774,6 +2870,13 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <GetQuoteModal 
+        isOpen={isQuoteModalOpen} 
+        onClose={() => setIsQuoteModalOpen(false)} 
+        initialCategoryId={quoteModalCatId} 
+        categories={categories} 
+      />
     </div>
   );
 }
