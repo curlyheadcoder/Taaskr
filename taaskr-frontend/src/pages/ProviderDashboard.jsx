@@ -15,7 +15,7 @@ import {
   DollarSign, ExternalLink, Power, TrendingUp, BarChart3, PieChart,
   PanelLeftClose, PanelLeftOpen, Wallet, Award, ArrowUpRight, Banknote, Play,
   MessageSquare, Send, MessageCircle, HelpCircle, Headphones, FileText, Radio, Activity,
-  Landmark, Smartphone
+  Landmark, Smartphone, CreditCard
 } from 'lucide-react';
 
 export default function ProviderDashboard() {
