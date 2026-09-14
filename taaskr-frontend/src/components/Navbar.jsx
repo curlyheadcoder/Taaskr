@@ -608,13 +608,21 @@ export default function Navbar() {
             />
             <input
               ref={searchInputRef}
-              type="text"
+              id="taaskr_global_service_search_bar"
+              name="taaskr_global_service_search_bar"
+              type="search"
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck="false"
+              data-lpignore="true"
               placeholder="Search services (e.g. AC Repair, Cleaning)..."
               value={searchQuery}
               onFocus={() => setSearchOpen(true)}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
-                setSearchOpen(true);
+                if (document.activeElement === searchInputRef.current) {
+                  setSearchOpen(true);
+                }
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Escape') setSearchOpen(false);

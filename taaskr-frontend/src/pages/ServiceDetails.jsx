@@ -752,6 +752,9 @@ export default function ServiceDetails() {
               </div>
               <input
                 type="text"
+                id="service_street_address"
+                name="street-address"
+                autoComplete="street-address"
                 placeholder="Flat/House No, Building, Street, Landmark"
                 className="form-control"
                 value={stdAddress}
@@ -760,6 +763,9 @@ export default function ServiceDetails() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginTop: '0.5rem' }}>
                 <input
                   type="text"
+                  id="service_city"
+                  name="address-level2"
+                  autoComplete="address-level2"
                   placeholder="City (e.g. Indore)"
                   className="form-control"
                   value={stdCity}
@@ -767,6 +773,9 @@ export default function ServiceDetails() {
                 />
                 <input
                   type="text"
+                  id="service_pincode"
+                  name="postal-code"
+                  autoComplete="postal-code"
                   placeholder="Pincode (e.g. 452001)"
                   className="form-control"
                   value={stdPincode}

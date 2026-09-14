@@ -493,6 +493,9 @@ export default function BookingFlow() {
             </label>
             <input
               type="text"
+              id="booking_street_address"
+              name="street-address"
+              autoComplete="street-address"
               placeholder="Flat/House No, Building, Landmark, Street"
               className="form-control"
               value={address}
