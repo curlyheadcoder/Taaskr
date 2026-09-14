@@ -366,6 +366,11 @@ export default function ProviderDashboard() {
     }
   };
 
+  const handleTabClick = (tabName) => {
+    setActiveTab(tabName);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   useEffect(() => {
     document.body.classList.remove('theme-user', 'theme-admin');
     document.body.classList.add('theme-provider');
@@ -374,6 +379,7 @@ export default function ProviderDashboard() {
     const handleSwitchTab = (e) => {
       if (e.detail) {
         setActiveTab(e.detail);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     };
     window.addEventListener('switch-provider-tab', handleSwitchTab);
@@ -1320,7 +1326,7 @@ export default function ProviderDashboard() {
         <nav className="enterprise-sidebar-nav">
           <button 
             className={`sidebar-item ${activeTab === 'tasks' ? 'active' : ''}`}
-            onClick={() => setActiveTab('tasks')}
+            onClick={() => handleTabClick('tasks')}
             title="Task Feed"
           >
             <CheckSquare size={16} />
@@ -1329,7 +1335,7 @@ export default function ProviderDashboard() {
 
           <button 
             className={`sidebar-item ${activeTab === 'bookings' ? 'active' : ''}`}
-            onClick={() => setActiveTab('bookings')}
+            onClick={() => handleTabClick('bookings')}
             title="My Bookings"
           >
             <Briefcase size={16} />
@@ -1338,7 +1344,7 @@ export default function ProviderDashboard() {
 
           <button 
             className={`sidebar-item ${activeTab === 'in-transit' ? 'active' : ''}`}
-            onClick={() => setActiveTab('in-transit')}
+            onClick={() => handleTabClick('in-transit')}
             title="In-Transit"
           >
             <Navigation size={16} />
@@ -1347,7 +1353,7 @@ export default function ProviderDashboard() {
 
           <button 
             className={`sidebar-item ${activeTab === 'completed' ? 'active' : ''}`}
-            onClick={() => setActiveTab('completed')}
+            onClick={() => handleTabClick('completed')}
             title="Completed"
           >
             <CheckCircle2 size={16} />
@@ -1356,7 +1362,7 @@ export default function ProviderDashboard() {
 
           <button 
             className={`sidebar-item ${activeTab === 'earnings' ? 'active' : ''}`}
-            onClick={() => setActiveTab('earnings')}
+            onClick={() => handleTabClick('earnings')}
             title="Earnings & Analytics"
           >
             <TrendingUp size={16} />
@@ -1366,7 +1372,7 @@ export default function ProviderDashboard() {
           {isLogisticsPartner && (
             <button 
               className={`sidebar-item ${activeTab === 'fleet' ? 'active' : ''}`}
-              onClick={() => setActiveTab('fleet')}
+              onClick={() => handleTabClick('fleet')}
               title="Fleet Manager"
             >
               <Truck size={16} />
@@ -1376,7 +1382,7 @@ export default function ProviderDashboard() {
 
           <button 
             className={`sidebar-item ${activeTab === 'schedule' ? 'active' : ''}`}
-            onClick={() => setActiveTab('schedule')}
+            onClick={() => handleTabClick('schedule')}
             title="Availability Slots"
           >
             <Calendar size={16} />
@@ -1385,7 +1391,7 @@ export default function ProviderDashboard() {
 
           <button 
             className={`sidebar-item ${activeTab === 'profile' ? 'active' : ''}`}
-            onClick={() => setActiveTab('profile')}
+            onClick={() => handleTabClick('profile')}
             title="Profile & Services"
           >
             <Settings size={16} />
@@ -1394,7 +1400,7 @@ export default function ProviderDashboard() {
 
           <button 
             className={`sidebar-item ${activeTab === 'kyc' ? 'active' : ''}`}
-            onClick={() => setActiveTab('kyc')}
+            onClick={() => handleTabClick('kyc')}
             title="KYC & Documents"
           >
             <ShieldCheck size={16} />
@@ -3420,16 +3426,19 @@ export default function ProviderDashboard() {
                               {doc.status === 'PENDING' && '⏳ Pending Review'}
                               {doc.status === 'REJECTED' && '✕ Rejected'}
                             </span>
-                            <a
-                              href={api.kyc.getDocumentViewUrl(doc.id)}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            <button
+                              type="button"
+                              onClick={() => {
+                                api.kyc.viewDocumentBlob(doc.id).catch(err => {
+                                  showNotification(`Failed to open document: ${err.message}`, 'error');
+                                });
+                              }}
                               className="btn btn-secondary btn-sm"
-                              style={{ fontSize: '0.72rem', padding: '0.25rem 0.55rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                              style={{ fontSize: '0.72rem', padding: '0.25rem 0.55rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer' }}
                             >
                               <ExternalLink size={12} />
                               <span>View File</span>
-                            </a>
+                            </button>
                           </div>
                         </div>
 

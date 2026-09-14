@@ -2805,16 +2805,15 @@ export default function AdminDashboard() {
                           </td>
                           <td style={{ textAlign: 'right' }}>
                             <div style={{ display: 'inline-flex', gap: '0.4rem', alignItems: 'center' }}>
-                              <a
-                                href={api.kyc.getDocumentViewUrl(doc.id)}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                              <button
+                                type="button"
+                                onClick={() => api.kyc.viewDocumentBlob(doc.id).catch(err => alert(err.message))}
                                 className="btn btn-ghost btn-sm"
-                                style={{ fontSize: '0.72rem', padding: '0.2rem 0.45rem' }}
+                                style={{ fontSize: '0.72rem', padding: '0.2rem 0.45rem', cursor: 'pointer' }}
                                 title="View Document File"
                               >
                                 View File
-                              </a>
+                              </button>
                               <button
                                 onClick={() => {
                                   setVerifyingKycDoc(doc);
@@ -3027,15 +3026,14 @@ export default function AdminDashboard() {
               )}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)' }}>
                 <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{verifyingKycDoc.originalFileName}</span>
-                <a
-                  href={api.kyc.getDocumentViewUrl(verifyingKycDoc.id)}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  type="button"
+                  onClick={() => api.kyc.viewDocumentBlob(verifyingKycDoc.id).catch(err => alert(err.message))}
                   className="btn btn-secondary btn-sm"
-                  style={{ fontSize: '0.72rem', padding: '0.15rem 0.45rem' }}
+                  style={{ fontSize: '0.72rem', padding: '0.15rem 0.45rem', cursor: 'pointer' }}
                 >
                   Open Document File ↗
-                </a>
+                </button>
               </div>
             </div>
 

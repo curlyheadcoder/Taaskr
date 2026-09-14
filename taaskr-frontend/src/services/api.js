@@ -875,6 +875,28 @@ export const api = {
 
     getDocumentViewUrl: (documentId) => {
       return `${BASE_URL}/api/kyc/documents/${documentId}/view`;
+    },
+
+    viewDocumentBlob: async (documentId) => {
+      const token = localStorage.getItem('taaskr_token');
+      const headers = {};
+      if (token && token !== 'undefined' && token !== 'null') {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const response = await fetch(`${BASE_URL}/api/kyc/documents/${documentId}/view`, {
+        headers
+      });
+      if (!response.ok) {
+        let errorMsg = `Failed to view document (HTTP ${response.status})`;
+        try {
+          const err = await response.json();
+          errorMsg = err.message || errorMsg;
+        } catch (e) {}
+        throw new Error(errorMsg);
+      }
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      window.open(blobUrl, '_blank');
     }
   },
 
