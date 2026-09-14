@@ -977,7 +977,7 @@ export default function AdminDashboard() {
                   <select 
                     className="form-control" 
                     value={srvCatId} 
-                    onChange={e => setsrvCatId(e.target.value)}
+                    onChange={e => setSrvCatId(e.target.value)}
                   >
                     <option value="">Select Category</option>
                     {categories.map(c => (
@@ -1012,7 +1012,7 @@ export default function AdminDashboard() {
                     className="form-control" 
                     placeholder="Service description" 
                     value={srvDesc} 
-                    onChange={e => setsrvDesc(e.target.value)} 
+                    onChange={e => setSrvDesc(e.target.value)} 
                   />
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
