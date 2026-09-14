@@ -4,6 +4,7 @@ import { api } from '../services/api';
 import Pagination from '../components/Pagination';
 import GetQuoteModal from '../components/GetQuoteModal';
 import VehicleVariantModal from '../components/VehicleVariantModal';
+import ExpertCallBridgeModal from '../components/ExpertCallBridgeModal';
 import { VEHICLE_AUTO_CARE_SERVICES } from '../data/vehicleAutoCareData';
 import {
   Search, ShieldCheck, Tag, CreditCard, Star, LayoutList,
@@ -2486,31 +2487,58 @@ export default function Home() {
               )}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              setQuoteModalCatId(selectedCategory || 'appliances_electrical');
-              setIsQuoteModalOpen(true);
-            }}
-            style={{
-              padding: '0.65rem 1.15rem',
-              borderRadius: '12px',
-              border: 'none',
-              background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
-              color: '#ffffff',
-              fontSize: '0.875rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              boxShadow: '0 4px 14px rgba(217, 119, 6, 0.3)',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            <Phone size={16} />
-            <span>Get Quote & Inspection (₹99)</span>
-          </button>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => {
+                setIsCallBridgeOpen(true);
+              }}
+              style={{
+                padding: '0.65rem 1.15rem',
+                borderRadius: '12px',
+                border: 'none',
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                color: '#ffffff',
+                fontSize: '0.875rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <Phone size={16} />
+              <span>Live Expert Call (₹99)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setQuoteModalCatId(selectedCategory || 'appliances_electrical');
+                setIsQuoteModalOpen(true);
+              }}
+              style={{
+                padding: '0.65rem 1.15rem',
+                borderRadius: '12px',
+                border: 'none',
+                background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+                color: '#ffffff',
+                fontSize: '0.875rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                boxShadow: '0 4px 14px rgba(217, 119, 6, 0.3)',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <Sparkles size={16} />
+              <span>Get Quote & Inspection (₹99)</span>
+            </button>
+          </div>
         </div>
 
         {/* Clean Responsive Category Tiles Grid with Squircle Icon Badge */}
@@ -2912,6 +2940,16 @@ export default function Home() {
         isOpen={isVehicleModalOpen}
         onClose={() => setIsVehicleModalOpen(false)}
         umbrellaService={selectedVehicleUmbrella}
+      />
+
+      <ExpertCallBridgeModal
+        isOpen={isCallBridgeOpen}
+        onClose={() => setIsCallBridgeOpen(false)}
+        categoryName={selectedCategory ? categories.find(c => String(c.id) === String(selectedCategory))?.name : 'Vehicle & Auto Care'}
+        onCallFinished={(res) => {
+          setQuoteModalCatId(selectedCategory || 'vehicle_autocare');
+          setIsQuoteModalOpen(true);
+        }}
       />
     </div>
   );

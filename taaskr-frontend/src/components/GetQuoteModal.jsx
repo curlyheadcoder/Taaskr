@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   X, PhoneCall, Home, ShieldCheck, Clock, Calendar, MapPin, 
-  ChevronRight, Sparkles, CheckCircle2, AlertCircle, Tag, UserCheck, Star, Award
+  ChevronRight, Sparkles, CheckCircle2, AlertCircle, Tag, UserCheck, Star, Award, Phone
 } from 'lucide-react';
 import { getExpertsByCategory } from '../data/expertsData';
+import ExpertCallBridgeModal from './ExpertCallBridgeModal';
 
 export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, categories = [] }) {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
   const [selectedCatId, setSelectedCatId] = useState(initialCategoryId || availableCategories[0]?.id || 'appliances_electrical');
   const [quoteType, setQuoteType] = useState('CALL'); // 'CALL' or 'IN_HOUSE'
   const [selectedExpertId, setSelectedExpertId] = useState('');
+  const [isCallBridgeOpen, setIsCallBridgeOpen] = useState(false);
   const [description, setDescription] = useState('');
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [selectedTime, setSelectedTime] = useState('10:00');
@@ -561,31 +563,66 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
             </div>
           </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            style={{
-              width: '100%',
-              padding: '0.9rem',
-              borderRadius: '14px',
-              border: 'none',
-              background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
-              color: '#ffffff',
-              fontSize: '0.95rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              boxShadow: '0 8px 20px rgba(217, 119, 6, 0.35)',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            <span>Book Consultation with Expert for ₹99</span>
-            <ChevronRight size={18} />
-          </button>
+          {/* Action Buttons Bar */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <button
+              type="button"
+              onClick={() => setIsCallBridgeOpen(true)}
+              style={{
+                padding: '0.85rem',
+                borderRadius: '14px',
+                border: 'none',
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                color: '#ffffff',
+                fontSize: '0.88rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.4rem',
+                boxShadow: '0 8px 20px rgba(16, 185, 129, 0.35)'
+              }}
+            >
+              <Phone size={17} />
+              <span>Connect Call Now</span>
+            </button>
+
+            <button
+              type="submit"
+              style={{
+                padding: '0.85rem',
+                borderRadius: '14px',
+                border: 'none',
+                background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+                color: '#ffffff',
+                fontSize: '0.88rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.4rem',
+                boxShadow: '0 8px 20px rgba(217, 119, 6, 0.35)'
+              }}
+            >
+              <span>Book Quote (₹99)</span>
+              <ChevronRight size={17} />
+            </button>
+          </div>
         </form>
+
+        <ExpertCallBridgeModal
+          isOpen={isCallBridgeOpen}
+          onClose={() => setIsCallBridgeOpen(false)}
+          expert={activeExpert}
+          categoryName={catName}
+          onCallFinished={(res) => {
+            if (res && res.report) {
+              setDescription(`[Expert Consultation Logged]: ${res.report.diagnosedIssue} | ${res.report.recommendedAction} (Est: ${res.report.estimatedCost})`);
+            }
+          }}
+        />
       </div>
     </div>
   );
