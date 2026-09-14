@@ -61,7 +61,9 @@ public class VehicleEligibilityServiceImpl implements VehicleEligibilityService 
 
         // Find vehicle catalog category
         Optional<ServiceCategory> vehicleCatOpt = categoryRepository.findAll().stream()
-                .filter(c -> c.getName() != null && (c.getName().toLowerCase().contains("vehicle") || c.getName().toLowerCase().contains("transport") || c.getName().toLowerCase().contains("logistics")))
+                .filter(c -> c.getName() != null 
+                        && !c.getName().toLowerCase().contains("auto care") 
+                        && (c.getName().toLowerCase().contains("logistics") || c.getName().toLowerCase().contains("transport") || c.getName().toLowerCase().contains("on-demand vehicle")))
                 .findFirst();
 
         List<Service> catalogServices = vehicleCatOpt.isPresent()

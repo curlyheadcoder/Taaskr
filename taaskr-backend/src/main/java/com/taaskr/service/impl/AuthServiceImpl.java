@@ -138,7 +138,9 @@ public class AuthServiceImpl implements AuthService {
 
             if (Boolean.TRUE.equals(request.getIsLogisticsProvider())) {
                 serviceCategoryRepository.findAll().stream()
-                        .filter(c -> c.getName() != null && (c.getName().toLowerCase().contains("vehicle") || c.getName().toLowerCase().contains("transport")))
+                        .filter(c -> c.getName() != null 
+                                && !c.getName().toLowerCase().contains("auto care") 
+                                && (c.getName().toLowerCase().contains("logistics") || c.getName().toLowerCase().contains("transport") || c.getName().toLowerCase().contains("on-demand vehicle")))
                         .findFirst()
                         .ifPresent(cat -> {
                             ProviderCategory pc = new ProviderCategory(savedProfile, cat);

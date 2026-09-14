@@ -109,8 +109,9 @@ public class BookingServiceImpl implements BookingService {
         }
 
         boolean isVehicleBooking = (service.getCategory() != null && service.getCategory().getName() != null 
-                && (service.getCategory().getName().toLowerCase().contains("vehicle") || service.getCategory().getName().toLowerCase().contains("transport")))
-                || request.getDropCity() != null || request.getDropAddress() != null;
+                && !service.getCategory().getName().toLowerCase().contains("auto care")
+                && (service.getCategory().getName().toLowerCase().contains("logistics") || service.getCategory().getName().toLowerCase().contains("transport") || service.getCategory().getName().toLowerCase().contains("on-demand vehicle")))
+                || (request.getDropCity() != null && request.getDropAddress() != null);
 
         BigDecimal calculatedFare = service.getPrice();
         BigDecimal distanceKm = null;
