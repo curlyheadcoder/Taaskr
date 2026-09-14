@@ -1254,16 +1254,22 @@ export default function Home() {
     'washing machine repair': 'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=600&q=80',
 
     // 2. Plumbing & Cleaning
-    'tap leakage & valve repair': 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=600&q=80',
-    'tap repair': 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=600&q=80',
-    'pipe leakage fix': 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=600&q=80',
-    'drain blockage & clog clearance': 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=600&q=80',
-    'kitchen deep cleaning & chimney degreasing': 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=600&q=80',
-    'sofa & carpet shampooing': 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&w=600&q=80',
-    'bathroom deep cleaning & sanitization': 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80',
-    'bathroom cleaning': 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80',
-    'full home cleaning': 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80',
-    'deep home & bathroom cleaning': 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80',
+    'tap leakage & valve repair': '/tap-repair.jpg',
+    'tap repair': '/tap-repair.jpg',
+    'faucet repair': '/tap-repair.jpg',
+    'basin repair': '/tap-repair.jpg',
+    'pipe leakage fix': '/pipe-leakage.jpg',
+    'drain blockage & clog clearance': '/pipe-leakage.jpg',
+    'plumbing repair': '/pipe-leakage.jpg',
+    'kitchen deep cleaning & chimney degreasing': '/kitchen-cleaning.jpg',
+    'kitchen cleaning': '/kitchen-cleaning.jpg',
+    'sofa & carpet shampooing': '/carpet-cleaning.jpg',
+    'carpet cleaning': '/carpet-cleaning.jpg',
+    'sofa cleaning': '/carpet-cleaning.jpg',
+    'bathroom deep cleaning & sanitization': '/bathroom-cleaning.jpg',
+    'bathroom cleaning': '/bathroom-cleaning.jpg',
+    'full home cleaning': '/carpet-cleaning.jpg',
+    'deep home & bathroom cleaning': '/bathroom-cleaning.jpg',
 
     // 3. Pest Control
     'home pest control': '/home-pest-control.jpg',
@@ -1421,20 +1427,18 @@ export default function Home() {
         serviceImage = 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80';
       } else if (name.includes('fan')) {
         serviceImage = 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=600&q=80';
-      } else if (name.includes('tap') || name.includes('faucet') || name.includes('basin') || name.includes('sink') || name.includes('valve')) {
-        serviceImage = 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=600&q=80';
-      } else if (name.includes('pipe') || name.includes('drain') || name.includes('plumb') || name.includes('tank')) {
-        serviceImage = 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=600&q=80';
-      } else if (name.includes('ro ') || name.includes('purifier') || name.includes('water filter') || name.includes('water clean')) {
-        serviceImage = 'https://images.unsplash.com/photo-1662647343432-a8710bfd6162?auto=format&fit=crop&w=600&q=80';
-      } else if (name.includes('washing machine')) {
-        serviceImage = 'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=600&q=80';
-      } else if (name.includes('refrigerator') || name.includes('fridge')) {
-        serviceImage = 'https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?auto=format&fit=crop&w=600&q=80';
-      } else if (name.includes('bathroom') || name.includes('toilet') || name.includes('washroom')) {
-        serviceImage = 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80';
+      } else if (name.includes('tap') || name.includes('faucet') || name.includes('valve')) {
+        serviceImage = '/tap-repair.jpg';
+      } else if (name.includes('pipe') || name.includes('drain') || name.includes('clog') || name.includes('sink') || name.includes('plumb')) {
+        serviceImage = '/pipe-leakage.jpg';
+      } else if (name.includes('kitchen') || name.includes('chimney') || name.includes('degreas')) {
+        serviceImage = '/kitchen-cleaning.jpg';
+      } else if (name.includes('sofa') || name.includes('carpet') || name.includes('shampoo')) {
+        serviceImage = '/carpet-cleaning.jpg';
+      } else if (name.includes('bathroom') || name.includes('toilet') || name.includes('washroom') || name.includes('sanitiz')) {
+        serviceImage = '/bathroom-cleaning.jpg';
       } else if (name.includes('clean') || name.includes('housekeep') || name.includes('dusting')) {
-        serviceImage = 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80';
+        serviceImage = '/carpet-cleaning.jpg';
       } else if (name.includes('blood') || name.includes('cbc') || name.includes('lab') || name.includes('pathology') || name.includes('sample')) {
         serviceImage = 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=600&q=80';
       } else if (name.includes('health') || name.includes('doctor') || name.includes('nurse') || name.includes('compounder') || name.includes('patient') || name.includes('diagnostic') || name.includes('elderly')) {
