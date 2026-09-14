@@ -2721,7 +2721,25 @@ export default function Home() {
                       '--service-glow': config.shadow1,
                       '--service-bg': config.bg
                     }}
-                    onClick={() => navigate(`/services/${service.id}`)}
+                    onClick={() => {
+                      const sName = (service.name || '').toLowerCase();
+                      const isVehicleService = service.canonicalCategoryId === 'vehicle_autocare' ||
+                        sName.includes('car clean') ||
+                        sName.includes('car wash') ||
+                        sName.includes('auto care');
+
+                      if (isVehicleService) {
+                        const matchedUmbrella = VEHICLE_AUTO_CARE_SERVICES.find(u => 
+                          u.name.toLowerCase() === sName ||
+                          sName.includes(u.name.toLowerCase()) ||
+                          u.id === 'car_cleaning'
+                        ) || VEHICLE_AUTO_CARE_SERVICES[0];
+                        setSelectedVehicleUmbrella(matchedUmbrella);
+                        setIsVehicleModalOpen(true);
+                      } else {
+                        navigate(`/services/${service.id}`);
+                      }
+                    }}
                   >
                     <div className="service-card-image-box">
                       <img

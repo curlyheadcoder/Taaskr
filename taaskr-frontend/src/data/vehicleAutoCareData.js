@@ -10,13 +10,13 @@ export const VEHICLE_AUTO_CARE_SERVICES = [
     description: 'Professional doorstep car wash, interior vacuuming, foam wash & full deep cleaning.',
     image: 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=600&q=80',
     options: [
-      { id: 'ext_wash', name: 'Exterior Wash (Top Wash)', price: 150, duration: '30–45 min', description: 'High-pressure exterior water wash, tyre cleaning & micro-fiber wipe down.' },
-      { id: 'int_wash', name: 'Only Interior Wash', price: 150, duration: '45–60 min', description: 'Complete interior vacuuming, dashboard dust removal & footmat cleaning.' },
-      { id: 'int_ext_wash', name: 'Interior + Exterior Wash', price: 300, duration: '60–90 min', description: 'Complete top wash + interior vacuuming, dashboard polish & glass cleaning.' },
+      { id: 'ext_wash', name: 'Top Wash (Exterior Wash)', price: 150, duration: '30–45 min', description: 'High-pressure exterior body wash, tyre cleaning & micro-fiber wipe down.' },
+      { id: 'int_wash', name: 'Interior Wash (Vacuum & Dashboard)', price: 150, duration: '45–60 min', description: 'Complete interior vacuuming, footmat washing & dashboard dust removal.' },
+      { id: 'int_ext_wash', name: 'Interior & Top Wash (Full Wash)', price: 300, duration: '60–90 min', description: 'Complete exterior top wash + interior vacuuming, dashboard polish & glass cleaning.' },
       { id: 'foam_wash', name: 'Foam Wash', price: 250, duration: '45–60 min', description: 'pH-neutral active snow foam wash, pressure rinse & glossy coat wipe.' },
-      { id: 'int_foam_chem', name: 'Interior Foam/Chemical Cleaning', price: 350, duration: '60–90 min', description: 'Stain removal chemical foam treatment for seats, doors & upholstery.' },
+      { id: 'int_foam_chem', name: 'Interior Foam Cleaning', price: 350, duration: '60–90 min', description: 'Stain removal chemical foam treatment for seats, doors & upholstery.' },
       { id: 'deep_int_clean', name: 'Deep Interior Cleaning', price: 700, duration: '2–3 hrs', description: 'Deep shampoo extraction for fabric/leather seats, roof lining & boot cleaning.' },
-      { id: 'full_deep_clean', name: 'Full Deep Cleaning (Interior + Exterior)', price: 999, duration: '3–4 hrs', description: 'Complete snow foam wash + deep interior shampooing & engine bay dusting.' }
+      { id: 'full_deep_clean', name: 'Full Deep Cleaning (Interior & Top Wash)', price: 999, duration: '3–4 hrs', description: 'Complete snow foam wash + deep interior shampooing & engine bay dusting.' }
     ]
   },
   {
