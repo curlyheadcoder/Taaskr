@@ -1246,21 +1246,22 @@ export default function Home() {
     'ac deep jet cleaning': '/ac-servicing.jpg',
     'ac servicing': '/ac-servicing.jpg',
     'ac maintenance': '/ac-servicing.jpg',
-    'ro water purifier service': 'https://images.unsplash.com/photo-1662647343432-a8710bfd6162?auto=format&fit=crop&w=600&q=80',
-    'ro repair': 'https://images.unsplash.com/photo-1662647343432-a8710bfd6162?auto=format&fit=crop&w=600&q=80',
-    'ro installation': 'https://images.unsplash.com/photo-1548839140-29a749e1bc4e?auto=format&fit=crop&w=600&q=80',
-    'ro maintenance': 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?auto=format&fit=crop&w=600&q=80',
+    'ro water purifier service': '/ro-repair.jpg',
+    'ro repair': '/ro-repair.jpg',
+    'ro installation': '/ro-installation.jpg',
+    'ro maintenance': '/ro-repair.jpg',
     'switchboard & wiring repair': '/electrical-repair.jpg',
     'switch board repair': '/electrical-repair.jpg',
     'switch, socket & mcb repair': '/electrical-repair.jpg',
     'electrical wiring & mcb repair': '/electrical-repair.jpg',
-    'ceiling & exhaust fan repair': '/electrical-repair.jpg',
-    'fan repair': '/electrical-repair.jpg',
-    'exhaust fan repair': '/electrical-repair.jpg',
+    'ceiling & exhaust fan repair': '/fan-repair.jpg',
+    'fan repair': '/fan-repair.jpg',
+    'exhaust fan repair': '/fan-repair.jpg',
     'geyser & water heater servicing': 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?auto=format&fit=crop&w=600&q=80',
     'inverter & battery servicing': '/electrical-repair.jpg',
     'microwave & otg repair': 'https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?auto=format&fit=crop&w=600&q=80',
-    'refrigerator repair': 'https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?auto=format&fit=crop&w=600&q=80',
+    'refrigerator repair': '/refrigerator-repair.jpg',
+    'fridge repair': '/refrigerator-repair.jpg',
     'washing machine repair': '/washing-machine-repair.jpg',
     'washing machine service': '/washing-machine-repair.jpg',
     'washing machine repair & service': '/washing-machine-repair.jpg',
@@ -1433,6 +1434,14 @@ export default function Home() {
         serviceImage = 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80';
       } else if (name.includes('furniture') || name.includes('sofa') || name.includes('shifting') || name.includes('relocation') || name.includes('movers') || name.includes('packers')) {
         serviceImage = '/furniture-moving.jpg';
+      } else if (name.includes('fan')) {
+        serviceImage = '/fan-repair.jpg';
+      } else if (name.includes('refrigerator') || name.includes('fridge')) {
+        serviceImage = '/refrigerator-repair.jpg';
+      } else if (name.includes('ro install') || name.includes('purifier install')) {
+        serviceImage = '/ro-installation.jpg';
+      } else if (name.includes('ro ') || name.includes('purifier') || name.includes('water purifier')) {
+        serviceImage = '/ro-repair.jpg';
       } else if (name.includes('washing machine') || name.includes('washer')) {
         serviceImage = '/washing-machine-repair.jpg';
       } else if (name.includes('jet') || name.includes('foam service') || name.includes('ac service') || name.includes('ac deep')) {
@@ -1441,7 +1450,7 @@ export default function Home() {
         serviceImage = '/ac-installation.jpg';
       } else if (name.includes('ac ') || name.includes('air condition') || name.includes('cooling') || name.includes('hvac') || name.includes('gas refill')) {
         serviceImage = '/ac-repair.jpg';
-      } else if (name.includes('switch') || name.includes('wire') || name.includes('electric') || name.includes('inverter') || name.includes('fuse') || name.includes('mcb') || name.includes('socket') || name.includes('fan')) {
+      } else if (name.includes('switch') || name.includes('wire') || name.includes('electric') || name.includes('inverter') || name.includes('fuse') || name.includes('mcb') || name.includes('socket')) {
         serviceImage = '/electrical-repair.jpg';
       } else if (name.includes('tap') || name.includes('faucet') || name.includes('valve')) {
         serviceImage = '/tap-repair.jpg';
