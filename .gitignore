@@ -47,6 +47,6 @@ Thumbs.db
 # =========================
 # Embedded Dev DB
 # =========================
-**/data/
+taaskr-backend/data/
 *.mv.db
 *.trace.db
