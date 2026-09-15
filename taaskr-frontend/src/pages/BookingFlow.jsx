@@ -83,6 +83,33 @@ export default function BookingFlow() {
     return startMins <= currMins + 2;
   };
 
+  const getQuickDateOptions = () => {
+    const options = [];
+    const today = new Date();
+    
+    for (let i = 0; i < 4; i++) {
+      const d = new Date();
+      d.setDate(today.getDate() + i);
+      const dateStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+      const dayName = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Kolkata', weekday: 'short' }).format(d);
+      const dayDate = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short' }).format(d);
+      options.push({ dateStr, dayName, dayDate });
+    }
+    return options;
+  };
+
+  const PRESET_TIME_SLOTS = [
+    { value: '09:00', label: '09:00 AM' },
+    { value: '10:30', label: '10:30 AM' },
+    { value: '12:00', label: '12:00 PM' },
+    { value: '13:30', label: '01:30 PM' },
+    { value: '15:00', label: '03:00 PM' },
+    { value: '16:30', label: '04:30 PM' },
+    { value: '18:00', label: '06:00 PM' },
+    { value: '19:30', label: '07:30 PM' },
+    { value: '20:30', label: '08:30 PM' }
+  ];
+
   const [selectedDate, setSelectedDate] = useState(() => {
     const initialDate = bookingDate || getTodayIST();
     return initialDate < getTodayIST() ? getTodayIST() : initialDate;
@@ -92,11 +119,13 @@ export default function BookingFlow() {
     const initialDate = bookingDate || getTodayIST();
     const initialTime = startTime || '10:00';
     if (initialDate === getTodayIST() && isTimeInPastForToday(initialDate, initialTime)) {
-      return getCurrentTimeIST();
+      const firstValid = PRESET_TIME_SLOTS.find(s => !isTimeInPastForToday(initialDate, s.value));
+      return firstValid ? firstValid.value : getCurrentTimeIST();
     }
     return initialTime;
   });
 
+  const [showCustomPicker, setShowCustomPicker] = useState(false);
   const [modalAlert, setModalAlert] = useState(null);
   const [address, setAddress] = useState(pickupAddress || '');
   const [city, setCity] = useState(pickupCity || 'Indore');
@@ -644,37 +673,158 @@ export default function BookingFlow() {
             />
           </div>
 
-          {/* Custom Date & Time Selection */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
-            <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <Calendar size={13} color="var(--primary)" />
-                <span>Service Date *</span>
+          {/* Visual Date & Time Selection Component */}
+          <div style={{ marginBottom: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {/* Quick Date Selector */}
+            <div>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.45rem' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 700, fontSize: '0.875rem' }}>
+                  <Calendar size={14} color="var(--primary)" />
+                  <span>Service Date *</span>
+                </span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 600 }}>
+                  {selectedDate === getTodayIST() ? 'Today' : selectedDate}
+                </span>
               </label>
-              <input
-                type="date"
-                className="form-control"
-                value={selectedDate}
-                min={getTodayIST()}
-                onChange={(e) => handleDateChange(e.target.value)}
-                disabled={loading}
-                required
-              />
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
+                {getQuickDateOptions().map((opt) => {
+                  const isSelected = selectedDate === opt.dateStr;
+                  return (
+                    <button
+                      key={opt.dateStr}
+                      type="button"
+                      disabled={loading}
+                      onClick={() => handleDateChange(opt.dateStr)}
+                      style={{
+                        padding: '0.55rem 0.4rem',
+                        borderRadius: '12px',
+                        border: isSelected ? '2px solid var(--primary)' : '1px solid var(--border-light)',
+                        backgroundColor: isSelected ? 'var(--primary-subtle)' : 'var(--bg-subtle)',
+                        color: isSelected ? 'var(--primary)' : 'var(--text-main)',
+                        fontWeight: isSelected ? 800 : 500,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.15rem',
+                        transition: 'all 0.15s ease',
+                        boxShadow: isSelected ? '0 4px 12px var(--primary-subtle)' : 'none'
+                      }}
+                    >
+                      <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.04em', opacity: 0.85 }}>
+                        {opt.dayName}
+                      </span>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 800 }}>
+                        {opt.dayDate}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <Clock size={13} color="var(--primary)" />
-                <span>Custom Time *</span>
-              </label>
-              <input
-                type="time"
-                className="form-control"
-                value={selectedTime}
-                min={selectedDate === getTodayIST() ? getCurrentTimeIST() : undefined}
-                onChange={(e) => handleTimeChange(e.target.value)}
-                disabled={loading}
-                required
-              />
+
+            {/* Time Slot Selection Grid */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.45rem' }}>
+                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', margin: 0, fontWeight: 700, fontSize: '0.875rem' }}>
+                  <Clock size={14} color="var(--primary)" />
+                  <span>Select Time Slot *</span>
+                </label>
+
+                <button
+                  type="button"
+                  onClick={() => setShowCustomPicker(!showCustomPicker)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--primary)',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    padding: 0,
+                    textDecoration: 'underline'
+                  }}
+                >
+                  {showCustomPicker ? 'Hide Custom Picker' : 'Custom Specific Time...'}
+                </button>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
+                {PRESET_TIME_SLOTS.map((slot) => {
+                  const isPast = selectedDate === getTodayIST() && isTimeInPastForToday(selectedDate, slot.value);
+                  const isSelected = selectedTime === slot.value;
+                  return (
+                    <button
+                      key={slot.value}
+                      type="button"
+                      disabled={isPast || loading}
+                      onClick={() => handleTimeChange(slot.value)}
+                      style={{
+                        padding: '0.6rem 0.4rem',
+                        borderRadius: '12px',
+                        border: isSelected ? '2px solid var(--primary)' : '1px solid var(--border-light)',
+                        backgroundColor: isPast ? 'var(--bg-subtle)' : isSelected ? 'var(--primary-subtle)' : 'var(--bg-subtle)',
+                        color: isPast ? 'var(--text-muted)' : isSelected ? 'var(--primary)' : 'var(--text-main)',
+                        fontWeight: isSelected ? 800 : 600,
+                        fontSize: '0.8125rem',
+                        cursor: isPast ? 'not-allowed' : 'pointer',
+                        opacity: isPast ? 0.45 : 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.3rem',
+                        transition: 'all 0.15s ease',
+                        boxShadow: isSelected ? '0 4px 12px var(--primary-subtle)' : 'none',
+                        position: 'relative'
+                      }}
+                    >
+                      {isSelected && <CheckCircle2 size={13} color="var(--primary)" />}
+                      <span>{slot.label}</span>
+                      {isPast && (
+                        <span style={{ fontSize: '0.58rem', color: 'var(--error)', position: 'absolute', top: '2px', right: '4px', textTransform: 'uppercase', fontWeight: 800 }}>
+                          Passed
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Expandable Custom Date/Time Inputs if user needs further dates or specific minute */}
+              {showCustomPicker && (
+                <div style={{ marginTop: '0.75rem', padding: '0.85rem', borderRadius: '14px', backgroundColor: 'var(--bg-subtle)', border: '1px solid var(--border-light)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', animation: 'fadeIn 0.2s ease' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
+                      Specific Date
+                    </label>
+                    <input
+                      type="date"
+                      className="form-control"
+                      value={selectedDate}
+                      min={getTodayIST()}
+                      onChange={(e) => handleDateChange(e.target.value)}
+                      disabled={loading}
+                      style={{ fontSize: '0.8125rem', height: '38px' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
+                      Exact Minute Time
+                    </label>
+                    <input
+                      type="time"
+                      className="form-control"
+                      value={selectedTime}
+                      min={selectedDate === getTodayIST() ? getCurrentTimeIST() : undefined}
+                      onChange={(e) => handleTimeChange(e.target.value)}
+                      disabled={loading}
+                      style={{ fontSize: '0.8125rem', height: '38px' }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
