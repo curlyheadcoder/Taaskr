@@ -220,6 +220,7 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
     @Override
     public ServicePartnerResponse getPartnerProfile(String partnerEmail) {
         User workerUser = userRepository.findByEmail(partnerEmail)
+                .or(() -> userRepository.findByPhone(partnerEmail))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         ServicePartner partner = servicePartnerRepository.findByUserId(workerUser.getId())
@@ -231,6 +232,7 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
     @Override
     public List<BookingResponse> getPartnerAssignedTasks(String partnerEmail) {
         User workerUser = userRepository.findByEmail(partnerEmail)
+                .or(() -> userRepository.findByPhone(partnerEmail))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         ServicePartner partner = servicePartnerRepository.findByUserId(workerUser.getId())
@@ -279,6 +281,7 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
     @Transactional
     public void updatePartnerLocation(String partnerEmail, UpdatePartnerLocationRequest request) {
         User workerUser = userRepository.findByEmail(partnerEmail)
+                .or(() -> userRepository.findByPhone(partnerEmail))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         ServicePartner partner = servicePartnerRepository.findByUserId(workerUser.getId())
@@ -395,6 +398,7 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
 
     private Booking verifyPartnerForBooking(String partnerEmail, Long bookingId) {
         User workerUser = userRepository.findByEmail(partnerEmail)
+                .or(() -> userRepository.findByPhone(partnerEmail))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         ServicePartner partner = servicePartnerRepository.findByUserId(workerUser.getId())

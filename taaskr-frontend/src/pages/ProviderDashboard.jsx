@@ -344,12 +344,16 @@ export default function ProviderDashboard() {
 
   const handleAssignPartner = async (bookingId, servicePartnerId) => {
     if (!servicePartnerId) return;
+    setActionLoadingId(bookingId);
     try {
       const updated = await api.provider.assignPartner(bookingId, Number(servicePartnerId));
-      setAssignedBookings(prev => prev.map(b => b.id === bookingId ? updated : b));
+      setAssignedBookings(prev => prev.map(b => b.id === bookingId ? { ...b, ...updated } : b));
+      setAvailableTasks(prev => prev.map(b => b.id === bookingId ? { ...b, ...updated } : b));
       showNotification('Booking assigned to Service Partner successfully.');
     } catch (err) {
       showNotification(`Failed to assign partner: ${err.message}`, 'error');
+    } finally {
+      setActionLoadingId(null);
     }
   };
 
@@ -1176,6 +1180,10 @@ export default function ProviderDashboard() {
                 <strong style={{ color: '#34D399', fontSize: '0.82rem' }}>
                   {job.servicePartnerName} ({job.servicePartnerTitle || 'Technician'})
                 </strong>
+              ) : job.status === 'COMPLETED' ? (
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem', fontStyle: 'italic' }}>
+                  Direct Provider Fulfillment (Self)
+                </span>
               ) : (
                 <span style={{ color: '#FBBF24', fontSize: '0.78rem', fontWeight: 600 }}>
                   Not Assigned Yet
@@ -1183,42 +1191,46 @@ export default function ProviderDashboard() {
               )}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              {servicePartners.length > 0 ? (
-                <select
-                  value={job.servicePartnerId || ''}
-                  onChange={(e) => handleAssignPartner(job.id, e.target.value)}
-                  className="form-control"
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.2rem 0.45rem',
-                    height: '28px',
-                    width: 'auto',
-                    minWidth: '160px',
-                    backgroundColor: 'var(--bg-card)',
-                    borderColor: job.servicePartnerId ? 'rgba(16, 185, 129, 0.4)' : 'var(--border-light)'
-                  }}
-                >
-                  <option value="">{job.servicePartnerId ? 'Change Worker' : '-- Select Worker / Technician --'}</option>
-                  {servicePartners.map(p => (
-                    <option key={p.id} value={p.id}>
-                      {p.name} ({p.title || 'Technician'})
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <button
-                  onClick={() => {
-                    setActiveTab('partners');
-                    setShowAddPartnerModal(true);
-                  }}
-                  className="btn btn-ghost btn-sm"
-                  style={{ fontSize: '0.72rem', padding: '0.2rem 0.45rem', color: 'var(--primary)' }}
-                >
-                  + Add Worker First
-                </button>
-              )}
-            </div>
+            {/* Allow worker assignment selection only for active/ongoing jobs */}
+            {job.status !== 'COMPLETED' && job.status !== 'CANCELLED' && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                {servicePartners.length > 0 ? (
+                  <select
+                    value={job.servicePartnerId || ''}
+                    onChange={(e) => handleAssignPartner(job.id, e.target.value)}
+                    disabled={actionLoadingId === job.id}
+                    className="form-control"
+                    style={{
+                      fontSize: '0.75rem',
+                      padding: '0.2rem 0.45rem',
+                      height: '28px',
+                      width: 'auto',
+                      minWidth: '160px',
+                      backgroundColor: 'var(--bg-card)',
+                      borderColor: job.servicePartnerId ? 'rgba(16, 185, 129, 0.4)' : 'var(--border-light)'
+                    }}
+                  >
+                    <option value="">{job.servicePartnerId ? 'Change Worker' : '-- Select Worker / Technician --'}</option>
+                    {servicePartners.map(p => (
+                      <option key={p.id} value={p.id}>
+                        {p.name} ({p.title || 'Technician'})
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setActiveTab('partners');
+                      setShowAddPartnerModal(true);
+                    }}
+                    className="btn btn-ghost btn-sm"
+                    style={{ fontSize: '0.72rem', padding: '0.2rem 0.45rem', color: 'var(--primary)' }}
+                  >
+                    + Add Worker First
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
