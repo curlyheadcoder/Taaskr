@@ -2509,7 +2509,7 @@ export default function Home() {
             }}
           >
             <Phone size={16} />
-            <span>Get Quote & Inspection (₹99)</span>
+            <span>Get Free Advice / Inspection Quote</span>
           </button>
         </div>
 

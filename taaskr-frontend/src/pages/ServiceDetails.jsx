@@ -718,10 +718,10 @@ export default function ServiceDetails() {
             >
               <div>
                 <div style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-main)' }}>
-                  Need an In-House Inspection or Call Advice First?
+                  Need Free On-Call Advice or In-House Inspection?
                 </div>
                 <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                  Book expert consultation on call or doorstep inspection for <strong>flat ₹99</strong>.
+                  Speak with an expert technician for <strong style={{ color: '#10b981' }}>FREE on call</strong> or book a doorstep inspection.
                 </div>
               </div>
               <button
@@ -731,15 +731,16 @@ export default function ServiceDetails() {
                   padding: '0.45rem 0.85rem',
                   borderRadius: '10px',
                   border: 'none',
-                  backgroundColor: '#d97706',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                   color: '#ffffff',
                   fontSize: '0.8rem',
                   fontWeight: 700,
                   cursor: 'pointer',
-                  whiteSpace: 'nowrap'
+                  whiteSpace: 'nowrap',
+                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
                 }}
               >
-                Get Quote ₹99
+                Free Advice / Quote
               </button>
             </div>
 
