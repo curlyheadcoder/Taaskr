@@ -145,11 +145,12 @@ export default function ServiceDetails() {
 
   // Keep selectedTime synchronized if selectedDate changes or current selection becomes unavailable
   useEffect(() => {
-    const slots = getAvailableSlots(selectedDate);
-    if (slots.length > 0 && !slots.some(s => s.value === selectedTime)) {
-      setSelectedTime(slots[0].value);
+    const validOpts = generateTimeOptions(selectedDate, todayStr, ist.currentMinutes).filter(o => !o.disabled);
+    if (validOpts.length > 0 && !validOpts.some(s => s.value === selectedTime)) {
+      setSelectedTime(validOpts[0].value);
     }
   }, [selectedDate]);
+
 
   useEffect(() => {
     const fetchService = async () => {

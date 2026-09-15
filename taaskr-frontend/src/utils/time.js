@@ -77,13 +77,19 @@ export const getTimeUntilBooking = (bookingDate, startTime) => {
 /**
  * Generates array of formatted time options from 08:00 AM to 09:00 PM (15-min intervals)
  * for use in custom styled select elements across the app.
- * Automatically marks past times as disabled when date is today.
+ * Automatically OMITS past times when date is today, showing ONLY bookable future slots.
  */
 export const generateTimeOptions = (selectedDate, todayStr, currentMins, startHour = 8, endHour = 21, stepMins = 15) => {
   const options = [];
   const isToday = selectedDate && todayStr && selectedDate === todayStr;
 
   for (let mins = startHour * 60; mins <= endHour * 60; mins += stepMins) {
+    const isPast = isToday && currentMins !== undefined && currentMins !== null && mins <= (currentMins + 15);
+    // Skip any slots that have already passed for today
+    if (isPast) {
+      continue;
+    }
+
     const hour = Math.floor(mins / 60);
     const min = mins % 60;
     const value = `${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
@@ -92,15 +98,23 @@ export const generateTimeOptions = (selectedDate, todayStr, currentMins, startHo
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const label = `${String(displayHour).padStart(2, '0')}:${String(min).padStart(2, '0')} ${ampm}`;
 
-    const isPast = isToday && currentMins !== undefined && currentMins !== null && mins <= currentMins;
-
     options.push({
       value,
-      label: isPast ? `${label} (Passed)` : label,
-      disabled: isPast
+      label,
+      disabled: false
     });
   }
+
+  if (options.length === 0) {
+    options.push({
+      value: '',
+      label: 'No slots available today — Please select tomorrow',
+      disabled: true
+    });
+  }
+
   return options;
 };
+
 
 
