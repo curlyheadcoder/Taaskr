@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
-import { formatLocalTime, isBookingInFuture, getTimeUntilBooking } from '../utils/time';
+import { formatLocalTime, isBookingInFuture, getTimeUntilBooking, generateTimeOptions } from '../utils/time';
 import { sortBookingsByStatusPriority } from '../utils/sorting';
 import Pagination from '../components/Pagination';
 import PaymentRestrictionModal from '../components/PaymentRestrictionModal';
@@ -2917,24 +2917,36 @@ export default function ProviderDashboard() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
                 <div className="form-group" style={{ margin: 0 }}>
                   <label className="form-label">Start Time</label>
-                  <input
-                    type="time"
+                  <select
                     className="form-control"
                     value={availStart}
                     onChange={(e) => setAvailStart(e.target.value)}
                     required
-                  />
+                    style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-main)' }}
+                  >
+                    {generateTimeOptions(availDate, null, null, 6, 23, 30).map(opt => (
+                      <option key={opt.value} value={opt.value} style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-main)' }}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="form-group" style={{ margin: 0 }}>
                   <label className="form-label">End Time</label>
-                  <input
-                    type="time"
+                  <select
                     className="form-control"
                     value={availEnd}
                     onChange={(e) => setAvailEnd(e.target.value)}
                     required
-                  />
+                    style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-main)' }}
+                  >
+                    {generateTimeOptions(availDate, null, null, 6, 23, 30).map(opt => (
+                      <option key={opt.value} value={opt.value} style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-main)' }}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 

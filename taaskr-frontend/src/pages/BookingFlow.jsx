@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
-import { formatLocalTime } from '../utils/time';
+import { formatLocalTime, generateTimeOptions } from '../utils/time';
 import confetti from 'canvas-confetti';
 import LocationPicker from '../components/LocationPicker';
 import { 
@@ -67,6 +67,12 @@ export default function BookingFlow() {
     const formatter = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: false });
     return formatter.format(new Date());
   };
+
+  const getISTCurrentMinutes = () => {
+    const [currH, currM] = getCurrentTimeIST().split(':').map(Number);
+    return (currH || 0) * 60 + (currM || 0);
+  };
+
 
   const isTimeInPastForToday = (dateStr, timeStr) => {
     const today = getTodayIST();
@@ -811,17 +817,26 @@ export default function BookingFlow() {
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
-                      Exact Minute Time
+                      Exact Custom Time
                     </label>
-                    <input
-                      type="time"
+                    <select
                       className="form-control"
                       value={selectedTime}
-                      min={selectedDate === getTodayIST() ? getCurrentTimeIST() : undefined}
                       onChange={(e) => handleTimeChange(e.target.value)}
                       disabled={loading}
-                      style={{ fontSize: '0.8125rem', height: '38px' }}
-                    />
+                      style={{ fontSize: '0.8125rem', height: '38px', backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', borderColor: 'var(--border-light)' }}
+                    >
+                      {generateTimeOptions(selectedDate, getTodayIST(), getISTCurrentMinutes()).map(opt => (
+                        <option 
+                          key={opt.value} 
+                          value={opt.value} 
+                          disabled={opt.disabled}
+                          style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-main)' }}
+                        >
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
               )}

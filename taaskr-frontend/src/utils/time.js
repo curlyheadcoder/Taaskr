@@ -74,3 +74,33 @@ export const getTimeUntilBooking = (bookingDate, startTime) => {
   }
 };
 
+/**
+ * Generates array of formatted time options from 08:00 AM to 09:00 PM (15-min intervals)
+ * for use in custom styled select elements across the app.
+ * Automatically marks past times as disabled when date is today.
+ */
+export const generateTimeOptions = (selectedDate, todayStr, currentMins, startHour = 8, endHour = 21, stepMins = 15) => {
+  const options = [];
+  const isToday = selectedDate && todayStr && selectedDate === todayStr;
+
+  for (let mins = startHour * 60; mins <= endHour * 60; mins += stepMins) {
+    const hour = Math.floor(mins / 60);
+    const min = mins % 60;
+    const value = `${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
+
+    const displayHour = hour % 12 === 0 ? 12 : hour % 12;
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const label = `${String(displayHour).padStart(2, '0')}:${String(min).padStart(2, '0')} ${ampm}`;
+
+    const isPast = isToday && currentMins !== undefined && currentMins !== null && mins <= currentMins;
+
+    options.push({
+      value,
+      label: isPast ? `${label} (Passed)` : label,
+      disabled: isPast
+    });
+  }
+  return options;
+};
+
+

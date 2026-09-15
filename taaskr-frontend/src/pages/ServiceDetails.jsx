@@ -3,7 +3,9 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import LocationPicker from '../components/LocationPicker';
 import GetQuoteModal from '../components/GetQuoteModal';
+import { generateTimeOptions } from '../utils/time';
 import { 
+
   Truck, MapPin, Package, ShieldCheck, CheckCircle2, Clock, 
   AlertCircle, ArrowRight, ChevronRight, RefreshCw, Calendar, 
   Info, Check, Navigation, Star, MessageSquare, Phone
@@ -828,9 +830,53 @@ export default function ServiceDetails() {
               </div>
             </div>
 
-            {/* Date Selection */}
-            <div className="form-group">
-              <label className="form-label">Select Date (IST)</label>
+            {/* Date Selection with Quick Date Pills */}
+            <div className="form-group" style={{ marginBottom: '1rem' }}>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span>Select Service Date</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>IST Timezone</span>
+              </label>
+              
+              {/* Quick Date Selection Pills */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.4rem', marginBottom: '0.65rem' }}>
+                {[
+                  { label: 'Today', value: todayStr },
+                  { label: 'Tomorrow', value: tomorrowStr },
+                  { 
+                    label: 'In 2 Days', 
+                    value: new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(Date.now() + 2 * 86400000)) 
+                  },
+                  { 
+                    label: 'In 3 Days', 
+                    value: new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(Date.now() + 3 * 86400000)) 
+                  }
+                ].map(pill => {
+                  const isSelected = selectedDate === pill.value;
+                  return (
+                    <button
+                      key={pill.value}
+                      type="button"
+                      onClick={() => setSelectedDate(pill.value)}
+                      style={{
+                        padding: '0.45rem 0.25rem',
+                        fontSize: '0.75rem',
+                        fontWeight: isSelected ? 600 : 500,
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid',
+                        borderColor: isSelected ? 'var(--primary)' : 'var(--border-light)',
+                        backgroundColor: isSelected ? 'var(--primary-subtle)' : 'var(--bg-card)',
+                        color: isSelected ? 'var(--primary)' : 'var(--text-muted)',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        transition: 'var(--transition-fast)'
+                      }}
+                    >
+                      {pill.label}
+                    </button>
+                  );
+                })}
+              </div>
+
               <input
                 type="date"
                 className="form-control"
@@ -840,19 +886,35 @@ export default function ServiceDetails() {
               />
             </div>
 
-            {/* Custom Time Selection */}
+            {/* Custom Time Selection (Styled Dropdown without Chrome 3-wheel OS popup) */}
             <div className="form-group" style={{ marginBottom: '1rem' }}>
               <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                 <Clock size={14} color="var(--primary)" />
                 <span>Custom Appointment Time</span>
               </label>
-              <input
-                type="time"
+              <select
                 className="form-control"
                 value={selectedTime}
                 onChange={(e) => setSelectedTime(e.target.value)}
-              />
+                style={{
+                  backgroundColor: 'var(--bg-card)',
+                  color: 'var(--text-main)',
+                  borderColor: 'var(--border-light)'
+                }}
+              >
+                {generateTimeOptions(selectedDate, todayStr, ist.currentMinutes).map(opt => (
+                  <option 
+                    key={opt.value} 
+                    value={opt.value} 
+                    disabled={opt.disabled}
+                    style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-main)' }}
+                  >
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
             </div>
+
 
             <div className="form-group" style={{ marginBottom: '1.5rem' }}>
               <label className="form-label">Or Select Standard Time Window</label>
