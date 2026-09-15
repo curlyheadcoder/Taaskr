@@ -603,6 +603,24 @@ public class BookingServiceImpl implements BookingService {
             response.setVehicleRegistrationNumber(vehicle.getRegistrationNumber());
         }
 
+        if (booking.getServicePartner() != null) {
+            ServicePartner partner = booking.getServicePartner();
+            response.setServicePartnerId(partner.getId());
+            response.setServicePartnerName(partner.getName());
+            response.setServicePartnerPhone(partner.getPhone());
+            response.setServicePartnerTitle(partner.getTitle());
+            response.setServicePartnerRating(partner.getRating());
+        }
+
+        response.setPartnerAssignedAt(booking.getPartnerAssignedAt());
+        response.setPartnerAcceptedAt(booking.getPartnerAcceptedAt());
+        response.setJourneyStartedAt(booking.getJourneyStartedAt());
+        response.setArrivedAt(booking.getArrivedAt());
+        response.setWorkStartedAt(booking.getWorkStartedAt());
+        response.setWorkCompletedAt(booking.getWorkCompletedAt());
+        response.setPaymentCompletedAt(booking.getPaymentCompletedAt());
+        response.setProviderApprovedAt(booking.getProviderApprovedAt());
+
         return response;
     }
 

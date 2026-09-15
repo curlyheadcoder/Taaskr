@@ -322,6 +322,20 @@ export default function LiveTrackingModal({ bookingId, onClose }) {
   // Status stage helper
   const getStatusBadge = (status) => {
     switch (status) {
+      case 'ON_THE_WAY':
+        return { label: 'Partner On The Way 🚗', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)', icon: Navigation };
+      case 'ARRIVED':
+        return { label: 'Partner Arrived 🟢', color: '#10b981', bg: 'rgba(16, 185, 129, 0.25)', icon: CheckCircle2 };
+      case 'WORK_STARTED':
+        return { label: 'Work In Progress 🛠️', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.15)', icon: Compass };
+      case 'WORK_COMPLETED':
+        return { label: 'Work Completed 🏁', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.15)', icon: CheckCircle2 };
+      case 'PAYMENT_COMPLETED':
+        return { label: 'Payment Recorded 💳', color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.15)', icon: CheckCircle2 };
+      case 'PARTNER_ASSIGNED':
+        return { label: 'Partner Assigned 👨‍🔧', color: '#6366f1', bg: 'rgba(99, 102, 241, 0.15)', icon: User };
+      case 'PARTNER_ACCEPTED':
+        return { label: 'Partner Accepted Task', color: '#6366f1', bg: 'rgba(99, 102, 241, 0.15)', icon: Clock };
       case 'IN_TRANSIT':
         return { label: 'In Transit to Drop Point', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)', icon: Truck };
       case 'IN_PROGRESS':
@@ -329,8 +343,9 @@ export default function LiveTrackingModal({ bookingId, onClose }) {
       case 'ACCEPTED':
       case 'ASSIGNED':
         return { label: 'Provider En Route', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)', icon: Navigation };
+      case 'PROVIDER_APPROVED':
       case 'COMPLETED':
-        return { label: 'Completed', color: '#6366f1', bg: 'rgba(99, 102, 241, 0.15)', icon: CheckCircle2 };
+        return { label: 'Completed & Verified', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)', icon: CheckCircle2 };
       default:
         return { label: status || 'Active', color: 'var(--text-muted)', bg: 'var(--bg-subtle)', icon: Radio };
     }
@@ -666,7 +681,7 @@ export default function LiveTrackingModal({ bookingId, onClose }) {
           justifyContent: 'space-between',
           gap: '1rem'
         }}>
-          {/* Provider Profile Info */}
+          {/* Provider & Service Partner Profile Info */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
             <div style={{
               width: '46px',
@@ -681,15 +696,15 @@ export default function LiveTrackingModal({ bookingId, onClose }) {
               fontSize: '1.1rem',
               color: 'var(--primary)'
             }}>
-              {trackingData?.providerName ? trackingData.providerName.charAt(0).toUpperCase() : <User size={22} />}
+              {(trackingData?.servicePartnerName || trackingData?.providerName) ? (trackingData?.servicePartnerName || trackingData?.providerName).charAt(0).toUpperCase() : <User size={22} />}
             </div>
 
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 <span style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.95rem' }}>
-                  {trackingData?.providerName || 'Assigned Taaskr Partner'}
+                  {trackingData?.servicePartnerName ? `${trackingData.servicePartnerName} (${trackingData.servicePartnerTitle || 'Service Technician'})` : (trackingData?.providerName || 'Assigned Taaskr Partner')}
                 </span>
-                <span title="Verified Provider" style={{ display: 'flex', alignItems: 'center', color: '#10b981' }}>
+                <span title="Verified Partner" style={{ display: 'flex', alignItems: 'center', color: '#10b981' }}>
                   <ShieldCheck size={16} />
                 </span>
               </div>
@@ -697,10 +712,14 @@ export default function LiveTrackingModal({ bookingId, onClose }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', color: '#f59e0b', fontWeight: 600 }}>
                   <Star size={13} fill="#f59e0b" />
-                  <span>{trackingData?.providerRating ? trackingData.providerRating.toFixed(1) : '4.9'}</span>
+                  <span>{trackingData?.servicePartnerRating ? trackingData.servicePartnerRating.toFixed(1) : (trackingData?.providerRating ? trackingData.providerRating.toFixed(1) : '5.0')}</span>
                 </span>
-                <span>•</span>
-                <span>{trackingData?.providerExperienceYears || 3} yrs exp</span>
+                {trackingData?.providerName && trackingData?.servicePartnerName && (
+                  <>
+                    <span>•</span>
+                    <span>Provider: {trackingData.providerName}</span>
+                  </>
+                )}
                 {trackingData?.vehicleModel && (
                   <>
                     <span>•</span>

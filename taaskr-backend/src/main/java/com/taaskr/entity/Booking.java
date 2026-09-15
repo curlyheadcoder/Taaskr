@@ -42,6 +42,10 @@ public class Booking {
     @JoinColumn(name = "provider_id")
     private ProviderProfile provider;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "service_partner_id")
+    private ServicePartner servicePartner;
+
     @Column(nullable = false)
     private LocalDate bookingDate;
 
@@ -130,6 +134,30 @@ public class Booking {
 
     @Column(name = "review", length = 500)
     private String review;
+
+    @Column(name = "partner_assigned_at")
+    private LocalDateTime partnerAssignedAt;
+
+    @Column(name = "partner_accepted_at")
+    private LocalDateTime partnerAcceptedAt;
+
+    @Column(name = "journey_started_at")
+    private LocalDateTime journeyStartedAt;
+
+    @Column(name = "arrived_at")
+    private LocalDateTime arrivedAt;
+
+    @Column(name = "work_started_at")
+    private LocalDateTime workStartedAt;
+
+    @Column(name = "work_completed_at")
+    private LocalDateTime workCompletedAt;
+
+    @Column(name = "payment_completed_at")
+    private LocalDateTime paymentCompletedAt;
+
+    @Column(name = "provider_approved_at")
+    private LocalDateTime providerApprovedAt;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -432,5 +460,77 @@ public class Booking {
 
     public void setCancelledByRole(String cancelledByRole) {
         this.cancelledByRole = cancelledByRole;
+    }
+
+    public ServicePartner getServicePartner() {
+        return servicePartner;
+    }
+
+    public void setServicePartner(ServicePartner servicePartner) {
+        this.servicePartner = servicePartner;
+    }
+
+    public LocalDateTime getPartnerAssignedAt() {
+        return partnerAssignedAt;
+    }
+
+    public void setPartnerAssignedAt(LocalDateTime partnerAssignedAt) {
+        this.partnerAssignedAt = partnerAssignedAt;
+    }
+
+    public LocalDateTime getPartnerAcceptedAt() {
+        return partnerAcceptedAt;
+    }
+
+    public void setPartnerAcceptedAt(LocalDateTime partnerAcceptedAt) {
+        this.partnerAcceptedAt = partnerAcceptedAt;
+    }
+
+    public LocalDateTime getJourneyStartedAt() {
+        return journeyStartedAt;
+    }
+
+    public void setJourneyStartedAt(LocalDateTime journeyStartedAt) {
+        this.journeyStartedAt = journeyStartedAt;
+    }
+
+    public LocalDateTime getArrivedAt() {
+        return arrivedAt;
+    }
+
+    public void setArrivedAt(LocalDateTime arrivedAt) {
+        this.arrivedAt = arrivedAt;
+    }
+
+    public LocalDateTime getWorkStartedAt() {
+        return workStartedAt;
+    }
+
+    public void setWorkStartedAt(LocalDateTime workStartedAt) {
+        this.workStartedAt = workStartedAt;
+    }
+
+    public LocalDateTime getWorkCompletedAt() {
+        return workCompletedAt;
+    }
+
+    public void setWorkCompletedAt(LocalDateTime workCompletedAt) {
+        this.workCompletedAt = workCompletedAt;
+    }
+
+    public LocalDateTime getPaymentCompletedAt() {
+        return paymentCompletedAt;
+    }
+
+    public void setPaymentCompletedAt(LocalDateTime paymentCompletedAt) {
+        this.paymentCompletedAt = paymentCompletedAt;
+    }
+
+    public LocalDateTime getProviderApprovedAt() {
+        return providerApprovedAt;
+    }
+
+    public void setProviderApprovedAt(LocalDateTime providerApprovedAt) {
+        this.providerApprovedAt = providerApprovedAt;
     }
 }

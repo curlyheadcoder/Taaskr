@@ -3,10 +3,19 @@ package com.taaskr.enums;
 public enum BookingStatus {
     PENDING,
     ASSIGNED,
+    PARTNER_ASSIGNED,
+    PARTNER_ACCEPTED,
+    ON_THE_WAY,
+    ARRIVED,
+    WORK_STARTED,
     ACCEPTED,
     IN_PROGRESS,
     IN_TRANSIT,
+    WORK_COMPLETED,
+    PAYMENT_COMPLETED,
+    PROVIDER_APPROVED,
     COMPLETED,
     CANCELLED,
     REJECTED
 }
+

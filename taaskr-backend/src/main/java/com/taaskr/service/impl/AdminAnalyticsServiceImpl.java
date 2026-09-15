@@ -82,7 +82,7 @@ public class AdminAnalyticsServiceImpl implements AdminAnalyticsService {
 
                 switch (status) {
                     case COMPLETED -> completed++;
-                    case ASSIGNED, ACCEPTED, IN_PROGRESS, IN_TRANSIT -> active++;
+                    case ASSIGNED, ACCEPTED, IN_PROGRESS, IN_TRANSIT, PARTNER_ASSIGNED, PARTNER_ACCEPTED, ON_THE_WAY, ARRIVED, WORK_STARTED, WORK_COMPLETED, PAYMENT_COMPLETED, PROVIDER_APPROVED -> active++;
                     case PENDING -> pending++;
                     case CANCELLED -> cancelled++;
                     default -> {}

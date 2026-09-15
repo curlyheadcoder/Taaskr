@@ -138,10 +138,11 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
     private int getStatusPriority(BookingStatus status) {
         if (status == null) return 2;
         return switch (status) {
-            case IN_PROGRESS, IN_TRANSIT -> 1;
-            case PENDING, ASSIGNED, ACCEPTED -> 2;
+            case IN_PROGRESS, IN_TRANSIT, ON_THE_WAY, WORK_STARTED -> 1;
+            case PENDING, ASSIGNED, ACCEPTED, PARTNER_ASSIGNED, PARTNER_ACCEPTED, ARRIVED, WORK_COMPLETED, PAYMENT_COMPLETED, PROVIDER_APPROVED -> 2;
             case COMPLETED -> 3;
             case CANCELLED, REJECTED -> 4;
+            default -> 2;
         };
     }
 

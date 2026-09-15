@@ -422,6 +422,88 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ message })
       });
+    },
+
+    getPartners: async () => {
+      return makeRequest('/api/provider/partners');
+    },
+
+    createPartner: async (data) => {
+      return makeRequest('/api/provider/partners', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+    },
+
+    togglePartnerStatus: async (partnerId, active) => {
+      return makeRequest(`/api/provider/partners/${partnerId}/toggle-status${active !== undefined ? `?active=${active}` : ''}`, {
+        method: 'PUT'
+      });
+    },
+
+    assignPartner: async (bookingId, servicePartnerId) => {
+      return makeRequest(`/api/provider/bookings/${bookingId}/assign-partner`, {
+        method: 'PUT',
+        body: JSON.stringify({ servicePartnerId })
+      });
+    },
+
+    approveCompletion: async (bookingId) => {
+      return makeRequest(`/api/provider/bookings/${bookingId}/approve-completion`, {
+        method: 'PUT'
+      });
+    }
+  },
+
+  // ----------------------------------------
+  // SERVICE PARTNER (WORKER) CONSOLE
+  // ----------------------------------------
+  partner: {
+    getTasks: async () => {
+      return makeRequest('/api/partner/tasks');
+    },
+
+    acceptTask: async (bookingId) => {
+      return makeRequest(`/api/partner/tasks/${bookingId}/accept`, {
+        method: 'PUT'
+      });
+    },
+
+    startJourney: async (bookingId) => {
+      return makeRequest(`/api/partner/tasks/${bookingId}/start-journey`, {
+        method: 'PUT'
+      });
+    },
+
+    updateLocation: async (latitude, longitude, bookingId) => {
+      return makeRequest('/api/partner/location', {
+        method: 'POST',
+        body: JSON.stringify({ latitude, longitude, bookingId })
+      });
+    },
+
+    markArrived: async (bookingId) => {
+      return makeRequest(`/api/partner/tasks/${bookingId}/arrived`, {
+        method: 'PUT'
+      });
+    },
+
+    startWork: async (bookingId) => {
+      return makeRequest(`/api/partner/tasks/${bookingId}/start-work`, {
+        method: 'PUT'
+      });
+    },
+
+    completeWork: async (bookingId) => {
+      return makeRequest(`/api/partner/tasks/${bookingId}/complete-work`, {
+        method: 'PUT'
+      });
+    },
+
+    recordPayment: async (bookingId, paymentMethod = 'AFTER_SERVICE') => {
+      return makeRequest(`/api/partner/tasks/${bookingId}/record-payment?paymentMethod=${paymentMethod}`, {
+        method: 'PUT'
+      });
     }
   },
 

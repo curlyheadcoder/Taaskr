@@ -108,9 +108,11 @@ public class TrackingServiceImpl implements TrackingService {
         boolean isCustomer = booking.getUser().getId().equals(requester.getId());
         boolean isAssignedProvider = booking.getProvider() != null &&
                 booking.getProvider().getUser().getId().equals(requester.getId());
+        boolean isAssignedPartner = booking.getServicePartner() != null &&
+                booking.getServicePartner().getUser().getId().equals(requester.getId());
         boolean isAdmin = requester.getRole() == Role.ADMIN;
 
-        if (!isCustomer && !isAssignedProvider && !isAdmin) {
+        if (!isCustomer && !isAssignedProvider && !isAssignedPartner && !isAdmin) {
             throw new BadRequestException("You are not authorized to view tracking data for this booking");
         }
 
@@ -143,6 +145,33 @@ public class TrackingServiceImpl implements TrackingService {
         response.setDropLatitude(booking.getDropLatitude());
         response.setDropLongitude(booking.getDropLongitude());
 
+        // Service Partner Details (if assigned)
+        com.taaskr.entity.ServicePartner partner = booking.getServicePartner();
+        if (partner != null) {
+            response.setServicePartnerId(partner.getId());
+            response.setServicePartnerName(partner.getName());
+            response.setServicePartnerPhone(partner.getPhone());
+            response.setServicePartnerTitle(partner.getTitle());
+            response.setServicePartnerRating(partner.getRating());
+            response.setPartnerLatitude(partner.getCurrentLatitude());
+            response.setPartnerLongitude(partner.getCurrentLongitude());
+
+            boolean isArrived = booking.getStatus() == BookingStatus.ARRIVED ||
+                    booking.getStatus() == BookingStatus.WORK_STARTED ||
+                    booking.getStatus() == BookingStatus.WORK_COMPLETED ||
+                    booking.getStatus() == BookingStatus.PAYMENT_COMPLETED ||
+                    booking.getStatus() == BookingStatus.PROVIDER_APPROVED ||
+                    booking.getStatus() == BookingStatus.COMPLETED;
+
+            response.setArrived(isArrived);
+
+            // Live tracking only active while ON_THE_WAY
+            boolean isLive = !isArrived && booking.getStatus() == BookingStatus.ON_THE_WAY &&
+                    partner.getLocationUpdatedAt() != null &&
+                    partner.getLocationUpdatedAt().isAfter(LocalDateTime.now().minusMinutes(20));
+            response.setIsLive(isLive);
+        }
+
         // Provider Details (if assigned)
         ProviderProfile provider = booking.getProvider();
         if (provider != null) {
@@ -155,11 +184,13 @@ public class TrackingServiceImpl implements TrackingService {
             response.setProviderExperienceYears(provider.getExperienceYears());
             response.setProviderBio(provider.getBio());
 
-            // Check provider location
-            BigDecimal pLat = provider.getCurrentLatitude();
-            BigDecimal pLng = provider.getCurrentLongitude();
+            BigDecimal pLat = partner != null && partner.getCurrentLatitude() != null
+                    ? partner.getCurrentLatitude()
+                    : provider.getCurrentLatitude();
+            BigDecimal pLng = partner != null && partner.getCurrentLongitude() != null
+                    ? partner.getCurrentLongitude()
+                    : provider.getCurrentLongitude();
 
-            // Fallback to vehicle location if provider profile coordinates not populated
             if ((pLat == null || pLng == null) && booking.getVehicle() != null) {
                 pLat = booking.getVehicle().getCurrentLatitude();
                 pLng = booking.getVehicle().getCurrentLongitude();
@@ -167,11 +198,13 @@ public class TrackingServiceImpl implements TrackingService {
 
             response.setProviderLatitude(pLat);
             response.setProviderLongitude(pLng);
-            response.setLocationUpdatedAt(provider.getLocationUpdatedAt());
+            response.setLocationUpdatedAt(partner != null ? partner.getLocationUpdatedAt() : provider.getLocationUpdatedAt());
 
-            boolean isLive = provider.getLocationUpdatedAt() != null &&
-                    provider.getLocationUpdatedAt().isAfter(LocalDateTime.now().minusMinutes(20));
-            response.setIsLive(isLive);
+            if (partner == null) {
+                boolean isLive = provider.getLocationUpdatedAt() != null &&
+                        provider.getLocationUpdatedAt().isAfter(LocalDateTime.now().minusMinutes(20));
+                response.setIsLive(isLive);
+            }
 
             // Vehicle Details (if attached to booking or provider)
             Vehicle vehicle = booking.getVehicle();
@@ -193,7 +226,6 @@ public class TrackingServiceImpl implements TrackingService {
                 BigDecimal targetLat = booking.getLatitude();
                 BigDecimal targetLng = booking.getLongitude();
 
-                // If in transit and drop location is set, calculate distance to drop location
                 if (booking.getStatus() == BookingStatus.IN_TRANSIT && booking.getDropLatitude() != null && booking.getDropLongitude() != null) {
                     targetLat = booking.getDropLatitude();
                     targetLng = booking.getDropLongitude();
@@ -203,11 +235,10 @@ public class TrackingServiceImpl implements TrackingService {
                     BigDecimal distKm = mapService.calculateDistanceKm(pLat, pLng, targetLat, targetLng);
                     response.setDistanceKm(distKm);
 
-                    // Assume average city travel speed 25 km/h
                     double hours = distKm.doubleValue() / 25.0;
                     int minutes = (int) Math.round(hours * 60.0);
-                    if (distKm.doubleValue() < 0.3) {
-                        minutes = 1; // < 300m away -> arriving
+                    if (distKm.doubleValue() < 0.2) {
+                        minutes = 1;
                     } else if (minutes < 2) {
                         minutes = 2;
                     }

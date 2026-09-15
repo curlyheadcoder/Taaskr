@@ -15,7 +15,7 @@ import {
   DollarSign, ExternalLink, Power, TrendingUp, BarChart3, PieChart,
   PanelLeftClose, PanelLeftOpen, Wallet, Award, ArrowUpRight, Banknote, Play,
   MessageSquare, Send, MessageCircle, HelpCircle, Headphones, FileText, Radio, Activity,
-  Landmark, Smartphone, CreditCard
+  Landmark, Smartphone, CreditCard, UserCheck
 } from 'lucide-react';
 
 export default function ProviderDashboard() {
@@ -122,6 +122,18 @@ export default function ProviderDashboard() {
   const [replyingReviewId, setReplyingReviewId] = useState(null);
   const [replyContent, setReplyContent] = useState('');
   const [submittingReviewReply, setSubmittingReviewReply] = useState(false);
+
+  // Service Partners / Workers Team state
+  const [servicePartners, setServicePartners] = useState([]);
+  const [showAddPartnerModal, setShowAddPartnerModal] = useState(false);
+  const [partnerName, setPartnerName] = useState('');
+  const [partnerPhone, setPartnerPhone] = useState('');
+  const [partnerEmail, setPartnerEmail] = useState('');
+  const [partnerTitle, setPartnerTitle] = useState('');
+  const [partnerExperience, setPartnerExperience] = useState('');
+  const [partnerPassword, setPartnerPassword] = useState('');
+  const [submittingPartner, setSubmittingPartner] = useState(false);
+  const [partnerModalError, setPartnerModalError] = useState('');
 
   // New availability form state
   const tomorrow = new Date();
@@ -277,6 +289,70 @@ export default function ProviderDashboard() {
     }
   };
 
+  const handleCreatePartner = async (e) => {
+    e.preventDefault();
+    setPartnerModalError('');
+    if (!partnerName.trim() || !partnerPhone.trim() || !partnerPassword.trim()) {
+      setPartnerModalError('Please enter Name, Phone number, and Password for the worker.');
+      return;
+    }
+    setSubmittingPartner(true);
+    try {
+      const newPartner = await api.provider.createPartner({
+        name: partnerName.trim(),
+        phone: partnerPhone.trim(),
+        email: partnerEmail.trim(),
+        title: partnerTitle.trim() || 'Service Technician',
+        experience: partnerExperience.trim() || '2+ Years',
+        password: partnerPassword.trim()
+      });
+      setServicePartners(prev => [...prev, newPartner]);
+      showNotification(`New Service Partner "${newPartner.name}" registered successfully.`);
+      setShowAddPartnerModal(false);
+      setPartnerName('');
+      setPartnerPhone('');
+      setPartnerEmail('');
+      setPartnerTitle('');
+      setPartnerExperience('');
+      setPartnerPassword('');
+    } catch (err) {
+      setPartnerModalError(err.message || 'Failed to add Service Partner.');
+    } finally {
+      setSubmittingPartner(false);
+    }
+  };
+
+  const handleTogglePartnerStatus = async (partnerId, currentActive) => {
+    try {
+      const updated = await api.provider.togglePartnerStatus(partnerId, !currentActive);
+      setServicePartners(prev => prev.map(p => p.id === partnerId ? updated : p));
+      showNotification(`Service Partner status set to ${updated.active ? 'Active' : 'Inactive'}.`);
+    } catch (err) {
+      showNotification(`Failed to update partner status: ${err.message}`, 'error');
+    }
+  };
+
+  const handleAssignPartner = async (bookingId, servicePartnerId) => {
+    if (!servicePartnerId) return;
+    try {
+      const updated = await api.provider.assignPartner(bookingId, Number(servicePartnerId));
+      setAssignedBookings(prev => prev.map(b => b.id === bookingId ? updated : b));
+      showNotification('Booking assigned to Service Partner successfully.');
+    } catch (err) {
+      showNotification(`Failed to assign partner: ${err.message}`, 'error');
+    }
+  };
+
+  const handleApproveCompletion = async (bookingId) => {
+    try {
+      const updated = await api.provider.approveCompletion(bookingId);
+      setAssignedBookings(prev => prev.map(b => b.id === bookingId ? updated : b));
+      showNotification('Task completion approved and verified!');
+    } catch (err) {
+      showNotification(`Failed to approve completion: ${err.message}`, 'error');
+    }
+  };
+
   const loadProviderDashboard = async (isInitial = false) => {
     if (isInitial) setLoading(true);
     setErrorMessage('');
@@ -302,7 +378,8 @@ export default function ProviderDashboard() {
         walletRes,
         reviewsRes,
         kycRes,
-        bankRes
+        bankRes,
+        partnersRes
       ] = await Promise.allSettled([
         api.provider.getAvailability(),
         api.provider.getBookings(),
@@ -314,8 +391,11 @@ export default function ProviderDashboard() {
         api.payouts.getWalletOverview(),
         user?.id ? api.reviews.getByProvider(user.id) : Promise.resolve([]),
         api.kyc.getMyDocuments(),
-        api.provider.getBankDetails()
+        api.provider.getBankDetails(),
+        api.provider.getPartners().catch(() => [])
       ]);
+
+      if (partnersRes.status === 'fulfilled') setServicePartners(partnersRes.value || []);
 
       if (slotsRes.status === 'fulfilled') setAvailability(slotsRes.value || []);
       if (bookingsRes.status === 'fulfilled') setAssignedBookings(sortBookingsByStatusPriority(bookingsRes.value || []));
@@ -1367,6 +1447,15 @@ export default function ProviderDashboard() {
           >
             <TrendingUp size={16} />
             <span>Earnings & Analytics</span>
+          </button>
+
+          <button 
+            className={`sidebar-item ${activeTab === 'partners' ? 'active' : ''}`}
+            onClick={() => handleTabClick('partners')}
+            title="Service Partners / Workers"
+          >
+            <UserCheck size={16} />
+            <span>Service Partners ({servicePartners.length})</span>
           </button>
 
           {isLogisticsPartner && (
@@ -2684,6 +2773,212 @@ export default function ProviderDashboard() {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB: SERVICE PARTNERS & TECHNICIAN TEAM                                 */}
+        {/* ========================================================================= */}
+        {activeTab === 'partners' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <UserCheck size={22} color="var(--primary)" />
+                  <span>Service Partners & Technician Team</span>
+                </h2>
+                <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                  Register and manage your field technicians, workers, and service partners.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setShowAddPartnerModal(true)}
+                className="btn btn-primary"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
+              >
+                <Plus size={16} />
+                <span>+ Add Worker / Technician</span>
+              </button>
+            </div>
+
+            {servicePartners.length === 0 ? (
+              <div className="panel" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: 'var(--text-muted)' }}>
+                <UserCheck size={40} color="var(--primary)" style={{ opacity: 0.5, marginBottom: '0.75rem' }} />
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', margin: '0 0 0.25rem 0' }}>
+                  No Service Partners Registered Yet
+                </h3>
+                <p style={{ fontSize: '0.8125rem', margin: '0 0 1.25rem 0', maxWidth: '420px', marginLeft: 'auto', marginRight: 'auto' }}>
+                  Add your service workers or technicians to assign them physical visits and enable live GPS location tracking for customers.
+                </p>
+                <button
+                  onClick={() => setShowAddPartnerModal(true)}
+                  className="btn btn-primary btn-sm"
+                >
+                  Add Your First Worker
+                </button>
+              </div>
+            ) : (
+              <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
+                <div style={{ overflowX: 'auto' }}>
+                  <table className="enterprise-table" style={{ width: '100%' }}>
+                    <thead>
+                      <tr>
+                        <th>Worker Name & Title</th>
+                        <th>Contact Phone</th>
+                        <th>Login Email</th>
+                        <th>Experience</th>
+                        <th>Rating</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {servicePartners.map(p => (
+                        <tr key={p.id}>
+                          <td>
+                            <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>{p.name}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{p.title || 'Service Technician'}</div>
+                          </td>
+                          <td style={{ fontSize: '0.8125rem', fontWeight: 600 }}>{p.phone}</td>
+                          <td style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>{p.email}</td>
+                          <td style={{ fontSize: '0.8125rem' }}>{p.experience || '2+ Years'}</td>
+                          <td>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', color: '#f59e0b', fontWeight: 700, fontSize: '0.8125rem' }}>
+                              <Star size={13} fill="#f59e0b" />
+                              <span>{p.rating ? p.rating.toFixed(1) : '5.0'}</span>
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`badge ${p.active ? 'badge-completed' : 'badge-cancelled'}`}>
+                              {p.active ? 'Active' : 'Inactive'}
+                            </span>
+                          </td>
+                          <td>
+                            <button
+                              onClick={() => handleTogglePartnerStatus(p.id, p.active)}
+                              className="btn btn-secondary btn-sm"
+                              style={{ fontSize: '0.75rem', padding: '0.25rem 0.55rem' }}
+                            >
+                              {p.active ? 'Deactivate' : 'Activate'}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Add Worker Modal */}
+        {showAddPartnerModal && (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, padding: '1rem'
+          }}>
+            <div className="panel" style={{ width: '100%', maxWidth: '520px', padding: '1.5rem', backgroundColor: 'var(--bg-card)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <UserCheck size={18} color="var(--primary)" />
+                  <span>Add Service Partner / Worker</span>
+                </h3>
+                <button onClick={() => setShowAddPartnerModal(false)} className="btn btn-ghost btn-sm" style={{ padding: '0.25rem' }}>
+                  <X size={18} />
+                </button>
+              </div>
+
+              {partnerModalError && (
+                <div style={{ padding: '0.65rem 0.85rem', backgroundColor: 'var(--error-bg)', border: '1px solid var(--error-border)', color: 'var(--error)', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', fontSize: '0.78rem' }}>
+                  {partnerModalError}
+                </div>
+              )}
+
+              <form onSubmit={handleCreatePartner} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                <div>
+                  <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>Worker Name *</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="e.g. Amit Sharma"
+                    value={partnerName}
+                    onChange={(e) => setPartnerName(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>Mobile Phone Number *</label>
+                  <input
+                    type="tel"
+                    className="form-control"
+                    placeholder="e.g. 9876543210"
+                    value={partnerPhone}
+                    onChange={(e) => setPartnerPhone(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>Email Address (Worker Login)</label>
+                  <input
+                    type="email"
+                    className="form-control"
+                    placeholder="e.g. amit.sharma@worker.com (Optional)"
+                    value={partnerEmail}
+                    onChange={(e) => setPartnerEmail(e.target.value)}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                  <div>
+                    <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>Title / Designation</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="e.g. Lead Technician"
+                      value={partnerTitle}
+                      onChange={(e) => setPartnerTitle(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>Experience</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="e.g. 3 Years"
+                      value={partnerExperience}
+                      onChange={(e) => setPartnerExperience(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>Worker Login Password *</label>
+                  <input
+                    type="password"
+                    className="form-control"
+                    placeholder="Set a password for worker to log in"
+                    value={partnerPassword}
+                    onChange={(e) => setPartnerPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
+                  <button type="button" onClick={() => setShowAddPartnerModal(false)} className="btn btn-secondary btn-sm">
+                    Cancel
+                  </button>
+                  <button type="submit" disabled={submittingPartner} className="btn btn-primary btn-sm">
+                    {submittingPartner ? 'Saving Worker…' : 'Save & Register Worker'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

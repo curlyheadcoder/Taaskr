@@ -40,6 +40,16 @@ public class LiveTrackingResponse {
     private Integer providerExperienceYears;
     private String providerBio;
 
+    // Service Partner Details (if assigned)
+    private Long servicePartnerId;
+    private String servicePartnerName;
+    private String servicePartnerPhone;
+    private String servicePartnerTitle;
+    private Double servicePartnerRating;
+    private BigDecimal partnerLatitude;
+    private BigDecimal partnerLongitude;
+    private Boolean arrived;
+
     // Vehicle Details (if applicable)
     private VehicleType vehicleType;
     private String vehicleModel;
@@ -320,5 +330,69 @@ public class LiveTrackingResponse {
 
     public void setEstimatedEtaMinutes(Integer estimatedEtaMinutes) {
         this.estimatedEtaMinutes = estimatedEtaMinutes;
+    }
+
+    public Long getServicePartnerId() {
+        return servicePartnerId;
+    }
+
+    public void setServicePartnerId(Long servicePartnerId) {
+        this.servicePartnerId = servicePartnerId;
+    }
+
+    public String getServicePartnerName() {
+        return servicePartnerName;
+    }
+
+    public void setServicePartnerName(String servicePartnerName) {
+        this.servicePartnerName = servicePartnerName;
+    }
+
+    public String getServicePartnerPhone() {
+        return servicePartnerPhone;
+    }
+
+    public void setServicePartnerPhone(String servicePartnerPhone) {
+        this.servicePartnerPhone = servicePartnerPhone;
+    }
+
+    public String getServicePartnerTitle() {
+        return servicePartnerTitle;
+    }
+
+    public void setServicePartnerTitle(String servicePartnerTitle) {
+        this.servicePartnerTitle = servicePartnerTitle;
+    }
+
+    public Double getServicePartnerRating() {
+        return servicePartnerRating;
+    }
+
+    public void setServicePartnerRating(Double servicePartnerRating) {
+        this.servicePartnerRating = servicePartnerRating;
+    }
+
+    public BigDecimal getPartnerLatitude() {
+        return partnerLatitude;
+    }
+
+    public void setPartnerLatitude(BigDecimal partnerLatitude) {
+        this.partnerLatitude = partnerLatitude;
+    }
+
+    public BigDecimal getPartnerLongitude() {
+        return partnerLongitude;
+    }
+
+    public void setPartnerLongitude(BigDecimal partnerLongitude) {
+        this.partnerLongitude = partnerLongitude;
+    }
+
+    public Boolean getArrived() {
+        return arrived;
+    }
+
+    public void setArrived(Boolean arrived) {
+        this.arrived = arrived;
     }
 }

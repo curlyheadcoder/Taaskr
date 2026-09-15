@@ -4,9 +4,14 @@ import com.taaskr.dto.discussion.CreateDiscussionRequest;
 import com.taaskr.dto.discussion.DiscussionResponse;
 import com.taaskr.dto.discussion.ReplyDiscussionRequest;
 import com.taaskr.dto.provider.*;
+import com.taaskr.dto.booking.BookingResponse;
+import com.taaskr.dto.partner.AssignPartnerRequest;
+import com.taaskr.dto.partner.CreateServicePartnerRequest;
+import com.taaskr.dto.partner.ServicePartnerResponse;
 import com.taaskr.dto.service.CategoryResponse;
 import com.taaskr.service.PartnerDiscussionService;
 import com.taaskr.service.ProviderWorkflowService;
+import com.taaskr.service.ServicePartnerService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -19,11 +24,14 @@ public class ProviderController {
 
     private final ProviderWorkflowService providerWorkflowService;
     private final PartnerDiscussionService partnerDiscussionService;
+    private final ServicePartnerService servicePartnerService;
 
     public ProviderController(ProviderWorkflowService providerWorkflowService,
-                              PartnerDiscussionService partnerDiscussionService) {
+                              PartnerDiscussionService partnerDiscussionService,
+                              ServicePartnerService servicePartnerService) {
         this.providerWorkflowService = providerWorkflowService;
         this.partnerDiscussionService = partnerDiscussionService;
+        this.servicePartnerService = servicePartnerService;
     }
 
     @PostMapping("/availability")
@@ -158,5 +166,39 @@ public class ProviderController {
                                               @Valid @RequestBody ReplyDiscussionRequest request,
                                               Authentication authentication) {
         return partnerDiscussionService.replyDiscussionByProvider(authentication.getName(), discussionId, request);
+    }
+
+    // ----------------------------------------
+    // SERVICE PARTNERS (WORKERS) MANAGEMENT
+    // ----------------------------------------
+    @PostMapping("/partners")
+    public ServicePartnerResponse createServicePartner(@Valid @RequestBody CreateServicePartnerRequest request,
+                                                       Authentication authentication) {
+        return servicePartnerService.createServicePartner(authentication.getName(), request);
+    }
+
+    @GetMapping("/partners")
+    public List<ServicePartnerResponse> getMyPartners(Authentication authentication) {
+        return servicePartnerService.getProviderPartners(authentication.getName());
+    }
+
+    @PutMapping("/partners/{partnerId}/toggle-status")
+    public ServicePartnerResponse togglePartnerStatus(@PathVariable Long partnerId,
+                                                      @RequestParam(required = false) Boolean active,
+                                                      Authentication authentication) {
+        return servicePartnerService.togglePartnerStatus(authentication.getName(), partnerId, active);
+    }
+
+    @PutMapping("/bookings/{bookingId}/assign-partner")
+    public BookingResponse assignPartner(@PathVariable Long bookingId,
+                                         @Valid @RequestBody AssignPartnerRequest request,
+                                         Authentication authentication) {
+        return servicePartnerService.assignPartnerToTask(authentication.getName(), bookingId, request.getServicePartnerId());
+    }
+
+    @PutMapping("/bookings/{bookingId}/approve-completion")
+    public BookingResponse approveCompletion(@PathVariable Long bookingId,
+                                             Authentication authentication) {
+        return servicePartnerService.approveCompletionByProvider(authentication.getName(), bookingId);
     }
 }
