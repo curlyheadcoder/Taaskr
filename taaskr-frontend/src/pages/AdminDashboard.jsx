@@ -1503,105 +1503,113 @@ export default function AdminDashboard() {
                   <h3 className="empty-state-title">{bookingSearch || bookingStatusFilter !== 'ALL' ? 'No matching bookings' : 'No bookings yet'}</h3>
                   <p className="empty-state-description">Bookings placed by customers will appear here.</p>
                 </div>
-              ) : (
-                <div className="table-container">
-                  <table className="enterprise-table">
-                    <thead>
-                      <tr>
-                        <th>Code</th>
-                        <th>Service</th>
-                        <th>Customer</th>
-                        <th>Provider</th>
-                        <th>Date &amp; Time</th>
-                        <th>Amount</th>
-                        <th>Payment</th>
-                        <th>Status</th>
-                        <th>Map Task to Provider</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pagedBookings.map(b => (
-                        <tr key={b.id}>
-                          <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--primary)', whiteSpace: 'nowrap' }}>
-                            #{b.bookingCode || b.id}
-                          </td>
-                          <td style={{ fontWeight: 500, color: 'var(--text-main)', maxWidth: '140px' }}>
-                            <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.serviceName || '—'}</div>
-                            {b.categoryName && <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{b.categoryName}</div>}
-                          </td>
-                          <td>
-                            <div style={{ fontWeight: 500, color: 'var(--text-main)' }}>{b.userName || '—'}</div>
-                            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{b.city || ''}</div>
-                          </td>
-                          <td style={{ color: b.providerName ? 'var(--text-main)' : 'var(--text-muted)', fontSize: '0.8125rem' }}>
-                            {b.providerName ? (
-                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: '#10b981', fontWeight: 600 }}>
-                                <UserCheck size={13} /> {b.providerName}
-                              </span>
-                            ) : (
-                              <span style={{ color: '#f59e0b', fontSize: '0.78rem', fontWeight: 600 }}>Unassigned</span>
-                            )}
-                          </td>
-                          <td style={{ whiteSpace: 'nowrap', color: 'var(--text-muted)', fontSize: '0.78rem' }}>
-                            {b.bookingDate || '—'}<br />
-                            {b.startTime ? formatLocalTime(b.startTime) : ''}
-                          </td>
-                          <td style={{ fontWeight: 700, color: 'var(--text-main)', fontFeatureSettings: 'tnum', whiteSpace: 'nowrap' }}>
-                            ₹{Number(b.finalAmount || b.totalAmount || 0).toLocaleString('en-IN')}
-                          </td>
-                          <td>
-                            <span className={`badge ${payBadge(b.paymentStatus)}`} style={{ fontSize: '0.65rem' }}>
-                              {b.paymentStatus || 'PENDING'}
-                            </span>
-                          </td>
-                          <td>
-                            <span className={`badge ${badgeClass(b.status)}`} style={{ fontSize: '0.65rem' }}>
-                              {b.status?.replace('_', ' ') || '—'}
-                            </span>
-                          </td>
-                          <td>
-                            {b.providerId || b.providerName || b.status !== 'PENDING' ? (
-                              <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem', fontStyle: 'italic' }}>—</span>
-                            ) : (
-                              <select
-                                value={b.providerId || ''}
-                                onChange={(e) => handleAssignProvider(b.id, e.target.value)}
-                                style={{
-                                  padding: '0.35rem 0.6rem',
-                                  borderRadius: '8px',
-                                  border: '1px solid var(--border-light, #334155)',
-                                  backgroundColor: '#1e293b',
-                                  color: '#ffffff',
-                                  fontSize: '0.78rem',
-                                  fontWeight: 600,
-                                  outline: 'none',
-                                  cursor: 'pointer',
-                                  colorScheme: 'dark'
-                                }}
-                              >
-                                <option value="" disabled style={{ backgroundColor: '#1e293b', color: '#94a3b8' }}>
-                                  Select Provider…
-                                </option>
-                                {(providers || []).map(p => (
-                                  <option key={p.id} value={p.id} style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>
-                                    {p.name || p.userName} ({p.categoryName || 'Provider'})
-                                  </option>
-                                ))}
-                              </select>
-                            )}
-                          </td>
+              ) : (() => {
+                const showMapColumn = bookingStatusFilter !== 'COMPLETED' && 
+                                      bookingStatusFilter !== 'CANCELLED' && 
+                                      pagedBookings.some(b => b.status === 'PENDING' && !b.providerId && !b.providerName);
+
+                return (
+                  <div className="table-container">
+                    <table className="enterprise-table">
+                      <thead>
+                        <tr>
+                          <th>Code</th>
+                          <th>Service</th>
+                          <th>Customer</th>
+                          <th>Provider</th>
+                          <th>Date &amp; Time</th>
+                          <th>Amount</th>
+                          <th>Payment</th>
+                          <th>Status</th>
+                          {showMapColumn && <th>Map Task to Provider</th>}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  <Pagination
-                    currentPage={bookingsPage}
-                    totalItems={filteredBookings.length}
-                    itemsPerPage={itemsPerPage}
-                    onPageChange={setBookingsPage}
-                  />
-                </div>
-              )}
+                      </thead>
+                      <tbody>
+                        {pagedBookings.map(b => (
+                          <tr key={b.id}>
+                            <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--primary)', whiteSpace: 'nowrap' }}>
+                              #{b.bookingCode || b.id}
+                            </td>
+                            <td style={{ fontWeight: 500, color: 'var(--text-main)', maxWidth: '140px' }}>
+                              <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.serviceName || '—'}</div>
+                              {b.categoryName && <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{b.categoryName}</div>}
+                            </td>
+                            <td>
+                              <div style={{ fontWeight: 500, color: 'var(--text-main)' }}>{b.userName || '—'}</div>
+                              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{b.city || ''}</div>
+                            </td>
+                            <td style={{ color: b.providerName ? 'var(--text-main)' : 'var(--text-muted)', fontSize: '0.8125rem' }}>
+                              {b.providerName ? (
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: '#10b981', fontWeight: 600 }}>
+                                  <UserCheck size={13} /> {b.providerName}
+                                </span>
+                              ) : (
+                                <span style={{ color: '#f59e0b', fontSize: '0.78rem', fontWeight: 600 }}>Unassigned</span>
+                              )}
+                            </td>
+                            <td style={{ whiteSpace: 'nowrap', color: 'var(--text-muted)', fontSize: '0.78rem' }}>
+                              {b.bookingDate || '—'}<br />
+                              {b.startTime ? formatLocalTime(b.startTime) : ''}
+                            </td>
+                            <td style={{ fontWeight: 700, color: 'var(--text-main)', fontFeatureSettings: 'tnum', whiteSpace: 'nowrap' }}>
+                              ₹{Number(b.finalAmount || b.totalAmount || 0).toLocaleString('en-IN')}
+                            </td>
+                            <td>
+                              <span className={`badge ${payBadge(b.paymentStatus)}`} style={{ fontSize: '0.65rem' }}>
+                                {b.paymentStatus || 'PENDING'}
+                              </span>
+                            </td>
+                            <td>
+                              <span className={`badge ${badgeClass(b.status)}`} style={{ fontSize: '0.65rem' }}>
+                                {b.status?.replace('_', ' ') || '—'}
+                              </span>
+                            </td>
+                            {showMapColumn && (
+                              <td>
+                                {b.providerId || b.providerName || b.status !== 'PENDING' ? (
+                                  <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem', fontStyle: 'italic' }}>—</span>
+                                ) : (
+                                  <select
+                                    value={b.providerId || ''}
+                                    onChange={(e) => handleAssignProvider(b.id, e.target.value)}
+                                    style={{
+                                      padding: '0.35rem 0.6rem',
+                                      borderRadius: '8px',
+                                      border: '1px solid var(--border-light, #334155)',
+                                      backgroundColor: '#1e293b',
+                                      color: '#ffffff',
+                                      fontSize: '0.78rem',
+                                      fontWeight: 600,
+                                      outline: 'none',
+                                      cursor: 'pointer',
+                                      colorScheme: 'dark'
+                                    }}
+                                  >
+                                    <option value="" disabled style={{ backgroundColor: '#1e293b', color: '#94a3b8' }}>
+                                      Select Provider…
+                                    </option>
+                                    {(providers || []).map(p => (
+                                      <option key={p.id} value={p.id} style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>
+                                        {p.name || p.userName} ({p.categoryName || 'Provider'})
+                                      </option>
+                                    ))}
+                                  </select>
+                                )}
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <Pagination
+                      currentPage={bookingsPage}
+                      totalItems={filteredBookings.length}
+                      itemsPerPage={itemsPerPage}
+                      onPageChange={setBookingsPage}
+                    />
+                  </div>
+                );
+              })()}
             </div>
           );
         })()}
