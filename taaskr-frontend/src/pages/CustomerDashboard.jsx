@@ -1862,24 +1862,50 @@ export default function CustomerDashboard({ initialTab }) {
               )}
 
               {/* Provider Assignment Box */}
-              <div style={{ background: 'var(--bg-subtle)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', marginTop: '0.25rem' }}>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.6875rem', textTransform: 'uppercase', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>
-                  {selectedBooking.dropAddress ? 'Assigned Driver & Vehicle' : 'Assigned Service Expert'}
-                </span>
-                {selectedBooking.providerId ? (
-                  <div>
-                    <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{selectedBooking.providerName}</div>
-                    {selectedBooking.vehicleRegistrationNumber && (
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
-                        Vehicle: <strong>{selectedBooking.vehicleRegistrationNumber}</strong> {selectedBooking.vehicleModel ? `(${selectedBooking.vehicleModel})` : ''}
+              <div style={{ background: 'var(--bg-subtle)', padding: '0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', marginTop: '0.25rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                <div>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.6875rem', textTransform: 'uppercase', fontWeight: 700, display: 'block', marginBottom: '0.25rem' }}>
+                    Service Provider Business
+                  </span>
+                  {selectedBooking.providerId ? (
+                    <div>
+                      <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.9rem' }}>{selectedBooking.providerName}</div>
+                      {selectedBooking.vehicleRegistrationNumber && (
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
+                          Vehicle: <strong>{selectedBooking.vehicleRegistrationNumber}</strong> {selectedBooking.vehicleModel ? `(${selectedBooking.vehicleModel})` : ''}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div style={{ color: 'var(--warning)', fontSize: '0.75rem' }}>
+                      Matching verified service provider in your area...
+                    </div>
+                  )}
+                </div>
+
+                {selectedBooking.servicePartnerName && (
+                  <div style={{ paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)' }}>
+                    <span style={{ color: '#10B981', fontSize: '0.6875rem', textTransform: 'uppercase', fontWeight: 700, display: 'block', marginBottom: '0.25rem' }}>
+                      Assigned Field Technician / Specialist
+                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div>
+                        <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.9rem' }}>
+                          {selectedBooking.servicePartnerName} <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 400 }}>({selectedBooking.servicePartnerTitle || 'Technician'})</span>
+                        </div>
+                        {selectedBooking.servicePartnerPhone && (
+                          <a href={`tel:${selectedBooking.servicePartnerPhone}`} style={{ fontSize: '0.78rem', color: '#60A5FA', textDecoration: 'none', fontWeight: 600 }}>
+                            Call Worker: {selectedBooking.servicePartnerPhone}
+                          </a>
+                        )}
                       </div>
-                    )}
-                  </div>
-                ) : (
-                  <div style={{ color: 'var(--warning)', fontSize: '0.75rem' }}>
-                    {selectedBooking.dropAddress
-                      ? 'Matching nearby available driver in your city.'
-                      : 'Matching verified service expert in your city.'}
+                      {selectedBooking.servicePartnerRating && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', color: '#f59e0b', fontWeight: 700, fontSize: '0.82rem' }}>
+                          <Star size={13} fill="#f59e0b" />
+                          <span>{selectedBooking.servicePartnerRating.toFixed(1)}</span>
+                        </span>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

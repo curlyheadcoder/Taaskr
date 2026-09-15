@@ -1156,8 +1156,72 @@ export default function ProviderDashboard() {
                 </button>
               </div>
             )}
+          {/* Worker / Technician Assignment Bar */}
+          <div style={{
+            background: 'var(--bg-subtle)',
+            padding: '0.55rem 0.75rem',
+            borderRadius: '8px',
+            border: '1px solid var(--border-light)',
+            margin: '0.5rem 0 0.75rem 0',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '0.5rem'
+          }}>
+            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <UserCheck size={14} color="var(--primary)" />
+              <span>Field Worker / Technician:</span>
+              {job.servicePartnerName ? (
+                <strong style={{ color: '#34D399', fontSize: '0.82rem' }}>
+                  {job.servicePartnerName} ({job.servicePartnerTitle || 'Technician'})
+                </strong>
+              ) : (
+                <span style={{ color: '#FBBF24', fontSize: '0.78rem', fontWeight: 600 }}>
+                  Not Assigned Yet
+                </span>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              {servicePartners.length > 0 ? (
+                <select
+                  value={job.servicePartnerId || ''}
+                  onChange={(e) => handleAssignPartner(job.id, e.target.value)}
+                  className="form-control"
+                  style={{
+                    fontSize: '0.75rem',
+                    padding: '0.2rem 0.45rem',
+                    height: '28px',
+                    width: 'auto',
+                    minWidth: '160px',
+                    backgroundColor: 'var(--bg-card)',
+                    borderColor: job.servicePartnerId ? 'rgba(16, 185, 129, 0.4)' : 'var(--border-light)'
+                  }}
+                >
+                  <option value="">{job.servicePartnerId ? 'Change Worker' : '-- Select Worker / Technician --'}</option>
+                  {servicePartners.map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.title || 'Technician'})
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <button
+                  onClick={() => {
+                    setActiveTab('partners');
+                    setShowAddPartnerModal(true);
+                  }}
+                  className="btn btn-ghost btn-sm"
+                  style={{ fontSize: '0.72rem', padding: '0.2rem 0.45rem', color: 'var(--primary)' }}
+                >
+                  + Add Worker First
+                </button>
+              )}
+            </div>
           </div>
         </div>
+      </div>
 
         {/* Action Bar */}
         <div>

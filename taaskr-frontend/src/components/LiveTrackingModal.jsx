@@ -682,55 +682,70 @@ export default function LiveTrackingModal({ bookingId, onClose }) {
           gap: '1rem'
         }}>
           {/* Provider & Service Partner Profile Info */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-            <div style={{
-              width: '46px',
-              height: '46px',
-              borderRadius: '50%',
-              backgroundColor: 'var(--primary-subtle)',
-              border: '2px solid var(--primary)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 700,
-              fontSize: '1.1rem',
-              color: 'var(--primary)'
-            }}>
-              {(trackingData?.servicePartnerName || trackingData?.providerName) ? (trackingData?.servicePartnerName || trackingData?.providerName).charAt(0).toUpperCase() : <User size={22} />}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
+            {/* Provider Agency Badge */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'var(--bg-subtle)', padding: '0.5rem 0.85rem', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
+              <div style={{
+                width: '38px',
+                height: '38px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(59, 130, 246, 0.15)',
+                border: '1.5px solid #3B82F6',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 700,
+                fontSize: '1rem',
+                color: '#60A5FA'
+              }}>
+                {trackingData?.providerName ? trackingData.providerName.charAt(0).toUpperCase() : 'P'}
+              </div>
+              <div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>
+                  Service Provider Agency
+                </div>
+                <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.88rem' }}>
+                  {trackingData?.providerName || 'Taaskr Verified Provider'}
+                </div>
+              </div>
             </div>
 
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <span style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.95rem' }}>
-                  {trackingData?.servicePartnerName ? `${trackingData.servicePartnerName} (${trackingData.servicePartnerTitle || 'Service Technician'})` : (trackingData?.providerName || 'Assigned Taaskr Partner')}
-                </span>
-                <span title="Verified Partner" style={{ display: 'flex', alignItems: 'center', color: '#10b981' }}>
-                  <ShieldCheck size={16} />
-                </span>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', color: '#f59e0b', fontWeight: 600 }}>
+            {/* Assigned Service Partner / Field Technician Card */}
+            {trackingData?.servicePartnerName ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(16, 185, 129, 0.12)', padding: '0.5rem 0.85rem', borderRadius: '12px', border: '1px solid rgba(16, 185, 129, 0.35)' }}>
+                <div style={{
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '50%',
+                  backgroundColor: '#10B981',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 800,
+                  fontSize: '1rem',
+                  color: '#FFF',
+                  boxShadow: '0 0 10px rgba(16, 185, 129, 0.4)'
+                }}>
+                  {trackingData.servicePartnerName.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.7rem', color: '#34D399', textTransform: 'uppercase', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <ShieldCheck size={12} /> Assigned Field Technician
+                  </div>
+                  <div style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: '0.92rem' }}>
+                    {trackingData.servicePartnerName} <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 500 }}>({trackingData.servicePartnerTitle || 'Technician'})</span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', color: '#f59e0b', fontWeight: 700, fontSize: '0.82rem', marginLeft: '0.5rem' }}>
                   <Star size={13} fill="#f59e0b" />
-                  <span>{trackingData?.servicePartnerRating ? trackingData.servicePartnerRating.toFixed(1) : (trackingData?.providerRating ? trackingData.providerRating.toFixed(1) : '5.0')}</span>
-                </span>
-                {trackingData?.providerName && trackingData?.servicePartnerName && (
-                  <>
-                    <span>•</span>
-                    <span>Provider: {trackingData.providerName}</span>
-                  </>
-                )}
-                {trackingData?.vehicleModel && (
-                  <>
-                    <span>•</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                      <Truck size={12} color="var(--primary)" />
-                      <span>{trackingData.vehicleModel} ({trackingData.vehicleRegistrationNumber || 'Reg Plate'})</span>
-                    </span>
-                  </>
-                )}
+                  <span>{trackingData.servicePartnerRating ? trackingData.servicePartnerRating.toFixed(1) : '5.0'}</span>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div style={{ fontSize: '0.82rem', color: '#FBBF24', background: 'rgba(245, 158, 11, 0.12)', padding: '0.45rem 0.85rem', borderRadius: '10px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+                ℹ Provider assigned. Worker details will update when field technician is dispatched.
+              </div>
+            )}
           </div>
 
           {/* Quick Actions */}
@@ -746,10 +761,10 @@ export default function LiveTrackingModal({ bookingId, onClose }) {
               <span>{simulationActive ? 'Stop Sim' : 'Test Motion Sim'}</span>
             </button>
 
-            {/* Direct Phone Call */}
-            {trackingData?.providerPhone && (
+            {/* Direct Call to Technician / Provider */}
+            {(trackingData?.servicePartnerPhone || trackingData?.providerPhone) && (
               <a
-                href={`tel:${trackingData.providerPhone}`}
+                href={`tel:${trackingData.servicePartnerPhone || trackingData.providerPhone}`}
                 className="btn btn-primary btn-sm"
                 style={{
                   fontSize: '0.8125rem',
@@ -757,11 +772,15 @@ export default function LiveTrackingModal({ bookingId, onClose }) {
                   textDecoration: 'none',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.35rem'
+                  gap: '0.35rem',
+                  background: 'linear-gradient(135deg, #10B981, #059669)',
+                  borderColor: '#059669',
+                  color: '#FFF'
                 }}
+                title="Call Assigned Field Worker directly"
               >
-                <Phone size={14} />
-                <span>Call Provider</span>
+                <Phone size={13} />
+                <span>Call {trackingData?.servicePartnerName ? 'Technician' : 'Provider'} ({trackingData.servicePartnerPhone || trackingData.providerPhone})</span>
               </a>
             )}
           </div>
