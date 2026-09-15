@@ -5,7 +5,9 @@ import com.taaskr.dto.booking.BookingResponse;
 import com.taaskr.dto.booking.CreateBookingRequest;
 import com.taaskr.entity.*;
 import com.taaskr.enums.BookingStatus;
+import com.taaskr.enums.PaymentMethod;
 import com.taaskr.enums.PaymentStatus;
+
 import com.taaskr.enums.Role;
 import com.taaskr.enums.VehicleType;
 import com.taaskr.exception.BadRequestException;
@@ -233,15 +235,25 @@ public class BookingServiceImpl implements BookingService {
             booking.setVehicle(matchedVehicle);
         }
 
+        boolean isFreeConsultation = (calculatedFare != null && calculatedFare.compareTo(BigDecimal.ZERO) == 0)
+                || (service.getName() != null && (
+                service.getName().toLowerCase().contains("advice") ||
+                service.getName().toLowerCase().contains("consultation") ||
+                service.getName().toLowerCase().contains("quote") ||
+                service.getName().toLowerCase().contains("inspection")
+        ));
+
         booking.setNotes(request.getNotes());
         booking.setTotalAmount(calculatedFare);
         booking.setDiscountAmount(BigDecimal.ZERO);
         booking.setFinalAmount(calculatedFare);
-        booking.setPaymentStatus(PaymentStatus.PENDING);
-        booking.setPaymentMethod(request.getPaymentMethod());
+        booking.setPaymentStatus(isFreeConsultation ? PaymentStatus.PAID : PaymentStatus.PENDING);
+        booking.setPaymentMethod(request.getPaymentMethod() != null ? request.getPaymentMethod() : PaymentMethod.AFTER_SERVICE);
+
         booking.setStatus(assignmentResult.provider() != null ? BookingStatus.ASSIGNED : BookingStatus.PENDING);
 
         Booking savedBooking = bookingRepository.save(booking);
+
 
         if (assignmentResult.slot() != null) {
             assignmentResult.slot().setBooked(true);
@@ -428,6 +440,34 @@ public class BookingServiceImpl implements BookingService {
                 .distinct()
                 .toList();
 
+        boolean isFreeConsultation = (service != null && service.getPrice() != null && service.getPrice().compareTo(BigDecimal.ZERO) == 0)
+                || (service != null && service.getName() != null && (
+                service.getName().toLowerCase().contains("advice") ||
+                service.getName().toLowerCase().contains("consultation") ||
+                service.getName().toLowerCase().contains("quote") ||
+                service.getName().toLowerCase().contains("inspection")
+        ));
+
+        if (isFreeConsultation) {
+            List<ProviderProfile> expertMatches = candidateProviders.stream()
+                    .filter(provider -> {
+                        String name = safe(provider.getUser() != null ? provider.getUser().getName() : "");
+                        String bio = safe(provider.getBio());
+                        String combined = (name + " " + bio).toLowerCase();
+                        return combined.contains("expert") || combined.contains("lead") || combined.contains("engineer") ||
+                               combined.contains("specialist") || combined.contains("master") || combined.contains("consultant") ||
+                               combined.contains("senior");
+                    })
+                    .toList();
+
+            if (!expertMatches.isEmpty()) {
+                ProviderAssignmentResult expertResult = findBestProviderWithSlot(expertMatches, bookingDate, startTime, endTime);
+                if (expertResult.provider() != null) {
+                    return expertResult;
+                }
+            }
+        }
+
         List<ProviderProfile> exactPincodeMatches = candidateProviders.stream()
                 .filter(provider -> pincode.equalsIgnoreCase(safe(provider.getPincode())))
                 .toList();
@@ -436,6 +476,7 @@ public class BookingServiceImpl implements BookingService {
         if (exactResult.provider() != null) {
             return exactResult;
         }
+
 
         List<ProviderProfile> cityMatches = candidateProviders.stream()
                 .filter(provider -> city.equalsIgnoreCase(safe(provider.getCity())))

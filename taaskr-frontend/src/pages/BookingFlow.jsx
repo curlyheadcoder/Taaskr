@@ -59,6 +59,15 @@ export default function BookingFlow() {
      (categoryName || '').toLowerCase().includes('shifting'))
   );
 
+  const isFreeService = Number(price) === 0 || 
+                        Boolean(serviceName && (
+                          serviceName.toLowerCase().includes('advice') || 
+                          serviceName.toLowerCase().includes('consultation') || 
+                          serviceName.toLowerCase().includes('quote') || 
+                          serviceName.toLowerCase().includes('inspection')
+                        ));
+
+
   const getTodayIST = () => {
     return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
   };
@@ -503,9 +512,11 @@ export default function BookingFlow() {
                 </>
               )}
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Assigned Partner:</span>
+                <span style={{ color: 'var(--text-muted)' }}>
+                  {isFreeService ? 'Assigned Service Expert:' : (isVehicle ? 'Assigned Driver:' : 'Assigned Partner:')}
+                </span>
                 <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>
-                  {newBooking.providerName || (isVehicle ? 'Assigning nearby driver...' : 'Assigning service expert...')}
+                  {newBooking.providerName || (isVehicle ? 'Assigning nearby driver...' : (isFreeService ? 'Assigning category service expert...' : 'Assigning partner...'))}
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -516,13 +527,15 @@ export default function BookingFlow() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.5rem', marginTop: '0.2rem' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Payment:</span>
-                <span className={`badge ${newBooking.paymentStatus === 'PAID' ? 'badge-completed' : 'badge-pending'}`}>
-                  {newBooking.paymentStatus}
+                <span className={`badge ${Number(newBooking.finalAmount) === 0 || isFreeService || newBooking.paymentStatus === 'PAID' || newBooking.paymentStatus === 'COMPLETED' ? 'badge-completed' : 'badge-pending'}`}>
+                  {Number(newBooking.finalAmount) === 0 || isFreeService ? 'FREE / COMPLETED' : newBooking.paymentStatus}
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Amount:</span>
-                <span style={{ color: 'var(--text-main)', fontWeight: 700, fontFeatureSettings: 'tnum' }}>₹{newBooking.finalAmount}</span>
+                <span style={{ color: Number(newBooking.finalAmount) === 0 || isFreeService ? '#10b981' : 'var(--text-main)', fontWeight: 700, fontFeatureSettings: 'tnum' }}>
+                  {Number(newBooking.finalAmount) === 0 || isFreeService ? 'FREE (₹0)' : `₹${newBooking.finalAmount}`}
+                </span>
               </div>
             </div>
           </div>
@@ -944,61 +957,73 @@ export default function BookingFlow() {
           {/* Payment Method Selection */}
           <div style={{ marginTop: '1.25rem', marginBottom: '1.5rem' }}>
             <label className="form-label" style={{ marginBottom: '0.5rem' }}>Payment Method</label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('online')}
-                style={{
-                  padding: '0.75rem',
-                  borderRadius: 'var(--radius-sm)',
-                  border: '1px solid',
-                  borderColor: paymentMethod === 'online' ? 'var(--primary)' : 'var(--border-light)',
-                  backgroundColor: paymentMethod === 'online' ? 'var(--primary-subtle)' : 'var(--bg-card)',
-                  color: 'var(--text-main)',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.2rem',
-                  transition: 'var(--transition-fast)'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600, fontSize: '0.8125rem' }}>
-                  <CreditCard size={15} color="var(--primary)" />
-                  <span>Online Payment</span>
+            {isFreeService ? (
+              <div style={{ padding: '0.85rem 1rem', borderRadius: '12px', backgroundColor: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10B981', fontWeight: 700, fontSize: '0.875rem' }}>
+                  <ShieldCheck size={18} />
+                  <span>Free On-Call Expert Advice & Inspection — No Payment Required</span>
                 </div>
-                <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
-                  Instant UPI, Cards & NetBanking
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginTop: '0.25rem' }}>
+                  This service consultation is 100% FREE. An assigned Category Service Expert will call or visit as scheduled.
                 </span>
-              </button>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('online')}
+                  style={{
+                    padding: '0.75rem',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid',
+                    borderColor: paymentMethod === 'online' ? 'var(--primary)' : 'var(--border-light)',
+                    backgroundColor: paymentMethod === 'online' ? 'var(--primary-subtle)' : 'var(--bg-card)',
+                    color: 'var(--text-main)',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.2rem',
+                    transition: 'var(--transition-fast)'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600, fontSize: '0.8125rem' }}>
+                    <CreditCard size={15} color="var(--primary)" />
+                    <span>Online Payment</span>
+                  </div>
+                  <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
+                    Instant UPI, Cards & NetBanking
+                  </span>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('after_service')}
-                style={{
-                  padding: '0.75rem',
-                  borderRadius: 'var(--radius-sm)',
-                  border: '1px solid',
-                  borderColor: paymentMethod === 'after_service' ? 'var(--primary)' : 'var(--border-light)',
-                  backgroundColor: paymentMethod === 'after_service' ? 'var(--primary-subtle)' : 'var(--bg-card)',
-                  color: 'var(--text-main)',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.2rem',
-                  transition: 'var(--transition-fast)'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600, fontSize: '0.8125rem' }}>
-                  <Banknote size={15} color="var(--primary)" />
-                  <span>{isVehicle ? 'Cash on Trip' : 'Cash on Service'}</span>
-                </div>
-                <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
-                  Pay expert directly upon completion
-                </span>
-              </button>
-            </div>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('after_service')}
+                  style={{
+                    padding: '0.75rem',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid',
+                    borderColor: paymentMethod === 'after_service' ? 'var(--primary)' : 'var(--border-light)',
+                    backgroundColor: paymentMethod === 'after_service' ? 'var(--primary-subtle)' : 'var(--bg-card)',
+                    color: 'var(--text-main)',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.2rem',
+                    transition: 'var(--transition-fast)'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600, fontSize: '0.8125rem' }}>
+                    <Banknote size={15} color="var(--primary)" />
+                    <span>{isVehicle ? 'Cash on Trip' : 'Cash on Service'}</span>
+                  </div>
+                  <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
+                    Pay expert directly upon completion
+                  </span>
+                </button>
+              </div>
+            )}
           </div>
 
           <button
