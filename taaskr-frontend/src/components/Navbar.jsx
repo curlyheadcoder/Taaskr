@@ -330,14 +330,14 @@ export default function Navbar() {
       {/* Left Section: Brand Logo & Navigation Links */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexShrink: 0 }}>
         <Link 
-          to={user?.role === 'PROVIDER' ? '/provider' : user?.role === 'ADMIN' ? '/admin' : '/'} 
+          to={user?.role === 'SERVICE_PARTNER' ? '/partner' : user?.role === 'PROVIDER' ? '/provider' : user?.role === 'ADMIN' ? '/admin' : '/'} 
           style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}
         >
           <TaaskrLogo 
             size={28} 
             withText={true} 
             textSize="1.25rem" 
-            variant={user?.role === 'PROVIDER' ? 'provider' : user?.role === 'ADMIN' ? 'admin' : 'user'} 
+            variant={user?.role === 'SERVICE_PARTNER' || user?.role === 'PROVIDER' ? 'provider' : user?.role === 'ADMIN' ? 'admin' : 'user'} 
           />
         </Link>
 

@@ -218,6 +218,17 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
     }
 
     @Override
+    public ServicePartnerResponse getPartnerProfile(String partnerEmail) {
+        User workerUser = userRepository.findByEmail(partnerEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        ServicePartner partner = servicePartnerRepository.findByUserId(workerUser.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Service Partner profile not found"));
+
+        return mapToPartnerResponse(partner);
+    }
+
+    @Override
     public List<BookingResponse> getPartnerAssignedTasks(String partnerEmail) {
         User workerUser = userRepository.findByEmail(partnerEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));

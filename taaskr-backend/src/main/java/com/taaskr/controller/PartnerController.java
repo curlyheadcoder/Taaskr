@@ -20,6 +20,11 @@ public class PartnerController {
         this.servicePartnerService = servicePartnerService;
     }
 
+    @GetMapping("/profile")
+    public com.taaskr.dto.partner.ServicePartnerResponse getProfile(Authentication authentication) {
+        return servicePartnerService.getPartnerProfile(authentication.getName());
+    }
+
     @GetMapping("/tasks")
     public List<BookingResponse> getMyTasks(Authentication authentication) {
         return servicePartnerService.getPartnerAssignedTasks(authentication.getName());

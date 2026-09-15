@@ -989,6 +989,16 @@ export default function Home() {
     }
   });
 
+  useEffect(() => {
+    if (currentUser?.role === 'SERVICE_PARTNER') {
+      navigate('/partner', { replace: true });
+    } else if (currentUser?.role === 'PROVIDER') {
+      navigate('/provider', { replace: true });
+    } else if (currentUser?.role === 'ADMIN') {
+      navigate('/admin', { replace: true });
+    }
+  }, [currentUser, navigate]);
+
 
   const [lastHitCategory, setLastHitCategory] = useState('logistics');
   const [activeHighlightService, setActiveHighlightService] = useState('Express Goods Transport');

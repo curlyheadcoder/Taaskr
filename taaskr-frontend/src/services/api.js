@@ -465,7 +465,15 @@ export const api = {
   // SERVICE PARTNER (WORKER) CONSOLE
   // ----------------------------------------
   partner: {
+    getProfile: async () => {
+      return makeRequest('/api/partner/profile');
+    },
+
     getTasks: async () => {
+      return makeRequest('/api/partner/tasks');
+    },
+
+    getMyTasks: async () => {
       return makeRequest('/api/partner/tasks');
     },
 
@@ -481,10 +489,13 @@ export const api = {
       });
     },
 
-    updateLocation: async (latitude, longitude, bookingId) => {
+    updateLocation: async (data, longitudeArg, bookingIdArg) => {
+      const payload = typeof data === 'object' && data !== null
+        ? data
+        : { latitude: data, longitude: longitudeArg, bookingId: bookingIdArg };
       return makeRequest('/api/partner/location', {
         method: 'POST',
-        body: JSON.stringify({ latitude, longitude, bookingId })
+        body: JSON.stringify(payload)
       });
     },
 

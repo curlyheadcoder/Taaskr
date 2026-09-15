@@ -24,6 +24,8 @@ public interface ServicePartnerService {
     BookingResponse approveCompletionByProvider(String providerEmail, Long bookingId);
 
     // Partner worker operations
+    ServicePartnerResponse getPartnerProfile(String partnerEmail);
+
     List<BookingResponse> getPartnerAssignedTasks(String partnerEmail);
 
     BookingResponse acceptTaskByPartner(String partnerEmail, Long bookingId);
