@@ -29,12 +29,35 @@ export default function BookingFlow() {
   const navigate = useNavigate();
 
   const bookingState = location.state || {};
-  const { 
-    serviceId, serviceName, price, bookingDate, startTime,
-    isVehicle, pickupAddress, pickupCity, pickupPincode, pickupLatitude, pickupLongitude,
-    dropAddress, dropCity, dropPincode, dropLatitude, dropLongitude,
-    packageWeightKg, packageDescription, distanceKm, vehicleType
+  const {
+    serviceId,
+    serviceName,
+    price,
+    bookingDate,
+    startTime,
+    pickupAddress,
+    dropAddress,
+    pickupCity,
+    dropCity,
+    pickupPincode,
+    dropPincode,
+    pickupLatitude,
+    pickupLongitude,
+    dropLatitude,
+    dropLongitude,
+    packageDescription,
+    packageWeightKg,
+    distanceKm,
+    categoryName,
+    isVehicle: rawIsVehicle
   } = bookingState;
+
+  const isVehicle = Boolean(
+    rawIsVehicle && 
+    ((categoryName || '').toLowerCase().includes('logistics') || 
+     (categoryName || '').toLowerCase().includes('transport') || 
+     (categoryName || '').toLowerCase().includes('shifting'))
+  );
 
   const [selectedDate, setSelectedDate] = useState(bookingDate || new Date().toISOString().split('T')[0]);
   const [selectedTime, setSelectedTime] = useState(startTime || '10:00');

@@ -25,7 +25,7 @@ export default function VehicleVariantModal({ isOpen, onClose, umbrellaService }
         duration: selectedOption.duration,
         categoryName: 'Vehicle & Auto Care',
         packageDescription: `Selected Variant: ${selectedOption.name} (${selectedOption.duration}). ${selectedOption.description}`,
-        isVehicle: true
+        isVehicle: false
       }
     });
   };

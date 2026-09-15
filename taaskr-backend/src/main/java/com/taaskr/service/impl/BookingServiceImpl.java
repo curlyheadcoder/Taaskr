@@ -108,10 +108,15 @@ public class BookingServiceImpl implements BookingService {
             throw new BadRequestException("Invalid booking time range");
         }
 
-        boolean isVehicleBooking = (service.getCategory() != null && service.getCategory().getName() != null 
-                && !service.getCategory().getName().toLowerCase().contains("auto care")
-                && (service.getCategory().getName().toLowerCase().contains("logistics") || service.getCategory().getName().toLowerCase().contains("transport") || service.getCategory().getName().toLowerCase().contains("on-demand vehicle")))
-                || (request.getDropCity() != null && request.getDropAddress() != null);
+        String categoryNameLower = (service.getCategory() != null && service.getCategory().getName() != null)
+                ? service.getCategory().getName().toLowerCase()
+                : "";
+        boolean isAutoCareCategory = categoryNameLower.contains("auto care") || categoryNameLower.contains("car care");
+        boolean isLogisticsCategory = categoryNameLower.contains("logistics") || categoryNameLower.contains("transport") || categoryNameLower.contains("on-demand vehicle") || categoryNameLower.contains("shifting");
+
+        boolean isVehicleBooking = !isAutoCareCategory && (
+                isLogisticsCategory || (request.getDropCity() != null && request.getDropAddress() != null)
+        );
 
         BigDecimal calculatedFare = (request.getCustomPrice() != null) ? request.getCustomPrice() : service.getPrice();
         BigDecimal distanceKm = null;
