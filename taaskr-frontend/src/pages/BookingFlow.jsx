@@ -152,6 +152,12 @@ export default function BookingFlow() {
       const istDateFormatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' });
       const todayIST = istDateFormatter.format(new Date());
 
+      if (selectedDate < todayIST) {
+        alert('Booking date cannot be in the past.');
+        setLoading(false);
+        return;
+      }
+
       if (selectedDate === todayIST) {
         const istTimeFormatter = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: false });
         const [currH, currM] = istTimeFormatter.format(new Date()).split(':').map(Number);
@@ -160,11 +166,10 @@ export default function BookingFlow() {
         const [startH, startM] = (selectedTime || '00:00').split(':').map(Number);
         const startMins = (startH || 0) * 60 + (startM || 0);
 
-        if (startMins <= currMins) {
-          const dispatchMins = Math.min(currMins + 5, 23 * 60 + 55);
-          const disH = Math.floor(dispatchMins / 60);
-          const disM = dispatchMins % 60;
-          safeStartTime = `${String(disH).padStart(2, '0')}:${String(disM).padStart(2, '0')}`;
+        if (startMins <= currMins + 2) {
+          alert(`Selected time slot (${selectedTime}) has already passed for today. Please choose an upcoming time window.`);
+          setLoading(false);
+          return;
         }
       }
 

@@ -1621,7 +1621,22 @@ export default function CustomerDashboard({ initialTab }) {
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                       {booking.dropAddress && <Truck size={14} color="var(--primary)" />}
-                      <strong style={{ color: 'var(--text-main)' }}>{booking.serviceName || 'Service'}</strong>
+                      <strong style={{ color: 'var(--text-main)' }}>
+                        {(() => {
+                          if (booking.notes && booking.notes.startsWith('[Quote Request')) {
+                            const colonIdx = booking.notes.indexOf(']: ');
+                            if (colonIdx !== -1) {
+                              let extracted = booking.notes.substring(colonIdx + 3).trim();
+                              const pipeIdx = extracted.indexOf(' | ');
+                              if (pipeIdx !== -1) {
+                                extracted = extracted.substring(0, pipeIdx).trim();
+                              }
+                              if (extracted) return extracted;
+                            }
+                          }
+                          return booking.serviceName || 'Service';
+                        })()}
+                      </strong>
                     </div>
                   </td>
                   <td style={{ color: 'var(--text-main)' }}>{booking.bookingDate || 'N/A'}</td>

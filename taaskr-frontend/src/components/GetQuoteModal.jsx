@@ -24,15 +24,68 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
 
   const availableCategories = (categories && categories.length > 0) ? categories : DEFAULT_CATEGORIES;
 
+  const getTodayIST = () => {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+  };
+
+  const getTomorrowIST = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+  };
+
+  const getAvailableTimeSlots = (dateStr) => {
+    const ALL_TIME_SLOTS = [
+      { value: '09:00', label: '09:00 AM - 11:00 AM' },
+      { value: '10:00', label: '10:00 AM - 12:00 PM' },
+      { value: '12:00', label: '12:00 PM - 02:00 PM' },
+      { value: '14:00', label: '02:00 PM - 04:00 PM' },
+      { value: '16:00', label: '04:00 PM - 06:00 PM' },
+      { value: '18:00', label: '06:00 PM - 08:00 PM' }
+    ];
+
+    if (dateStr !== getTodayIST()) {
+      return ALL_TIME_SLOTS;
+    }
+
+    const timeFormatter = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: false });
+    const [currH, currM] = timeFormatter.format(new Date()).split(':').map(Number);
+    const currentMins = currH * 60 + currM;
+
+    return ALL_TIME_SLOTS.filter(slot => {
+      const [h, m] = slot.value.split(':').map(Number);
+      return (h * 60 + m) > currentMins + 15;
+    });
+  };
+
   const [selectedCatId, setSelectedCatId] = useState(initialCategoryId || availableCategories[0]?.id || 'appliances_electrical');
   const [quoteType, setQuoteType] = useState('CALL'); // 'CALL' (FREE) or 'IN_HOUSE' (₹99)
   const [description, setDescription] = useState('');
-  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [selectedTime, setSelectedTime] = useState('10:00');
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const today = getTodayIST();
+    const available = getAvailableTimeSlots(today);
+    return available.length > 0 ? today : getTomorrowIST();
+  });
+  const [selectedTime, setSelectedTime] = useState(() => {
+    const today = getTodayIST();
+    const available = getAvailableTimeSlots(today);
+    return available.length > 0 ? available[0].value : '10:00';
+  });
   const [city, setCity] = useState('Indore');
   const [pincode, setPincode] = useState('452001');
   const [address, setAddress] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+
+  useEffect(() => {
+    const slots = getAvailableTimeSlots(selectedDate);
+    if (slots.length === 0 && selectedDate === getTodayIST()) {
+      const tomorrow = getTomorrowIST();
+      setSelectedDate(tomorrow);
+      setSelectedTime(getAvailableTimeSlots(tomorrow)[0]?.value || '10:00');
+    } else if (slots.length > 0 && !slots.some(s => s.value === selectedTime)) {
+      setSelectedTime(slots[0].value);
+    }
+  }, [selectedDate]);
 
   useEffect(() => {
     if (initialCategoryId) {
@@ -410,12 +463,11 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
                   colorScheme: 'dark'
                 }}
               >
-                <option value="09:00" style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>09:00 AM - 11:00 AM</option>
-                <option value="10:00" style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>10:00 AM - 12:00 PM</option>
-                <option value="12:00" style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>12:00 PM - 02:00 PM</option>
-                <option value="14:00" style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>02:00 PM - 04:00 PM</option>
-                <option value="16:00" style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>04:00 PM - 06:00 PM</option>
-                <option value="18:00" style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>06:00 PM - 08:00 PM</option>
+                {getAvailableTimeSlots(selectedDate).map(slot => (
+                  <option key={slot.value} value={slot.value} style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>
+                    {slot.label}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

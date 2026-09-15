@@ -494,11 +494,26 @@ public class BookingServiceImpl implements BookingService {
         ProviderProfile provider = booking.getProvider();
         Vehicle vehicle = booking.getVehicle();
 
+        String serviceName = booking.getService().getName();
+        if (booking.getNotes() != null && booking.getNotes().startsWith("[Quote Request")) {
+            int colonIdx = booking.getNotes().indexOf("]: ");
+            if (colonIdx != -1) {
+                String extracted = booking.getNotes().substring(colonIdx + 3).trim();
+                int pipeIdx = extracted.indexOf(" | ");
+                if (pipeIdx != -1) {
+                    extracted = extracted.substring(0, pipeIdx).trim();
+                }
+                if (!extracted.isBlank()) {
+                    serviceName = extracted;
+                }
+            }
+        }
+
         BookingResponse response = new BookingResponse(
                 booking.getId(),
                 booking.getBookingCode(),
                 booking.getService().getId(),
-                booking.getService().getName(),
+                serviceName,
                 booking.getService().getCategory().getId(),
                 booking.getService().getCategory().getName(),
                 booking.getUser().getId(),
