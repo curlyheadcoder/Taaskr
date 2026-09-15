@@ -3153,7 +3153,9 @@ export default function AdminDashboard() {
               (u.email && u.email.toLowerCase().includes(userSearch.toLowerCase())) ||
               (u.phone && u.phone.includes(userSearch)) ||
               (u.city && u.city.toLowerCase().includes(userSearch.toLowerCase()));
-            const matchesRole = userRoleFilter === 'ALL' || u.role === userRoleFilter;
+            const matchesRole = userRoleFilter === 'ALL' || 
+              u.role === userRoleFilter || 
+              (userRoleFilter === 'CUSTOMER' && (u.role === 'USER' || u.role === 'CUSTOMER'));
             return matchesSearch && matchesRole;
           });
 
@@ -3275,7 +3277,7 @@ export default function AdminDashboard() {
                             <td>
                               {isVerified ? (
                                 <span style={{ color: 'var(--success)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                                  <CheckCircle size={14} /> Verified Account
+                                  <CheckCircle2 size={14} /> Verified Account
                                 </span>
                               ) : (
                                 <span style={{ color: 'var(--warning)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
