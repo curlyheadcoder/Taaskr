@@ -9,7 +9,7 @@ import {
   BarChart3, Activity, Layers, Users, Briefcase, Plus, Trash2, 
   Edit2, Check, X, ShieldCheck, RefreshCw, DollarSign, Calendar, 
   MapPin, Truck, AlertCircle, Search, MessageSquare, Send, CheckCircle2, Clock, HelpCircle, FileText,
-  PanelLeftClose, PanelLeftOpen
+  UserCheck, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 
 export default function AdminDashboard() {
