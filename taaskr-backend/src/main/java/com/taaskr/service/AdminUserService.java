@@ -10,4 +10,8 @@ public interface AdminUserService {
     List<AdminUserResponse> getAllUsers();
 
     PageResponse<AdminUserResponse> getAllUsers(Pageable pageable);
+
+    AdminUserResponse verifyUser(Long userId);
+
+    AdminUserResponse toggleUserStatus(Long userId);
 }

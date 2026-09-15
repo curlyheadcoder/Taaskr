@@ -27,6 +27,8 @@ export default function Login() {
         navigate('/admin');
       } else if (res.role === 'PROVIDER') {
         navigate('/provider');
+      } else if (res.role === 'SERVICE_PARTNER') {
+        navigate('/partner');
       } else {
         navigate('/');
       }

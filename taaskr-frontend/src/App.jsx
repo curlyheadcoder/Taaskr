@@ -16,6 +16,7 @@ const BookingFlow = lazy(() => import('./pages/BookingFlow'));
 const CustomerDashboard = lazy(() => import('./pages/CustomerDashboard'));
 const ProviderDashboard = lazy(() => import('./pages/ProviderDashboard'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const PartnerDashboard = lazy(() => import('./pages/PartnerDashboard'));
 
 function RouteLoadingFallback() {
   return (
@@ -92,16 +93,16 @@ class ErrorBoundary extends Component {
 
 function AppContent() {
   const location = useLocation();
-  const isEnterpriseConsole = location.pathname.startsWith('/admin') || location.pathname.startsWith('/provider');
+  const isEnterpriseConsole = location.pathname.startsWith('/admin') || location.pathname.startsWith('/provider') || location.pathname.startsWith('/partner');
 
   useEffect(() => {
     document.body.classList.remove('theme-user', 'theme-provider', 'theme-admin');
     if (location.pathname.startsWith('/admin')) {
       document.body.classList.add('theme-admin');
       document.title = 'Taaskr Operations Console';
-    } else if (location.pathname.startsWith('/provider')) {
+    } else if (location.pathname.startsWith('/provider') || location.pathname.startsWith('/partner')) {
       document.body.classList.add('theme-provider');
-      document.title = 'Taaskr Pro Partner Portal';
+      document.title = location.pathname.startsWith('/partner') ? 'Taaskr Service Partner Console' : 'Taaskr Pro Partner Portal';
     } else {
       document.body.classList.add('theme-user');
       document.title = 'Taaskr — On-Demand Services Marketplace';
@@ -174,6 +175,16 @@ function AppContent() {
                 element={
                   <ProtectedRoute allowedRoles={['PROVIDER']}>
                     <ProviderDashboard />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Protected Service Partner Console */}
+              <Route
+                path="/partner"
+                element={
+                  <ProtectedRoute allowedRoles={['SERVICE_PARTNER', 'PROVIDER']}>
+                    <PartnerDashboard />
                   </ProtectedRoute>
                 }
               />

@@ -332,6 +332,16 @@ export default function ProviderDashboard() {
     }
   };
 
+  const handleVerifyPartner = async (partnerId) => {
+    try {
+      const updated = await api.provider.verifyPartner(partnerId);
+      setServicePartners(prev => prev.map(p => p.id === partnerId ? updated : p));
+      showNotification(`Service Partner account verified and active!`);
+    } catch (err) {
+      showNotification(`Failed to verify partner: ${err.message}`, 'error');
+    }
+  };
+
   const handleAssignPartner = async (bookingId, servicePartnerId) => {
     if (!servicePartnerId) return;
     try {
@@ -2856,13 +2866,22 @@ export default function ProviderDashboard() {
                             </span>
                           </td>
                           <td>
-                            <button
-                              onClick={() => handleTogglePartnerStatus(p.id, p.active)}
-                              className="btn btn-secondary btn-sm"
-                              style={{ fontSize: '0.75rem', padding: '0.25rem 0.55rem' }}
-                            >
-                              {p.active ? 'Deactivate' : 'Activate'}
-                            </button>
+                            <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                              <button
+                                onClick={() => handleVerifyPartner(p.id)}
+                                className="btn btn-sm"
+                                style={{ fontSize: '0.75rem', padding: '0.25rem 0.55rem', background: 'rgba(16, 185, 129, 0.18)', color: '#34D399', border: '1px solid rgba(16, 185, 129, 0.4)' }}
+                              >
+                                Verify Worker
+                              </button>
+                              <button
+                                onClick={() => handleTogglePartnerStatus(p.id, p.active)}
+                                className="btn btn-secondary btn-sm"
+                                style={{ fontSize: '0.75rem', padding: '0.25rem 0.55rem' }}
+                              >
+                                {p.active ? 'Deactivate' : 'Activate'}
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}

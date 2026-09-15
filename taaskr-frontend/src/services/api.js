@@ -441,6 +441,12 @@ export const api = {
       });
     },
 
+    verifyPartner: async (partnerId) => {
+      return makeRequest(`/api/provider/partners/${partnerId}/verify`, {
+        method: 'PUT'
+      });
+    },
+
     assignPartner: async (bookingId, servicePartnerId) => {
       return makeRequest(`/api/provider/bookings/${bookingId}/assign-partner`, {
         method: 'PUT',
@@ -547,6 +553,18 @@ export const api = {
 
     getUsers: async () => {
       return makeRequest('/api/admin/users');
+    },
+
+    verifyUser: async (userId) => {
+      return makeRequest(`/api/admin/users/${userId}/verify`, {
+        method: 'PUT'
+      });
+    },
+
+    toggleUserStatus: async (userId) => {
+      return makeRequest(`/api/admin/users/${userId}/toggle-status`, {
+        method: 'PUT'
+      });
     },
 
     getProviders: async () => {

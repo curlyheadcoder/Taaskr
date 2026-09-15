@@ -559,6 +559,31 @@ export default function Navbar() {
             <span>Admin Console</span>
           </Link>
         </div>
+      ) : user && user.role === 'SERVICE_PARTNER' ? (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+          <Link
+            to="/partner"
+            style={{
+              padding: '0.45rem 1.35rem',
+              borderRadius: '24px',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              color: location.pathname === '/partner' ? '#34D399' : 'var(--text-main)',
+              backgroundColor: location.pathname === '/partner' ? 'rgba(16, 185, 129, 0.16)' : 'var(--bg-subtle)',
+              border: location.pathname === '/partner' ? '1px solid rgba(16, 185, 129, 0.45)' : '1px solid var(--border-light)',
+              textDecoration: 'none',
+              letterSpacing: '0.01em',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              transition: 'all 0.2s ease',
+              boxShadow: location.pathname === '/partner' ? '0 0 14px rgba(16, 185, 129, 0.22)' : 'none'
+            }}
+          >
+            <ShieldCheck size={16} color="#10B981" />
+            <span>Partner Console</span>
+          </Link>
+        </div>
       ) : user && user.role === 'PROVIDER' ? (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
           <button

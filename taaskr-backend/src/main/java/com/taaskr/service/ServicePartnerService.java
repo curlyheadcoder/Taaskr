@@ -15,6 +15,8 @@ public interface ServicePartnerService {
 
     ServicePartnerResponse togglePartnerStatus(String providerEmail, Long partnerId, Boolean active);
 
+    ServicePartnerResponse verifyPartner(String providerEmail, Long partnerId);
+
     BookingResponse assignPartnerToTask(String providerEmail, Long bookingId, Long partnerId);
 
     BookingResponse reassignPartnerToTask(String providerEmail, Long bookingId, Long partnerId);

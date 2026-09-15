@@ -582,6 +582,27 @@ export default function AdminDashboard() {
     }
   };
 
+  const [userSearch, setUserSearch] = useState('');
+  const [userRoleFilter, setUserRoleFilter] = useState('ALL');
+
+  const handleVerifyUser = async (userId) => {
+    try {
+      const updatedUser = await api.admin.verifyUser(userId);
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, ...updatedUser, emailVerified: true, phoneVerified: true } : u));
+    } catch (err) {
+      alert(err.message || 'Failed to verify user');
+    }
+  };
+
+  const handleToggleUserStatus = async (userId) => {
+    try {
+      const updatedUser = await api.admin.toggleUserStatus(userId);
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, ...updatedUser, enabled: !u.enabled } : u));
+    } catch (err) {
+      alert(err.message || 'Failed to toggle user status');
+    }
+  };
+
   const handleApproveProvider = async (providerId) => {
     try {
       await api.admin.approveProvider(providerId);
@@ -3121,6 +3142,201 @@ export default function AdminDashboard() {
             )}
           </div>
         )}
+
+        {/* ---------------------------------------- */}
+        {/* TAB: USERS MANAGEMENT CONSOLE            */}
+        {/* ---------------------------------------- */}
+        {activeTab === 'users' && (() => {
+          const filteredUsers = users.filter(u => {
+            const matchesSearch = !userSearch || 
+              (u.name && u.name.toLowerCase().includes(userSearch.toLowerCase())) ||
+              (u.email && u.email.toLowerCase().includes(userSearch.toLowerCase())) ||
+              (u.phone && u.phone.includes(userSearch)) ||
+              (u.city && u.city.toLowerCase().includes(userSearch.toLowerCase()));
+            const matchesRole = userRoleFilter === 'ALL' || u.role === userRoleFilter;
+            return matchesSearch && matchesRole;
+          });
+
+          const paginatedUsers = filteredUsers.slice((usersPage - 1) * itemsPerPage, usersPage * itemsPerPage);
+
+          return (
+            <div className="panel animate-fade-in" style={{ padding: '1.5rem' }}>
+              {/* Header & Controls */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Users size={22} color="var(--primary)" />
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+                      User Directory & Access Control ({users.length})
+                    </h2>
+                  </div>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', margin: '0.35rem 0 0 0' }}>
+                    Audit registered customers, service providers, field partners, and platform administrators.
+                  </p>
+                </div>
+
+                {/* Search & Filters */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <div style={{ position: 'relative', width: '240px' }}>
+                    <Search size={14} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Search name, email, phone..."
+                      value={userSearch}
+                      onChange={(e) => { setUserSearch(e.target.value); setUsersPage(1); }}
+                      style={{ paddingLeft: '2.25rem', fontSize: '0.8125rem', height: '36px' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '0.35rem' }}>
+                    {['ALL', 'CUSTOMER', 'PROVIDER', 'SERVICE_PARTNER', 'ADMIN'].map(role => (
+                      <button
+                        key={role}
+                        onClick={() => { setUserRoleFilter(role); setUsersPage(1); }}
+                        style={{
+                          fontSize: '0.72rem',
+                          padding: '0.35rem 0.65rem',
+                          borderRadius: '6px',
+                          border: '1px solid',
+                          borderColor: userRoleFilter === role ? 'var(--primary)' : 'var(--border-light)',
+                          background: userRoleFilter === role ? 'var(--primary-subtle)' : 'transparent',
+                          color: userRoleFilter === role ? 'var(--primary)' : 'var(--text-muted)',
+                          fontWeight: 600,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {role === 'CUSTOMER' ? 'CUSTOMERS' : role === 'SERVICE_PARTNER' ? 'PARTNERS' : role}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Users Data Table */}
+              {filteredUsers.length === 0 ? (
+                <div className="empty-state" style={{ padding: '3rem 1rem' }}>
+                  <div className="empty-state-icon">
+                    <Users size={28} />
+                  </div>
+                  <h3 className="empty-state-title">No users matching search criteria</h3>
+                  <p className="empty-state-description">Try adjusting your search query or role filter.</p>
+                </div>
+              ) : (
+                <div style={{ overflowX: 'auto' }}>
+                  <table className="table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.8125rem' }}>
+                    <thead>
+                      <tr>
+                        <th>User ID</th>
+                        <th>User Name & Contact</th>
+                        <th>Role</th>
+                        <th>Location</th>
+                        <th>Verification Status</th>
+                        <th>Account Status</th>
+                        <th style={{ textAlign: 'right' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedUsers.map((u) => {
+                        const isVerified = u.emailVerified && u.phoneVerified;
+                        return (
+                          <tr key={u.id}>
+                            <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--primary)' }}>
+                              #{u.id}
+                            </td>
+                            <td>
+                              <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{u.name || 'User'}</div>
+                              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{u.email}</div>
+                              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{u.phone}</div>
+                            </td>
+                            <td>
+                              <span style={{
+                                padding: '0.2rem 0.6rem',
+                                borderRadius: '12px',
+                                fontSize: '0.7rem',
+                                fontWeight: 700,
+                                background: u.role === 'ADMIN' ? 'rgba(139, 92, 246, 0.18)' :
+                                            u.role === 'PROVIDER' ? 'rgba(245, 158, 11, 0.18)' :
+                                            u.role === 'SERVICE_PARTNER' ? 'rgba(16, 185, 129, 0.18)' :
+                                            'rgba(59, 130, 246, 0.18)',
+                                color: u.role === 'ADMIN' ? '#A78BFA' :
+                                       u.role === 'PROVIDER' ? '#FBBF24' :
+                                       u.role === 'SERVICE_PARTNER' ? '#34D399' :
+                                       '#60A5FA',
+                                border: '1px solid currentColor'
+                              }}>
+                                {u.role || 'CUSTOMER'}
+                              </span>
+                            </td>
+                            <td>
+                              <div style={{ color: 'var(--text-main)' }}>{u.city || 'N/A'}</div>
+                              {u.pincode && <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Pin: {u.pincode}</div>}
+                            </td>
+                            <td>
+                              {isVerified ? (
+                                <span style={{ color: 'var(--success)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                                  <CheckCircle size={14} /> Verified Account
+                                </span>
+                              ) : (
+                                <span style={{ color: 'var(--warning)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                                  <AlertCircle size={14} /> Unverified
+                                </span>
+                              )}
+                            </td>
+                            <td>
+                              <span style={{
+                                padding: '0.15rem 0.5rem',
+                                borderRadius: '10px',
+                                fontSize: '0.7rem',
+                                fontWeight: 600,
+                                background: Boolean(u.enabled) ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                                color: Boolean(u.enabled) ? '#34D399' : '#F87171'
+                              }}>
+                                {Boolean(u.enabled) ? 'Active' : 'Disabled'}
+                              </span>
+                            </td>
+                            <td style={{ textAlign: 'right' }}>
+                              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.4rem' }}>
+                                {!isVerified && (
+                                  <button
+                                    onClick={() => handleVerifyUser(u.id)}
+                                    className="btn btn-sm"
+                                    style={{
+                                      fontSize: '0.72rem',
+                                      padding: '0.25rem 0.55rem',
+                                      background: 'rgba(16, 185, 129, 0.18)',
+                                      color: '#34D399',
+                                      border: '1px solid rgba(16, 185, 129, 0.4)'
+                                    }}
+                                  >
+                                    <ShieldCheck size={12} style={{ marginRight: '3px' }} /> Verify
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => handleToggleUserStatus(u.id)}
+                                  className="btn btn-sm btn-secondary"
+                                  style={{ fontSize: '0.72rem', padding: '0.25rem 0.55rem' }}
+                                >
+                                  {Boolean(u.enabled) ? 'Disable' : 'Enable'}
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                  <Pagination
+                    currentPage={usersPage}
+                    totalItems={filteredUsers.length}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setUsersPage}
+                  />
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </main>
 
       {/* Modal: Process Payout */}

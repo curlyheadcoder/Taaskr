@@ -81,6 +81,8 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
         workerUser.setRole(Role.SERVICE_PARTNER);
         workerUser.setCity(provider.getCity() != null ? provider.getCity() : providerUser.getCity());
         workerUser.setPincode(provider.getPincode() != null ? provider.getPincode() : providerUser.getPincode());
+        workerUser.setEmailVerified(true);
+        workerUser.setPhoneVerified(true);
         workerUser = userRepository.save(workerUser);
 
         ServicePartner partner = new ServicePartner();
@@ -125,6 +127,29 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
                 .orElseThrow(() -> new ResourceNotFoundException("Service partner not found"));
 
         partner.setActive(active != null ? active : !partner.getActive());
+        partner = servicePartnerRepository.save(partner);
+        return mapToPartnerResponse(partner);
+    }
+
+    @Override
+    @Transactional
+    public ServicePartnerResponse verifyPartner(String providerEmail, Long partnerId) {
+        User providerUser = userRepository.findByEmail(providerEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Provider user not found"));
+
+        ProviderProfile provider = providerProfileRepository.findByUserId(providerUser.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Provider profile not found"));
+
+        ServicePartner partner = servicePartnerRepository.findByIdAndProviderId(partnerId, provider.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Service partner not found"));
+
+        User workerUser = partner.getUser();
+        if (workerUser != null) {
+            workerUser.setEmailVerified(true);
+            workerUser.setPhoneVerified(true);
+            userRepository.save(workerUser);
+        }
+        partner.setActive(true);
         partner = servicePartnerRepository.save(partner);
         return mapToPartnerResponse(partner);
     }

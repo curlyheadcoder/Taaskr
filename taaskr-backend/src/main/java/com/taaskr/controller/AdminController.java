@@ -91,6 +91,16 @@ public class AdminController {
         return adminUserService.getAllUsers(pageable);
     }
 
+    @PutMapping("/users/{userId}/verify")
+    public AdminUserResponse verifyUser(@PathVariable Long userId) {
+        return adminUserService.verifyUser(userId);
+    }
+
+    @PutMapping("/users/{userId}/toggle-status")
+    public AdminUserResponse toggleUserStatus(@PathVariable Long userId) {
+        return adminUserService.toggleUserStatus(userId);
+    }
+
     @GetMapping("/providers")
     public List<AdminProviderResponse> getAllProviders(){
         return adminProviderService.getAllProviders();

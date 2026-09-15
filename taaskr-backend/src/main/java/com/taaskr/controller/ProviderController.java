@@ -189,6 +189,12 @@ public class ProviderController {
         return servicePartnerService.togglePartnerStatus(authentication.getName(), partnerId, active);
     }
 
+    @PutMapping("/partners/{partnerId}/verify")
+    public ServicePartnerResponse verifyPartner(@PathVariable Long partnerId,
+                                                Authentication authentication) {
+        return servicePartnerService.verifyPartner(authentication.getName(), partnerId);
+    }
+
     @PutMapping("/bookings/{bookingId}/assign-partner")
     public BookingResponse assignPartner(@PathVariable Long bookingId,
                                          @Valid @RequestBody AssignPartnerRequest request,

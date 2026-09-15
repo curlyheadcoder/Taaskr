@@ -31,6 +31,25 @@ public class AdminUserServiceImpl implements AdminUserService {
         return com.taaskr.dto.common.PageResponse.of(page, this::mapToResponse);
     }
 
+    @Override
+    public AdminUserResponse verifyUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new com.taaskr.exception.ResourceNotFoundException("User not found with id: " + userId));
+        user.setEmailVerified(true);
+        user.setPhoneVerified(true);
+        User saved = userRepository.save(user);
+        return mapToResponse(saved);
+    }
+
+    @Override
+    public AdminUserResponse toggleUserStatus(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new com.taaskr.exception.ResourceNotFoundException("User not found with id: " + userId));
+        user.setEnabled(!Boolean.TRUE.equals(user.getEnabled()));
+        User saved = userRepository.save(user);
+        return mapToResponse(saved);
+    }
+
     private AdminUserResponse mapToResponse(User user) {
         return new AdminUserResponse(
                 user.getId(),
