@@ -59,8 +59,45 @@ export default function BookingFlow() {
      (categoryName || '').toLowerCase().includes('shifting'))
   );
 
-  const [selectedDate, setSelectedDate] = useState(bookingDate || new Date().toISOString().split('T')[0]);
-  const [selectedTime, setSelectedTime] = useState(startTime || '10:00');
+  const getTodayIST = () => {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+  };
+
+  const getCurrentTimeIST = () => {
+    const formatter = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: false });
+    return formatter.format(new Date());
+  };
+
+  const isTimeInPastForToday = (dateStr, timeStr) => {
+    const today = getTodayIST();
+    if (dateStr < today) return true;
+    if (dateStr > today) return false;
+    if (!timeStr) return false;
+
+    const [currH, currM] = getCurrentTimeIST().split(':').map(Number);
+    const currMins = currH * 60 + currM;
+
+    const [startH, startM] = timeStr.split(':').map(Number);
+    const startMins = (startH || 0) * 60 + (startM || 0);
+
+    return startMins <= currMins + 2;
+  };
+
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const initialDate = bookingDate || getTodayIST();
+    return initialDate < getTodayIST() ? getTodayIST() : initialDate;
+  });
+
+  const [selectedTime, setSelectedTime] = useState(() => {
+    const initialDate = bookingDate || getTodayIST();
+    const initialTime = startTime || '10:00';
+    if (initialDate === getTodayIST() && isTimeInPastForToday(initialDate, initialTime)) {
+      return getCurrentTimeIST();
+    }
+    return initialTime;
+  });
+
+  const [modalAlert, setModalAlert] = useState(null);
   const [address, setAddress] = useState(pickupAddress || '');
   const [city, setCity] = useState(pickupCity || 'Indore');
   const [pincode, setPincode] = useState(pickupPincode || '452001');
@@ -81,6 +118,40 @@ export default function BookingFlow() {
   const [selectedProviderId, setSelectedProviderId] = useState(null);
   const [isFetchingProviders, setIsFetchingProviders] = useState(false);
   const [quoteServiceId, setQuoteServiceId] = useState(serviceId || null);
+
+  const handleDateChange = (newDate) => {
+    const today = getTodayIST();
+    if (newDate < today) {
+      setSelectedDate(today);
+      setModalAlert({
+        title: 'Past Date Not Allowed',
+        message: 'Booking date cannot be in the past. Date has been set to today.'
+      });
+      return;
+    }
+    setSelectedDate(newDate);
+    if (newDate === today && isTimeInPastForToday(newDate, selectedTime)) {
+      const currentTime = getCurrentTimeIST();
+      setSelectedTime(currentTime);
+      setModalAlert({
+        title: 'Past Time Not Allowed',
+        message: `The selected time slot (${formatLocalTime(selectedTime)}) has already passed for today. Time has been updated to current time (${formatLocalTime(currentTime)}).`
+      });
+    }
+  };
+
+  const handleTimeChange = (newTime) => {
+    if (selectedDate === getTodayIST() && isTimeInPastForToday(selectedDate, newTime)) {
+      const currentTime = getCurrentTimeIST();
+      setSelectedTime(currentTime);
+      setModalAlert({
+        title: 'Past Time Not Allowed',
+        message: `Selected time (${formatLocalTime(newTime)}) has already passed for today. Please choose an upcoming time window.`
+      });
+      return;
+    }
+    setSelectedTime(newTime);
+  };
 
   useEffect(() => {
     if (!serviceId) {
@@ -153,18 +224,27 @@ export default function BookingFlow() {
     const activeServiceId = serviceId || quoteServiceId || 1;
 
     if (!activeServiceId && !serviceName && !bookingState.isQuoteBooking) {
-      alert('Invalid session. Please start booking from the service page.');
-      navigate('/');
+      setModalAlert({
+        title: 'Invalid Session',
+        message: 'Please start booking from the service page.',
+        navigateOnClose: '/'
+      });
       return;
     }
 
     if (currentUser && (!currentUser.emailVerified || !currentUser.phoneVerified)) {
-      alert('Your email and mobile phone number must both be verified before booking a service. Please verify them first.');
+      setModalAlert({
+        title: 'Verification Required',
+        message: 'Your email address and mobile phone number must both be verified before booking a service. Please verify them first.'
+      });
       return;
     }
 
     if (!address || !city || !pincode) {
-      alert('Please fill in all address fields');
+      setModalAlert({
+        title: 'Missing Address',
+        message: 'Please fill in all address fields.'
+      });
       return;
     }
 
@@ -172,28 +252,24 @@ export default function BookingFlow() {
     try {
       // Ensure selectedTime is not in the past if booking for today
       let safeStartTime = selectedTime;
-      const istDateFormatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' });
-      const todayIST = istDateFormatter.format(new Date());
+      const todayIST = getTodayIST();
 
       if (selectedDate < todayIST) {
-        alert('Booking date cannot be in the past.');
+        setModalAlert({
+          title: 'Invalid Date',
+          message: 'Booking date cannot be in the past.'
+        });
         setLoading(false);
         return;
       }
 
-      if (selectedDate === todayIST) {
-        const istTimeFormatter = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: false });
-        const [currH, currM] = istTimeFormatter.format(new Date()).split(':').map(Number);
-        const currMins = currH * 60 + currM;
-
-        const [startH, startM] = (selectedTime || '00:00').split(':').map(Number);
-        const startMins = (startH || 0) * 60 + (startM || 0);
-
-        if (startMins <= currMins + 2) {
-          alert(`Selected time slot (${selectedTime}) has already passed for today. Please choose an upcoming time window.`);
-          setLoading(false);
-          return;
-        }
+      if (selectedDate === todayIST && isTimeInPastForToday(selectedDate, selectedTime)) {
+        setModalAlert({
+          title: 'Past Time Not Allowed',
+          message: `Selected time slot (${formatLocalTime(selectedTime)}) has already passed for today. Please choose an upcoming time window.`
+        });
+        setLoading(false);
+        return;
       }
 
       const payload = {
@@ -277,8 +353,11 @@ export default function BookingFlow() {
             setNewBooking(updatedBooking);
             setCompleted(true);
           } catch (err) {
-            alert(`Payment verification failed: ${err.message}`);
-            navigate('/bookings');
+            setModalAlert({
+              title: 'Payment Verification Failed',
+              message: err.message,
+              navigateOnClose: '/bookings'
+            });
           } finally {
             setLoading(false);
           }
@@ -286,22 +365,31 @@ export default function BookingFlow() {
         modal: {
           ondismiss: function () {
             setLoading(false);
-            alert('Payment window closed. You can complete the payment anytime from your Bookings dashboard.');
-            navigate('/bookings');
+            setModalAlert({
+              title: 'Payment Cancelled',
+              message: 'Payment window closed. You can complete the payment anytime from your Bookings dashboard.',
+              navigateOnClose: '/bookings'
+            });
           }
         }
       };
 
       const rzp = new window.Razorpay(options);
       rzp.on('payment.failed', function (response) {
-        alert(`Payment failed: ${response.error.description}`);
+        setModalAlert({
+          title: 'Payment Failed',
+          message: response.error?.description || 'Payment was unsuccessful.',
+          navigateOnClose: '/bookings'
+        });
         setLoading(false);
-        navigate('/bookings');
       });
       rzp.open();
 
     } catch (err) {
-      alert(err.message || 'Failed to complete booking. Please try again.');
+      setModalAlert({
+        title: 'Booking Failed',
+        message: err.message || 'Failed to complete booking. Please try again.'
+      });
       setLoading(false);
     }
   };
@@ -567,8 +655,8 @@ export default function BookingFlow() {
                 type="date"
                 className="form-control"
                 value={selectedDate}
-                min={new Date().toISOString().split('T')[0]}
-                onChange={(e) => setSelectedDate(e.target.value)}
+                min={getTodayIST()}
+                onChange={(e) => handleDateChange(e.target.value)}
                 disabled={loading}
                 required
               />
@@ -582,7 +670,8 @@ export default function BookingFlow() {
                 type="time"
                 className="form-control"
                 value={selectedTime}
-                onChange={(e) => setSelectedTime(e.target.value)}
+                min={selectedDate === getTodayIST() ? getCurrentTimeIST() : undefined}
+                onChange={(e) => handleTimeChange(e.target.value)}
                 disabled={loading}
                 required
               />
@@ -830,6 +919,95 @@ export default function BookingFlow() {
           </div>
         </div>
       </div>
+
+      {/* Custom Alert Modal (Replaces Native Browser Alerts) */}
+      {modalAlert && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.75)',
+            backdropFilter: 'blur(6px)',
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+            animation: 'fadeIn 0.2s ease'
+          }}
+          onClick={() => {
+            const navTarget = modalAlert.navigateOnClose;
+            setModalAlert(null);
+            if (navTarget) navigate(navTarget);
+          }}
+        >
+          <div 
+            style={{
+              width: '100%',
+              maxWidth: '420px',
+              backgroundColor: 'var(--bg-card, #1A1C26)',
+              color: 'var(--text-main, #F4F4F5)',
+              borderRadius: '20px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border-light, #2A2D3C)',
+              padding: '1.5rem',
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '1rem',
+              animation: 'scaleUp 0.2s ease'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div 
+              style={{
+                width: '52px',
+                height: '52px',
+                borderRadius: '16px',
+                backgroundColor: modalAlert.type === 'error' ? 'var(--error-bg, rgba(239, 68, 68, 0.15))' : 'var(--warning-bg, rgba(245, 158, 11, 0.15))',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: modalAlert.type === 'error' ? 'var(--error, #EF4444)' : 'var(--warning, #F59E0B)',
+                border: modalAlert.type === 'error' ? '1px solid var(--error-border, rgba(239, 68, 68, 0.3))' : '1px solid var(--warning-border, rgba(245, 158, 11, 0.3))'
+              }}
+            >
+              <AlertCircle size={28} />
+            </div>
+
+            <div>
+              <h3 style={{ margin: '0 0 0.45rem 0', fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                {modalAlert.title || 'Attention'}
+              </h3>
+              <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-muted, #A1A1AA)', lineHeight: 1.5 }}>
+                {modalAlert.message}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => {
+                const navTarget = modalAlert.navigateOnClose;
+                setModalAlert(null);
+                if (navTarget) navigate(navTarget);
+              }}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                borderRadius: '12px',
+                fontWeight: 700,
+                marginTop: '0.5rem'
+              }}
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
