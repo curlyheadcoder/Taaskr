@@ -44,6 +44,11 @@ public class AdminBookingServiceImpl implements AdminBookingService {
     public AdminBookingResponse assignProviderToBooking(Long bookingId, Long providerId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new com.taaskr.exception.ResourceNotFoundException("Booking not found"));
+
+        if (booking.getStatus() == com.taaskr.enums.BookingStatus.COMPLETED || booking.getStatus() == com.taaskr.enums.BookingStatus.CANCELLED) {
+            throw new com.taaskr.exception.BadRequestException("Cannot reassign provider for a " + booking.getStatus().name().toLowerCase() + " booking");
+        }
+
         ProviderProfile provider = providerProfileRepository.findById(providerId)
                 .orElseThrow(() -> new com.taaskr.exception.ResourceNotFoundException("Provider not found"));
 

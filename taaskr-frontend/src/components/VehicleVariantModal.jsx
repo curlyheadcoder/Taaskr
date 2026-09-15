@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Clock, CheckCircle2, ChevronRight, AlertCircle, Sparkles, ShieldCheck, Tag } from 'lucide-react';
+import { X, Clock, CheckCircle2, ChevronRight, AlertCircle, ShieldCheck, Tag, Wrench } from 'lucide-react';
 
 export default function VehicleVariantModal({ isOpen, onClose, umbrellaService }) {
   const navigate = useNavigate();
@@ -57,7 +57,7 @@ export default function VehicleVariantModal({ isOpen, onClose, umbrellaService }
           backgroundColor: 'var(--bg-card, #ffffff)',
           color: 'var(--text-main, #0f172a)',
           borderRadius: '24px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--border-light, rgba(226, 232, 240, 0.8))',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--border-light, #2A2D3C)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -69,12 +69,12 @@ export default function VehicleVariantModal({ isOpen, onClose, umbrellaService }
         <div
           style={{
             padding: '1.25rem 1.5rem',
-            background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-            color: '#ffffff',
+            backgroundColor: 'var(--bg-header, #161822)',
+            color: 'var(--text-main, #ffffff)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+            borderBottom: '1px solid var(--border-light, #2A2D3C)'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -83,26 +83,26 @@ export default function VehicleVariantModal({ isOpen, onClose, umbrellaService }
                 width: '44px',
                 height: '44px',
                 borderRadius: '14px',
-                background: 'rgba(255, 255, 255, 0.2)',
-                backdropFilter: 'blur(4px)',
+                backgroundColor: 'var(--primary-subtle, rgba(245, 158, 11, 0.16))',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#ffffff',
+                color: 'var(--primary, #f59e0b)',
                 fontWeight: 800
               }}
             >
-              <Sparkles size={22} />
+              <Wrench size={22} />
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#ffffff' }}>
+                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-main)' }}>
                   {umbrellaService.name}
                 </h3>
                 <span
                   style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                    color: '#ffffff',
+                    backgroundColor: 'var(--primary-subtle, rgba(245, 158, 11, 0.16))',
+                    color: 'var(--primary, #f59e0b)',
+                    border: '1px solid var(--border-light, rgba(245, 158, 11, 0.3))',
                     fontSize: '0.72rem',
                     fontWeight: 700,
                     padding: '0.15rem 0.55rem',
@@ -112,7 +112,7 @@ export default function VehicleVariantModal({ isOpen, onClose, umbrellaService }
                   {options.length} Options Available
                 </span>
               </div>
-              <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.8125rem', color: '#e0f2fe' }}>
+              <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.8125rem', color: 'var(--text-muted, #a1a1aa)' }}>
                 Select a service package below to view exact price & duration
               </p>
             </div>
@@ -121,15 +121,15 @@ export default function VehicleVariantModal({ isOpen, onClose, umbrellaService }
             type="button"
             onClick={onClose}
             style={{
-              background: 'rgba(255, 255, 255, 0.15)',
-              border: 'none',
+              background: 'var(--bg-subtle, rgba(255, 255, 255, 0.1))',
+              border: '1px solid var(--border-light, rgba(255, 255, 255, 0.15))',
               borderRadius: '50%',
               width: '32px',
               height: '32px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#ffffff',
+              color: 'var(--text-main, #ffffff)',
               cursor: 'pointer',
               transition: 'all 0.2s ease'
             }}
@@ -139,14 +139,14 @@ export default function VehicleVariantModal({ isOpen, onClose, umbrellaService }
         </div>
 
         {/* Sub-header info */}
-        <div style={{ padding: '0.85rem 1.5rem', backgroundColor: 'rgba(2, 132, 199, 0.06)', borderBottom: '1px solid var(--border-light, #e2e8f0)' }}>
-          <p style={{ margin: 0, fontSize: '0.825rem', color: 'var(--text-muted, #475569)', lineHeight: 1.45 }}>
+        <div style={{ padding: '0.85rem 1.5rem', backgroundColor: 'var(--bg-subtle, #161822)', borderBottom: '1px solid var(--border-light, #2A2D3C)' }}>
+          <p style={{ margin: 0, fontSize: '0.825rem', color: 'var(--text-muted, #a1a1aa)', lineHeight: 1.45 }}>
             {umbrellaService.description}
           </p>
         </div>
 
         {/* Options List */}
-        <div style={{ padding: '1.25rem 1.5rem', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+        <div style={{ padding: '1.25rem 1.5rem', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.85rem', backgroundColor: 'var(--bg-card, #1A1C26)' }}>
           {options.map((opt) => {
             const isSelected = selectedOptionId === opt.id || (selectedOptionId === '' && options[0].id === opt.id);
             return (
@@ -156,15 +156,15 @@ export default function VehicleVariantModal({ isOpen, onClose, umbrellaService }
                 style={{
                   padding: '1rem 1.15rem',
                   borderRadius: '16px',
-                  border: isSelected ? '2px solid #0284c7' : '1px solid var(--border-light, #cbd5e1)',
-                  backgroundColor: isSelected ? 'rgba(2, 132, 199, 0.05)' : 'var(--bg-input, #ffffff)',
+                  border: isSelected ? '2px solid var(--primary, #f59e0b)' : '1px solid var(--border-light, #2A2D3C)',
+                  backgroundColor: isSelected ? 'var(--primary-subtle, rgba(245, 158, 11, 0.12))' : 'var(--bg-card, #1A1C26)',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                   position: 'relative',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '0.4rem',
-                  boxShadow: isSelected ? '0 4px 16px rgba(2, 132, 199, 0.12)' : 'none'
+                  boxShadow: isSelected ? '0 4px 16px var(--primary-subtle, rgba(245, 158, 11, 0.15))' : 'none'
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -174,36 +174,36 @@ export default function VehicleVariantModal({ isOpen, onClose, umbrellaService }
                         width: '20px',
                         height: '20px',
                         borderRadius: '50%',
-                        border: isSelected ? '6px solid #0284c7' : '2px solid #cbd5e1',
-                        backgroundColor: '#ffffff',
+                        border: isSelected ? '6px solid var(--primary, #f59e0b)' : '2px solid var(--border-light, #71717a)',
+                        backgroundColor: 'var(--bg-card, #1A1C26)',
                         boxSizing: 'border-box'
                       }}
                     />
-                    <span style={{ fontSize: '0.975rem', fontWeight: 800, color: 'var(--text-main, #0f172a)' }}>
+                    <span style={{ fontSize: '0.975rem', fontWeight: 800, color: 'var(--text-main, #f4f4f5)' }}>
                       {opt.name}
                     </span>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', color: '#64748b', backgroundColor: 'var(--bg-subtle, #f1f5f9)', padding: '0.2rem 0.6rem', borderRadius: '12px' }}>
-                      <Clock size={13} color="#0284c7" />
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', color: 'var(--text-muted, #a1a1aa)', backgroundColor: 'var(--bg-subtle, #161822)', padding: '0.2rem 0.6rem', borderRadius: '12px' }}>
+                      <Clock size={13} color="var(--primary, #f59e0b)" />
                       <span>{opt.duration}</span>
                     </div>
 
                     <div style={{ textAlign: 'right' }}>
-                      <span style={{ fontSize: '1.1rem', fontWeight: 900, color: '#0284c7' }}>
+                      <span style={{ fontSize: '1.1rem', fontWeight: 900, color: isSelected ? 'var(--primary, #f59e0b)' : 'var(--text-main, #f4f4f5)' }}>
                         {opt.isStartingFrom ? `From ₹${opt.price}` : `₹${opt.price}`}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <p style={{ margin: '0.2rem 0 0 1.75rem', fontSize: '0.825rem', color: 'var(--text-muted, #475569)', lineHeight: 1.4 }}>
+                <p style={{ margin: '0.2rem 0 0 1.75rem', fontSize: '0.825rem', color: 'var(--text-muted, #a1a1aa)', lineHeight: 1.4 }}>
                   {opt.description}
                 </p>
 
                 {opt.note && (
-                  <div style={{ margin: '0.25rem 0 0 1.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: '#d97706', backgroundColor: 'rgba(245, 158, 11, 0.08)', padding: '0.25rem 0.6rem', borderRadius: '8px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                  <div style={{ margin: '0.25rem 0 0 1.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: 'var(--warning, #f59e0b)', backgroundColor: 'var(--warning-bg, rgba(245, 158, 11, 0.12))', padding: '0.25rem 0.6rem', borderRadius: '8px', border: '1px solid var(--warning-border, rgba(245, 158, 11, 0.3))' }}>
                     <AlertCircle size={13} />
                     <span>{opt.note}</span>
                   </div>
@@ -214,12 +214,12 @@ export default function VehicleVariantModal({ isOpen, onClose, umbrellaService }
         </div>
 
         {/* Footer Actions */}
-        <div style={{ padding: '1.15rem 1.5rem', borderTop: '1px solid var(--border-light, #e2e8f0)', backgroundColor: 'var(--bg-card, #ffffff)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+        <div style={{ padding: '1.15rem 1.5rem', borderTop: '1px solid var(--border-light, #2A2D3C)', backgroundColor: 'var(--bg-card, #1A1C26)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
           <div>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)', display: 'block' }}>Selected Package Price</span>
-            <div style={{ fontSize: '1.35rem', fontWeight: 900, color: '#0284c7' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted, #a1a1aa)', display: 'block' }}>Selected Package Price</span>
+            <div style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--primary, #f59e0b)' }}>
               {selectedOption?.isStartingFrom ? `From ₹${selectedOption?.price}` : `₹${selectedOption?.price}`}
-              <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', marginLeft: '0.4rem' }}>
+              <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted, #a1a1aa)', marginLeft: '0.4rem' }}>
                 ({selectedOption?.duration})
               </span>
             </div>
@@ -232,15 +232,15 @@ export default function VehicleVariantModal({ isOpen, onClose, umbrellaService }
               padding: '0.85rem 1.6rem',
               borderRadius: '14px',
               border: 'none',
-              background: 'linear-gradient(135deg, #0284c7 0%, #2563eb 100%)',
-              color: '#ffffff',
+              backgroundColor: 'var(--primary, #f59e0b)',
+              color: 'var(--text-inverse, #ffffff)',
               fontSize: '0.925rem',
               fontWeight: 800,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: '0.5rem',
-              boxShadow: '0 8px 20px rgba(2, 132, 199, 0.35)',
+              boxShadow: '0 8px 20px var(--primary-subtle, rgba(245, 158, 11, 0.35))',
               transition: 'all 0.2s ease'
             }}
           >

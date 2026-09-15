@@ -1560,31 +1560,35 @@ export default function AdminDashboard() {
                             </span>
                           </td>
                           <td>
-                            <select
-                              value={b.providerId || ''}
-                              onChange={(e) => handleAssignProvider(b.id, e.target.value)}
-                              style={{
-                                padding: '0.35rem 0.6rem',
-                                borderRadius: '8px',
-                                border: '1px solid var(--border-light, #334155)',
-                                backgroundColor: '#1e293b',
-                                color: '#ffffff',
-                                fontSize: '0.78rem',
-                                fontWeight: 600,
-                                outline: 'none',
-                                cursor: 'pointer',
-                                colorScheme: 'dark'
-                              }}
-                            >
-                              <option value="" disabled style={{ backgroundColor: '#1e293b', color: '#94a3b8' }}>
-                                {b.providerName ? `Re-assign (${b.providerName})` : 'Select Provider…'}
-                              </option>
-                              {(providers || []).map(p => (
-                                <option key={p.id} value={p.id} style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>
-                                  {p.name || p.userName} ({p.categoryName || 'Provider'})
+                            {b.providerId || b.providerName || b.status !== 'PENDING' ? (
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem', fontStyle: 'italic' }}>—</span>
+                            ) : (
+                              <select
+                                value={b.providerId || ''}
+                                onChange={(e) => handleAssignProvider(b.id, e.target.value)}
+                                style={{
+                                  padding: '0.35rem 0.6rem',
+                                  borderRadius: '8px',
+                                  border: '1px solid var(--border-light, #334155)',
+                                  backgroundColor: '#1e293b',
+                                  color: '#ffffff',
+                                  fontSize: '0.78rem',
+                                  fontWeight: 600,
+                                  outline: 'none',
+                                  cursor: 'pointer',
+                                  colorScheme: 'dark'
+                                }}
+                              >
+                                <option value="" disabled style={{ backgroundColor: '#1e293b', color: '#94a3b8' }}>
+                                  Select Provider…
                                 </option>
-                              ))}
-                            </select>
+                                {(providers || []).map(p => (
+                                  <option key={p.id} value={p.id} style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>
+                                    {p.name || p.userName} ({p.categoryName || 'Provider'})
+                                  </option>
+                                ))}
+                              </select>
+                            )}
                           </td>
                         </tr>
                       ))}

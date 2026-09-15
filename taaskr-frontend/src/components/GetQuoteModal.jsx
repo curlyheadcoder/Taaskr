@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   X, PhoneCall, Home, ShieldCheck, Clock, Calendar, MapPin, 
-  ChevronRight, Sparkles, CheckCircle2, AlertCircle, Tag, UserCheck
+  ChevronRight, FileText, CheckCircle2, AlertCircle, Tag, UserCheck
 } from 'lucide-react';
 
 export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, categories = [] }) {
@@ -158,7 +158,7 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.85)',
+        backgroundColor: 'rgba(15, 23, 42, 0.75)',
         backdropFilter: 'blur(8px)',
         zIndex: 9999,
         display: 'flex',
@@ -174,10 +174,10 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
           width: '100%',
           maxWidth: '560px',
           maxHeight: '92vh',
-          backgroundColor: '#0f172a',
-          color: '#f8fafc',
+          backgroundColor: 'var(--bg-card, #1A1C26)',
+          color: 'var(--text-main, #f4f4f5)',
           borderRadius: '20px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.15)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--border-light, #2A2D3C)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -189,12 +189,12 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
         <div 
           style={{
             padding: '1.25rem 1.5rem',
-            background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-            color: '#ffffff',
+            backgroundColor: 'var(--bg-header, #161822)',
+            color: 'var(--text-main, #ffffff)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.12)'
+            borderBottom: '1px solid var(--border-light, #2A2D3C)'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -203,24 +203,25 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
                 width: '40px',
                 height: '40px',
                 borderRadius: '12px',
-                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                backgroundColor: 'var(--primary-subtle, rgba(245, 158, 11, 0.16))',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 4px 14px rgba(245, 158, 11, 0.4)'
+                color: 'var(--primary, #f59e0b)'
               }}
             >
-              <Sparkles size={20} color="#ffffff" />
+              <FileText size={20} color="var(--primary, #f59e0b)" />
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#ffffff' }}>
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-main, #ffffff)' }}>
                   Get Custom Quote & Inspection
                 </h3>
                 <span 
                   style={{
-                    backgroundColor: '#10b981',
-                    color: '#ffffff',
+                    backgroundColor: 'var(--success-bg, rgba(16, 185, 129, 0.15))',
+                    color: 'var(--success, #10b981)',
+                    border: '1px solid var(--success-border, rgba(16, 185, 129, 0.3))',
                     fontSize: '0.72rem',
                     fontWeight: 800,
                     padding: '0.15rem 0.55rem',
@@ -232,7 +233,7 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
                   FREE / ₹99
                 </span>
               </div>
-              <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.825rem', color: '#cbd5e1', fontWeight: 500 }}>
+              <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.825rem', color: 'var(--text-muted, #a1a1aa)', fontWeight: 500 }}>
                 Expert guidance, diagnosis & upfront written quotation
               </p>
             </div>
@@ -241,15 +242,15 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
             type="button"
             onClick={onClose}
             style={{
-              background: 'rgba(255, 255, 255, 0.12)',
-              border: 'none',
+              background: 'var(--bg-subtle, rgba(255, 255, 255, 0.1))',
+              border: '1px solid var(--border-light, rgba(255, 255, 255, 0.15))',
               borderRadius: '50%',
               width: '32px',
               height: '32px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#ffffff',
+              color: 'var(--text-main, #ffffff)',
               cursor: 'pointer',
               transition: 'all 0.2s ease'
             }}
@@ -259,13 +260,13 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
         </div>
 
         {/* Body Form */}
-        <form onSubmit={handleProceed} style={{ padding: '1.25rem 1.5rem', overflowY: 'auto', flex: 1, backgroundColor: '#0f172a' }}>
+        <form onSubmit={handleProceed} style={{ padding: '1.25rem 1.5rem', overflowY: 'auto', flex: 1, backgroundColor: 'var(--bg-card, #1A1C26)' }}>
           {errorMsg && (
             <div 
               style={{
-                backgroundColor: 'rgba(239, 68, 68, 0.2)',
-                border: '1px solid rgba(239, 68, 68, 0.5)',
-                color: '#fca5a5',
+                backgroundColor: 'var(--error-bg, rgba(239, 68, 68, 0.15))',
+                border: '1px solid var(--error-border, rgba(239, 68, 68, 0.35))',
+                color: 'var(--error, #ef4444)',
                 padding: '0.75rem 1rem',
                 borderRadius: '12px',
                 fontSize: '0.85rem',
@@ -276,14 +277,14 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
                 gap: '0.5rem'
               }}
             >
-              <AlertCircle size={16} color="#fca5a5" />
+              <AlertCircle size={16} color="var(--error, #ef4444)" />
               <span>{errorMsg}</span>
             </div>
           )}
 
           {/* 1. Category Selection */}
           <div style={{ marginBottom: '1.25rem' }}>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 700, color: '#f8fafc', marginBottom: '0.45rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-main, #f8fafc)', marginBottom: '0.45rem' }}>
               1. Select Service Category *
             </label>
             <select
@@ -296,17 +297,16 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
                 width: '100%',
                 padding: '0.75rem 0.9rem',
                 borderRadius: '12px',
-                border: '1px solid #475569',
-                backgroundColor: '#1e293b',
-                color: '#ffffff',
+                border: '1px solid var(--border-light, #2A2D3C)',
+                backgroundColor: 'var(--bg-subtle, #161822)',
+                color: 'var(--text-main, #ffffff)',
                 fontSize: '0.9rem',
                 fontWeight: 600,
-                outline: 'none',
-                colorScheme: 'dark'
+                outline: 'none'
               }}
             >
               {availableCategories.map((cat) => (
-                <option key={cat.id} value={cat.id} style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>
+                <option key={cat.id} value={cat.id} style={{ backgroundColor: 'var(--bg-card, #1A1C26)', color: 'var(--text-main, #ffffff)' }}>
                   {cat.name}
                 </option>
               ))}
@@ -315,7 +315,7 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
 
           {/* 2. Choose Consultation Type */}
           <div style={{ marginBottom: '1.25rem' }}>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 700, color: '#f8fafc', marginBottom: '0.55rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-main, #f8fafc)', marginBottom: '0.55rem' }}>
               2. Select Consultation Option *
             </label>
 
@@ -324,8 +324,8 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
               <div
                 onClick={() => setQuoteType('CALL')}
                 style={{
-                  border: quoteType === 'CALL' ? '2px solid #10b981' : '1px solid #475569',
-                  backgroundColor: quoteType === 'CALL' ? 'rgba(16, 185, 129, 0.18)' : '#1e293b',
+                  border: quoteType === 'CALL' ? '2px solid var(--success, #10b981)' : '1px solid var(--border-light, #2A2D3C)',
+                  backgroundColor: quoteType === 'CALL' ? 'var(--success-bg, rgba(16, 185, 129, 0.15))' : 'var(--bg-subtle, #161822)',
                   borderRadius: '14px',
                   padding: '0.85rem',
                   cursor: 'pointer',
@@ -334,7 +334,7 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#34d399', fontWeight: 800, fontSize: '0.9rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--success, #10b981)', fontWeight: 800, fontSize: '0.9rem' }}>
                     <PhoneCall size={18} />
                     <span>On-Call Advice</span>
                   </div>
@@ -343,7 +343,7 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
                       fontSize: '0.78rem', 
                       fontWeight: 900, 
                       color: '#ffffff', 
-                      backgroundColor: '#10b981', 
+                      backgroundColor: 'var(--success, #10b981)', 
                       padding: '0.15rem 0.5rem', 
                       borderRadius: '8px',
                       letterSpacing: '0.03em'
@@ -352,11 +352,11 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
                     FREE
                   </span>
                 </div>
-                <p style={{ margin: 0, fontSize: '0.78rem', color: '#e2e8f0', lineHeight: 1.45, fontWeight: 500 }}>
+                <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted, #a1a1aa)', lineHeight: 1.45, fontWeight: 500 }}>
                   Speak directly with an expert technician over phone for free advice & estimates.
                 </p>
                 {quoteType === 'CALL' && (
-                  <div style={{ position: 'absolute', top: '8px', right: '8px', color: '#34d399' }}>
+                  <div style={{ position: 'absolute', top: '8px', right: '8px', color: 'var(--success, #10b981)' }}>
                     <CheckCircle2 size={16} />
                   </div>
                 )}
@@ -366,8 +366,8 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
               <div
                 onClick={() => setQuoteType('IN_HOUSE')}
                 style={{
-                  border: quoteType === 'IN_HOUSE' ? '2px solid #38bdf8' : '1px solid #475569',
-                  backgroundColor: quoteType === 'IN_HOUSE' ? 'rgba(56, 189, 248, 0.18)' : '#1e293b',
+                  border: quoteType === 'IN_HOUSE' ? '2px solid var(--primary, #f59e0b)' : '1px solid var(--border-light, #2A2D3C)',
+                  backgroundColor: quoteType === 'IN_HOUSE' ? 'var(--primary-subtle, rgba(245, 158, 11, 0.15))' : 'var(--bg-subtle, #161822)',
                   borderRadius: '14px',
                   padding: '0.85rem',
                   cursor: 'pointer',
@@ -376,17 +376,17 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#38bdf8', fontWeight: 800, fontSize: '0.9rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--primary, #f59e0b)', fontWeight: 800, fontSize: '0.9rem' }}>
                     <Home size={18} />
                     <span>In-House Visit</span>
                   </div>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#38bdf8' }}>₹99</span>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--primary, #f59e0b)' }}>₹99</span>
                 </div>
-                <p style={{ margin: 0, fontSize: '0.78rem', color: '#e2e8f0', lineHeight: 1.45, fontWeight: 500 }}>
+                <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted, #a1a1aa)', lineHeight: 1.45, fontWeight: 500 }}>
                   Certified technician visits your location to inspect, diagnose & issue written quote.
                 </p>
                 {quoteType === 'IN_HOUSE' && (
-                  <div style={{ position: 'absolute', top: '8px', right: '8px', color: '#38bdf8' }}>
+                  <div style={{ position: 'absolute', top: '8px', right: '8px', color: 'var(--primary, #f59e0b)' }}>
                     <CheckCircle2 size={16} />
                   </div>
                 )}
@@ -396,7 +396,7 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
 
           {/* 3. Requirement Description */}
           <div style={{ marginBottom: '1.25rem' }}>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 700, color: '#f8fafc', marginBottom: '0.45rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-main, #f8fafc)', marginBottom: '0.45rem' }}>
               3. Describe Your Issue / Requirement (Optional)
             </label>
             <textarea
@@ -408,9 +408,9 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
                 width: '100%',
                 padding: '0.75rem 0.9rem',
                 borderRadius: '12px',
-                border: '1px solid #475569',
-                backgroundColor: '#1e293b',
-                color: '#ffffff',
+                border: '1px solid var(--border-light, #2A2D3C)',
+                backgroundColor: 'var(--bg-subtle, #161822)',
+                color: 'var(--text-main, #ffffff)',
                 fontSize: '0.85rem',
                 outline: 'none',
                 resize: 'none'
@@ -421,7 +421,7 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
           {/* 4. Preferred Date & Time Slot */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 700, color: '#f8fafc', marginBottom: '0.45rem' }}>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-main, #f8fafc)', marginBottom: '0.45rem' }}>
                 Preferred Date *
               </label>
               <input
@@ -433,18 +433,17 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
                   width: '100%',
                   padding: '0.65rem 0.8rem',
                   borderRadius: '12px',
-                  border: '1px solid #475569',
-                  backgroundColor: '#1e293b',
-                  color: '#ffffff',
+                  border: '1px solid var(--border-light, #2A2D3C)',
+                  backgroundColor: 'var(--bg-subtle, #161822)',
+                  color: 'var(--text-main, #ffffff)',
                   fontSize: '0.85rem',
                   fontWeight: 600,
-                  outline: 'none',
-                  colorScheme: 'dark'
+                  outline: 'none'
                 }}
               />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 700, color: '#f8fafc', marginBottom: '0.45rem' }}>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-main, #f8fafc)', marginBottom: '0.45rem' }}>
                 Time Slot *
               </label>
               <select
@@ -454,17 +453,16 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
                   width: '100%',
                   padding: '0.65rem 0.8rem',
                   borderRadius: '12px',
-                  border: '1px solid #475569',
-                  backgroundColor: '#1e293b',
-                  color: '#ffffff',
+                  border: '1px solid var(--border-light, #2A2D3C)',
+                  backgroundColor: 'var(--bg-subtle, #161822)',
+                  color: 'var(--text-main, #ffffff)',
                   fontSize: '0.85rem',
                   fontWeight: 600,
-                  outline: 'none',
-                  colorScheme: 'dark'
+                  outline: 'none'
                 }}
               >
                 {getAvailableTimeSlots(selectedDate).map(slot => (
-                  <option key={slot.value} value={slot.value} style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>
+                  <option key={slot.value} value={slot.value} style={{ backgroundColor: 'var(--bg-card, #1A1C26)', color: 'var(--text-main, #ffffff)' }}>
                     {slot.label}
                   </option>
                 ))}
@@ -474,7 +472,7 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
 
           {/* 5. Address Details */}
           <div style={{ marginBottom: '1.25rem' }}>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 700, color: '#f8fafc', marginBottom: '0.45rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-main, #f8fafc)', marginBottom: '0.45rem' }}>
               Address / Location *
             </label>
             <input
@@ -489,9 +487,9 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
                 width: '100%',
                 padding: '0.65rem 0.8rem',
                 borderRadius: '12px',
-                border: '1px solid #475569',
-                backgroundColor: '#1e293b',
-                color: '#ffffff',
+                border: '1px solid var(--border-light, #2A2D3C)',
+                backgroundColor: 'var(--bg-subtle, #161822)',
+                color: 'var(--text-main, #ffffff)',
                 fontSize: '0.85rem',
                 outline: 'none',
                 marginBottom: '0.5rem'
@@ -507,9 +505,9 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
                   width: '100%',
                   padding: '0.55rem 0.75rem',
                   borderRadius: '10px',
-                  border: '1px solid #475569',
-                  backgroundColor: '#1e293b',
-                  color: '#ffffff',
+                  border: '1px solid var(--border-light, #2A2D3C)',
+                  backgroundColor: 'var(--bg-subtle, #161822)',
+                  color: 'var(--text-main, #ffffff)',
                   fontSize: '0.82rem',
                   fontWeight: 500
                 }}
@@ -523,9 +521,9 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
                   width: '100%',
                   padding: '0.55rem 0.75rem',
                   borderRadius: '10px',
-                  border: '1px solid #475569',
-                  backgroundColor: '#1e293b',
-                  color: '#ffffff',
+                  border: '1px solid var(--border-light, #2A2D3C)',
+                  backgroundColor: 'var(--bg-subtle, #161822)',
+                  color: 'var(--text-main, #ffffff)',
                   fontSize: '0.82rem',
                   fontWeight: 500
                 }}
@@ -538,23 +536,23 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
             style={{
               padding: '0.75rem',
               borderRadius: '12px',
-              backgroundColor: '#1e293b',
-              border: '1px solid #475569',
+              backgroundColor: 'var(--bg-subtle, #161822)',
+              border: '1px solid var(--border-light, #2A2D3C)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-around',
               fontSize: '0.8rem',
-              color: '#f8fafc',
+              color: 'var(--text-main, #f8fafc)',
               fontWeight: 600,
               marginBottom: '1rem'
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              <ShieldCheck size={15} color="#38bdf8" />
+              <ShieldCheck size={15} color="var(--primary, #f59e0b)" />
               <span>Aadhaar Verified Pros</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              <Tag size={15} color="#34d399" />
+              <Tag size={15} color="var(--success, #10b981)" />
               <span>{quoteType === 'CALL' ? 'FREE On-Call Advice' : 'Flat ₹99 Inspection'}</span>
             </div>
           </div>
@@ -567,10 +565,8 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
               padding: '0.9rem',
               borderRadius: '14px',
               border: 'none',
-              background: quoteType === 'CALL' 
-                ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' 
-                : 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-              color: '#ffffff',
+              backgroundColor: quoteType === 'CALL' ? 'var(--success, #10b981)' : 'var(--primary, #f59e0b)',
+              color: 'var(--text-inverse, #ffffff)',
               fontSize: '0.95rem',
               fontWeight: 800,
               cursor: 'pointer',
@@ -578,7 +574,7 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
               alignItems: 'center',
               justifyContent: 'center',
               gap: '0.5rem',
-              boxShadow: quoteType === 'CALL' ? '0 8px 20px rgba(16, 185, 129, 0.35)' : '0 8px 20px rgba(2, 132, 199, 0.35)',
+              boxShadow: quoteType === 'CALL' ? '0 8px 20px var(--success-bg, rgba(16, 185, 129, 0.35))' : '0 8px 20px var(--primary-subtle, rgba(245, 158, 11, 0.35))',
               transition: 'all 0.2s ease'
             }}
           >
