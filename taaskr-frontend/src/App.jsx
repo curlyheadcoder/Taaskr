@@ -136,6 +136,22 @@ function AppContent() {
                 }
               />
               <Route
+                path="/book"
+                element={
+                  <ProtectedRoute allowedRoles={['USER']}>
+                    <BookingFlow />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/booking"
+                element={
+                  <ProtectedRoute allowedRoles={['USER']}>
+                    <BookingFlow />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/bookings"
                 element={
                   <ProtectedRoute allowedRoles={['USER']}>

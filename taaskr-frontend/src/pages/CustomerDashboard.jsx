@@ -1096,7 +1096,7 @@ export default function CustomerDashboard({ initialTab }) {
                       <span style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--primary)' }}>₹{service.price}</span>
                       <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '0.3rem' }}>({service.estimatedMinutes} mins)</span>
                     </div>
-                    <Link to={`/booking?serviceId=${service.id}`} className="btn btn-primary btn-sm">Book Now</Link>
+                    <Link to={`/booking-flow?serviceId=${service.id}`} className="btn btn-primary btn-sm">Book Now</Link>
                   </div>
                 </div>
               ))}

@@ -392,7 +392,11 @@ export default function BookingFlow() {
       <nav style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
         <Link to="/" style={{ color: 'var(--text-muted)' }}>Catalog</Link>
         <ChevronRight size={13} />
-        <Link to={`/services/${serviceId}`} style={{ color: 'var(--text-muted)' }}>{serviceName}</Link>
+        {serviceId ? (
+          <Link to={`/services/${serviceId}`} style={{ color: 'var(--text-muted)' }}>{serviceName}</Link>
+        ) : (
+          <span style={{ color: 'var(--text-muted)' }}>{serviceName}</span>
+        )}
         <ChevronRight size={13} />
         <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>Checkout</span>
       </nav>
@@ -718,7 +722,15 @@ export default function BookingFlow() {
             style={{ width: '100%', padding: '0.75rem', fontSize: '0.95rem' }}
             disabled={loading || (currentUser && (!currentUser.emailVerified || !currentUser.phoneVerified))}
           >
-            {loading ? 'Confirming Booking...' : (currentUser && (!currentUser.emailVerified || !currentUser.phoneVerified)) ? 'Verify Email & Phone to Book' : paymentMethod === 'online' ? `Confirm Booking & Pay ₹${price}` : `Confirm Booking (₹${price})`}
+            {loading 
+              ? 'Confirming Booking...' 
+              : (currentUser && (!currentUser.emailVerified || !currentUser.phoneVerified)) 
+              ? 'Verify Email & Phone to Book' 
+              : Number(price) === 0 
+              ? 'Confirm Free On-Call Advice Request' 
+              : paymentMethod === 'online' 
+              ? `Confirm Booking & Pay ₹${price}` 
+              : `Confirm Booking (₹${price})`}
           </button>
         </form>
 
@@ -739,8 +751,8 @@ export default function BookingFlow() {
                   {isVehicle ? `Freight transit (${distanceKm || '5.0'} KM)` : 'Home Service'}
                 </span>
               </div>
-              <span style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', fontFeatureSettings: 'tnum' }}>
-                ₹{price}
+              <span style={{ fontSize: '1.1rem', fontWeight: 700, color: Number(price) === 0 ? '#10b981' : 'var(--text-main)', fontFeatureSettings: 'tnum' }}>
+                {Number(price) === 0 ? 'FREE' : `₹${price}`}
               </span>
             </div>
 
@@ -764,7 +776,9 @@ export default function BookingFlow() {
             <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.875rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', fontSize: '0.8125rem' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Subtotal:</span>
-                <span style={{ color: 'var(--text-main)', fontWeight: 500, fontFeatureSettings: 'tnum' }}>₹{price}</span>
+                <span style={{ color: 'var(--text-main)', fontWeight: 500, fontFeatureSettings: 'tnum' }}>
+                  {Number(price) === 0 ? 'FREE' : `₹${price}`}
+                </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', fontSize: '0.8125rem' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Platform Fee:</span>
@@ -772,7 +786,9 @@ export default function BookingFlow() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px dashed var(--border-light)' }}>
                 <span style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '0.9375rem' }}>Total Amount:</span>
-                <span style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '1.2rem', fontFeatureSettings: 'tnum' }}>₹{price}</span>
+                <span style={{ color: Number(price) === 0 ? '#10b981' : 'var(--text-main)', fontWeight: 700, fontSize: '1.2rem', fontFeatureSettings: 'tnum' }}>
+                  {Number(price) === 0 ? 'FREE (₹0)' : `₹${price}`}
+                </span>
               </div>
             </div>
 

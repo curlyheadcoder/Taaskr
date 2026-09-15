@@ -17,7 +17,7 @@ export default function VehicleVariantModal({ isOpen, onClose, umbrellaService }
     const fullServiceName = `${umbrellaService.name} (${selectedOption.name})`;
     
     onClose();
-    navigate('/book', {
+    navigate('/booking-flow', {
       state: {
         serviceId: null,
         serviceName: fullServiceName,
