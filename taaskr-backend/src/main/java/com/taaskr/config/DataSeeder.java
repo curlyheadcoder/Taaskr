@@ -188,6 +188,17 @@ public class DataSeeder {
         seedService(serviceRepository, "Printer Setup & Troubleshooting", "Driver installation, wireless network printing setup, and paper feed troubleshooting", new BigDecimal("349.00"), 45, techElectronics);
 
         // 7. Vehicle & Auto Care
+        seedService(serviceRepository, "Car Cleaning", "Professional doorstep car wash, interior vacuuming, foam wash & full deep cleaning", new BigDecimal("150.00"), 45, vehicleAuto);
+        seedService(serviceRepository, "Car Spa & Detailing", "High-end paint correction, ceramic wax polish, leather conditioning & complete car detailing", new BigDecimal("799.00"), 120, vehicleAuto);
+        seedService(serviceRepository, "Car AC Service", "Doorstep AC cooling check, refrigerant gas refill, filter cleaning & compressor diagnostics", new BigDecimal("299.00"), 60, vehicleAuto);
+        seedService(serviceRepository, "Car Maintenance", "Engine oil replacement, oil filter change, coolant flush & comprehensive general periodic maintenance", new BigDecimal("699.00"), 60, vehicleAuto);
+        seedService(serviceRepository, "Brake Service", "Brake pad inspection, rotor cleaning, hydraulic fluid replacement & stopping safety servicing", new BigDecimal("299.00"), 45, vehicleAuto);
+        seedService(serviceRepository, "Battery Service", "Doorstep battery health check, terminal anti-corrosion cleaning, jump start & new battery installation", new BigDecimal("199.00"), 30, vehicleAuto);
+        seedService(serviceRepository, "Tyre Service", "Doorstep tubeless puncture fix, spare wheel fitting, tyre rotation & pressure check", new BigDecimal("99.00"), 30, vehicleAuto);
+        seedService(serviceRepository, "Car Electrical Repair", "Headlight bulb replacement, blown fuse fix, wiper blade installation & minor electrical troubleshooting", new BigDecimal("199.00"), 45, vehicleAuto);
+        seedService(serviceRepository, "Car Diagnostics", "Computerized OBD-II scanner code check, check engine light diagnosis & pre-purchase inspection", new BigDecimal("399.00"), 45, vehicleAuto);
+        seedService(serviceRepository, "Exterior Care", "Headlight restoration, windshield chip repair, exterior machine polish & scratch touch-ups", new BigDecimal("299.00"), 60, vehicleAuto);
+        seedService(serviceRepository, "Emergency Car Assistance", "24/7 doorstep & roadside breakdown assistance: jump start, flat tyre, battery & minor fixes", new BigDecimal("249.00"), 30, vehicleAuto);
         seedService(serviceRepository, "Doorstep Eco Car Foam Wash & Vacuum", "Pressure foam wash, tire shine, and interior carpet/seat high-suction vacuuming at your parking spot", new BigDecimal("499.00"), 60, vehicleAuto);
         seedService(serviceRepository, "Doorstep Bike Foam Wash & Chain Lube", "Two-wheeler pressure foam wash, degreasing, and synthetic chain lubrication", new BigDecimal("249.00"), 45, vehicleAuto);
         seedService(serviceRepository, "Deep Car Interior Detailing & Polishing", "Fabric shampooing, leather conditioning, dashboard polish, and AC vent steam sanitization", new BigDecimal("1199.00"), 120, vehicleAuto);
@@ -316,7 +327,13 @@ public class DataSeeder {
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "autocare@taaskr.com", 4.8, 65, 4, "Doorstep car & bike foam detailing and battery jump start technician",
-                serviceRepository, List.of("Doorstep Eco Car Foam Wash & Vacuum", "Doorstep Bike Foam Wash & Chain Lube", "Deep Car Interior Detailing & Polishing", "Car Battery Jump Start Assistance"));
+                serviceRepository, List.of(
+                        "Car Cleaning", "Car Spa & Detailing", "Car AC Service", "Car Maintenance",
+                        "Brake Service", "Battery Service", "Tyre Service", "Car Electrical Repair",
+                        "Car Diagnostics", "Exterior Care", "Emergency Car Assistance",
+                        "Doorstep Eco Car Foam Wash & Vacuum", "Doorstep Bike Foam Wash & Chain Lube",
+                        "Deep Car Interior Detailing & Polishing", "Car Battery Jump Start Assistance"
+                ));
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "homehelp@taaskr.com", 4.6, 140, 6, "Reliable home chef, daily domestic helper, and errand assistant",

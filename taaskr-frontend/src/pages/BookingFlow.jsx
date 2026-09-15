@@ -173,13 +173,14 @@ export default function BookingFlow() {
         providerId: selectedProviderId ? Number(selectedProviderId) : null,
         bookingDate: selectedDate,
         startTime: safeStartTime,
-        paymentMethod: paymentMethod === 'after_service' ? 'AFTER_SERVICE' : 'ONLINE',
+        paymentMethod: (Number(price) === 0 || paymentMethod === 'after_service') ? 'AFTER_SERVICE' : 'ONLINE',
         address,
         city,
         pincode,
         latitude: coordinates?.latitude,
         longitude: coordinates?.longitude,
-        notes: bookingState.isQuoteBooking ? `[Quote Request - ₹99]: ${serviceName} | ${notes || ''}` : (isVehicle && packageDescription ? `${notes ? notes + ' | ' : ''}Cargo: ${packageDescription}` : notes)
+        customPrice: price !== undefined && price !== null ? Number(price) : null,
+        notes: bookingState.isQuoteBooking ? `[Quote Request - ${Number(price) === 0 ? 'FREE' : '₹' + price}]: ${serviceName} | ${notes || ''}` : (isVehicle && packageDescription ? `${notes ? notes + ' | ' : ''}Cargo: ${packageDescription}` : notes)
       };
 
       if (isVehicle) {

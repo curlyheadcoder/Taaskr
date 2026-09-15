@@ -113,11 +113,11 @@ public class BookingServiceImpl implements BookingService {
                 && (service.getCategory().getName().toLowerCase().contains("logistics") || service.getCategory().getName().toLowerCase().contains("transport") || service.getCategory().getName().toLowerCase().contains("on-demand vehicle")))
                 || (request.getDropCity() != null && request.getDropAddress() != null);
 
-        BigDecimal calculatedFare = service.getPrice();
+        BigDecimal calculatedFare = (request.getCustomPrice() != null) ? request.getCustomPrice() : service.getPrice();
         BigDecimal distanceKm = null;
         Vehicle matchedVehicle = null;
 
-        if (isVehicleBooking) {
+        if (isVehicleBooking && request.getCustomPrice() == null) {
             if (request.getLatitude() != null && request.getLongitude() != null 
                     && request.getDropLatitude() != null && request.getDropLongitude() != null) {
                 distanceKm = mapService.calculateDistanceKm(

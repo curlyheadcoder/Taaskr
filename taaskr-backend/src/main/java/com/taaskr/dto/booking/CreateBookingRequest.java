@@ -74,6 +74,8 @@ public class CreateBookingRequest {
 
     private BigDecimal distanceKm;
 
+    private BigDecimal customPrice;
+
     @Size(max = 500, message = "Notes cannot exceed 500 characters")
     private String notes;
 
@@ -219,6 +221,14 @@ public class CreateBookingRequest {
 
     public void setDistanceKm(BigDecimal distanceKm) {
         this.distanceKm = distanceKm;
+    }
+
+    public BigDecimal getCustomPrice() {
+        return customPrice;
+    }
+
+    public void setCustomPrice(BigDecimal customPrice) {
+        this.customPrice = customPrice;
     }
 
     public String getNotes() {
