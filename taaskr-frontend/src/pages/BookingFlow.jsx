@@ -387,7 +387,9 @@ export default function BookingFlow() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Scheduled Time:</span>
-                <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{bookingDate} at {formatLocalTime(startTime)}</span>
+                <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>
+                  {(newBooking?.bookingDate || selectedDate || bookingDate) + ' at ' + formatLocalTime(newBooking?.startTime || selectedTime || startTime)}
+                </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.5rem', marginTop: '0.2rem' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Payment:</span>
@@ -788,11 +790,11 @@ export default function BookingFlow() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.8125rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Scheduled Date:</span>
-                <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>{bookingDate}</span>
+                <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>{selectedDate || bookingDate}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Time Slot:</span>
-                <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>{formatLocalTime(startTime)}</span>
+                <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>{formatLocalTime(selectedTime || startTime)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Dispatch Mode:</span>
