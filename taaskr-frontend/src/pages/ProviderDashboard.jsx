@@ -301,7 +301,7 @@ export default function ProviderDashboard() {
       const newPartner = await api.provider.createPartner({
         name: partnerName.trim(),
         phone: partnerPhone.trim(),
-        email: partnerEmail.trim(),
+        email: partnerEmail.trim() || null,
         title: partnerTitle.trim() || 'Service Technician',
         experience: partnerExperience.trim() || '2+ Years',
         password: partnerPassword.trim()

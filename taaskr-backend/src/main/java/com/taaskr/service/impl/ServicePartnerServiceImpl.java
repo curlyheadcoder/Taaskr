@@ -101,6 +101,7 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
     }
 
     @Override
+    @Transactional
     public List<ServicePartnerResponse> getProviderPartners(String providerEmail) {
         User providerUser = userRepository.findByEmail(providerEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Provider user not found"));
@@ -166,7 +167,7 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
 
-        if (!booking.getProvider().getId().equals(provider.getId())) {
+        if (booking.getProvider() == null || !booking.getProvider().getId().equals(provider.getId())) {
             throw new BadRequestException("You are not authorized to assign partners for this booking");
         }
 
@@ -178,7 +179,9 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
         }
 
         booking.setServicePartner(partner);
-        booking.setStatus(BookingStatus.PARTNER_ASSIGNED);
+        if (booking.getStatus() == BookingStatus.PENDING || booking.getStatus() == BookingStatus.ASSIGNED || booking.getStatus() == BookingStatus.ACCEPTED) {
+            booking.setStatus(BookingStatus.PARTNER_ASSIGNED);
+        }
         booking.setPartnerAssignedAt(LocalDateTime.now());
         booking = bookingRepository.save(booking);
 
@@ -218,6 +221,7 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
     }
 
     @Override
+    @Transactional
     public ServicePartnerResponse getPartnerProfile(String partnerEmail) {
         User workerUser = userRepository.findByEmail(partnerEmail)
                 .or(() -> userRepository.findByPhone(partnerEmail))
@@ -230,6 +234,7 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
     }
 
     @Override
+    @Transactional
     public List<BookingResponse> getPartnerAssignedTasks(String partnerEmail) {
         User workerUser = userRepository.findByEmail(partnerEmail)
                 .or(() -> userRepository.findByPhone(partnerEmail))

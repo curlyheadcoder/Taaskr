@@ -50,7 +50,7 @@ public class CreateServicePartnerRequest {
     }
 
     public void setEmail(String email) {
-        this.email = email;
+        this.email = (email != null && !email.isBlank()) ? email.trim() : null;
     }
 
     public String getTitle() {
