@@ -774,15 +774,6 @@ export default function AdminDashboard() {
           </button>
 
           <button 
-            onClick={() => setActiveTab('observability')}
-            className={`sidebar-item ${activeTab === 'observability' ? 'active' : ''}`}
-            title="Observability"
-          >
-            <Activity size={16} />
-            <span>Observability</span>
-          </button>
-
-          <button 
             onClick={() => setActiveTab('catalog')}
             className={`sidebar-item ${activeTab === 'catalog' ? 'active' : ''}`}
             title="Service Catalog"
@@ -940,6 +931,15 @@ export default function AdminDashboard() {
           >
             <Users size={16} />
             <span>Users ({users.length})</span>
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('observability')}
+            className={`sidebar-item ${activeTab === 'observability' ? 'active' : ''}`}
+            title="Observability"
+          >
+            <Activity size={16} />
+            <span>Observability</span>
           </button>
         </nav>
       </aside>
