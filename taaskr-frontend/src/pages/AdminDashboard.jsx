@@ -1596,21 +1596,20 @@ export default function AdminDashboard() {
                                     style={{
                                       padding: '0.35rem 0.6rem',
                                       borderRadius: '8px',
-                                      border: '1px solid var(--border-light, #334155)',
-                                      backgroundColor: '#1e293b',
-                                      color: '#ffffff',
+                                      border: '1px solid var(--border-light)',
+                                      backgroundColor: 'var(--bg-card)',
+                                      color: 'var(--text-main)',
                                       fontSize: '0.78rem',
                                       fontWeight: 600,
                                       outline: 'none',
-                                      cursor: 'pointer',
-                                      colorScheme: 'dark'
+                                      cursor: 'pointer'
                                     }}
                                   >
-                                    <option value="" disabled style={{ backgroundColor: '#1e293b', color: '#94a3b8' }}>
+                                    <option value="" disabled style={{ color: 'var(--text-muted)' }}>
                                       Select Provider…
                                     </option>
                                     {(providers || []).map(p => (
-                                      <option key={p.id} value={p.id} style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>
+                                      <option key={p.id} value={p.id}>
                                         {p.name || p.userName} ({p.categoryName || 'Provider'})
                                       </option>
                                     ))}
@@ -1649,14 +1648,14 @@ export default function AdminDashboard() {
             </div>
 
             {/* Register New Service Expert Form */}
-            <div style={{ padding: '1.25rem', borderRadius: '16px', backgroundColor: 'var(--bg-subtle, #1e293b)', border: '1px solid var(--border-light, #334155)', marginBottom: '1.5rem' }}>
-              <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 800, color: 'var(--text-main, #ffffff)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ padding: '1.25rem', borderRadius: '16px', backgroundColor: 'var(--bg-subtle)', border: '1px solid var(--border-light)', marginBottom: '1.5rem' }}>
+              <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 800, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Plus size={18} color="#f59e0b" />
                 <span>Register New Category Service Expert</span>
               </h3>
               <form onSubmit={handleAddExpert} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.85rem' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main, #ffffff)', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.35rem' }}>
                     Expert Full Name *
                   </label>
                   <input
@@ -1665,12 +1664,12 @@ export default function AdminDashboard() {
                     placeholder="e.g. Vikramaditya Sharma"
                     value={newExpName}
                     onChange={(e) => setNewExpName(e.target.value)}
-                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '10px', border: '1px solid #334155', backgroundColor: '#0f172a', color: '#ffffff', fontSize: '0.85rem' }}
+                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '10px', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem' }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main, #ffffff)', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.35rem' }}>
                     Title / Specialization *
                   </label>
                   <input
@@ -1678,18 +1677,18 @@ export default function AdminDashboard() {
                     placeholder="e.g. Senior Automotive Lead"
                     value={newExpTitle}
                     onChange={(e) => setNewExpTitle(e.target.value)}
-                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '10px', border: '1px solid #334155', backgroundColor: '#0f172a', color: '#ffffff', fontSize: '0.85rem' }}
+                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '10px', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem' }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main, #ffffff)', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.35rem' }}>
                     Mapped Service Category *
                   </label>
                   <select
                     value={newExpCategory}
                     onChange={(e) => setNewExpCategory(e.target.value)}
-                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '10px', border: '1px solid #334155', backgroundColor: '#0f172a', color: '#ffffff', fontSize: '0.85rem', colorScheme: 'dark' }}
+                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '10px', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem' }}
                   >
                     <option value="Vehicle & Auto Care">Vehicle & Auto Care</option>
                     <option value="Appliances & Electrical">Appliances & Electrical</option>
@@ -1701,7 +1700,7 @@ export default function AdminDashboard() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main, #ffffff)', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.35rem' }}>
                     Phone Contact Number *
                   </label>
                   <input
@@ -1710,12 +1709,12 @@ export default function AdminDashboard() {
                     placeholder="+91 98765-43210"
                     value={newExpPhone}
                     onChange={(e) => setNewExpPhone(e.target.value)}
-                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '10px', border: '1px solid #334155', backgroundColor: '#0f172a', color: '#ffffff', fontSize: '0.85rem' }}
+                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '10px', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem' }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main, #ffffff)', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.35rem' }}>
                     Experience *
                   </label>
                   <input
@@ -1723,7 +1722,7 @@ export default function AdminDashboard() {
                     placeholder="e.g. 10 Yrs"
                     value={newExpExperience}
                     onChange={(e) => setNewExpExperience(e.target.value)}
-                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '10px', border: '1px solid #334155', backgroundColor: '#0f172a', color: '#ffffff', fontSize: '0.85rem' }}
+                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '10px', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', fontSize: '0.85rem' }}
                   />
                 </div>
 

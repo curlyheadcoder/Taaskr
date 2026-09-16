@@ -5,18 +5,36 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AiAssistantModal from './components/AiAssistantModal';
 import Footer from './components/Footer';
 
-// Page Views (Code-Split via dynamic imports for fast initial load)
-const Home = lazy(() => import('./pages/Home'));
-const Login = lazy(() => import('./pages/Login'));
-const Register = lazy(() => import('./pages/Register'));
-const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
-const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
-const ServiceDetails = lazy(() => import('./pages/ServiceDetails'));
-const BookingFlow = lazy(() => import('./pages/BookingFlow'));
-const CustomerDashboard = lazy(() => import('./pages/CustomerDashboard'));
-const ProviderDashboard = lazy(() => import('./pages/ProviderDashboard'));
-const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
-const PartnerDashboard = lazy(() => import('./pages/PartnerDashboard'));
+// Helper for resilient Code-Splitting with auto-retry on deployment updates
+const lazyWithRetry = (importFn) =>
+  lazy(async () => {
+    const pageAlreadyReloaded = sessionStorage.getItem('taaskr_chunk_reloaded');
+    try {
+      const component = await importFn();
+      sessionStorage.removeItem('taaskr_chunk_reloaded');
+      return component;
+    } catch (error) {
+      if (!pageAlreadyReloaded) {
+        sessionStorage.setItem('taaskr_chunk_reloaded', 'true');
+        window.location.reload();
+        return new Promise(() => {});
+      }
+      throw error;
+    }
+  });
+
+// Page Views (Code-Split via dynamic imports with auto-recovery for fast initial load)
+const Home = lazyWithRetry(() => import('./pages/Home'));
+const Login = lazyWithRetry(() => import('./pages/Login'));
+const Register = lazyWithRetry(() => import('./pages/Register'));
+const ForgotPassword = lazyWithRetry(() => import('./pages/ForgotPassword'));
+const VerifyEmail = lazyWithRetry(() => import('./pages/VerifyEmail'));
+const ServiceDetails = lazyWithRetry(() => import('./pages/ServiceDetails'));
+const BookingFlow = lazyWithRetry(() => import('./pages/BookingFlow'));
+const CustomerDashboard = lazyWithRetry(() => import('./pages/CustomerDashboard'));
+const ProviderDashboard = lazyWithRetry(() => import('./pages/ProviderDashboard'));
+const AdminDashboard = lazyWithRetry(() => import('./pages/AdminDashboard'));
+const PartnerDashboard = lazyWithRetry(() => import('./pages/PartnerDashboard'));
 
 function RouteLoadingFallback() {
   return (
@@ -55,10 +73,24 @@ class ErrorBoundary extends Component {
 
   componentDidCatch(error, errorInfo) {
     console.error('Taaskr UI ErrorBoundary caught an error:', error, errorInfo);
+    if (
+      error?.message?.includes('Failed to fetch dynamically imported module') ||
+      error?.message?.includes('Importing a module script failed')
+    ) {
+      const pageAlreadyReloaded = sessionStorage.getItem('taaskr_chunk_reloaded');
+      if (!pageAlreadyReloaded) {
+        sessionStorage.setItem('taaskr_chunk_reloaded', 'true');
+        window.location.reload();
+      }
+    }
   }
 
   render() {
     if (this.state.hasError) {
+      const isChunkError =
+        this.state.error?.message?.includes('Failed to fetch dynamically imported module') ||
+        this.state.error?.message?.includes('Importing a module script failed');
+
       return (
         <div style={{
           minHeight: '70vh',
@@ -70,20 +102,34 @@ class ErrorBoundary extends Component {
           textAlign: 'center'
         }}>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.75rem', color: 'var(--text-main)' }}>
-            Something went wrong while displaying this page.
+            {isChunkError ? 'New Update Available' : 'Something went wrong while displaying this page.'}
           </h2>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', maxWidth: '500px' }}>
-            {this.state.error?.message || 'An unexpected error occurred.'}
+          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', maxWidth: '520px', lineHeight: 1.5 }}>
+            {isChunkError
+              ? 'A new version of Taaskr was deployed. Reloading will load the latest interface.'
+              : (this.state.error?.message || 'An unexpected error occurred.')}
           </p>
-          <button
-            onClick={() => {
-              this.setState({ hasError: false, error: null });
-              window.location.href = '/';
-            }}
-            className="btn btn-primary"
-          >
-            Reload Home
-          </button>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <button
+              onClick={() => {
+                sessionStorage.removeItem('taaskr_chunk_reloaded');
+                window.location.reload();
+              }}
+              className="btn btn-primary"
+            >
+              Refresh Page
+            </button>
+            <button
+              onClick={() => {
+                sessionStorage.removeItem('taaskr_chunk_reloaded');
+                this.setState({ hasError: false, error: null });
+                window.location.href = '/';
+              }}
+              className="btn btn-secondary"
+            >
+              Go to Home
+            </button>
+          </div>
         </div>
       );
     }
