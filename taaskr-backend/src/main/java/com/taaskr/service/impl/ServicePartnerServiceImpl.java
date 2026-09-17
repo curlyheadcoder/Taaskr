@@ -255,7 +255,7 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
     @Transactional
     public BookingResponse acceptTaskByPartner(String partnerEmail, Long bookingId) {
         Booking booking = verifyPartnerForBooking(partnerEmail, bookingId);
-        booking.setStatus(BookingStatus.PARTNER_ACCEPTED);
+        booking.transitionToStatus(BookingStatus.PARTNER_ACCEPTED);
         booking.setPartnerAcceptedAt(LocalDateTime.now());
         booking = bookingRepository.save(booking);
         return mapToBookingResponse(booking);
@@ -265,7 +265,7 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
     @Transactional
     public BookingResponse startJourneyByPartner(String partnerEmail, Long bookingId) {
         Booking booking = verifyPartnerForBooking(partnerEmail, bookingId);
-        booking.setStatus(BookingStatus.ON_THE_WAY);
+        booking.transitionToStatus(BookingStatus.ON_THE_WAY);
         booking.setJourneyStartedAt(LocalDateTime.now());
         booking = bookingRepository.save(booking);
 
@@ -313,7 +313,7 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
             // Geofence Check (< 200m or 0.2km)
             if (distanceKm <= 0.20) {
                 // Auto mark ARRIVED & STOP LIVE TRACKING
-                booking.setStatus(BookingStatus.ARRIVED);
+                booking.transitionToStatus(BookingStatus.ARRIVED);
                 booking.setArrivedAt(LocalDateTime.now());
                 bookingRepository.save(booking);
 
@@ -351,7 +351,7 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
     @Transactional
     public BookingResponse markArrivedByPartner(String partnerEmail, Long bookingId) {
         Booking booking = verifyPartnerForBooking(partnerEmail, bookingId);
-        booking.setStatus(BookingStatus.ARRIVED);
+        booking.transitionToStatus(BookingStatus.ARRIVED);
         booking.setArrivedAt(LocalDateTime.now());
         booking = bookingRepository.save(booking);
 
@@ -373,7 +373,7 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
     @Transactional
     public BookingResponse startWorkByPartner(String partnerEmail, Long bookingId) {
         Booking booking = verifyPartnerForBooking(partnerEmail, bookingId);
-        booking.setStatus(BookingStatus.WORK_STARTED);
+        booking.transitionToStatus(BookingStatus.WORK_STARTED);
         booking.setWorkStartedAt(LocalDateTime.now());
         booking = bookingRepository.save(booking);
         return mapToBookingResponse(booking);
@@ -383,7 +383,7 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
     @Transactional
     public BookingResponse completeWorkByPartner(String partnerEmail, Long bookingId) {
         Booking booking = verifyPartnerForBooking(partnerEmail, bookingId);
-        booking.setStatus(BookingStatus.WORK_COMPLETED);
+        booking.transitionToStatus(BookingStatus.WORK_COMPLETED);
         booking.setWorkCompletedAt(LocalDateTime.now());
         booking = bookingRepository.save(booking);
         return mapToBookingResponse(booking);
@@ -395,7 +395,7 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
         Booking booking = verifyPartnerForBooking(partnerEmail, bookingId);
         booking.setPaymentMethod(method != null ? method : PaymentMethod.AFTER_SERVICE);
         booking.setPaymentStatus(PaymentStatus.PAID);
-        booking.setStatus(BookingStatus.PAYMENT_COMPLETED);
+        booking.transitionToStatus(BookingStatus.PAYMENT_COMPLETED);
         booking.setPaymentCompletedAt(LocalDateTime.now());
         booking = bookingRepository.save(booking);
         return mapToBookingResponse(booking);

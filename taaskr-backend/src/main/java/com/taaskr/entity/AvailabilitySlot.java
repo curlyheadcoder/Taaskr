@@ -29,6 +29,10 @@ public class AvailabilitySlot {
     @Column(nullable = false)
     private Boolean booked = false;
 
+    @Version
+    @Column(nullable = false)
+    private Long version = 0L;
+
     public AvailabilitySlot() {
     }
 
@@ -78,5 +82,13 @@ public class AvailabilitySlot {
 
     public void setBooked(Boolean booked) {
         this.booked = booked;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 }

@@ -85,6 +85,16 @@ public class BookingServiceImpl implements BookingService {
             throw new BadRequestException("Selected service is not active");
         }
 
+        String cityReq = request.getCity() != null ? request.getCity().trim() : "";
+        String pincodeReq = request.getPincode() != null ? request.getPincode().trim() : "";
+
+        boolean isIndoreCity = cityReq.equalsIgnoreCase("Indore") || cityReq.toLowerCase().contains("indore");
+        boolean isIndorePincode = pincodeReq.startsWith("452");
+
+        if (!isIndoreCity && !isIndorePincode) {
+            throw new BadRequestException("Taaskr is currently available only in Indore, Madhya Pradesh (pincodes 452xxx). Please select an address within Indore.");
+        }
+
         java.time.ZoneId istZone = java.time.ZoneId.of("Asia/Kolkata");
         java.time.ZonedDateTime nowIST = java.time.ZonedDateTime.now(istZone);
         LocalDate todayIST = nowIST.toLocalDate();
@@ -479,10 +489,15 @@ public class BookingServiceImpl implements BookingService {
 
 
         List<ProviderProfile> cityMatches = candidateProviders.stream()
-                .filter(provider -> city.equalsIgnoreCase(safe(provider.getCity())))
+                .filter(provider -> city.equalsIgnoreCase(safe(provider.getCity())) || safe(provider.getCity()).toLowerCase().contains("indore"))
                 .toList();
 
-        return findBestProviderWithSlot(cityMatches, bookingDate, startTime, endTime);
+        ProviderAssignmentResult cityResult = findBestProviderWithSlot(cityMatches, bookingDate, startTime, endTime);
+        if (cityResult.provider() != null) {
+            return cityResult;
+        }
+
+        return findBestProviderWithSlot(candidateProviders, bookingDate, startTime, endTime);
     }
 
     private ProviderAssignmentResult findBestProviderWithSlot(List<ProviderProfile> providers,

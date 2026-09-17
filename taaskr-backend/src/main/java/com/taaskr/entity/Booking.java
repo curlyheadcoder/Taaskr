@@ -27,6 +27,10 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    @Column(nullable = false)
+    private Long version = 0L;
+
     @Column(nullable = false, unique = true, length = 30)
     private String bookingCode;
 
@@ -532,5 +536,86 @@ public class Booking {
 
     public void setProviderApprovedAt(LocalDateTime providerApprovedAt) {
         this.providerApprovedAt = providerApprovedAt;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
+    }
+
+    public void transitionToStatus(BookingStatus newStatus) {
+        if (this.status == newStatus) {
+            return;
+        }
+        if (this.status == BookingStatus.CANCELLED) {
+            throw new com.taaskr.exception.BadRequestException("Booking is already CANCELLED and cannot be updated.");
+        }
+        if (this.status == BookingStatus.COMPLETED) {
+            throw new com.taaskr.exception.BadRequestException("Booking is already COMPLETED and cannot be updated.");
+        }
+        if (this.status == BookingStatus.REJECTED) {
+            throw new com.taaskr.exception.BadRequestException("Booking is REJECTED and cannot be updated.");
+        }
+
+        switch (newStatus) {
+            case ASSIGNED:
+                if (this.status != BookingStatus.PENDING) {
+                    throw new com.taaskr.exception.BadRequestException("Cannot assign booking in state " + this.status);
+                }
+                break;
+            case PARTNER_ASSIGNED:
+                if (this.status != BookingStatus.PENDING && this.status != BookingStatus.ASSIGNED && this.status != BookingStatus.PARTNER_ACCEPTED) {
+                    throw new com.taaskr.exception.BadRequestException("Cannot assign partner for booking in state " + this.status);
+                }
+                break;
+            case PARTNER_ACCEPTED:
+                if (this.status != BookingStatus.PENDING && this.status != BookingStatus.ASSIGNED && this.status != BookingStatus.PARTNER_ASSIGNED) {
+                    throw new com.taaskr.exception.BadRequestException("Cannot accept booking in state " + this.status);
+                }
+                break;
+            case ON_THE_WAY:
+            case IN_TRANSIT:
+                if (this.status != BookingStatus.PARTNER_ACCEPTED && this.status != BookingStatus.PARTNER_ASSIGNED && this.status != BookingStatus.ASSIGNED) {
+                    throw new com.taaskr.exception.BadRequestException("Cannot start journey for booking in state " + this.status);
+                }
+                break;
+            case ARRIVED:
+                if (this.status != BookingStatus.ON_THE_WAY && this.status != BookingStatus.IN_TRANSIT && this.status != BookingStatus.PARTNER_ACCEPTED) {
+                    throw new com.taaskr.exception.BadRequestException("Cannot mark arrived for booking in state " + this.status);
+                }
+                break;
+            case WORK_STARTED:
+            case IN_PROGRESS:
+                if (this.status != BookingStatus.ARRIVED && this.status != BookingStatus.ON_THE_WAY && this.status != BookingStatus.PARTNER_ACCEPTED) {
+                    throw new com.taaskr.exception.BadRequestException("Cannot start work for booking in state " + this.status);
+                }
+                break;
+            case WORK_COMPLETED:
+                if (this.status != BookingStatus.WORK_STARTED && this.status != BookingStatus.IN_PROGRESS && this.status != BookingStatus.ARRIVED) {
+                    throw new com.taaskr.exception.BadRequestException("Cannot complete work for booking in state " + this.status);
+                }
+                break;
+            case PAYMENT_COMPLETED:
+                if (this.status != BookingStatus.WORK_COMPLETED && this.status != BookingStatus.WORK_STARTED && this.status != BookingStatus.IN_PROGRESS) {
+                    throw new com.taaskr.exception.BadRequestException("Cannot record payment for booking in state " + this.status);
+                }
+                break;
+            case COMPLETED:
+                if (this.status != BookingStatus.PAYMENT_COMPLETED && this.status != BookingStatus.WORK_COMPLETED) {
+                    throw new com.taaskr.exception.BadRequestException("Cannot mark completed for booking in state " + this.status);
+                }
+                break;
+            case CANCELLED:
+                if (this.status == BookingStatus.COMPLETED || this.status == BookingStatus.WORK_COMPLETED) {
+                    throw new com.taaskr.exception.BadRequestException("Cannot cancel booking that is already " + this.status);
+                }
+                break;
+            default:
+                break;
+        }
+        this.status = newStatus;
     }
 }
