@@ -33,5 +33,13 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             LocalTime startTime
     );
 
+    boolean existsByProviderIdAndBookingDateAndStatusNotInAndStartTimeLessThanAndEndTimeGreaterThan(
+            Long providerId,
+            LocalDate bookingDate,
+            List<BookingStatus> excludedStatuses,
+            LocalTime endTime,
+            LocalTime startTime
+    );
+
     List<Booking> findByStatusAndCityAndServiceCategoryIdInOrderByCreatedAtDesc(BookingStatus status, String city, List<Long> categoryIds);
 }
