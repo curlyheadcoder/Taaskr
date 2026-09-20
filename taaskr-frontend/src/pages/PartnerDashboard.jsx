@@ -720,7 +720,7 @@ export default function PartnerDashboard() {
                   borderRadius: '14px',
                   border: '1px solid rgba(255, 255, 255, 0.05)'
                 }}>
-                  {task.status === 'ASSIGNED_TO_PARTNER' && (
+                  {(task.status === 'PARTNER_ASSIGNED' || task.status === 'ASSIGNED_TO_PARTNER') && (
                     <button
                       onClick={() => handleAcceptTask(task.id)}
                       disabled={isActionBusy}
@@ -742,7 +742,7 @@ export default function PartnerDashboard() {
                     </button>
                   )}
 
-                  {(task.status === 'ASSIGNED_TO_PARTNER' || task.status === 'PARTNER_ACCEPTED' || task.status === 'ACCEPTED') && (
+                  {(task.status === 'PARTNER_ASSIGNED' || task.status === 'ASSIGNED_TO_PARTNER' || task.status === 'PARTNER_ACCEPTED' || task.status === 'ACCEPTED') && (
                     <button
                       onClick={() => handleStartJourney(task.id)}
                       disabled={isActionBusy}
@@ -786,7 +786,7 @@ export default function PartnerDashboard() {
                     </button>
                   )}
 
-                  {task.status === 'ARRIVED_AT_LOCATION' && (
+                  {(task.status === 'ARRIVED' || task.status === 'ARRIVED_AT_LOCATION' || task.status === 'PARTNER_ACCEPTED' || task.status === 'ACCEPTED' || task.status === 'PARTNER_ASSIGNED') && (
                     <button
                       onClick={() => handleStartWork(task.id)}
                       disabled={isActionBusy}
@@ -808,7 +808,7 @@ export default function PartnerDashboard() {
                     </button>
                   )}
 
-                  {task.status === 'WORK_IN_PROGRESS' && (
+                  {(task.status === 'WORK_STARTED' || task.status === 'IN_PROGRESS' || task.status === 'WORK_IN_PROGRESS') && (
                     <button
                       onClick={() => handleCompleteWork(task.id)}
                       disabled={isActionBusy}

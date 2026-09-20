@@ -180,8 +180,8 @@ public class BookingServiceImpl implements BookingService {
                 throw new BadRequestException("Selected provider is not available for the requested time slot");
             }
 
-            boolean hasOverlap = bookingRepository.existsByProviderIdAndBookingDateAndStartTimeLessThanAndEndTimeGreaterThan(
-                    selectedProvider.getId(), request.getBookingDate(), endTime, startTime);
+            boolean hasOverlap = bookingRepository.existsByProviderIdAndBookingDateAndStatusNotInAndStartTimeLessThanAndEndTimeGreaterThan(
+                    selectedProvider.getId(), request.getBookingDate(), List.of(BookingStatus.CANCELLED, BookingStatus.REJECTED), endTime, startTime);
             if (hasOverlap) {
                 throw new BadRequestException("Selected provider has an overlapping booking");
             }
@@ -372,9 +372,23 @@ public class BookingServiceImpl implements BookingService {
         }
 
         BookingStatus previousStatus = booking.getStatus();
-        booking.setStatus(BookingStatus.CANCELLED);
+        booking.transitionToStatus(BookingStatus.CANCELLED);
         if (reason != null && !reason.isBlank()) {
             booking.setNotes(booking.getNotes() != null ? booking.getNotes() + " [Cancelled: " + reason + "]" : "[Cancelled: " + reason + "]");
+        }
+
+        if (booking.getProvider() != null) {
+            List<AvailabilitySlot> slots = availabilitySlotRepository.findByProviderIdAndAvailableDateOrderByStartTimeAsc(
+                    booking.getProvider().getId(), booking.getBookingDate());
+            slots.stream()
+                    .filter(slot -> Boolean.TRUE.equals(slot.getBooked()) &&
+                            !slot.getStartTime().isAfter(booking.getStartTime()) &&
+                            !slot.getEndTime().isBefore(booking.getEndTime()))
+                    .findFirst()
+                    .ifPresent(slot -> {
+                        slot.setBooked(false);
+                        availabilitySlotRepository.save(slot);
+                    });
         }
 
         bookingRepository.save(booking);
@@ -409,8 +423,8 @@ public class BookingServiceImpl implements BookingService {
         // Filter those who have no overlapping bookings
         List<ProviderProfile> availableProviders = candidateProviders.stream()
                 .filter(provider -> {
-                    boolean hasOverlap = bookingRepository.existsByProviderIdAndBookingDateAndStartTimeLessThanAndEndTimeGreaterThan(
-                            provider.getId(), date, endTime, startTime);
+                    boolean hasOverlap = bookingRepository.existsByProviderIdAndBookingDateAndStatusNotInAndStartTimeLessThanAndEndTimeGreaterThan(
+                            provider.getId(), date, List.of(BookingStatus.CANCELLED, BookingStatus.REJECTED), endTime, startTime);
                     return !hasOverlap;
                 })
                 .toList();
@@ -507,9 +521,10 @@ public class BookingServiceImpl implements BookingService {
         return providers.stream()
                 .map(provider -> {
                     boolean overlappingBookingExists =
-                            bookingRepository.existsByProviderIdAndBookingDateAndStartTimeLessThanAndEndTimeGreaterThan(
+                            bookingRepository.existsByProviderIdAndBookingDateAndStatusNotInAndStartTimeLessThanAndEndTimeGreaterThan(
                                     provider.getId(),
                                     bookingDate,
+                                    List.of(BookingStatus.CANCELLED, BookingStatus.REJECTED),
                                     endTime,
                                     startTime
                             );
@@ -546,7 +561,7 @@ public class BookingServiceImpl implements BookingService {
                 .findByProviderIdAndAvailableDateAndBookedFalseOrderByStartTimeAsc(provider.getId(), bookingDate);
 
         return slots.stream()
-                .filter(slot -> !slot.getStartTime().isAfter(startTime) && slot.getEndTime().isAfter(startTime))
+                .filter(slot -> !slot.getStartTime().isAfter(startTime) && !slot.getEndTime().isBefore(endTime))
                 .findFirst()
                 .orElse(null);
     }
@@ -556,16 +571,33 @@ public class BookingServiceImpl implements BookingService {
         Vehicle vehicle = booking.getVehicle();
 
         String serviceName = booking.getService().getName();
-        if (booking.getNotes() != null && booking.getNotes().startsWith("[Quote Request")) {
-            int colonIdx = booking.getNotes().indexOf("]: ");
-            if (colonIdx != -1) {
-                String extracted = booking.getNotes().substring(colonIdx + 3).trim();
-                int pipeIdx = extracted.indexOf(" | ");
-                if (pipeIdx != -1) {
-                    extracted = extracted.substring(0, pipeIdx).trim();
+        if (booking.getNotes() != null && !booking.getNotes().isBlank()) {
+            String notes = booking.getNotes();
+            if (notes.startsWith("[Option: ")) {
+                int endIdx = notes.indexOf("]");
+                if (endIdx != -1) {
+                    serviceName = notes.substring(9, endIdx).trim();
                 }
-                if (!extracted.isBlank()) {
-                    serviceName = extracted;
+            } else if (notes.startsWith("[Quote Request")) {
+                int colonIdx = notes.indexOf("]: ");
+                if (colonIdx != -1) {
+                    String extracted = notes.substring(colonIdx + 3).trim();
+                    int pipeIdx = extracted.indexOf(" | ");
+                    if (pipeIdx != -1) {
+                        extracted = extracted.substring(0, pipeIdx).trim();
+                    }
+                    if (!extracted.isBlank()) {
+                        serviceName = extracted;
+                    }
+                }
+            }
+        } else if (booking.getPackageDescription() != null && booking.getPackageDescription().startsWith("Selected Variant: ")) {
+            String pd = booking.getPackageDescription();
+            int openParen = pd.indexOf("(");
+            if (openParen != -1) {
+                String variantName = pd.substring("Selected Variant: ".length(), openParen).trim();
+                if (booking.getService() != null && !variantName.isBlank()) {
+                    serviceName = booking.getService().getName() + " (" + variantName + ")";
                 }
             }
         }

@@ -47,6 +47,7 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
     private final ServiceCategoryRepository serviceCategoryRepository;
     private final com.taaskr.repository.ProviderServiceRepository providerServiceRepository;
     private final com.taaskr.service.PayoutService payoutService;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     public ProviderWorkflowServiceImpl(UserRepository userRepository,
                                        ProviderProfileRepository providerProfileRepository,
@@ -55,7 +56,8 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
                                        ProviderCategoryRepository providerCategoryRepository,
                                        ServiceCategoryRepository serviceCategoryRepository,
                                        com.taaskr.repository.ProviderServiceRepository providerServiceRepository,
-                                       com.taaskr.service.PayoutService payoutService) {
+                                       com.taaskr.service.PayoutService payoutService,
+                                       org.springframework.context.ApplicationEventPublisher eventPublisher) {
         this.userRepository = userRepository;
         this.providerProfileRepository = providerProfileRepository;
         this.availabilitySlotRepository = availabilitySlotRepository;
@@ -64,6 +66,7 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
         this.serviceCategoryRepository = serviceCategoryRepository;
         this.providerServiceRepository = providerServiceRepository;
         this.payoutService = payoutService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -152,11 +155,17 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
         ProviderProfile provider = getApprovedProviderByEmail(providerEmail);
         Booking booking = getProviderBooking(provider.getId(), bookingId);
 
-        if(booking.getStatus() != BookingStatus.ASSIGNED){
-            throw new BadRequestException("Only Assigned bookings can be accepted");
-        }
-        booking.setStatus(BookingStatus.ACCEPTED);
+        BookingStatus previousStatus = booking.getStatus();
+        booking.transitionToStatus(BookingStatus.ACCEPTED);
+        booking.setPartnerAcceptedAt(java.time.LocalDateTime.now());
         Booking saved = bookingRepository.save(booking);
+
+        if (previousStatus != saved.getStatus()) {
+            eventPublisher.publishEvent(new com.taaskr.event.BookingStatusChangedEvent(
+                    saved.getId(), previousStatus, saved.getStatus(), provider.getId()
+            ));
+        }
+
         return mapBooking(saved);
     }
 
@@ -172,13 +181,31 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
         ProviderProfile provider = getProviderByEmail(providerEmail);
         Booking booking = getProviderBooking(provider.getId(), bookingId);
 
-        if(booking.getStatus() != BookingStatus.ASSIGNED && booking.getStatus() != BookingStatus.PENDING){
-            throw new BadRequestException("Only Pending or Assigned bookings can be rejected");
-        }
-        booking.setStatus(BookingStatus.REJECTED);
+        BookingStatus previousStatus = booking.getStatus();
+        booking.transitionToStatus(BookingStatus.REJECTED);
         booking.setCancellationReason(reason != null && !reason.isBlank() ? reason.trim() : "Rejected by service provider");
         booking.setCancelledByRole("PROVIDER");
+
+        List<AvailabilitySlot> slots = availabilitySlotRepository.findByProviderIdAndAvailableDateOrderByStartTimeAsc(
+                provider.getId(), booking.getBookingDate());
+        slots.stream()
+                .filter(slot -> Boolean.TRUE.equals(slot.getBooked()) &&
+                        !slot.getStartTime().isAfter(booking.getStartTime()) &&
+                        !slot.getEndTime().isBefore(booking.getEndTime()))
+                .findFirst()
+                .ifPresent(slot -> {
+                    slot.setBooked(false);
+                    availabilitySlotRepository.save(slot);
+                });
+
         Booking saved = bookingRepository.save(booking);
+
+        if (previousStatus != saved.getStatus()) {
+            eventPublisher.publishEvent(new com.taaskr.event.BookingStatusChangedEvent(
+                    saved.getId(), previousStatus, saved.getStatus(), provider.getId()
+            ));
+        }
+
         return mapBooking(saved);
     }
 
@@ -191,11 +218,13 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
         BookingStatus current = booking.getStatus();
         BookingStatus target = request.getStatus();
 
-        if(!isValidTransition(current, target)){
-            throw new BadRequestException("Invalid booking status from " + current + " to " + target);
-        }
-
-        if (target == BookingStatus.IN_PROGRESS || target == BookingStatus.IN_TRANSIT) {
+        if (target == BookingStatus.IN_PROGRESS || target == BookingStatus.IN_TRANSIT || target == BookingStatus.WORK_STARTED || target == BookingStatus.ON_THE_WAY || target == BookingStatus.ARRIVED || target == BookingStatus.WORK_COMPLETED) {
+            if (booking.getServicePartner() != null) {
+                throw new BadRequestException("Service Partner (" + booking.getServicePartner().getName() + ") is assigned to this booking and is responsible for starting and executing work. The individual Service Provider cannot independently start it.");
+            }
+            if (booking.getProvider() == null) {
+                throw new BadRequestException("No Service Partner or Service Provider is assigned to this booking. Work cannot start until an authorized administrator assigns a provider.");
+            }
             if (booking.getBookingDate() != null && booking.getStartTime() != null) {
                 java.time.LocalDateTime scheduledStart = java.time.LocalDateTime.of(booking.getBookingDate(), booking.getStartTime());
                 java.time.LocalDateTime nowIST = java.time.LocalDateTime.now(java.time.ZoneId.of("Asia/Kolkata"));
@@ -206,7 +235,19 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
             }
         }
 
-        booking.setStatus(target);
+        booking.transitionToStatus(target);
+
+        if (target == BookingStatus.ON_THE_WAY || target == BookingStatus.IN_TRANSIT) {
+            if (booking.getJourneyStartedAt() == null) booking.setJourneyStartedAt(java.time.LocalDateTime.now());
+        } else if (target == BookingStatus.ARRIVED) {
+            if (booking.getArrivedAt() == null) booking.setArrivedAt(java.time.LocalDateTime.now());
+        } else if (target == BookingStatus.WORK_STARTED || target == BookingStatus.IN_PROGRESS) {
+            if (booking.getWorkStartedAt() == null) booking.setWorkStartedAt(java.time.LocalDateTime.now());
+        } else if (target == BookingStatus.WORK_COMPLETED) {
+            if (booking.getWorkCompletedAt() == null) booking.setWorkCompletedAt(java.time.LocalDateTime.now());
+        } else if (target == BookingStatus.COMPLETED) {
+            if (booking.getWorkCompletedAt() == null) booking.setWorkCompletedAt(java.time.LocalDateTime.now());
+        }
 
         if (target == BookingStatus.REJECTED || target == BookingStatus.CANCELLED) {
             if (request.getReason() != null && !request.getReason().isBlank()) {
@@ -217,12 +258,18 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
             booking.setCancelledByRole("PROVIDER");
         }
 
-        if(target == BookingStatus.COMPLETED){
+        if (target == BookingStatus.COMPLETED) {
             provider.setTotalJobs(provider.getTotalJobs() + 1);
             providerProfileRepository.save(provider);
         }
 
         Booking saved = bookingRepository.save(booking);
+
+        if (current != saved.getStatus()) {
+            eventPublisher.publishEvent(new com.taaskr.event.BookingStatusChangedEvent(
+                    saved.getId(), current, saved.getStatus(), provider.getId()
+            ));
+        }
 
         if (saved.getStatus() == BookingStatus.COMPLETED &&
                 (saved.getPaymentStatus() == PaymentStatus.PAID || saved.getPaymentMethod() == PaymentMethod.AFTER_SERVICE)) {
@@ -276,8 +323,8 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
                 .filter(booking -> booking.getProvider() == null)
                 .filter(booking -> {
                     java.time.LocalTime endTime = booking.getStartTime().plusMinutes(booking.getService().getDurationMinutes());
-                    boolean hasOverlap = bookingRepository.existsByProviderIdAndBookingDateAndStartTimeLessThanAndEndTimeGreaterThan(
-                            provider.getId(), booking.getBookingDate(), endTime, booking.getStartTime());
+                    boolean hasOverlap = bookingRepository.existsByProviderIdAndBookingDateAndStatusNotInAndStartTimeLessThanAndEndTimeGreaterThan(
+                            provider.getId(), booking.getBookingDate(), List.of(BookingStatus.CANCELLED, BookingStatus.REJECTED), endTime, booking.getStartTime());
                     return !hasOverlap;
                 }).map(this::mapBooking).toList();
     }
@@ -303,15 +350,16 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
         }
 
         java.time.LocalTime endTime = booking.getStartTime().plusMinutes(booking.getService().getDurationMinutes());
-        boolean hasOverlap = bookingRepository.existsByProviderIdAndBookingDateAndStartTimeLessThanAndEndTimeGreaterThan(
-                provider.getId(), booking.getBookingDate(), endTime, booking.getStartTime());
+        boolean hasOverlap = bookingRepository.existsByProviderIdAndBookingDateAndStatusNotInAndStartTimeLessThanAndEndTimeGreaterThan(
+                provider.getId(), booking.getBookingDate(), List.of(BookingStatus.CANCELLED, BookingStatus.REJECTED), endTime, booking.getStartTime());
         
         if (hasOverlap) {
             throw new BadRequestException("You have an overlapping booking at this time");
         }
         
+        BookingStatus previousStatus = booking.getStatus();
         booking.setProvider(provider);
-        booking.setStatus(BookingStatus.ASSIGNED);
+        booking.transitionToStatus(BookingStatus.ASSIGNED);
         
         List<AvailabilitySlot> existingSlots = availabilitySlotRepository.findByProviderIdAndAvailableDateOrderByStartTimeAsc(provider.getId(), booking.getBookingDate());
         boolean slotExists = existingSlots.stream().anyMatch(slot -> 
@@ -336,6 +384,13 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
         }
         
         Booking saved = bookingRepository.save(booking);
+
+        if (previousStatus != saved.getStatus()) {
+            eventPublisher.publishEvent(new com.taaskr.event.BookingStatusChangedEvent(
+                    saved.getId(), previousStatus, saved.getStatus(), provider.getId()
+            ));
+        }
+
         return mapBooking(saved);
     }
 
@@ -389,12 +444,48 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
         );
     }
 
+    private String extractServiceName(Booking booking) {
+        if (booking.getNotes() != null && !booking.getNotes().isBlank()) {
+            String notes = booking.getNotes();
+            if (notes.startsWith("[Option: ")) {
+                int endIdx = notes.indexOf("]");
+                if (endIdx != -1) {
+                    return notes.substring(9, endIdx).trim();
+                }
+            }
+            if (notes.startsWith("[Quote Request")) {
+                int colonIdx = notes.indexOf("]: ");
+                if (colonIdx != -1) {
+                    String extracted = notes.substring(colonIdx + 3).trim();
+                    int pipeIdx = extracted.indexOf(" | ");
+                    if (pipeIdx != -1) {
+                        extracted = extracted.substring(0, pipeIdx).trim();
+                    }
+                    if (!extracted.isBlank()) {
+                        return extracted;
+                    }
+                }
+            }
+        }
+        if (booking.getPackageDescription() != null && booking.getPackageDescription().startsWith("Selected Variant: ")) {
+            String pd = booking.getPackageDescription();
+            int openParen = pd.indexOf("(");
+            if (openParen != -1) {
+                String variantName = pd.substring("Selected Variant: ".length(), openParen).trim();
+                if (booking.getService() != null && !variantName.isBlank()) {
+                    return booking.getService().getName() + " (" + variantName + ")";
+                }
+            }
+        }
+        return (booking.getService() != null && booking.getService().getName() != null) ? booking.getService().getName() : "";
+    }
+
     private ProviderBookingResponse mapBooking(Booking booking) {
         ProviderBookingResponse response = new ProviderBookingResponse(
                 booking.getId(),
                 booking.getBookingCode(),
                 booking.getService().getId(),
-                booking.getService().getName(),
+                extractServiceName(booking),
                 booking.getService().getCategory().getName(),
                 booking.getUser().getId(),
                 booking.getUser().getName(),
@@ -428,6 +519,27 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
             response.setVehicleType(booking.getVehicle().getVehicleType());
             response.setVehicleRegistrationNumber(booking.getVehicle().getRegistrationNumber());
         }
+
+        if (booking.getProvider() != null) {
+            response.setProviderId(booking.getProvider().getId());
+            response.setProviderName(booking.getProvider().getUser() != null ? booking.getProvider().getUser().getName() : "");
+        }
+
+        if (booking.getServicePartner() != null) {
+            com.taaskr.entity.ServicePartner sp = booking.getServicePartner();
+            response.setServicePartnerId(sp.getId());
+            response.setServicePartnerName(sp.getName());
+            response.setServicePartnerPhone(sp.getPhone());
+            response.setServicePartnerTitle(sp.getTitle());
+            response.setServicePartnerRating(sp.getRating());
+        }
+
+        response.setPartnerAssignedAt(booking.getPartnerAssignedAt());
+        response.setPartnerAcceptedAt(booking.getPartnerAcceptedAt());
+        response.setJourneyStartedAt(booking.getJourneyStartedAt());
+        response.setArrivedAt(booking.getArrivedAt());
+        response.setWorkStartedAt(booking.getWorkStartedAt());
+        response.setWorkCompletedAt(booking.getWorkCompletedAt());
 
         response.setCancellationReason(booking.getCancellationReason());
         response.setCancelledByRole(booking.getCancelledByRole());

@@ -201,14 +201,21 @@ export default function BookingFlow() {
     if (!serviceId) {
       api.catalog.getServices().then(servs => {
         if (Array.isArray(servs) && servs.length > 0) {
-          const match = servs.find(s => (s.categoryName || '').toLowerCase().includes((bookingState.categoryName || '').toLowerCase()));
+          let match = null;
+          if (serviceName) {
+            const baseName = serviceName.split('(')[0].trim().toLowerCase();
+            match = servs.find(s => s.name && (baseName.includes(s.name.toLowerCase()) || s.name.toLowerCase().includes(baseName)));
+          }
+          if (!match && bookingState.categoryName) {
+            match = servs.find(s => (s.categoryName || '').toLowerCase().includes((bookingState.categoryName || '').toLowerCase()));
+          }
           setQuoteServiceId(match ? match.id : servs[0].id);
         } else {
           setQuoteServiceId(1);
         }
       }).catch(() => setQuoteServiceId(1));
     }
-  }, [serviceId, bookingState.categoryName]);
+  }, [serviceId, serviceName, bookingState.categoryName]);
 
   useEffect(() => {
     const prefillUser = async () => {
@@ -328,7 +335,9 @@ export default function BookingFlow() {
         latitude: coordinates?.latitude,
         longitude: coordinates?.longitude,
         customPrice: price !== undefined && price !== null ? Number(price) : null,
-        notes: bookingState.isQuoteBooking ? `[Quote Request - ${Number(price) === 0 ? 'FREE' : '₹' + price}]: ${serviceName} | ${notes || ''}` : (isVehicle && packageDescription ? `${notes ? notes + ' | ' : ''}Cargo: ${packageDescription}` : notes)
+        notes: bookingState.isQuoteBooking 
+          ? `[Quote Request - ${Number(price) === 0 ? 'FREE' : '₹' + price}]: ${serviceName} | ${notes || ''}` 
+          : (serviceName ? `[Option: ${serviceName}]${notes ? ' | ' + notes : ''}${isVehicle && packageDescription ? ' | Cargo: ' + packageDescription : ''}` : (isVehicle && packageDescription ? `${notes ? notes + ' | ' : ''}Cargo: ${packageDescription}` : notes))
       };
 
       if (isVehicle) {

@@ -1180,13 +1180,9 @@ export default function ProviderDashboard() {
                 <strong style={{ color: '#34D399', fontSize: '0.82rem' }}>
                   {job.servicePartnerName} ({job.servicePartnerTitle || 'Technician'})
                 </strong>
-              ) : job.status === 'COMPLETED' ? (
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem', fontStyle: 'italic' }}>
-                  Direct Provider Fulfillment (Self)
-                </span>
               ) : (
-                <span style={{ color: '#FBBF24', fontSize: '0.78rem', fontWeight: 600 }}>
-                  Not Assigned Yet
+                <span style={{ color: '#34D399', fontSize: '0.78rem', fontStyle: 'italic', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <CheckCircle2 size={13} color="#10B981" /> Direct Provider ({userProfile?.name || 'Self'})
                 </span>
               )}
             </div>
@@ -1210,7 +1206,7 @@ export default function ProviderDashboard() {
                       borderColor: job.servicePartnerId ? 'rgba(16, 185, 129, 0.4)' : 'var(--border-light)'
                     }}
                   >
-                    <option value="">{job.servicePartnerId ? 'Change Worker' : '-- Select Worker / Technician --'}</option>
+                    <option value="">{job.servicePartnerId ? 'Change Worker' : '-- Delegate to Worker (Optional) --'}</option>
                     {servicePartners.map(p => (
                       <option key={p.id} value={p.id}>
                         {p.name} ({p.title || 'Technician'})
@@ -1285,8 +1281,31 @@ export default function ProviderDashboard() {
                 </>
               )}
 
-              {/* Step 2: ACCEPTED -> Start Work / Start Transit ONLY */}
-              {job.status === 'ACCEPTED' && (() => {
+              {/* Step 2: ACCEPTED / PARTNER_ASSIGNED -> Work Start Action according to assignment precedence */}
+              {(job.status === 'ACCEPTED' || job.status === 'PARTNER_ASSIGNED') && (() => {
+                const isPartnerAssigned = Boolean(job.servicePartnerId || job.servicePartnerName);
+                if (isPartnerAssigned) {
+                  return (
+                    <span 
+                      style={{ 
+                        fontSize: '0.75rem', 
+                        padding: '0.3rem 0.65rem', 
+                        borderRadius: '6px', 
+                        backgroundColor: 'rgba(52, 211, 153, 0.12)', 
+                        color: '#34d399', 
+                        border: '1px solid rgba(52, 211, 153, 0.3)', 
+                        fontWeight: 600, 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        gap: '0.35rem' 
+                      }}
+                    >
+                      <UserCheck size={13} />
+                      <span>Assigned to Partner {job.servicePartnerName} (Responsible for work execution)</span>
+                    </span>
+                  );
+                }
+
                 const isFuture = isBookingInFuture(job.bookingDate, job.startTime);
                 const timeUntil = getTimeUntilBooking(job.bookingDate, job.startTime);
                 return (

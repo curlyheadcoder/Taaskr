@@ -55,6 +55,22 @@ public class ProviderBookingResponse {
     private String cancellationReason;
     private String cancelledByRole;
 
+    private Long providerId;
+    private String providerName;
+
+    private Long servicePartnerId;
+    private String servicePartnerName;
+    private String servicePartnerPhone;
+    private String servicePartnerTitle;
+    private Double servicePartnerRating;
+
+    private LocalDateTime partnerAssignedAt;
+    private LocalDateTime partnerAcceptedAt;
+    private LocalDateTime journeyStartedAt;
+    private LocalDateTime arrivedAt;
+    private LocalDateTime workStartedAt;
+    private LocalDateTime workCompletedAt;
+
     public ProviderBookingResponse() {
     }
 
@@ -360,5 +376,109 @@ public class ProviderBookingResponse {
 
     public void setCancelledByRole(String cancelledByRole) {
         this.cancelledByRole = cancelledByRole;
+    }
+
+    public Long getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(Long providerId) {
+        this.providerId = providerId;
+    }
+
+    public String getProviderName() {
+        return providerName;
+    }
+
+    public void setProviderName(String providerName) {
+        this.providerName = providerName;
+    }
+
+    public Long getServicePartnerId() {
+        return servicePartnerId;
+    }
+
+    public void setServicePartnerId(Long servicePartnerId) {
+        this.servicePartnerId = servicePartnerId;
+    }
+
+    public String getServicePartnerName() {
+        return servicePartnerName;
+    }
+
+    public void setServicePartnerName(String servicePartnerName) {
+        this.servicePartnerName = servicePartnerName;
+    }
+
+    public String getServicePartnerPhone() {
+        return servicePartnerPhone;
+    }
+
+    public void setServicePartnerPhone(String servicePartnerPhone) {
+        this.servicePartnerPhone = servicePartnerPhone;
+    }
+
+    public String getServicePartnerTitle() {
+        return servicePartnerTitle;
+    }
+
+    public void setServicePartnerTitle(String servicePartnerTitle) {
+        this.servicePartnerTitle = servicePartnerTitle;
+    }
+
+    public Double getServicePartnerRating() {
+        return servicePartnerRating;
+    }
+
+    public void setServicePartnerRating(Double servicePartnerRating) {
+        this.servicePartnerRating = servicePartnerRating;
+    }
+
+    public LocalDateTime getPartnerAssignedAt() {
+        return partnerAssignedAt;
+    }
+
+    public void setPartnerAssignedAt(LocalDateTime partnerAssignedAt) {
+        this.partnerAssignedAt = partnerAssignedAt;
+    }
+
+    public LocalDateTime getPartnerAcceptedAt() {
+        return partnerAcceptedAt;
+    }
+
+    public void setPartnerAcceptedAt(LocalDateTime partnerAcceptedAt) {
+        this.partnerAcceptedAt = partnerAcceptedAt;
+    }
+
+    public LocalDateTime getJourneyStartedAt() {
+        return journeyStartedAt;
+    }
+
+    public void setJourneyStartedAt(LocalDateTime journeyStartedAt) {
+        this.journeyStartedAt = journeyStartedAt;
+    }
+
+    public LocalDateTime getArrivedAt() {
+        return arrivedAt;
+    }
+
+    public void setArrivedAt(LocalDateTime arrivedAt) {
+        this.arrivedAt = arrivedAt;
+    }
+
+    public LocalDateTime getWorkStartedAt() {
+        return workStartedAt;
+    }
+
+    public void setWorkStartedAt(LocalDateTime workStartedAt) {
+        this.workStartedAt = workStartedAt;
+    }
+
+    public LocalDateTime getWorkCompletedAt() {
+        return workCompletedAt;
+    }
+
+    public void setWorkCompletedAt(LocalDateTime workCompletedAt) {
+        this.workCompletedAt = workCompletedAt;
     }
 }

@@ -45,6 +45,11 @@ public class AdminBookingResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    private Long servicePartnerId;
+    private String servicePartnerName;
+    private String servicePartnerPhone;
+    private LocalDateTime workStartedAt;
+
     public AdminBookingResponse() {
     }
 
@@ -194,5 +199,37 @@ public class AdminBookingResponse {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public Long getServicePartnerId() {
+        return servicePartnerId;
+    }
+
+    public void setServicePartnerId(Long servicePartnerId) {
+        this.servicePartnerId = servicePartnerId;
+    }
+
+    public String getServicePartnerName() {
+        return servicePartnerName;
+    }
+
+    public void setServicePartnerName(String servicePartnerName) {
+        this.servicePartnerName = servicePartnerName;
+    }
+
+    public String getServicePartnerPhone() {
+        return servicePartnerPhone;
+    }
+
+    public void setServicePartnerPhone(String servicePartnerPhone) {
+        this.servicePartnerPhone = servicePartnerPhone;
+    }
+
+    public LocalDateTime getWorkStartedAt() {
+        return workStartedAt;
+    }
+
+    public void setWorkStartedAt(LocalDateTime workStartedAt) {
+        this.workStartedAt = workStartedAt;
     }
 }

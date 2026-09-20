@@ -1525,10 +1525,6 @@ export default function AdminDashboard() {
                   <p className="empty-state-description">Bookings placed by customers will appear here.</p>
                 </div>
               ) : (() => {
-                const showMapColumn = bookingStatusFilter !== 'COMPLETED' && 
-                                      bookingStatusFilter !== 'CANCELLED' && 
-                                      pagedBookings.some(b => b.status === 'PENDING' && !b.providerId && !b.providerName);
-
                 return (
                   <div className="table-container">
                     <table className="enterprise-table">
@@ -1537,12 +1533,13 @@ export default function AdminDashboard() {
                           <th>Code</th>
                           <th>Service</th>
                           <th>Customer</th>
-                          <th>Provider</th>
+                          <th>Assigned Provider</th>
+                          <th>Assigned Partner</th>
                           <th>Date &amp; Time</th>
                           <th>Amount</th>
                           <th>Payment</th>
                           <th>Status</th>
-                          {showMapColumn && <th>Map Task to Provider</th>}
+                          <th>Assign Provider Action</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1565,7 +1562,16 @@ export default function AdminDashboard() {
                                   <UserCheck size={13} /> {b.providerName}
                                 </span>
                               ) : (
-                                <span style={{ color: '#f59e0b', fontSize: '0.78rem', fontWeight: 600 }}>Unassigned</span>
+                                <span style={{ color: '#f59e0b', fontSize: '0.78rem', fontWeight: 600, backgroundColor: 'rgba(245, 158, 11, 0.12)', padding: '0.15rem 0.4rem', borderRadius: '4px' }}>Unassigned</span>
+                              )}
+                            </td>
+                            <td style={{ fontSize: '0.8125rem' }}>
+                              {b.servicePartnerName ? (
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: '#34D399', fontWeight: 600 }}>
+                                  <UserCheck size={13} /> {b.servicePartnerName}
+                                </span>
+                              ) : (
+                                <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>No Partner</span>
                               )}
                             </td>
                             <td style={{ whiteSpace: 'nowrap', color: 'var(--text-muted)', fontSize: '0.78rem' }}>
@@ -1585,38 +1591,31 @@ export default function AdminDashboard() {
                                 {b.status?.replace('_', ' ') || '—'}
                               </span>
                             </td>
-                            {showMapColumn && (
-                              <td>
-                                {b.providerId || b.providerName || b.status !== 'PENDING' ? (
-                                  <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem', fontStyle: 'italic' }}>—</span>
-                                ) : (
-                                  <select
-                                    value={b.providerId || ''}
-                                    onChange={(e) => handleAssignProvider(b.id, e.target.value)}
-                                    style={{
-                                      padding: '0.35rem 0.6rem',
-                                      borderRadius: '8px',
-                                      border: '1px solid var(--border-light)',
-                                      backgroundColor: 'var(--bg-card)',
-                                      color: 'var(--text-main)',
-                                      fontSize: '0.78rem',
-                                      fontWeight: 600,
-                                      outline: 'none',
-                                      cursor: 'pointer'
-                                    }}
-                                  >
-                                    <option value="" disabled style={{ color: 'var(--text-muted)' }}>
-                                      Select Provider…
+                            <td>
+                              {b.status === 'COMPLETED' || b.status === 'CANCELLED' ? (
+                                <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem', fontStyle: 'italic' }}>Finalized</span>
+                              ) : (
+                                <select
+                                  value={b.providerId || ''}
+                                  onChange={(e) => handleAssignProvider(b.id, e.target.value)}
+                                  style={{
+                                    padding: '0.35rem 0.6rem',
+                                    borderRadius: '8px',
+                                    border: '1px solid var(--border-light)',
+                                    backgroundColor: 'var(--bg-card)',
+                                    color: 'var(--text-main)',
+                                    fontSize: '0.78rem'
+                                  }}
+                                >
+                                  <option value="">{b.providerId ? 'Reassign Provider' : '-- Assign Provider --'}</option>
+                                  {(providers || []).map(p => (
+                                    <option key={p.id} value={p.id}>
+                                      {p.name || p.userName} ({p.city || 'Available'})
                                     </option>
-                                    {(providers || []).map(p => (
-                                      <option key={p.id} value={p.id}>
-                                        {p.name || p.userName} ({p.categoryName || 'Provider'})
-                                      </option>
-                                    ))}
-                                  </select>
-                                )}
-                              </td>
-                            )}
+                                  ))}
+                                </select>
+                              )}
+                            </td>
                           </tr>
                         ))}
                       </tbody>

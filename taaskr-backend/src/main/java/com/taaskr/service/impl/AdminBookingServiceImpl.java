@@ -60,13 +60,49 @@ public class AdminBookingServiceImpl implements AdminBookingService {
         return mapToResponse(saved);
     }
 
+    private String extractServiceName(Booking booking) {
+        if (booking.getNotes() != null && !booking.getNotes().isBlank()) {
+            String notes = booking.getNotes();
+            if (notes.startsWith("[Option: ")) {
+                int endIdx = notes.indexOf("]");
+                if (endIdx != -1) {
+                    return notes.substring(9, endIdx).trim();
+                }
+            }
+            if (notes.startsWith("[Quote Request")) {
+                int colonIdx = notes.indexOf("]: ");
+                if (colonIdx != -1) {
+                    String extracted = notes.substring(colonIdx + 3).trim();
+                    int pipeIdx = extracted.indexOf(" | ");
+                    if (pipeIdx != -1) {
+                        extracted = extracted.substring(0, pipeIdx).trim();
+                    }
+                    if (!extracted.isBlank()) {
+                        return extracted;
+                    }
+                }
+            }
+        }
+        if (booking.getPackageDescription() != null && booking.getPackageDescription().startsWith("Selected Variant: ")) {
+            String pd = booking.getPackageDescription();
+            int openParen = pd.indexOf("(");
+            if (openParen != -1) {
+                String variantName = pd.substring("Selected Variant: ".length(), openParen).trim();
+                if (booking.getService() != null && !variantName.isBlank()) {
+                    return booking.getService().getName() + " (" + variantName + ")";
+                }
+            }
+        }
+        return (booking.getService() != null && booking.getService().getName() != null) ? booking.getService().getName() : "";
+    }
+
     private AdminBookingResponse mapToResponse(Booking booking) {
 
         User user = booking.getUser();
         Service service = booking.getService();
         ProviderProfile provider = booking.getProvider();
 
-        return new AdminBookingResponse(
+        AdminBookingResponse resp = new AdminBookingResponse(
                 booking.getId(),
                 booking.getBookingCode(),
 
@@ -78,7 +114,7 @@ public class AdminBookingServiceImpl implements AdminBookingService {
                 provider != null ? provider.getUser().getName() : null,
 
                 service.getId(),
-                service.getName(),
+                extractServiceName(booking),
                 service.getCategory().getName(),
 
                 booking.getBookingDate(),
@@ -102,5 +138,14 @@ public class AdminBookingServiceImpl implements AdminBookingService {
                 booking.getCreatedAt(),
                 booking.getUpdatedAt()
         );
+
+        if (booking.getServicePartner() != null) {
+            resp.setServicePartnerId(booking.getServicePartner().getId());
+            resp.setServicePartnerName(booking.getServicePartner().getName());
+            resp.setServicePartnerPhone(booking.getServicePartner().getPhone());
+        }
+        resp.setWorkStartedAt(booking.getWorkStartedAt());
+
+        return resp;
     }
 }
