@@ -59,7 +59,7 @@ public class PayoutServiceImpl implements PayoutService {
 
     private BigDecimal getCurrentBalance(Long providerId) {
         List<WalletTransaction> txns = walletTransactionRepository.findByProviderIdOrderByCreatedAtDesc(providerId);
-        if (txns.isEmpty()) {
+        if (txns.isEmpty() || txns.get(0).getBalanceAfter() == null) {
             return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
         }
         return txns.get(0).getBalanceAfter().setScale(2, RoundingMode.HALF_UP);

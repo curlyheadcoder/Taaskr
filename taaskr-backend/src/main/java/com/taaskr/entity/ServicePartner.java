@@ -63,20 +63,24 @@ public class ServicePartner {
     private LocalDateTime updatedAt;
 
     @Version
-    private Long version;
+    @Column(nullable = false)
+    private Long version = 0L;
 
     public Long getVersion() {
-        return version;
+        return version != null ? version : 0L;
     }
 
     public void setVersion(Long version) {
-        this.version = version;
+        this.version = version != null ? version : 0L;
     }
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+        if (this.version == null) {
+            this.version = 0L;
+        }
         if (this.rating == null) {
             this.rating = 5.0;
         }
@@ -88,6 +92,16 @@ public class ServicePartner {
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
+        if (this.version == null) {
+            this.version = 0L;
+        }
+    }
+
+    @PostLoad
+    protected void onLoad() {
+        if (this.version == null) {
+            this.version = 0L;
+        }
     }
 
     public ServicePartner() {}

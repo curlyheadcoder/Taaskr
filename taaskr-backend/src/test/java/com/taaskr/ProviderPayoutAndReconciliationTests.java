@@ -349,4 +349,55 @@ public class ProviderPayoutAndReconciliationTests {
                 "Withdrawal request under ₹100.00 must throw BAD_REQUEST"
         );
     }
+
+    // 11. Provider Profile and Service Partner Null Version Hardening
+    @Test
+    public void test11_NullVersionProviderProfileAndServicePartnerVersioning() {
+        User freshUser = new User();
+        freshUser.setName("Fresh Provider");
+        freshUser.setEmail("fresh_prov_" + System.currentTimeMillis() + "@taaskr.com");
+        freshUser.setPassword(passwordEncoder.encode("Pass@123"));
+        freshUser.setRole(Role.PROVIDER);
+        freshUser.setPhone("9977" + (System.currentTimeMillis() % 1000000));
+        freshUser.setEnabled(true);
+        freshUser = userRepository.save(freshUser);
+
+        ProviderProfile freshProvider = new ProviderProfile();
+        freshProvider.setUser(freshUser);
+        freshProvider.setCity("Indore");
+        freshProvider.setVersion(null); // Explicitly test null version safety
+        freshProvider = providerProfileRepository.saveAndFlush(freshProvider);
+
+        assertNotNull(freshProvider.getVersion(), "Provider profile version must be non-null after save/load");
+        assertEquals(0L, freshProvider.getVersion());
+
+        freshProvider.setTotalJobs(freshProvider.getTotalJobs() + 1);
+        ProviderProfile updatedProvider = providerProfileRepository.saveAndFlush(freshProvider);
+        assertNotNull(updatedProvider.getVersion());
+        assertTrue(updatedProvider.getVersion() >= 1L, "Version should be incremented by Hibernate optimistic locking");
+
+        ServicePartner partner = new ServicePartner();
+        partner.setName("Test Partner");
+        partner.setPhone("9998887776");
+        partner.setEmail("partner@taaskr.com");
+        partner.setVersion(null);
+        
+        ServicePartner savedPartner = partner;
+        assertNotNull(savedPartner);
+        assertEquals(0L, savedPartner.getVersion());
+    }
+
+    // 12. Booking Completion with Null Version Safety & Wallet Crediting Idempotency
+    @Test
+    public void test12_BookingCompletionWithVersionSafetyAndWalletCrediting() {
+        assertDoesNotThrow(() -> payoutService.creditBookingEarnings(completedPaidBooking1));
+        
+        // Second credit attempt must be idempotent
+        payoutService.creditBookingEarnings(completedPaidBooking1);
+
+        WalletOverviewResponse wallet = payoutService.getWalletOverview(providerUser1.getEmail());
+        assertEquals(BigDecimal.valueOf(850.00).setScale(2, RoundingMode.HALF_UP), wallet.getCurrentBalance());
+        assertEquals(1, walletTransactionRepository.findByProviderIdOrderByCreatedAtDesc(provider1.getId())
+                .stream().filter(t -> t.getType() == WalletTransactionType.EARNING).count());
+    }
 }

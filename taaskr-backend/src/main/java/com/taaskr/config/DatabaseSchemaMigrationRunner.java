@@ -22,8 +22,28 @@ public class DatabaseSchemaMigrationRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        remediateNullVersionColumns();
         migrateVehiclesProviderIdConstraint();
         harmonizeStandardCategories();
+    }
+
+    private void remediateNullVersionColumns() {
+        try {
+            log.info("[DB Migration] Remediating NULL version columns across entities to preserve optimistic locking integrity...");
+            String[] tables = {"provider_profiles", "service_partners", "bookings", "availability_slots"};
+            for (String table : tables) {
+                try {
+                    int updated = jdbcTemplate.update("UPDATE " + table + " SET version = 0 WHERE version IS NULL");
+                    if (updated > 0) {
+                        log.info("[DB Migration] Fixed {} rows with NULL version in table '{}'", updated, table);
+                    }
+                } catch (Exception e) {
+                    log.warn("[DB Migration] Notice while remediating null version on table {}: {}", table, e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            log.warn("[DB Migration] Error during version column remediation: {}", e.getMessage());
+        }
     }
 
     private void harmonizeStandardCategories() {

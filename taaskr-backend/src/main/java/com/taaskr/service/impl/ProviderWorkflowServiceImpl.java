@@ -259,7 +259,7 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
         }
 
         if (target == BookingStatus.COMPLETED) {
-            provider.setTotalJobs(provider.getTotalJobs() + 1);
+            provider.setTotalJobs((provider.getTotalJobs() != null ? provider.getTotalJobs() : 0) + 1);
             providerProfileRepository.save(provider);
         }
 

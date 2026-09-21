@@ -68,14 +68,24 @@ public class ProviderProfile {
     private java.time.LocalDateTime lastOnlineAt;
 
     @Version
-    private Long version;
+    @Column(nullable = false)
+    private Long version = 0L;
 
     public Long getVersion() {
-        return version;
+        return version != null ? version : 0L;
     }
 
     public void setVersion(Long version) {
-        this.version = version;
+        this.version = version != null ? version : 0L;
+    }
+
+    @PrePersist
+    @PreUpdate
+    @PostLoad
+    protected void ensureVersionNotNull() {
+        if (this.version == null) {
+            this.version = 0L;
+        }
     }
 
     public ProviderProfile() {
@@ -138,7 +148,7 @@ public class ProviderProfile {
     }
 
     public Integer getTotalJobs() {
-        return totalJobs;
+        return totalJobs != null ? totalJobs : 0;
     }
 
     public void setTotalJobs(Integer totalJobs) {
