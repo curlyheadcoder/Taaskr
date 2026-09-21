@@ -12,7 +12,7 @@ import {
   Truck, MapPin, Package, Navigation, CheckCircle2, ShieldCheck, 
   Clock, Check, X, AlertCircle, Plus, Trash2, Edit2, Phone, Mail, 
   Star, Briefcase, Calendar, CheckSquare, Settings, User, RefreshCw,
-  DollarSign, ExternalLink, Power, TrendingUp, BarChart3, PieChart,
+  DollarSign, IndianRupee, ExternalLink, Power, TrendingUp, BarChart3, PieChart,
   PanelLeftClose, PanelLeftOpen, Wallet, Award, ArrowUpRight, Banknote, Play,
   MessageSquare, Send, MessageCircle, HelpCircle, Headphones, FileText, Radio, Activity,
   Landmark, Smartphone, CreditCard, UserCheck
@@ -2398,7 +2398,7 @@ export default function ProviderDashboard() {
                     </div>
                   </div>
                   <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(245, 158, 11, 0.12)', color: 'var(--warning)' }}>
-                    <DollarSign size={18} />
+                    <Banknote size={18} />
                   </div>
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
@@ -2639,7 +2639,7 @@ export default function ProviderDashboard() {
               <div className="panel">
                 <div className="panel-header" style={{ marginBottom: '1rem' }}>
                   <h3 className="panel-title">
-                    <DollarSign size={16} color="var(--primary)" />
+                    <IndianRupee size={16} color="var(--primary)" />
                     <span>Payout Requests & Settlement Status</span>
                   </h3>
                   <span className="badge badge-assigned">{(walletOverview.recentPayoutRequests || walletOverview.recentPayouts || []).length} Requests</span>

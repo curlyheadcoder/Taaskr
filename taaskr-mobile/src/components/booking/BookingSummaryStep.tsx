@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { CreditCard, DollarSign, ShieldCheck } from 'lucide-react-native';
+import { CreditCard, Banknote, ShieldCheck } from 'lucide-react-native';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
@@ -115,7 +115,7 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
           onPress={() => onPaymentMethodChange('AFTER_SERVICE')}
           activeOpacity={0.8}
         >
-          <DollarSign size={20} color={paymentMethod === 'AFTER_SERVICE' ? tokens.colors.brand.primary : subColor} />
+          <Banknote size={20} color={paymentMethod === 'AFTER_SERVICE' ? tokens.colors.brand.primary : subColor} />
           <Text style={[
             styles.paymentText,
             { color: paymentMethod === 'AFTER_SERVICE' ? tokens.colors.brand.primary : textColor }

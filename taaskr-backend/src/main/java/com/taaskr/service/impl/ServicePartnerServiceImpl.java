@@ -18,9 +18,11 @@ import com.taaskr.repository.ServicePartnerRepository;
 import com.taaskr.repository.UserRepository;
 import com.taaskr.dto.routing.RoutingResult;
 import com.taaskr.service.MapService;
+import com.taaskr.service.PayoutService;
 import com.taaskr.service.RoutingService;
 import com.taaskr.service.ServicePartnerService;
 import jakarta.transaction.Transactional;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -44,6 +46,7 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
     private final MapService mapService;
     private final RoutingService routingService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final PayoutService payoutService;
 
     public ServicePartnerServiceImpl(UserRepository userRepository,
                                      ProviderProfileRepository providerProfileRepository,
@@ -52,7 +55,8 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
                                      PasswordEncoder passwordEncoder,
                                      MapService mapService,
                                      RoutingService routingService,
-                                     SimpMessagingTemplate messagingTemplate) {
+                                     SimpMessagingTemplate messagingTemplate,
+                                     @Lazy PayoutService payoutService) {
         this.userRepository = userRepository;
         this.providerProfileRepository = providerProfileRepository;
         this.servicePartnerRepository = servicePartnerRepository;
@@ -61,6 +65,7 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
         this.mapService = mapService;
         this.routingService = routingService;
         this.messagingTemplate = messagingTemplate;
+        this.payoutService = payoutService;
     }
 
     @Override
@@ -330,10 +335,15 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
             }
         }
 
+        int updated = servicePartnerRepository.updateLocationIfNewer(partner.getId(), request.getLatitude(), request.getLongitude(), sampleTime);
+        if (updated == 0) {
+            // Out-of-order race condition: another concurrent thread already persisted a newer timestamp
+            return;
+        }
+
         partner.setCurrentLatitude(request.getLatitude());
         partner.setCurrentLongitude(request.getLongitude());
         partner.setLocationUpdatedAt(sampleTime);
-        servicePartnerRepository.save(partner);
 
         for (Booking booking : activeBookings) {
             BigDecimal userLat = booking.getLatitude();
@@ -422,9 +432,16 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
     @Transactional
     public BookingResponse completeWorkByPartner(String partnerEmail, Long bookingId) {
         Booking booking = verifyPartnerForBooking(partnerEmail, bookingId);
-        booking.transitionToStatus(BookingStatus.WORK_COMPLETED);
         booking.setWorkCompletedAt(LocalDateTime.now());
-        booking = bookingRepository.save(booking);
+
+        if (booking.getPaymentStatus() == PaymentStatus.PAID || booking.getPaymentMethod() == PaymentMethod.AFTER_SERVICE) {
+            booking.setStatus(BookingStatus.COMPLETED);
+            booking = bookingRepository.save(booking);
+            payoutService.creditBookingEarnings(booking);
+        } else {
+            booking.transitionToStatus(BookingStatus.WORK_COMPLETED);
+            booking = bookingRepository.save(booking);
+        }
         return mapToBookingResponse(booking);
     }
 
@@ -434,9 +451,17 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
         Booking booking = verifyPartnerForBooking(partnerEmail, bookingId);
         booking.setPaymentMethod(method != null ? method : PaymentMethod.AFTER_SERVICE);
         booking.setPaymentStatus(PaymentStatus.PAID);
-        booking.transitionToStatus(BookingStatus.PAYMENT_COMPLETED);
         booking.setPaymentCompletedAt(LocalDateTime.now());
-        booking = bookingRepository.save(booking);
+
+        // Payment collection alone must NOT mark unfinished work as COMPLETED.
+        if (booking.getStatus() == BookingStatus.WORK_COMPLETED || booking.getStatus() == BookingStatus.COMPLETED || booking.getStatus() == BookingStatus.PROVIDER_APPROVED) {
+            booking.setStatus(BookingStatus.COMPLETED);
+            booking = bookingRepository.save(booking);
+            payoutService.creditBookingEarnings(booking);
+        } else {
+            // Keep active service status unchanged
+            booking = bookingRepository.save(booking);
+        }
         return mapToBookingResponse(booking);
     }
 

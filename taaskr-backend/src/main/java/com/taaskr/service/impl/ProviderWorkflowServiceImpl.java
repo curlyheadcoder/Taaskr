@@ -235,6 +235,10 @@ public class ProviderWorkflowServiceImpl implements ProviderWorkflowService {
             }
         }
 
+        if (target == BookingStatus.COMPLETED && booking.getServicePartner() != null && booking.getStatus() != BookingStatus.WORK_COMPLETED && booking.getStatus() != BookingStatus.PROVIDER_APPROVED && booking.getStatus() != BookingStatus.COMPLETED) {
+            throw new BadRequestException("Service Partner (" + booking.getServicePartner().getName() + ") has not yet marked work completed for this task.");
+        }
+
         booking.transitionToStatus(target);
 
         if (target == BookingStatus.ON_THE_WAY || target == BookingStatus.IN_TRANSIT) {

@@ -80,10 +80,10 @@ public class TrackingServiceImpl implements TrackingService {
         List<Booking> activeBookings = bookingRepository.findByProviderIdAndStatusIn(
                 provider.getId(),
                 List.of(BookingStatus.ASSIGNED, BookingStatus.ACCEPTED, BookingStatus.IN_PROGRESS, BookingStatus.IN_TRANSIT, BookingStatus.ON_THE_WAY)
-        );
+        ).stream().filter(b -> b.getServicePartner() == null).toList();
 
         if (activeBookings.isEmpty()) {
-            throw new BadRequestException("Location tracking is only active during an active booking assignment");
+            throw new BadRequestException("Location tracking is only active during an active direct booking assignment");
         }
 
         LocalDateTime sampleTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(request.getTimestamp()), ZoneId.systemDefault());
@@ -196,6 +196,7 @@ public class TrackingServiceImpl implements TrackingService {
 
         // Service Partner Details (if assigned)
         com.taaskr.entity.ServicePartner partner = booking.getServicePartner();
+        response.setActiveExecutor(partner != null ? "PARTNER" : "PROVIDER");
         if (partner != null) {
             response.setServicePartnerId(partner.getId());
             response.setServicePartnerName(partner.getName());

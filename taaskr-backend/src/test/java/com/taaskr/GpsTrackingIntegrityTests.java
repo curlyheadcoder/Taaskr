@@ -415,4 +415,43 @@ public class GpsTrackingIntegrityTests {
         b.setPaymentMethod(PaymentMethod.AFTER_SERVICE);
         return bookingRepository.save(b);
     }
+
+    // 12. Payment Collection On Active Service Preserves Active Service Status
+    @Test
+    @Transactional
+    public void test12_PaymentCollectionOnActiveServicePreservesActiveStatus() {
+        User customer = createUser("cust" + UUID.randomUUID() + "@test.com", Role.USER);
+        User providerUser = createUser("prov" + UUID.randomUUID() + "@test.com", Role.PROVIDER);
+        ProviderProfile provider = createProviderProfile(providerUser);
+        User partnerUser = createUser("part" + UUID.randomUUID() + "@test.com", Role.SERVICE_PARTNER);
+        ServicePartner partner = createServicePartner(partnerUser, provider);
+
+        Booking activeBooking = createBooking(customer, provider, partner, BookingStatus.WORK_STARTED);
+
+        servicePartnerService.recordPaymentByPartner(partnerUser.getEmail(), activeBooking.getId(), PaymentMethod.AFTER_SERVICE);
+
+        Booking reloaded = bookingRepository.findById(activeBooking.getId()).orElseThrow();
+        assertEquals(PaymentStatus.PAID, reloaded.getPaymentStatus(), "Payment status must be updated to PAID");
+        assertNotEquals(BookingStatus.COMPLETED, reloaded.getStatus(), "Payment collection on active work must NOT mark booking COMPLETED");
+        assertEquals(BookingStatus.WORK_STARTED, reloaded.getStatus(), "Active service status must be preserved");
+    }
+
+    // 13. Service Completion With Paid Status Finalizes Booking
+    @Test
+    @Transactional
+    public void test13_ServiceCompletionWithPaidStatusFinalizesBooking() {
+        User customer = createUser("cust" + UUID.randomUUID() + "@test.com", Role.USER);
+        User providerUser = createUser("prov" + UUID.randomUUID() + "@test.com", Role.PROVIDER);
+        ProviderProfile provider = createProviderProfile(providerUser);
+        User partnerUser = createUser("part" + UUID.randomUUID() + "@test.com", Role.SERVICE_PARTNER);
+        ServicePartner partner = createServicePartner(partnerUser, provider);
+
+        Booking activeBooking = createBooking(customer, provider, partner, BookingStatus.WORK_STARTED);
+        servicePartnerService.recordPaymentByPartner(partnerUser.getEmail(), activeBooking.getId(), PaymentMethod.AFTER_SERVICE);
+
+        servicePartnerService.completeWorkByPartner(partnerUser.getEmail(), activeBooking.getId());
+
+        Booking reloaded = bookingRepository.findById(activeBooking.getId()).orElseThrow();
+        assertEquals(BookingStatus.COMPLETED, reloaded.getStatus(), "Booking must transition to COMPLETED when work is done and payment is PAID");
+    }
 }

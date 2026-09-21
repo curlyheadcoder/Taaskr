@@ -7,7 +7,7 @@ import SystemObservabilityTab from '../components/admin/SystemObservabilityTab';
 import Pagination from '../components/Pagination';
 import { 
   BarChart3, Activity, Layers, Users, Briefcase, Plus, Trash2, 
-  Edit2, Check, X, ShieldCheck, RefreshCw, DollarSign, Calendar, 
+  Edit2, Check, X, ShieldCheck, RefreshCw, DollarSign, IndianRupee, Banknote, Calendar, 
   MapPin, Truck, AlertCircle, Search, MessageSquare, Send, CheckCircle2, Clock, HelpCircle, FileText,
   UserCheck, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
@@ -861,7 +861,7 @@ export default function AdminDashboard() {
             className={`sidebar-item ${activeTab === 'payouts' ? 'active' : ''}`}
             title="Payout Settlements"
           >
-            <DollarSign size={16} />
+            <IndianRupee size={16} />
             <span>Payouts & Settlements</span>
             {payouts.filter(p => p.status === 'REQUESTED' || p.status === 'PROCESSING').length > 0 && (
               <span style={{ 
@@ -1797,7 +1797,7 @@ export default function AdminDashboard() {
           <div className="panel">
             <div className="panel-header" style={{ marginBottom: '1rem' }}>
               <h2 className="panel-title">
-                <DollarSign size={18} color="var(--primary)" />
+                <IndianRupee size={18} color="var(--primary)" />
                 <span>Provider Payouts & Settlement Requests</span>
               </h2>
               <span className="badge badge-assigned">{payouts.length} Total Requests</span>
@@ -1806,7 +1806,7 @@ export default function AdminDashboard() {
             {payouts.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-state-icon">
-                  <DollarSign size={22} />
+                  <Banknote size={22} />
                 </div>
                 <h3 className="empty-state-title">No payout requests</h3>
                 <p className="empty-state-description">When partners request earnings withdrawals, they will appear here for processing.</p>

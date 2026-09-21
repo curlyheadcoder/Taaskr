@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../services/api';
 import { 
   Navigation, MapPin, CheckCircle, Clock, Phone, AlertCircle, 
-  RefreshCw, ShieldCheck, UserCheck, Play, Award, Zap, Compass, DollarSign,
+  RefreshCw, ShieldCheck, UserCheck, Play, Award, Zap, Compass, IndianRupee, Banknote,
   Search, ExternalLink, Building2, Briefcase, ChevronRight, Activity, Calendar
 } from 'lucide-react';
 
@@ -433,7 +433,7 @@ export default function PartnerDashboard() {
           gap: '1.15rem'
         }}>
           <div style={{ padding: '0.85rem', borderRadius: '14px', background: 'rgba(16, 185, 129, 0.18)', color: '#34D399' }}>
-            <DollarSign size={26} />
+            <IndianRupee size={26} />
           </div>
           <div>
             <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#34D399' }}>
@@ -830,7 +830,7 @@ export default function PartnerDashboard() {
                     </button>
                   )}
 
-                  {task.status === 'WORK_COMPLETED' && (
+                  {task.status !== 'COMPLETED' && task.status !== 'CANCELLED' && task.status !== 'REJECTED' && task.paymentStatus !== 'PAID' && (
                     <button
                       onClick={() => handleRecordPayment(task.id)}
                       disabled={isActionBusy}
@@ -848,7 +848,7 @@ export default function PartnerDashboard() {
                         boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)'
                       }}
                     >
-                      <DollarSign size={17} /> Collect Cash / Confirm Payment (₹{task.totalAmount || 0})
+                      <Banknote size={18} /> Collect Cash / Confirm Payment (₹{task.totalAmount || 0})
                     </button>
                   )}
 

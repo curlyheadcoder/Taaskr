@@ -56,10 +56,19 @@ public class LiveTrackingResponse {
     private String vehicleRegistrationNumber;
 
     // Live Telemetry
+    private String activeExecutor; // "PROVIDER" or "PARTNER"
     private BigDecimal providerLatitude;
     private BigDecimal providerLongitude;
     private LocalDateTime locationUpdatedAt;
     private Boolean isLive;
+
+    public String getActiveExecutor() {
+        return activeExecutor;
+    }
+
+    public void setActiveExecutor(String activeExecutor) {
+        this.activeExecutor = activeExecutor;
+    }
 
     // Calculated Metrics
     private BigDecimal distanceKm;
