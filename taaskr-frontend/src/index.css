@@ -94,8 +94,8 @@ body.theme-user:not(.dark), body:not(.theme-provider):not(.theme-admin):not(.dar
 
   --text-main: #18181B;
   --text-secondary: #27272A;
-  --text-muted: #71717A;
-  --text-light: #A1A1AA;
+  --text-muted: #475569;
+  --text-light: #64748B;
   --text-inverse: #FFFFFF;
 
   --border-subtle: #F4F4F5;
@@ -140,8 +140,8 @@ body.theme-provider {
 
   --text-main: #F0FDFA;
   --text-secondary: #CCFBF1;
-  --text-muted: #94A3B8;
-  --text-light: #64748B;
+  --text-muted: #CBD5E1;
+  --text-light: #94A3B8;
   --text-inverse: #041215;
 
   --border-subtle: #0F2F37;
@@ -183,8 +183,8 @@ body.theme-provider:not(.dark) {
 
   --text-main: #0F172A;
   --text-secondary: #134E4A;
-  --text-muted: #64748B;
-  --text-light: #94A3B8;
+  --text-muted: #334155;
+  --text-light: #475569;
   --text-inverse: #FFFFFF;
 
   --border-subtle: #F0FDFA;
@@ -639,6 +639,15 @@ button, input, select, textarea {
   font-size: 0.875rem;
   padding: 0.55rem 0.75rem;
   transition: var(--transition-fast);
+}
+
+.form-control:disabled, .form-input:disabled, .form-select:disabled, input:disabled, textarea:disabled {
+  background-color: var(--bg-subtle) !important;
+  color: var(--text-main) !important;
+  -webkit-text-fill-color: var(--text-main) !important;
+  opacity: 0.9 !important;
+  border-color: var(--border-strong) !important;
+  cursor: not-allowed;
 }
 
 .dark .form-control,

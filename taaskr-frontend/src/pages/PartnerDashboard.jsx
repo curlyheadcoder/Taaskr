@@ -277,7 +277,7 @@ export default function PartnerDashboard() {
               </span>
             </div>
             
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.4rem', color: '#94A3B8', fontSize: '0.88rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.4rem', color: '#CBD5E1', fontSize: '0.88rem', flexWrap: 'wrap' }}>
               {profile?.providerName && (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', color: '#60A5FA', fontWeight: 600 }}>
                   <Building2 size={14} /> {profile.providerName}
@@ -399,7 +399,7 @@ export default function PartnerDashboard() {
             <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#F8FAFC' }}>
               {totalActiveJobs}
             </div>
-            <div style={{ fontSize: '0.84rem', color: '#94A3B8', fontWeight: 500 }}>Active Dispatches</div>
+            <div style={{ fontSize: '0.84rem', color: '#CBD5E1', fontWeight: 600 }}>Active Dispatches</div>
           </div>
         </div>
 
@@ -419,7 +419,7 @@ export default function PartnerDashboard() {
             <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#F8FAFC' }}>
               {totalCompletedJobs}
             </div>
-            <div style={{ fontSize: '0.84rem', color: '#94A3B8', fontWeight: 500 }}>Completed Jobs</div>
+            <div style={{ fontSize: '0.84rem', color: '#CBD5E1', fontWeight: 600 }}>Completed Jobs</div>
           </div>
         </div>
 
@@ -439,7 +439,7 @@ export default function PartnerDashboard() {
             <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#34D399' }}>
               ₹{totalCollectedEarnings.toLocaleString('en-IN')}
             </div>
-            <div style={{ fontSize: '0.84rem', color: '#94A3B8', fontWeight: 500 }}>Job Revenue Handled</div>
+            <div style={{ fontSize: '0.84rem', color: '#CBD5E1', fontWeight: 600 }}>Job Revenue Handled</div>
           </div>
         </div>
 
@@ -459,7 +459,7 @@ export default function PartnerDashboard() {
             <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#F8FAFC' }}>
               {profile?.rating ? profile.rating.toFixed(1) : '5.0'} ★
             </div>
-            <div style={{ fontSize: '0.84rem', color: '#94A3B8', fontWeight: 500 }}>Technician Rating</div>
+            <div style={{ fontSize: '0.84rem', color: '#CBD5E1', fontWeight: 600 }}>Technician Rating</div>
           </div>
         </div>
       </div>
@@ -613,7 +613,7 @@ export default function PartnerDashboard() {
                 }}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <span style={{ fontSize: '0.8rem', color: '#64748B', fontFamily: 'monospace', fontWeight: 700 }}>
+                      <span style={{ fontSize: '0.82rem', color: '#93C5FD', fontFamily: 'monospace', fontWeight: 700 }}>
                         BOOKING #{task.id}
                       </span>
                       <span style={{
@@ -638,8 +638,8 @@ export default function PartnerDashboard() {
                     <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#34D399' }}>
                       ₹{task.totalAmount || task.price || 0}
                     </div>
-                    <div style={{ fontSize: '0.78rem', color: '#94A3B8', marginTop: '0.2rem' }}>
-                      Payment Status: <strong style={{ color: task.paymentStatus === 'COMPLETED' ? '#34D399' : '#FBBF24' }}>{task.paymentStatus || 'PENDING'}</strong>
+                    <div style={{ fontSize: '0.78rem', color: '#CBD5E1', marginTop: '0.2rem' }}>
+                      Payment Status: <strong style={{ color: task.paymentStatus === 'PAID' || task.paymentStatus === 'COMPLETED' ? '#34D399' : '#FBBF24' }}>{task.paymentStatus || 'PENDING'}</strong>
                     </div>
                   </div>
                 </div>
@@ -652,15 +652,15 @@ export default function PartnerDashboard() {
                   marginBottom: '1.35rem'
                 }}>
                   {/* Location Card */}
-                  <div style={{ background: 'rgba(15, 23, 42, 0.55)', padding: '1.15rem', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700, marginBottom: '0.5rem', letterSpacing: '0.04em' }}>
+                  <div style={{ background: 'rgba(15, 23, 42, 0.75)', padding: '1.15rem', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#93C5FD', fontWeight: 700, marginBottom: '0.5rem', letterSpacing: '0.04em' }}>
                       CUSTOMER ADDRESS & NAVIGATION
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem', color: '#E2E8F0', fontSize: '0.92rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem', color: '#F8FAFC', fontSize: '0.92rem' }}>
                       <MapPin size={18} style={{ color: '#EF4444', flexShrink: 0, marginTop: '0.15rem' }} />
                       <div>
                         <strong style={{ color: '#F8FAFC', fontSize: '0.98rem' }}>{task.userName || 'Customer'}</strong>
-                        <div style={{ color: '#94A3B8', fontSize: '0.86rem', marginTop: '0.25rem', lineHeight: 1.4 }}>
+                        <div style={{ color: '#CBD5E1', fontSize: '0.88rem', marginTop: '0.25rem', lineHeight: 1.4 }}>
                           {task.address || task.serviceAddress || 'Address on file'}
                         </div>
                         {task.address && (
@@ -687,11 +687,11 @@ export default function PartnerDashboard() {
                   </div>
 
                   {/* Contact & Timing Card */}
-                  <div style={{ background: 'rgba(15, 23, 42, 0.55)', padding: '1.15rem', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700, marginBottom: '0.5rem', letterSpacing: '0.04em' }}>
+                  <div style={{ background: 'rgba(15, 23, 42, 0.75)', padding: '1.15rem', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#93C5FD', fontWeight: 700, marginBottom: '0.5rem', letterSpacing: '0.04em' }}>
                       DISPATCH & SCHEDULE
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', color: '#E2E8F0', fontSize: '0.88rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', color: '#F8FAFC', fontSize: '0.88rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
                         <Phone size={15} style={{ color: '#60A5FA' }} />
                         <span>
