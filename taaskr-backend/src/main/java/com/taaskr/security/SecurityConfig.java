@@ -53,6 +53,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/vehicle/estimate").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/vehicle/pricing-rules").permitAll()
                         .requestMatchers("/api/ai/**").permitAll()
+                        .requestMatchers("/ws-taaskr/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/error").permitAll()
                         .anyRequest().authenticated()
 

@@ -33,6 +33,9 @@ public class PayoutServiceImpl implements PayoutService {
     private final BookingRepository bookingRepository;
     private final NotificationService notificationService;
 
+    @org.springframework.beans.factory.annotation.Value("${app.commission.rate-percentage:15.0}")
+    private double commissionRatePercentage = 15.0;
+
     public PayoutServiceImpl(PayoutRepository payoutRepository,
                              WalletTransactionRepository walletTransactionRepository,
                              ProviderProfileRepository providerProfileRepository,
@@ -160,7 +163,10 @@ public class PayoutServiceImpl implements PayoutService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Minimum payout request amount is ₹100.00");
         }
 
-        BigDecimal balance = getCurrentBalance(provider.getId());
+        // Acquire pessimistic row lock on provider profile to serialize wallet balance calculations
+        ProviderProfile lockedProvider = providerProfileRepository.findByIdWithLock(provider.getId()).orElse(provider);
+
+        BigDecimal balance = getCurrentBalance(lockedProvider.getId());
         if (balance.compareTo(request.getAmount()) < 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient wallet balance for this withdrawal");
         }
@@ -200,7 +206,7 @@ public class PayoutServiceImpl implements PayoutService {
         }
 
         Payout payout = new Payout();
-        payout.setProvider(provider);
+        payout.setProvider(lockedProvider);
         payout.setAmount(request.getAmount());
         payout.setStatus(PayoutStatus.REQUESTED);
         payout.setBankAccountNumber(hasBank ? request.getBankAccountNumber().trim() : null);
@@ -220,7 +226,7 @@ public class PayoutServiceImpl implements PayoutService {
         // Deduct from wallet immediately
         BigDecimal newBalance = balance.subtract(request.getAmount()).setScale(2, RoundingMode.HALF_UP);
         WalletTransaction txn = new WalletTransaction(
-                provider,
+                lockedProvider,
                 null,
                 WalletTransactionType.PAYOUT_WITHDRAWAL,
                 request.getAmount().negate(),
@@ -229,9 +235,9 @@ public class PayoutServiceImpl implements PayoutService {
         );
         walletTransactionRepository.save(txn);
 
-        if (provider.getUser() != null) {
+        if (lockedProvider.getUser() != null) {
             notificationService.sendNotification(
-                    provider.getUser(),
+                    lockedProvider.getUser(),
                     "Payout Request Submitted",
                     "Your withdrawal request of ₹" + request.getAmount() + " has been submitted and is awaiting approval.",
                     NotificationType.PAYMENT,
@@ -278,6 +284,7 @@ public class PayoutServiceImpl implements PayoutService {
 
         // If rejected, refund the balance back to provider's wallet
         if (request.getStatus() == PayoutStatus.REJECTED) {
+            providerProfileRepository.findByIdWithLock(payout.getProvider().getId());
             BigDecimal currentBal = getCurrentBalance(payout.getProvider().getId());
             BigDecimal restoredBal = currentBal.add(payout.getAmount()).setScale(2, RoundingMode.HALF_UP);
             WalletTransaction refundTxn = new WalletTransaction(
@@ -316,13 +323,24 @@ public class PayoutServiceImpl implements PayoutService {
             return;
         }
 
+        // Eligibility check: booking must be COMPLETED and (PAID or Cash-on-service AFTER_SERVICE)
+        boolean isEligible = booking.getStatus() == com.taaskr.enums.BookingStatus.COMPLETED &&
+                (booking.getPaymentStatus() == com.taaskr.enums.PaymentStatus.PAID || booking.getPaymentMethod() == com.taaskr.enums.PaymentMethod.AFTER_SERVICE);
+        if (!isEligible) {
+            return;
+        }
+
+        // Acquire pessimistic row lock on provider profile to serialize balance calculations & avoid race conditions
+        providerProfileRepository.findByIdWithLock(booking.getProvider().getId());
+
         // Avoid double credit
         if (walletTransactionRepository.existsByBookingIdAndType(booking.getId(), WalletTransactionType.EARNING)) {
             return;
         }
 
         BigDecimal gross = booking.getFinalAmount();
-        BigDecimal commission = gross.multiply(BigDecimal.valueOf(0.15)).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal rate = BigDecimal.valueOf(commissionRatePercentage).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
+        BigDecimal commission = gross.multiply(rate).setScale(2, RoundingMode.HALF_UP);
         BigDecimal netEarnings = gross.subtract(commission).setScale(2, RoundingMode.HALF_UP);
 
         BigDecimal currentBal = getCurrentBalance(booking.getProvider().getId());
@@ -336,7 +354,13 @@ public class PayoutServiceImpl implements PayoutService {
                 newBal,
                 "Net earnings from completed booking #" + booking.getBookingCode() + " (Gross: ₹" + gross + ", Fee: ₹" + commission + ")"
         );
-        walletTransactionRepository.save(earningTxn);
+
+        try {
+            walletTransactionRepository.save(earningTxn);
+        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+            // Duplicate earning transaction caught by DB unique constraint (uk_wallet_booking_type)
+            return;
+        }
 
         WalletTransaction feeTxn = new WalletTransaction(
                 booking.getProvider(),
@@ -344,8 +368,11 @@ public class PayoutServiceImpl implements PayoutService {
                 WalletTransactionType.COMMISSION,
                 commission,
                 newBal,
-                "15% Platform fee on booking #" + booking.getBookingCode()
+                commissionRatePercentage + "% Platform fee on booking #" + booking.getBookingCode()
         );
-        walletTransactionRepository.save(feeTxn);
+        try {
+            walletTransactionRepository.save(feeTxn);
+        } catch (org.springframework.dao.DataIntegrityViolationException ignored) {
+        }
     }
 }

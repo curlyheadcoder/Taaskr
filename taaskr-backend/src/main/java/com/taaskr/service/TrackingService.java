@@ -6,4 +6,6 @@ import com.taaskr.dto.provider.UpdateLocationRequest;
 public interface TrackingService {
     void updateProviderLocation(String providerEmail, UpdateLocationRequest request);
     LiveTrackingResponse getLiveTracking(String userEmail, Long bookingId);
+    boolean isAuthorizedForBooking(String userEmail, Long bookingId);
 }
+

@@ -5,8 +5,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Home, CalendarDays, Sparkles, User } from 'lucide-react-native';
 import { useAuthStore } from './src/store/useAuthStore';
 import { colors } from './src/theme/colors';
+import { tokens } from './src/theme/tokens';
 import { ThemeProvider } from './src/theme/ThemeContext';
 
 import LoginScreen from './src/screens/auth/LoginScreen';
@@ -46,55 +48,68 @@ function CustomerBookingsStack() {
   );
 }
 
+function CustomerProfileStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Settings" component={SettingsScreen} />
+      <Stack.Screen name="AddressBook" component={AddressBookScreen} />
+      <Stack.Screen name="VehicleTransport" component={VehicleTransportScreen} />
+    </Stack.Navigator>
+  );
+}
+
 function CustomerTabNavigator() {
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#18181B',
-          borderTopColor: '#27272A',
-          paddingBottom: 6,
-          paddingTop: 6,
-          height: 60,
+          backgroundColor: tokens.colors.dark.bgSurface,
+          borderTopColor: tokens.colors.dark.borderSubtle,
+          paddingBottom: 8,
+          paddingTop: 8,
+          height: 62,
         },
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: '#71717A',
+        tabBarActiveTintColor: tokens.colors.brand.primary,
+        tabBarInactiveTintColor: tokens.colors.dark.textSecondary,
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '700',
+          fontWeight: '600',
+          marginTop: 2,
         }
       }}
     >
       <Tab.Screen 
         name="HomeTab" 
         component={CustomerHomeStack} 
-        options={{ tabBarLabel: 'Explore', tabBarIcon: () => <Text style={{ fontSize: 16 }}>🏠</Text> }}
-      />
-      <Tab.Screen 
-        name="TransportTab" 
-        component={VehicleTransportScreen} 
-        options={{ tabBarLabel: 'Transport', tabBarIcon: () => <Text style={{ fontSize: 16 }}>🚚</Text> }}
+        options={{ 
+          tabBarLabel: 'Explore', 
+          tabBarIcon: ({ color, size }) => <Home size={20} color={color} /> 
+        }}
       />
       <Tab.Screen 
         name="BookingsTab" 
         component={CustomerBookingsStack} 
-        options={{ tabBarLabel: 'Bookings', tabBarIcon: () => <Text style={{ fontSize: 16 }}>📅</Text> }}
-      />
-      <Tab.Screen 
-        name="AddressesTab" 
-        component={AddressBookScreen} 
-        options={{ tabBarLabel: 'Addresses', tabBarIcon: () => <Text style={{ fontSize: 16 }}>📍</Text> }}
+        options={{ 
+          tabBarLabel: 'Bookings', 
+          tabBarIcon: ({ color, size }) => <CalendarDays size={20} color={color} /> 
+        }}
       />
       <Tab.Screen 
         name="AIChatTab" 
         component={AIChatScreen} 
-        options={{ tabBarLabel: 'AI Help', tabBarIcon: () => <Text style={{ fontSize: 16 }}>🤖</Text> }}
+        options={{ 
+          tabBarLabel: 'AI Help', 
+          tabBarIcon: ({ color, size }) => <Sparkles size={20} color={color} /> 
+        }}
       />
       <Tab.Screen 
-        name="SettingsTab" 
-        component={SettingsScreen} 
-        options={{ tabBarLabel: 'Settings', tabBarIcon: () => <Text style={{ fontSize: 16 }}>⚙️</Text> }}
+        name="ProfileTab" 
+        component={CustomerProfileStack} 
+        options={{ 
+          tabBarLabel: 'Profile', 
+          tabBarIcon: ({ color, size }) => <User size={20} color={color} /> 
+        }}
       />
     </Tab.Navigator>
   );
@@ -195,12 +210,20 @@ function AdminTabNavigator() {
   );
 }
 
+import { pushNotificationService } from './src/services/pushNotifications';
+
 function RootNavigator() {
   const { isAuthenticated, isLoading, role, restoreSession } = useAuthStore();
 
   useEffect(() => {
     restoreSession();
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      pushNotificationService.registerForPushNotificationsAsync();
+    }
+  }, [isAuthenticated]);
 
   if (isLoading) {
     return (

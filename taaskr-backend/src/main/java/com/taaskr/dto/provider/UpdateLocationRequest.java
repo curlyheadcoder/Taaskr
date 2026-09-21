@@ -17,6 +17,9 @@ public class UpdateLocationRequest {
     @DecimalMax(value = "180.0", message = "Longitude must be between -180 and 180")
     private BigDecimal longitude;
 
+    @NotNull(message = "Timestamp is required")
+    private Long timestamp;
+
     private Double heading;
     private Double speed;
 
@@ -28,6 +31,15 @@ public class UpdateLocationRequest {
         this.longitude = longitude;
         this.heading = heading;
         this.speed = speed;
+        this.timestamp = System.currentTimeMillis();
+    }
+
+    public UpdateLocationRequest(BigDecimal latitude, BigDecimal longitude, Double heading, Double speed, Long timestamp) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.heading = heading;
+        this.speed = speed;
+        this.timestamp = timestamp;
     }
 
     public BigDecimal getLatitude() {
@@ -44,6 +56,14 @@ public class UpdateLocationRequest {
 
     public void setLongitude(BigDecimal longitude) {
         this.longitude = longitude;
+    }
+
+    public Long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
     }
 
     public Double getHeading() {

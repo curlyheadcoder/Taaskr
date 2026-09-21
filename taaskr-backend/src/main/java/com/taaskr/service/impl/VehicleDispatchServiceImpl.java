@@ -49,8 +49,8 @@ public class VehicleDispatchServiceImpl implements VehicleDispatchService {
         return candidateVehicles.stream()
                 .filter(vehicle -> {
                     // Ensure no conflicting bookings
-                    boolean hasOverlap = bookingRepository.existsByProviderIdAndBookingDateAndStartTimeLessThanAndEndTimeGreaterThan(
-                            vehicle.getProvider().getId(), date, endTime, startTime);
+                    boolean hasOverlap = bookingRepository.existsByProviderIdAndBookingDateAndStatusNotInAndStartTimeLessThanAndEndTimeGreaterThan(
+                            vehicle.getProvider().getId(), date, List.of(com.taaskr.enums.BookingStatus.CANCELLED, com.taaskr.enums.BookingStatus.REJECTED), endTime, startTime);
                     return !hasOverlap;
                 })
                 .map(vehicle -> {

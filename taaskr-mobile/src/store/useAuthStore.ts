@@ -80,6 +80,12 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: async () => {
+    try {
+      const { pushNotificationService } = require('../services/pushNotifications');
+      await pushNotificationService.unregisterPushTokenAsync();
+    } catch (e) {
+      console.warn('Failed to unregister push token on logout:', e);
+    }
     await api.auth.logout();
     set({
       user: null,

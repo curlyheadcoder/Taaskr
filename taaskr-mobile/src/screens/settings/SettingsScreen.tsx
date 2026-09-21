@@ -8,7 +8,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { serverStorage } from '../../services/api';
 import ServerConfigModal from '../../components/ServerConfigModal';
 
-export default function SettingsScreen() {
+export default function SettingsScreen({ navigation }: any) {
   const { user, logout } = useAuthStore();
   const { theme, isDark, toggleTheme, themeColors } = useTheme();
   const [serverUrl, setServerUrl] = useState('');
@@ -36,6 +36,30 @@ export default function SettingsScreen() {
           <Text style={styles.roleText}>{user?.role || 'CUSTOMER'}</Text>
         </View>
       </View>
+
+      <Text style={[styles.sectionTitle, { color: themeColors.textMain }]}>Account & Services</Text>
+
+      <TouchableOpacity 
+        style={[styles.settingCard, { backgroundColor: themeColors.bgCard, borderColor: themeColors.borderLight }]} 
+        onPress={() => navigation?.navigate('AddressBook')}
+      >
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.settingTitle, { color: themeColors.textMain }]}>📍 Saved Delivery Addresses</Text>
+          <Text style={[styles.settingSub, { color: themeColors.textMuted }]}>Manage home, work, and custom addresses</Text>
+        </View>
+        <Text style={styles.changeBadge}>Manage →</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity 
+        style={[styles.settingCard, { backgroundColor: themeColors.bgCard, borderColor: themeColors.borderLight }]} 
+        onPress={() => navigation?.navigate('VehicleTransport')}
+      >
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.settingTitle, { color: themeColors.textMain }]}>🚚 Vehicle Transport & Freight</Text>
+          <Text style={[styles.settingSub, { color: themeColors.textMuted }]}>Book on-demand intra-city goods transport</Text>
+        </View>
+        <Text style={styles.changeBadge}>Book →</Text>
+      </TouchableOpacity>
 
       <Text style={[styles.sectionTitle, { color: themeColors.textMain }]}>App Preferences</Text>
 

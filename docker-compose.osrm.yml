@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  osrm-indore:
+    image: osrm/osrm-backend:latest
+    container_name: taaskr-osrm-indore
+    ports:
+      - "${OSRM_PORT:-5000}:5000"
+    volumes:
+      - ${OSRM_DATA_DIR:-./osrm-data}:/data
+    command: osrm-routed --algorithm mld /data/${OSRM_DATASET_FILE:-madhya-pradesh-latest.osrm}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/route/v1/driving/75.8577,22.7196;75.8800,22.7500?overview=false || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3

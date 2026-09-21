@@ -181,6 +181,10 @@ public class KycDocumentServiceImpl implements KycDocumentService {
         User adminUser = userRepository.findByEmail(adminUsername)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin user not found"));
 
+        if (adminUser.getRole() != Role.ADMIN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only ADMIN users can verify KYC documents");
+        }
+
         if (request.getStatus() == KycDocumentStatus.PENDING) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot update status back to PENDING");
         }

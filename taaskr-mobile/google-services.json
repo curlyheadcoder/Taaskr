@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "583979798898",
+    "project_id": "taaskr-e6864",
+    "storage_bucket": "taaskr-e6864.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:583979798898:android:1aeed5310fae5d78840deb",
+        "android_client_info": {
+          "package_name": "com.taaskr.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB0Yn97fhx2E6zeJkeE7Z4Vbi88KL61D1M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

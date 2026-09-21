@@ -1,50 +1,53 @@
-// Taaskr Mobile Theme Tokens (Matching Web App HSL Color System)
+import { tokens } from './tokens';
+
+// Taaskr Mobile Theme Colors (Linked to Centralized Tokens)
 
 export const colors = {
   // Brand & Primary Colors
-  primary: '#F59E0B',        // Amber Gold
-  primaryDark: '#D97706',
-  primaryLight: '#FBBF24',
-  primarySubtle: 'rgba(245, 158, 11, 0.15)',
+  primary: tokens.colors.brand.primary,        // Electric Amber Accent
+  primaryDark: tokens.colors.brand.primaryHover,
+  primaryLight: tokens.colors.brand.primaryLight,
+  primarySubtle: tokens.colors.brand.primaryMuted,
 
   // Secondary Accents
-  accentIndigo: '#4F46E5',
-  accentBlue: '#3B82F6',
-  accentEmerald: '#10B981',
+  accentIndigo: tokens.colors.accent.indigo,
+  accentBlue: tokens.colors.accent.blue,
+  accentEmerald: tokens.colors.accent.emerald,
 
   // Dark Mode Palette
   dark: {
-    bgPage: '#0B0F19',
-    bgCard: '#111827',
-    bgSubtle: '#1F2937',
-    borderLight: '#374151',
-    borderSubtle: '#1F2937',
-    textMain: '#F9FAFB',
-    textMuted: '#9CA3AF',
-    textSubtle: '#6B7280',
+    bgPage: tokens.colors.dark.bgPage,
+    bgCard: tokens.colors.dark.bgSurface,
+    bgSubtle: tokens.colors.dark.bgSubtle,
+    borderLight: tokens.colors.dark.borderMedium,
+    borderSubtle: tokens.colors.dark.borderSubtle,
+    textMain: tokens.colors.dark.textPrimary,
+    textMuted: tokens.colors.dark.textSecondary,
+    textSubtle: tokens.colors.dark.textMuted,
   },
 
   // Light Mode Palette
   light: {
-    bgPage: '#F8FAFC',
-    bgCard: '#FFFFFF',
-    bgSubtle: '#F1F5F9',
-    borderLight: '#E2E8F0',
-    borderSubtle: '#F1F5F9',
-    textMain: '#0F172A',
-    textMuted: '#64748B',
-    textSubtle: '#94A3B8',
+    bgPage: tokens.colors.light.bgPage,
+    bgCard: tokens.colors.light.bgSurface,
+    bgSubtle: tokens.colors.light.bgSubtle,
+    borderLight: tokens.colors.light.borderMedium,
+    borderSubtle: tokens.colors.light.borderSubtle,
+    textMain: tokens.colors.light.textPrimary,
+    textMuted: tokens.colors.light.textSecondary,
+    textSubtle: tokens.colors.light.textMuted,
   },
 
   // Status Badge Colors
   status: {
-    success: '#10B981',
-    successBg: 'rgba(16, 185, 129, 0.15)',
-    warning: '#F59E0B',
-    warningBg: 'rgba(245, 158, 11, 0.15)',
-    error: '#EF4444',
-    errorBg: 'rgba(239, 68, 68, 0.15)',
-    info: '#3B82F6',
-    infoBg: 'rgba(59, 130, 246, 0.15)',
+    success: tokens.colors.status.success,
+    successBg: tokens.colors.status.successBg,
+    warning: tokens.colors.status.warning,
+    warningBg: tokens.colors.status.warningBg,
+    error: tokens.colors.status.error,
+    errorBg: tokens.colors.status.errorBg,
+    info: tokens.colors.status.info,
+    infoBg: tokens.colors.status.infoBg,
   }
 };
+

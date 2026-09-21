@@ -777,33 +777,6 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ reply })
       });
-    }
-  },
-
-  // ----------------------------------------
-  // REVIEWS & RATINGS
-  // ----------------------------------------
-  reviews: {
-    create: async (data) => {
-      return makeRequest('/api/reviews', {
-        method: 'POST',
-        body: JSON.stringify(data)
-      });
-    },
-
-    reply: async (reviewId, reply) => {
-      return makeRequest(`/api/reviews/${reviewId}/reply`, {
-        method: 'POST',
-        body: JSON.stringify({ reply })
-      });
-    },
-
-    getByService: async (serviceId) => {
-      return makeRequest(`/api/reviews/service/${serviceId}`);
-    },
-
-    getByProvider: async (providerId) => {
-      return makeRequest(`/api/reviews/provider/${providerId}`);
     },
 
     getMyReviews: async () => {

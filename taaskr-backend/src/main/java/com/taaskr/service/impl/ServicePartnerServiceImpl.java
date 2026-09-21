@@ -16,7 +16,9 @@ import com.taaskr.repository.BookingRepository;
 import com.taaskr.repository.ProviderProfileRepository;
 import com.taaskr.repository.ServicePartnerRepository;
 import com.taaskr.repository.UserRepository;
+import com.taaskr.dto.routing.RoutingResult;
 import com.taaskr.service.MapService;
+import com.taaskr.service.RoutingService;
 import com.taaskr.service.ServicePartnerService;
 import jakarta.transaction.Transactional;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -24,7 +26,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -38,6 +42,7 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
     private final BookingRepository bookingRepository;
     private final PasswordEncoder passwordEncoder;
     private final MapService mapService;
+    private final RoutingService routingService;
     private final SimpMessagingTemplate messagingTemplate;
 
     public ServicePartnerServiceImpl(UserRepository userRepository,
@@ -46,6 +51,7 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
                                      BookingRepository bookingRepository,
                                      PasswordEncoder passwordEncoder,
                                      MapService mapService,
+                                     RoutingService routingService,
                                      SimpMessagingTemplate messagingTemplate) {
         this.userRepository = userRepository;
         this.providerProfileRepository = providerProfileRepository;
@@ -53,6 +59,7 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
         this.bookingRepository = bookingRepository;
         this.passwordEncoder = passwordEncoder;
         this.mapService = mapService;
+        this.routingService = routingService;
         this.messagingTemplate = messagingTemplate;
     }
 
@@ -285,6 +292,15 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
     @Override
     @Transactional
     public void updatePartnerLocation(String partnerEmail, UpdatePartnerLocationRequest request) {
+        if (request == null || request.getTimestamp() == null) {
+            throw new BadRequestException("Timestamp is required for location tracking telemetry");
+        }
+
+        long currentServerTime = System.currentTimeMillis();
+        if (request.getTimestamp() > currentServerTime + 60_000L) {
+            throw new BadRequestException("Telemetry timestamp cannot be in the future");
+        }
+
         User workerUser = userRepository.findByEmail(partnerEmail)
                 .or(() -> userRepository.findByPhone(partnerEmail))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -292,30 +308,52 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
         ServicePartner partner = servicePartnerRepository.findByUserId(workerUser.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Service partner profile not found"));
 
-        partner.setCurrentLatitude(request.getLatitude());
-        partner.setCurrentLongitude(request.getLongitude());
-        partner.setLocationUpdatedAt(LocalDateTime.now());
-        servicePartnerRepository.save(partner);
-
-        // Find active ON_THE_WAY booking for this partner
+        // Find active ON_THE_WAY booking for this partner FIRST before updating coordinates
         List<Booking> activeBookings = bookingRepository.findAll()
                 .stream()
                 .filter(b -> b.getServicePartner() != null && b.getServicePartner().getId().equals(partner.getId()))
                 .filter(b -> b.getStatus() == BookingStatus.ON_THE_WAY)
                 .collect(Collectors.toList());
 
+        if (activeBookings.isEmpty()) {
+            throw new BadRequestException("Location tracking is only active while on the way to a customer booking");
+        }
+
+        // Validate client telemetry timestamp against last accepted location sample timestamp
+        LocalDateTime sampleTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(request.getTimestamp()), ZoneId.systemDefault());
+
+        if (partner.getLocationUpdatedAt() != null) {
+            long lastAcceptedMillis = partner.getLocationUpdatedAt().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            if (request.getTimestamp() <= lastAcceptedMillis) {
+                // Out-of-order or duplicate telemetry packet: ignore stale sample
+                return;
+            }
+        }
+
+        partner.setCurrentLatitude(request.getLatitude());
+        partner.setCurrentLongitude(request.getLongitude());
+        partner.setLocationUpdatedAt(sampleTime);
+        servicePartnerRepository.save(partner);
+
         for (Booking booking : activeBookings) {
             BigDecimal userLat = booking.getLatitude();
             BigDecimal userLng = booking.getLongitude();
 
-            double distanceKm = mapService.calculateDistanceKm(request.getLatitude(), request.getLongitude(), userLat, userLng).doubleValue();
+            // 1. Calculate OSRM road route for customer-facing ETA & road distance
+            RoutingResult roadRoute = routingService.calculateRoute(request.getLatitude(), request.getLongitude(), userLat, userLng, booking.getId());
 
-            // Geofence Check (< 200m or 0.2km)
-            if (distanceKm <= 0.20) {
+            // 2. Calculate pure Haversine straight-line physical distance for 200m geofence arrival check
+            double physicalDistanceKm = mapService.calculateStraightLineDistanceKm(request.getLatitude(), request.getLongitude(), userLat, userLng).doubleValue();
+
+            // Geofence Check (< 200m or 0.2km physical straight-line distance)
+            if (physicalDistanceKm <= 0.20) {
                 // Auto mark ARRIVED & STOP LIVE TRACKING
                 booking.transitionToStatus(BookingStatus.ARRIVED);
-                booking.setArrivedAt(LocalDateTime.now());
-                bookingRepository.save(booking);
+                booking.setArrivedAt(sampleTime);
+                bookingRepository.saveAndFlush(booking);
+
+                // Clear routing cache on ARRIVED status transition
+                routingService.clearBookingCache(booking.getId());
 
                 // Broadcast Arrival event via STOMP (Live tracking stops)
                 try {
@@ -325,26 +363,27 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
                             "arrived", true,
                             "isLive", false,
                             "message", "Your Service Partner has arrived.",
-                            "timestamp", LocalDateTime.now().toString()
+                            "timestamp", sampleTime.toString()
                     ));
                 } catch (Exception ignored) {}
             } else {
-                // Broadcast live location while ON_THE_WAY
+                // Broadcast live location while ON_THE_WAY using road route values
                 try {
-                    int etaMin = (int) Math.max(1, Math.round((distanceKm / 25.0) * 60.0));
                     messagingTemplate.convertAndSend("/topic/bookings/" + booking.getId() + "/location", Map.of(
                             "bookingId", booking.getId(),
                             "status", BookingStatus.ON_THE_WAY.name(),
                             "partnerLatitude", request.getLatitude(),
                             "partnerLongitude", request.getLongitude(),
-                            "distanceKm", BigDecimal.valueOf(distanceKm).setScale(2, java.math.RoundingMode.HALF_UP),
-                            "estimatedEtaMinutes", etaMin,
+                            "distanceKm", roadRoute.getDistanceKm(),
+                            "estimatedEtaMinutes", roadRoute.getEstimatedEtaMinutes(),
+                            "routeSource", roadRoute.getRouteSource(),
                             "isLive", true,
-                            "timestamp", LocalDateTime.now().toString()
+                            "timestamp", sampleTime.toString()
                     ));
                 } catch (Exception ignored) {}
             }
         }
+
     }
 
     @Override

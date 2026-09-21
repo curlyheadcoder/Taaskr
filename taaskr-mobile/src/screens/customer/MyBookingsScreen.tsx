@@ -1,154 +1,233 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { 
-  StyleSheet, Text, View, FlatList, TouchableOpacity, 
-  ActivityIndicator, RefreshControl, Alert 
+  StyleSheet, View, FlatList, ActivityIndicator, 
+  RefreshControl, Alert, Text 
 } from 'react-native';
-import { colors } from '../../theme/colors';
+import { tokens } from '../../theme/tokens';
+import { useTheme } from '../../theme/ThemeContext';
 import { api } from '../../services/api';
-import { Booking } from '../../types';
+import { Booking, BookingStatus } from '../../types';
+import { HeaderBar } from '../../components/common/HeaderBar';
+import { Button } from '../../components/common/Button';
+import { 
+  BookingFilterTabs, 
+  BookingTab, 
+  BookingCard, 
+  BookingEmptyState, 
+  BookingRatingModal 
+} from '../../components/bookings';
+import { AlertCircle, RotateCcw } from 'lucide-react-native';
 
 interface Props {
   navigation: any;
 }
 
 export default function MyBookingsScreen({ navigation }: Props) {
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const { isDark } = useTheme();
 
-  const fetchBookings = async () => {
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [selectedTab, setSelectedTab] = useState<BookingTab>('ACTIVE');
+
+  // Rating Modal State
+  const [ratingModalVisible, setRatingModalVisible] = useState<boolean>(false);
+  const [ratingBooking, setRatingBooking] = useState<Booking | null>(null);
+
+  const fetchBookings = useCallback(async () => {
+    setError(null);
     try {
       const res = await api.bookings.getMyBookings();
       setBookings(res || []);
     } catch (e: any) {
       console.error('Failed to fetch bookings:', e);
+      setError(e.message || 'Couldn\'t load your bookings. Please check network connection.');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchBookings();
-  }, []);
+  }, [fetchBookings]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
+  // Tab categorization helper functions based on REAL backend statuses
+  const isActiveStatus = (status: BookingStatus): boolean => {
+    return [
+      'PENDING',
+      'ASSIGNED',
+      'PARTNER_ASSIGNED',
+      'PARTNER_ACCEPTED',
+      'ON_THE_WAY',
+      'ARRIVED',
+      'WORK_STARTED',
+      'ACCEPTED',
+      'IN_PROGRESS',
+      'IN_TRANSIT',
+      'WORK_COMPLETED',
+      'PAYMENT_COMPLETED',
+      'PROVIDER_APPROVED',
+    ].includes(status);
+  };
+
+  const isCompletedStatus = (status: BookingStatus): boolean => {
+    return status === 'COMPLETED';
+  };
+
+  const isCancelledStatus = (status: BookingStatus): boolean => {
+    return ['CANCELLED', 'REJECTED'].includes(status);
+  };
+
+  const activeBookings = bookings.filter((b) => isActiveStatus(b.status));
+  const completedBookings = bookings.filter((b) => isCompletedStatus(b.status));
+  const cancelledBookings = bookings.filter((b) => isCancelledStatus(b.status));
+
+  const getCurrentTabBookings = (): Booking[] => {
+    switch (selectedTab) {
+      case 'ACTIVE':
+        return activeBookings;
       case 'COMPLETED':
-      case 'WORK_COMPLETED':
-        return '#10B981';
-      case 'ON_THE_WAY':
-      case 'IN_TRANSIT':
-      case 'ARRIVED':
-      case 'WORK_STARTED':
-        return '#3B82F6';
+        return completedBookings;
       case 'CANCELLED':
-      case 'REJECTED':
-        return '#EF4444';
-      default:
-        return '#F59E0B';
+        return cancelledBookings;
     }
   };
 
-  const handleCancel = async (bookingId: number) => {
+  const handleTrack = (bookingId: number) => {
+    navigation.navigate('LiveTracking', { bookingId });
+  };
+
+  const handleCancel = (bookingId: number) => {
     Alert.alert(
       'Cancel Booking',
-      'Are you sure you want to cancel this booking?',
+      'Are you sure you want to cancel this booking request?',
       [
-        { text: 'No', style: 'cancel' },
-        { 
-          text: 'Yes, Cancel', 
+        { text: 'No, Keep Booking', style: 'cancel' },
+        {
+          text: 'Yes, Cancel',
           style: 'destructive',
           onPress: async () => {
             try {
-              await api.bookings.cancel(bookingId, 'Cancelled by user');
+              await api.bookings.cancel(bookingId, 'Cancelled by customer');
               fetchBookings();
             } catch (err: any) {
-              Alert.alert('Error', err.message || 'Could not cancel booking.');
+              Alert.alert('Cancellation Error', err.message || 'Could not cancel booking.');
             }
-          }
-        }
+          },
+        },
       ]
     );
   };
 
-  const renderBookingCard = ({ item }: { item: Booking }) => {
-    const statusColor = getStatusColor(item.status);
-    const isTrackable = ['ASSIGNED', 'PARTNER_ASSIGNED', 'PARTNER_ACCEPTED', 'ON_THE_WAY', 'ARRIVED', 'WORK_STARTED'].includes(item.status);
-
-    return (
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <View>
-            <Text style={styles.codeText}>#{item.bookingCode || item.id}</Text>
-            <Text style={styles.serviceName}>{item.serviceName}</Text>
-          </View>
-          <View style={[styles.statusBadge, { backgroundColor: `${statusColor}22`, borderColor: statusColor }]}>
-            <Text style={[styles.statusText, { color: statusColor }]}>{item.status.replace(/_/g, ' ')}</Text>
-          </View>
-        </View>
-
-        <View style={styles.cardBody}>
-          <Text style={styles.detailText}>📅 {item.bookingDate} at {item.startTime}</Text>
-          <Text style={styles.detailText}>📍 {item.address}, {item.city}</Text>
-          {item.servicePartnerName ? (
-            <Text style={styles.detailText}>👷 Partner: {item.servicePartnerName}</Text>
-          ) : null}
-          <Text style={styles.priceText}>₹{item.finalAmount || item.totalAmount}</Text>
-        </View>
-
-        <View style={styles.cardFooter}>
-          {isTrackable ? (
-            <TouchableOpacity 
-              style={styles.trackBtn}
-              onPress={() => navigation.navigate('LiveTracking', { bookingId: item.id })}
-            >
-              <Text style={styles.trackBtnText}>📡 Live Tracking</Text>
-            </TouchableOpacity>
-          ) : null}
-
-          {['PENDING', 'ASSIGNED'].includes(item.status) ? (
-            <TouchableOpacity 
-              style={styles.cancelBtn}
-              onPress={() => handleCancel(item.id)}
-            >
-              <Text style={styles.cancelBtnText}>Cancel</Text>
-            </TouchableOpacity>
-          ) : null}
-        </View>
-      </View>
-    );
+  const handleOpenRatingModal = (booking: Booking) => {
+    setRatingBooking(booking);
+    setRatingModalVisible(true);
   };
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>My Bookings</Text>
-      </View>
+  const handleSubmitRating = async (rating: number, review?: string) => {
+    if (!ratingBooking) return;
+    await api.bookings.rate(ratingBooking.id, { rating, review });
+    fetchBookings();
+  };
 
+  const handleExploreServices = () => {
+    navigation.navigate('HomeTab', { screen: 'CustomerHome' });
+  };
+
+  const bgPage = isDark ? tokens.colors.dark.bgPage : tokens.colors.light.bgPage;
+  const textColor = isDark ? tokens.colors.dark.textPrimary : tokens.colors.light.textPrimary;
+  const secondaryText = isDark ? tokens.colors.dark.textSecondary : tokens.colors.light.textSecondary;
+  const surfaceBg = isDark ? tokens.colors.dark.bgSurface : tokens.colors.light.bgSurface;
+  const borderColor = isDark ? tokens.colors.dark.borderSubtle : tokens.colors.light.borderSubtle;
+
+  const currentBookings = getCurrentTabBookings();
+
+  return (
+    <View style={[styles.container, { backgroundColor: bgPage }]}>
+      <HeaderBar title="My Bookings" />
+
+      {/* Filter Tabs */}
+      <BookingFilterTabs
+        selectedTab={selectedTab}
+        onSelectTab={setSelectedTab}
+        activeCount={activeBookings.length}
+        completedCount={completedBookings.length}
+        cancelledCount={cancelledBookings.length}
+      />
+
+      {/* Content Area */}
       {loading ? (
-        <ActivityIndicator color={colors.primary} style={{ marginTop: 40 }} />
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color={tokens.colors.brand.primary} />
+          <Text style={[styles.loadingText, { color: secondaryText }]}>
+            Loading your bookings...
+          </Text>
+        </View>
+      ) : error ? (
+        <View style={styles.centerContainer}>
+          <View style={[styles.errorCard, { backgroundColor: surfaceBg, borderColor }]}>
+            <AlertCircle size={36} color={tokens.colors.status.error} style={{ marginBottom: 12 }} />
+            <Text style={[styles.errorTitle, { color: textColor }]}>Failed to load bookings</Text>
+            <Text style={[styles.errorSubtitle, { color: secondaryText }]}>{error}</Text>
+            <Button
+              title="Try Again"
+              variant="outline"
+              size="md"
+              leftIcon={<RotateCcw size={16} color={textColor} />}
+              onPress={fetchBookings}
+              style={{ marginTop: 16 }}
+            />
+          </View>
+        </View>
       ) : (
         <FlatList
-          data={bookings}
+          data={currentBookings}
           keyExtractor={(item) => String(item.id)}
-          renderItem={renderBookingCard}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          renderItem={({ item }) => (
+            <BookingCard
+              booking={item}
+              onTrack={handleTrack}
+              onCancel={handleCancel}
+              onRate={handleOpenRatingModal}
+            />
+          )}
+          contentContainerStyle={styles.listContent}
           refreshControl={
-            <RefreshControl 
-              refreshing={refreshing} 
-              onRefresh={() => { setRefreshing(true); fetchBookings(); }} 
-              tintColor={colors.primary} 
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => {
+                setRefreshing(true);
+                fetchBookings();
+              }}
+              tintColor={tokens.colors.brand.primary}
+              colors={[tokens.colors.brand.primary]}
             />
           }
           ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No bookings found.</Text>
-              <Text style={styles.emptySub}>Book a service from Home screen!</Text>
-            </View>
+            <BookingEmptyState
+              tab={selectedTab}
+              onExploreServices={handleExploreServices}
+            />
           }
         />
       )}
+
+      {/* Rating Modal */}
+      {ratingBooking ? (
+        <BookingRatingModal
+          visible={ratingModalVisible}
+          bookingId={ratingBooking.id}
+          serviceName={ratingBooking.serviceName}
+          onClose={() => {
+            setRatingModalVisible(false);
+            setRatingBooking(null);
+          }}
+          onSubmit={handleSubmitRating}
+        />
+      ) : null}
     </View>
   );
 }
@@ -156,111 +235,35 @@ export default function MyBookingsScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.dark.bgPage,
-    paddingHorizontal: 20,
-    paddingTop: 54,
   },
-  header: {
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#FFF',
-  },
-  card: {
-    backgroundColor: colors.dark.bgCard,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: colors.dark.borderLight,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  codeText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: colors.primary,
-    letterSpacing: 0.5,
-  },
-  serviceName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#FFF',
-    marginTop: 2,
-  },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  statusText: {
-    fontSize: 10,
-    fontWeight: '800',
-  },
-  cardBody: {
-    marginTop: 12,
-    gap: 4,
-  },
-  detailText: {
-    fontSize: 13,
-    color: colors.dark.textMuted,
-  },
-  priceText: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#FFF',
-    marginTop: 6,
-  },
-  cardFooter: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 14,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  trackBtn: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  trackBtnText: {
-    color: '#000',
-    fontWeight: '800',
-    fontSize: 12,
-  },
-  cancelBtn: {
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.3)',
-  },
-  cancelBtnText: {
-    color: '#EF4444',
-    fontWeight: '700',
-    fontSize: 12,
-  },
-  emptyContainer: {
+  centerContainer: {
+    flex: 1,
     alignItems: 'center',
-    marginTop: 60,
+    justifyContent: 'center',
+    paddingHorizontal: tokens.spacing.xl,
   },
-  emptyText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '700',
+  loadingText: {
+    fontSize: tokens.typography.bodySm.fontSize,
+    marginTop: tokens.spacing.md,
   },
-  emptySub: {
-    color: colors.dark.textMuted,
-    fontSize: 13,
-    marginTop: 4,
+  errorCard: {
+    width: '100%',
+    padding: tokens.spacing.xl,
+    borderRadius: tokens.radii.xl,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  errorTitle: {
+    fontSize: tokens.typography.h3.fontSize,
+    fontWeight: '800',
+    marginBottom: 4,
+  },
+  errorSubtitle: {
+    fontSize: tokens.typography.bodySm.fontSize,
+    textAlign: 'center',
+  },
+  listContent: {
+    paddingHorizontal: tokens.spacing.lg,
+    paddingBottom: tokens.spacing.xxxl,
   },
 });

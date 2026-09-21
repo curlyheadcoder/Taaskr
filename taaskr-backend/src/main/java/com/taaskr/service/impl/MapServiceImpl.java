@@ -14,7 +14,7 @@ public class MapServiceImpl implements MapService {
     private static final double CITY_ROAD_FACTOR = 1.25;
 
     @Override
-    public BigDecimal calculateDistanceKm(BigDecimal pickupLat, BigDecimal pickupLng, BigDecimal dropLat, BigDecimal dropLng) {
+    public BigDecimal calculateStraightLineDistanceKm(BigDecimal pickupLat, BigDecimal pickupLng, BigDecimal dropLat, BigDecimal dropLng) {
         if (pickupLat == null || pickupLng == null || dropLat == null || dropLng == null) {
             return BigDecimal.valueOf(5.0); // Default reasonable intra-city distance if GPS absent
         }
@@ -32,8 +32,13 @@ public class MapServiceImpl implements MapService {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
         double straightLineKm = EARTH_RADIUS_KM * c;
-        double estimatedRoadKm = Math.max(1.0, straightLineKm * CITY_ROAD_FACTOR);
+        return BigDecimal.valueOf(straightLineKm).setScale(3, RoundingMode.HALF_UP);
+    }
 
+    @Override
+    public BigDecimal calculateDistanceKm(BigDecimal pickupLat, BigDecimal pickupLng, BigDecimal dropLat, BigDecimal dropLng) {
+        BigDecimal straightLineKm = calculateStraightLineDistanceKm(pickupLat, pickupLng, dropLat, dropLng);
+        double estimatedRoadKm = straightLineKm.doubleValue() * CITY_ROAD_FACTOR;
         return BigDecimal.valueOf(estimatedRoadKm).setScale(2, RoundingMode.HALF_UP);
     }
 

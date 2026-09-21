@@ -11,6 +11,9 @@ import java.time.LocalDateTime;
         indexes = {
                 @Index(name = "idx_wallet_provider", columnList = "provider_id"),
                 @Index(name = "idx_wallet_booking", columnList = "booking_id")
+        },
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_wallet_booking_type", columnNames = {"booking_id", "type"})
         }
 )
 public class WalletTransaction {

@@ -61,11 +61,22 @@ public class ProviderProfile {
     @Column(length = 100)
     private String upiId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "boolean default true")
     private Boolean isOnline = true;
 
     @Column
     private java.time.LocalDateTime lastOnlineAt;
+
+    @Version
+    private Long version;
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
+    }
 
     public ProviderProfile() {
     }

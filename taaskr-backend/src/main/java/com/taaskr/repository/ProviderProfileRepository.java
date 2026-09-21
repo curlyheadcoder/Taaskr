@@ -12,4 +12,8 @@ public interface ProviderProfileRepository extends JpaRepository<ProviderProfile
     List<ProviderProfile> findByApprovedFalseOrderByIdAsc();
     long countByApprovedFalse();
     List<ProviderProfile> findAllByOrderByIdAsc();
+
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("SELECT p FROM ProviderProfile p WHERE p.id = :id")
+    Optional<ProviderProfile> findByIdWithLock(@org.springframework.data.repository.query.Param("id") Long id);
 }

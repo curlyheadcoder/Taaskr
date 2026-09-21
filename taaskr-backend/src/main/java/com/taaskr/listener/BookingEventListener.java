@@ -16,15 +16,18 @@ public class BookingEventListener {
     private final com.taaskr.service.AppMetricsService appMetricsService;
     private final com.taaskr.service.NotificationService notificationService;
     private final com.taaskr.service.PayoutService payoutService;
+    private final com.taaskr.service.RoutingService routingService;
     private final com.taaskr.repository.BookingRepository bookingRepository;
 
     public BookingEventListener(com.taaskr.service.AppMetricsService appMetricsService,
                                 com.taaskr.service.NotificationService notificationService,
                                 com.taaskr.service.PayoutService payoutService,
+                                com.taaskr.service.RoutingService routingService,
                                 com.taaskr.repository.BookingRepository bookingRepository) {
         this.appMetricsService = appMetricsService;
         this.notificationService = notificationService;
         this.payoutService = payoutService;
+        this.routingService = routingService;
         this.bookingRepository = bookingRepository;
     }
 
@@ -68,6 +71,14 @@ public class BookingEventListener {
                 event.getOldStatus() != null ? event.getOldStatus().name() : null,
                 event.getNewStatus() != null ? event.getNewStatus().name() : null
         );
+
+        // Lifecycle Cache Cleanup: Clear routing cache when booking reaches terminal or arrived state
+        if (event.getNewStatus() == com.taaskr.enums.BookingStatus.COMPLETED ||
+            event.getNewStatus() == com.taaskr.enums.BookingStatus.CANCELLED ||
+            event.getNewStatus() == com.taaskr.enums.BookingStatus.REJECTED ||
+            event.getNewStatus() == com.taaskr.enums.BookingStatus.ARRIVED) {
+            routingService.clearBookingCache(event.getBookingId());
+        }
 
         bookingRepository.findById(event.getBookingId()).ifPresent(booking -> {
             if (booking.getUser() != null) {

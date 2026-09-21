@@ -14,14 +14,18 @@ import com.taaskr.repository.BookingRepository;
 import com.taaskr.repository.ProviderProfileRepository;
 import com.taaskr.repository.UserRepository;
 import com.taaskr.repository.VehicleRepository;
+import com.taaskr.dto.routing.RoutingResult;
 import com.taaskr.service.MapService;
+import com.taaskr.service.RoutingService;
 import com.taaskr.service.TrackingService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -32,6 +36,7 @@ public class TrackingServiceImpl implements TrackingService {
     private final BookingRepository bookingRepository;
     private final VehicleRepository vehicleRepository;
     private final MapService mapService;
+    private final RoutingService routingService;
     private final org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
 
     public TrackingServiceImpl(UserRepository userRepository,
@@ -39,18 +44,29 @@ public class TrackingServiceImpl implements TrackingService {
                                BookingRepository bookingRepository,
                                VehicleRepository vehicleRepository,
                                MapService mapService,
+                               RoutingService routingService,
                                org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate) {
         this.userRepository = userRepository;
         this.providerProfileRepository = providerProfileRepository;
         this.bookingRepository = bookingRepository;
         this.vehicleRepository = vehicleRepository;
         this.mapService = mapService;
+        this.routingService = routingService;
         this.messagingTemplate = messagingTemplate;
     }
 
     @Override
     @Transactional
     public void updateProviderLocation(String providerEmail, UpdateLocationRequest request) {
+        if (request == null || request.getTimestamp() == null) {
+            throw new BadRequestException("Timestamp is required for location tracking telemetry");
+        }
+
+        long currentServerTime = System.currentTimeMillis();
+        if (request.getTimestamp() > currentServerTime + 60_000L) {
+            throw new BadRequestException("Telemetry timestamp cannot be in the future");
+        }
+
         User user = userRepository.findByEmail(providerEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
@@ -61,9 +77,28 @@ public class TrackingServiceImpl implements TrackingService {
         ProviderProfile provider = providerProfileRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Provider profile not found"));
 
+        List<Booking> activeBookings = bookingRepository.findByProviderIdAndStatusIn(
+                provider.getId(),
+                List.of(BookingStatus.ASSIGNED, BookingStatus.ACCEPTED, BookingStatus.IN_PROGRESS, BookingStatus.IN_TRANSIT, BookingStatus.ON_THE_WAY)
+        );
+
+        if (activeBookings.isEmpty()) {
+            throw new BadRequestException("Location tracking is only active during an active booking assignment");
+        }
+
+        LocalDateTime sampleTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(request.getTimestamp()), ZoneId.systemDefault());
+
+        if (provider.getLocationUpdatedAt() != null) {
+            long lastAcceptedMillis = provider.getLocationUpdatedAt().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            if (request.getTimestamp() <= lastAcceptedMillis) {
+                // Out-of-order or duplicate telemetry packet: ignore stale sample
+                return;
+            }
+        }
+
         provider.setCurrentLatitude(request.getLatitude());
         provider.setCurrentLongitude(request.getLongitude());
-        provider.setLocationUpdatedAt(LocalDateTime.now());
+        provider.setLocationUpdatedAt(sampleTime);
         providerProfileRepository.save(provider);
 
         // Also sync coordinates to any vehicles registered to this provider
@@ -76,10 +111,6 @@ public class TrackingServiceImpl implements TrackingService {
 
         // Real-Time STOMP WebSocket broadcast to all active bookings
         try {
-            List<Booking> activeBookings = bookingRepository.findByProviderIdAndStatusIn(
-                    provider.getId(),
-                    List.of(BookingStatus.ASSIGNED, BookingStatus.ACCEPTED, BookingStatus.IN_PROGRESS, BookingStatus.IN_TRANSIT)
-            );
             for (Booking b : activeBookings) {
                 messagingTemplate.convertAndSend("/topic/bookings/" + b.getId() + "/location", java.util.Map.of(
                         "bookingId", b.getId(),
@@ -88,33 +119,51 @@ public class TrackingServiceImpl implements TrackingService {
                         "providerLongitude", request.getLongitude(),
                         "status", b.getStatus().name(),
                         "isLive", true,
-                        "timestamp", LocalDateTime.now().toString()
+                        "timestamp", sampleTime.toString()
                 ));
             }
         } catch (Exception e) {
             // Log notice without breaking transaction
         }
+
+    }
+
+    @Override
+    public boolean isAuthorizedForBooking(String userEmail, Long bookingId) {
+        if (userEmail == null || bookingId == null) {
+            return false;
+        }
+        User requester = userRepository.findByEmail(userEmail).orElse(null);
+        if (requester == null) {
+            return false;
+        }
+        Booking booking = bookingRepository.findById(bookingId).orElse(null);
+        if (booking == null) {
+            return false;
+        }
+
+        boolean isCustomer = booking.getUser() != null && booking.getUser().getId().equals(requester.getId());
+        boolean isAssignedProvider = booking.getProvider() != null &&
+                booking.getProvider().getUser() != null &&
+                booking.getProvider().getUser().getId().equals(requester.getId());
+        boolean isAssignedPartner = booking.getServicePartner() != null &&
+                booking.getServicePartner().getUser() != null &&
+                booking.getServicePartner().getUser().getId().equals(requester.getId());
+        boolean isAdmin = requester.getRole() == Role.ADMIN;
+
+        return isCustomer || isAssignedProvider || isAssignedPartner || isAdmin;
     }
 
     @Override
     @Transactional
     public LiveTrackingResponse getLiveTracking(String userEmail, Long bookingId) {
-        User requester = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        if (!isAuthorizedForBooking(userEmail, bookingId)) {
+            throw new BadRequestException("You are not authorized to view tracking data for this booking");
+        }
 
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with ID: " + bookingId));
 
-        boolean isCustomer = booking.getUser().getId().equals(requester.getId());
-        boolean isAssignedProvider = booking.getProvider() != null &&
-                booking.getProvider().getUser().getId().equals(requester.getId());
-        boolean isAssignedPartner = booking.getServicePartner() != null &&
-                booking.getServicePartner().getUser().getId().equals(requester.getId());
-        boolean isAdmin = requester.getRole() == Role.ADMIN;
-
-        if (!isCustomer && !isAssignedProvider && !isAssignedPartner && !isAdmin) {
-            throw new BadRequestException("You are not authorized to view tracking data for this booking");
-        }
 
         LiveTrackingResponse response = new LiveTrackingResponse();
         response.setBookingId(booking.getId());
@@ -221,7 +270,7 @@ public class TrackingServiceImpl implements TrackingService {
                 response.setVehicleRegistrationNumber(vehicle.getRegistrationNumber());
             }
 
-            // Distance & ETA Calculations
+            // Distance & ETA Calculations using Road-Network Routing Service
             if (pLat != null && pLng != null) {
                 BigDecimal targetLat = booking.getLatitude();
                 BigDecimal targetLng = booking.getLongitude();
@@ -232,17 +281,10 @@ public class TrackingServiceImpl implements TrackingService {
                 }
 
                 if (targetLat != null && targetLng != null) {
-                    BigDecimal distKm = mapService.calculateDistanceKm(pLat, pLng, targetLat, targetLng);
-                    response.setDistanceKm(distKm);
-
-                    double hours = distKm.doubleValue() / 25.0;
-                    int minutes = (int) Math.round(hours * 60.0);
-                    if (distKm.doubleValue() < 0.2) {
-                        minutes = 1;
-                    } else if (minutes < 2) {
-                        minutes = 2;
-                    }
-                    response.setEstimatedEtaMinutes(minutes);
+                    RoutingResult route = routingService.calculateRoute(pLat, pLng, targetLat, targetLng, booking.getId());
+                    response.setDistanceKm(route.getDistanceKm());
+                    response.setEstimatedEtaMinutes(route.getEstimatedEtaMinutes());
+                    response.setRouteSource(route.getRouteSource());
                 }
             }
         }

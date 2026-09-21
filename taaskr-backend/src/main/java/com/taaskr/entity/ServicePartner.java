@@ -62,6 +62,17 @@ public class ServicePartner {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Version
+    private Long version;
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
+    }
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

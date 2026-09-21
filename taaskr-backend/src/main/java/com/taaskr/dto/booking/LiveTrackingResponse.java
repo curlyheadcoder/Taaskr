@@ -64,8 +64,17 @@ public class LiveTrackingResponse {
     // Calculated Metrics
     private BigDecimal distanceKm;
     private Integer estimatedEtaMinutes;
+    private String routeSource;
 
     public LiveTrackingResponse() {
+    }
+
+    public String getRouteSource() {
+        return routeSource;
+    }
+
+    public void setRouteSource(String routeSource) {
+        this.routeSource = routeSource;
     }
 
     public Long getBookingId() {

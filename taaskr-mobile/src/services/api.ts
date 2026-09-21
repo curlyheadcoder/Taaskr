@@ -915,6 +915,20 @@ export const api = {
       return makeRequest('/api/notifications/read-all', {
         method: 'POST'
       });
+    },
+
+    registerPushToken: async (token: string, platform: string = 'ANDROID', provider: string = 'EXPO'): Promise<any> => {
+      return makeRequest('/api/notifications/push-token', {
+        method: 'POST',
+        body: JSON.stringify({ token, platform, provider })
+      });
+    },
+
+    unregisterPushToken: async (token: string): Promise<any> => {
+      return makeRequest('/api/notifications/push-token/unregister', {
+        method: 'POST',
+        body: JSON.stringify({ token })
+      });
     }
   },
 

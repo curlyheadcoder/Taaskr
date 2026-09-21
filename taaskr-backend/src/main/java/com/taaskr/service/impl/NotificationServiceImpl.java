@@ -7,11 +7,13 @@ import com.taaskr.enums.NotificationType;
 import com.taaskr.repository.NotificationRepository;
 import com.taaskr.repository.UserRepository;
 import com.taaskr.service.NotificationService;
+import com.taaskr.service.PushNotificationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -22,10 +24,14 @@ public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final PushNotificationService pushNotificationService;
 
-    public NotificationServiceImpl(NotificationRepository notificationRepository, UserRepository userRepository) {
+    public NotificationServiceImpl(NotificationRepository notificationRepository,
+                                   UserRepository userRepository,
+                                   PushNotificationService pushNotificationService) {
         this.notificationRepository = notificationRepository;
         this.userRepository = userRepository;
+        this.pushNotificationService = pushNotificationService;
     }
 
     private User getUserByEmail(String email) {
@@ -85,14 +91,24 @@ public class NotificationServiceImpl implements NotificationService {
         if (user == null) return;
         Notification notification = new Notification(user, title, message, type, refType, refId);
         notificationRepository.save(notification);
+
+        Map<String, Object> dataPayload = new HashMap<>();
+        if (type != null) dataPayload.put("type", type.name());
+        if (refType != null) dataPayload.put("refType", refType);
+        if (refId != null) {
+            dataPayload.put("refId", refId);
+            dataPayload.put("bookingId", refId);
+        }
+        dataPayload.put("notificationId", notification.getId());
+
+        pushNotificationService.sendPushNotification(user, notification, dataPayload);
     }
 
     @Override
     public void sendNotificationByUserId(Long userId, String title, String message, NotificationType type, String refType, Long refId) {
         if (userId == null) return;
         userRepository.findById(userId).ifPresent(user -> {
-            Notification notification = new Notification(user, title, message, type, refType, refId);
-            notificationRepository.save(notification);
+            sendNotification(user, title, message, type, refType, refId);
         });
     }
 }

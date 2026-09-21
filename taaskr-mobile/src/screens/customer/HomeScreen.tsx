@@ -3,11 +3,20 @@ import {
   StyleSheet, Text, View, ScrollView, TouchableOpacity, 
   ActivityIndicator, RefreshControl 
 } from 'react-native';
-import { colors } from '../../theme/colors';
+import { Search, Zap, Calendar, AlertTriangle, RefreshCw } from 'lucide-react-native';
+import { tokens } from '../../theme/tokens';
+import { useTheme } from '../../theme/ThemeContext';
 import { api, serverStorage } from '../../services/api';
-import { Category, ServiceItem } from '../../types';
+import { Category, ServiceItem, Booking, Address } from '../../types';
 import { useAuthStore } from '../../store/useAuthStore';
 import ServerConfigModal from '../../components/ServerConfigModal';
+import { HomeHeader } from '../../components/home/HomeHeader';
+import { CategoryGrid } from '../../components/home/CategoryGrid';
+import { ActiveBookingCard } from '../../components/home/ActiveBookingCard';
+import { ServiceCard } from '../../components/home/ServiceCard';
+import { Button } from '../../components/common/Button';
+import { Input } from '../../components/common/Input';
+import { Card } from '../../components/common/Card';
 
 interface Props {
   navigation: any;
@@ -15,9 +24,16 @@ interface Props {
 
 export default function HomeScreen({ navigation }: Props) {
   const { user } = useAuthStore();
+  const { isDark } = useTheme();
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [services, setServices] = useState<ServiceItem[]>([]);
+  const [activeBooking, setActiveBooking] = useState<Booking | null>(null);
+  const [defaultAddress, setDefaultAddress] = useState<Address | null>(null);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+
   const [selectedCatId, setSelectedCatId] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -30,12 +46,29 @@ export default function HomeScreen({ navigation }: Props) {
     setActiveServerUrl(url);
 
     try {
-      const [catRes, srvRes] = await Promise.all([
-        api.catalog.getCategories(),
-        api.catalog.getServices()
+      const [catRes, srvRes, bookingsRes, addressRes, unreadRes] = await Promise.all([
+        api.catalog.getCategories().catch(() => []),
+        api.catalog.getServices().catch(() => []),
+        api.bookings.getMyBookings().catch(() => []),
+        api.addresses.getAll().catch(() => []),
+        api.notifications.getUnreadCount().catch(() => ({ unreadCount: 0 })),
       ]);
+
       setCategories(catRes || []);
       setServices(srvRes || []);
+
+      // Find active booking if exists
+      const activeStatuses = ['ASSIGNED', 'PARTNER_ASSIGNED', 'PARTNER_ACCEPTED', 'ON_THE_WAY', 'IN_TRANSIT', 'ARRIVED', 'WORK_STARTED', 'IN_PROGRESS'];
+      const currentActive = (bookingsRes || []).find((b: Booking) => activeStatuses.includes(b.status));
+      setActiveBooking(currentActive || null);
+
+      // Find default address if available
+      const defAddr = (addressRes || []).find((a: Address) => a.isDefault) || (addressRes && addressRes.length > 0 ? addressRes[0] : null);
+      setDefaultAddress(defAddr || null);
+
+      // Unread notifications
+      setUnreadNotifications(unreadRes?.unreadCount || 0);
+
     } catch (e: any) {
       console.error('Failed to load catalog:', e);
       setErrorMsg(e.message || 'Could not connect to backend server.');
@@ -49,109 +82,179 @@ export default function HomeScreen({ navigation }: Props) {
     loadData();
   }, []);
 
-  const filteredServices = selectedCatId
-    ? services.filter(s => s.categoryId === selectedCatId)
-    : services;
+  // Filter services by selected category and live search query
+  const filteredServices = services.filter((s) => {
+    const matchesCategory = selectedCatId ? s.categoryId === selectedCatId : true;
+    const matchesSearch = searchQuery.trim() === ''
+      ? true
+      : (s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+         (s.description && s.description.toLowerCase().includes(searchQuery.toLowerCase())));
+    return matchesCategory && matchesSearch;
+  });
+
+  const handleBookNowCTA = () => {
+    const targetService = filteredServices.length > 0 ? filteredServices[0] : services[0];
+    if (targetService) {
+      navigation.navigate('BookingFlow', { service: targetService });
+    }
+  };
+
+  const handleScheduleCTA = () => {
+    const targetService = filteredServices.length > 0 ? filteredServices[0] : services[0];
+    if (targetService) {
+      navigation.navigate('BookingFlow', { service: targetService, dispatchMode: 'SCHEDULED' });
+    }
+  };
+
+  const bgColor = isDark ? tokens.colors.dark.bgPage : tokens.colors.light.bgPage;
+  const textColor = isDark ? tokens.colors.dark.textPrimary : tokens.colors.light.textPrimary;
+  const subColor = isDark ? tokens.colors.dark.textSecondary : tokens.colors.light.textSecondary;
 
   return (
-    <View style={styles.appWrapper}>
+    <View style={[styles.appWrapper, { backgroundColor: bgColor }]}>
+      {/* Premium Top Navigation Header */}
+      <HomeHeader
+        user={user}
+        defaultAddress={defaultAddress}
+        unreadCount={unreadNotifications}
+        onLocationPress={() => navigation.navigate('ProfileTab', { screen: 'AddressBook' })}
+        onNotificationPress={() => navigation.navigate('ProfileTab')}
+        onProfilePress={() => navigation.navigate('ProfileTab')}
+      />
+
       <ScrollView 
         style={styles.container}
+        contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl 
             refreshing={refreshing} 
             onRefresh={() => { setRefreshing(true); loadData(); }} 
-            tintColor={colors.primary} 
+            tintColor={tokens.colors.brand.primary} 
           />
         }
       >
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>Welcome back,</Text>
-            <Text style={styles.userName}>{user?.name || 'Customer'}</Text>
-          </View>
-          <TouchableOpacity style={styles.serverPill} onPress={() => setServerModalVisible(true)}>
-            <Text style={styles.serverPillText} numberOfLines={1}>⚙️ Server</Text>
-          </TouchableOpacity>
-        </View>
-
+        {/* Error Connection Banner (if offline/unreachable) */}
         {errorMsg ? (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorTitle}>⚠️ Connection Issue</Text>
+          <Card elevation="none" style={styles.errorCard} padding={tokens.spacing.md}>
+            <View style={styles.errorHeader}>
+              <AlertTriangle size={18} color={tokens.colors.status.error} />
+              <Text style={styles.errorTitle}>Backend Unreachable</Text>
+            </View>
             <Text style={styles.errorSub}>{errorMsg}</Text>
             <Text style={styles.errorUrl}>Target: {activeServerUrl}</Text>
 
             <View style={styles.errorActionRow}>
-              <TouchableOpacity style={styles.retryBtn} onPress={loadData}>
-                <Text style={styles.retryBtnText}>Retry</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.configBtn} onPress={() => setServerModalVisible(true)}>
-                <Text style={styles.configBtnText}>Change API Endpoint</Text>
-              </TouchableOpacity>
+              <Button
+                title="Retry"
+                variant="danger"
+                size="sm"
+                leftIcon={<RefreshCw size={14} color={tokens.colors.status.error} />}
+                onPress={loadData}
+              />
+              <Button
+                title="Change Server URL"
+                variant="secondary"
+                size="sm"
+                onPress={() => setServerModalVisible(true)}
+              />
             </View>
+          </Card>
+        ) : null}
+
+        {/* User Greeting & Hero Section */}
+        <View style={styles.heroSection}>
+          <Text style={[styles.greeting, { color: subColor }]}>
+            {user?.name ? `Hello, ${user.name}` : 'Welcome'}
+          </Text>
+          <Text style={[styles.heroTitle, { color: textColor }]}>
+            What do you need help with today?
+          </Text>
+        </View>
+
+        {/* Search Input Bar */}
+        <View style={styles.searchSection}>
+          <Input
+            placeholder="Search services (e.g. AC Repair, Plumbing)..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            leftIcon={<Search size={18} color={subColor} />}
+            containerStyle={{ marginBottom: 0 }}
+          />
+        </View>
+
+        {/* Primary Booking Action Buttons */}
+        <View style={styles.primaryActionsRow}>
+          <View style={{ flex: 1 }}>
+            <Button
+              title="Book Now"
+              variant="primary"
+              size="md"
+              leftIcon={<Zap size={16} color={tokens.colors.brand.onPrimary} />}
+              onPress={handleBookNowCTA}
+              fullWidth
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Button
+              title="Schedule"
+              variant="outline"
+              size="md"
+              leftIcon={<Calendar size={16} color={textColor} />}
+              onPress={handleScheduleCTA}
+              fullWidth
+            />
+          </View>
+        </View>
+
+        {/* Real Active Booking Banner (Only rendered if an active booking exists) */}
+        {activeBooking ? (
+          <View style={styles.activeBookingSection}>
+            <Text style={[styles.sectionTitle, { color: textColor }]}>Active Booking</Text>
+            <ActiveBookingCard
+              booking={activeBooking}
+              onTrackPress={(bookingId) => navigation.navigate('BookingsTab', { screen: 'LiveTracking', params: { bookingId } })}
+            />
           </View>
         ) : null}
 
-        <View style={styles.banner}>
-          <Text style={styles.bannerBadge}>TAASKR PRO</Text>
-          <Text style={styles.bannerTitle}>Doorstep Experts On Demand</Text>
-          <Text style={styles.bannerSubtitle}>Upfront Pricing • Verified Professionals • Live GPS Tracking</Text>
-        </View>
+        {/* Service Categories Grid */}
+        {loading ? (
+          <ActivityIndicator color={tokens.colors.brand.primary} style={{ marginVertical: 24 }} />
+        ) : (
+          <CategoryGrid
+            categories={categories}
+            selectedCatId={selectedCatId}
+            onSelectCategory={setSelectedCatId}
+          />
+        )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Explore Categories</Text>
-          {loading ? (
-            <ActivityIndicator color={colors.primary} style={{ marginVertical: 20 }} />
-          ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.catScroll}>
-              <TouchableOpacity 
-                style={[styles.catCard, selectedCatId === null && styles.catCardActive]}
-                onPress={() => setSelectedCatId(null)}
-              >
-                <Text style={[styles.catName, selectedCatId === null && styles.catNameActive]}>All Services</Text>
-              </TouchableOpacity>
-              {categories.map((cat) => (
-                <TouchableOpacity 
-                  key={cat.id} 
-                  style={[styles.catCard, selectedCatId === cat.id && styles.catCardActive]}
-                  onPress={() => setSelectedCatId(cat.id === selectedCatId ? null : cat.id)}
-                >
-                  <Text style={[styles.catName, selectedCatId === cat.id && styles.catNameActive]}>{cat.name}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          )}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {selectedCatId ? 'Filtered Services' : 'Popular Doorstep Services'}
+        {/* Available Services Section */}
+        <View style={styles.servicesSection}>
+          <Text style={[styles.sectionTitle, { color: textColor }]}>
+            {selectedCatId ? 'Filtered Services' : searchQuery ? 'Search Results' : 'Doorstep Services'}
           </Text>
+
           {loading ? (
-            <ActivityIndicator color={colors.primary} style={{ marginVertical: 20 }} />
+            <ActivityIndicator color={tokens.colors.brand.primary} style={{ marginVertical: 20 }} />
           ) : filteredServices.length === 0 ? (
-            <Text style={{ color: colors.dark.textMuted, marginVertical: 14 }}>No services available in this category.</Text>
+            <View style={styles.emptyContainer}>
+              <Text style={[styles.emptyText, { color: subColor }]}>
+                No services available matching your criteria.
+              </Text>
+            </View>
           ) : (
             filteredServices.map((srv) => (
-              <View key={srv.id} style={styles.serviceCard}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.serviceName}>{srv.name}</Text>
-                  <Text style={styles.serviceDesc} numberOfLines={2}>{srv.description}</Text>
-                  <Text style={styles.servicePrice}>₹{srv.price}</Text>
-                </View>
-                <TouchableOpacity 
-                  style={styles.bookBtn}
-                  onPress={() => navigation.navigate('BookingFlow', { service: srv })}
-                >
-                  <Text style={styles.bookBtnText}>Book Now</Text>
-                </TouchableOpacity>
-              </View>
+              <ServiceCard
+                key={srv.id}
+                service={srv}
+                onBookPress={(service) => navigation.navigate('BookingFlow', { service })}
+              />
             ))
           )}
         </View>
       </ScrollView>
 
+      {/* Server Config Modal (Reused) */}
       <ServerConfigModal 
         visible={serverModalVisible} 
         onClose={() => setServerModalVisible(false)}
@@ -164,190 +267,89 @@ export default function HomeScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   appWrapper: {
     flex: 1,
-    backgroundColor: colors.dark.bgPage,
   },
   container: {
     flex: 1,
-    backgroundColor: colors.dark.bgPage,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 54,
-    paddingBottom: 16,
+  scrollContent: {
+    paddingBottom: tokens.spacing.huge,
+  },
+  heroSection: {
+    paddingHorizontal: tokens.spacing.lg,
+    marginTop: tokens.spacing.sm,
+    marginBottom: tokens.spacing.md,
   },
   greeting: {
-    fontSize: 13,
-    color: colors.dark.textMuted,
+    fontSize: tokens.typography.bodySm.fontSize,
+    lineHeight: tokens.typography.bodySm.lineHeight,
+    fontWeight: '600',
   },
-  userName: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#FFF',
+  heroTitle: {
+    fontSize: tokens.typography.h1.fontSize,
+    lineHeight: tokens.typography.h1.lineHeight,
+    fontWeight: tokens.typography.h1.fontWeight,
+    marginTop: 2,
   },
-  serverPill: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.3)',
+  searchSection: {
+    paddingHorizontal: tokens.spacing.lg,
+    marginBottom: tokens.spacing.md,
   },
-  serverPillText: {
-    color: colors.primary,
-    fontSize: 12,
-    fontWeight: '700',
+  primaryActionsRow: {
+    flexDirection: 'row',
+    gap: tokens.spacing.md,
+    paddingHorizontal: tokens.spacing.lg,
+    marginBottom: tokens.spacing.lg,
   },
-  errorBox: {
-    marginHorizontal: 20,
-    marginVertical: 8,
-    padding: 14,
-    borderRadius: 12,
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.3)',
+  activeBookingSection: {
+    marginBottom: tokens.spacing.md,
+  },
+  sectionTitle: {
+    fontSize: tokens.typography.h3.fontSize,
+    lineHeight: tokens.typography.h3.lineHeight,
+    fontWeight: tokens.typography.h3.fontWeight,
+    marginBottom: tokens.spacing.md,
+    paddingHorizontal: tokens.spacing.lg,
+  },
+  servicesSection: {
+    marginTop: tokens.spacing.sm,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: tokens.spacing.xxl,
+    paddingHorizontal: tokens.spacing.lg,
+  },
+  emptyText: {
+    fontSize: tokens.typography.body.fontSize,
+  },
+  errorCard: {
+    marginHorizontal: tokens.spacing.lg,
+    marginBottom: tokens.spacing.md,
+    backgroundColor: tokens.colors.status.errorBg,
+    borderColor: tokens.colors.status.error,
+  },
+  errorHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: tokens.spacing.xs,
+    marginBottom: 4,
   },
   errorTitle: {
-    color: '#EF4444',
-    fontSize: 14,
-    fontWeight: '800',
+    color: tokens.colors.status.error,
+    fontWeight: '700',
+    fontSize: tokens.typography.body.fontSize,
   },
   errorSub: {
     color: '#FFF',
-    fontSize: 12,
-    marginTop: 2,
+    fontSize: tokens.typography.bodySm.fontSize,
   },
   errorUrl: {
-    color: '#A1A1AA',
-    fontSize: 11,
+    color: '#9CA3AF',
+    fontSize: tokens.typography.caption.fontSize,
     marginTop: 2,
   },
   errorActionRow: {
     flexDirection: 'row',
-    gap: 10,
-    marginTop: 10,
-  },
-  retryBtn: {
-    backgroundColor: '#EF4444',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-  },
-  retryBtnText: {
-    color: '#FFF',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  configBtn: {
-    backgroundColor: '#27272A',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-  },
-  configBtnText: {
-    color: colors.primary,
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  banner: {
-    marginHorizontal: 20,
-    marginVertical: 12,
-    padding: 20,
-    borderRadius: 16,
-    backgroundColor: 'rgba(245, 158, 11, 0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.3)',
-  },
-  bannerBadge: {
-    fontSize: 10,
-    fontWeight: '900',
-    color: colors.primary,
-    letterSpacing: 1,
-  },
-  bannerTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#FFF',
-    marginTop: 4,
-  },
-  bannerSubtitle: {
-    fontSize: 12,
-    color: colors.dark.textMuted,
-    marginTop: 4,
-  },
-  section: {
-    marginTop: 20,
-    paddingHorizontal: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#FFF',
-    marginBottom: 12,
-  },
-  catScroll: {
-    flexDirection: 'row',
-  },
-  catCard: {
-    backgroundColor: colors.dark.bgCard,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    marginRight: 10,
-    borderWidth: 1,
-    borderColor: colors.dark.borderLight,
-  },
-  catCardActive: {
-    borderColor: colors.primary,
-    backgroundColor: 'rgba(245, 158, 11, 0.2)',
-  },
-  catName: {
-    color: '#FFF',
-    fontWeight: '600',
-    fontSize: 13,
-  },
-  catNameActive: {
-    color: colors.primary,
-    fontWeight: '800',
-  },
-  serviceCard: {
-    backgroundColor: colors.dark.bgCard,
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.dark.borderLight,
-  },
-  serviceName: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#FFF',
-  },
-  serviceDesc: {
-    fontSize: 12,
-    color: colors.dark.textMuted,
-    marginTop: 2,
-  },
-  servicePrice: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: colors.primary,
-    marginTop: 6,
-  },
-  bookBtn: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 10,
-    marginLeft: 12,
-  },
-  bookBtnText: {
-    color: '#000',
-    fontWeight: '700',
-    fontSize: 13,
+    gap: tokens.spacing.sm,
+    marginTop: tokens.spacing.md,
   },
 });

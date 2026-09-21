@@ -15,9 +15,12 @@ import java.util.Map;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final com.taaskr.service.PushNotificationService pushNotificationService;
 
-    public NotificationController(NotificationService notificationService) {
+    public NotificationController(NotificationService notificationService,
+                                  com.taaskr.service.PushNotificationService pushNotificationService) {
         this.notificationService = notificationService;
+        this.pushNotificationService = pushNotificationService;
     }
 
     @GetMapping
@@ -59,5 +62,29 @@ public class NotificationController {
     public Map<String, Object> markAllAsReadPut(Authentication authentication) {
         notificationService.markAllAsRead(authentication.getName());
         return Map.of("success", true, "message", "All notifications marked as read");
+    }
+
+    @PostMapping("/push-token")
+    public Map<String, Object> registerPushToken(@jakarta.validation.Valid @RequestBody com.taaskr.dto.notification.PushTokenRequest request,
+                                                Authentication authentication) {
+        pushNotificationService.registerPushToken(
+                authentication.getName(),
+                request.getToken(),
+                request.getPlatform(),
+                request.getProvider()
+        );
+        return Map.of("success", true, "message", "Push token registered successfully");
+    }
+
+    @DeleteMapping("/push-token")
+    public Map<String, Object> unregisterPushToken(@RequestParam String token, Authentication authentication) {
+        pushNotificationService.unregisterPushToken(authentication.getName(), token);
+        return Map.of("success", true, "message", "Push token unregistered successfully");
+    }
+
+    @PostMapping("/push-token/unregister")
+    public Map<String, Object> unregisterPushTokenPost(@RequestBody com.taaskr.dto.notification.PushTokenRequest request, Authentication authentication) {
+        pushNotificationService.unregisterPushToken(authentication.getName(), request.getToken());
+        return Map.of("success", true, "message", "Push token unregistered successfully");
     }
 }

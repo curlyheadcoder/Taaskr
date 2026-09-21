@@ -21,15 +21,43 @@ public class BookingController {
 
     private final BookingService bookingService;
     private final com.taaskr.service.InvoicePdfService invoicePdfService;
+    private final com.taaskr.service.IdempotencyService idempotencyService;
+    private final com.taaskr.repository.UserRepository userRepository;
 
-    public BookingController(BookingService bookingService, com.taaskr.service.InvoicePdfService invoicePdfService) {
+    public BookingController(BookingService bookingService, 
+                             com.taaskr.service.InvoicePdfService invoicePdfService,
+                             com.taaskr.service.IdempotencyService idempotencyService,
+                             com.taaskr.repository.UserRepository userRepository) {
         this.bookingService = bookingService;
         this.invoicePdfService = invoicePdfService;
+        this.idempotencyService = idempotencyService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping
-    public BookingResponse createBooking(@Valid @RequestBody CreateBookingRequest request, Authentication authentication){
-        return bookingService.createBooking(authentication.getName(), request);
+    public org.springframework.http.ResponseEntity<?> createBooking(
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+            @Valid @RequestBody CreateBookingRequest request, 
+            Authentication authentication) {
+        
+        com.taaskr.entity.User user = userRepository.findByEmail(authentication.getName()).orElse(null);
+
+        if (user != null && idempotencyKey != null && !idempotencyKey.isBlank()) {
+            var checkOpt = idempotencyService.checkIdempotency(user, "CREATE_BOOKING", idempotencyKey, request);
+            if (checkOpt.isPresent() && checkOpt.get().isDuplicate()) {
+                return org.springframework.http.ResponseEntity.status(checkOpt.get().statusCode())
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .body(checkOpt.get().cachedResponseBody());
+            }
+        }
+
+        BookingResponse response = bookingService.createBooking(authentication.getName(), request);
+
+        if (user != null && idempotencyKey != null && !idempotencyKey.isBlank()) {
+            idempotencyService.saveIdempotencyRecord(user, "CREATE_BOOKING", idempotencyKey, request, response, 201);
+        }
+
+        return org.springframework.http.ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body(response);
     }
     @GetMapping("/my")
     public List<BookingResponse> getMyBookings(Authentication authentication){

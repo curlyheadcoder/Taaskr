@@ -11,6 +11,9 @@ public class UpdatePartnerLocationRequest {
     @NotNull(message = "Longitude is required")
     private BigDecimal longitude;
 
+    @NotNull(message = "Timestamp is required")
+    private Long timestamp;
+
     private Long bookingId;
 
     public UpdatePartnerLocationRequest() {}
@@ -18,6 +21,13 @@ public class UpdatePartnerLocationRequest {
     public UpdatePartnerLocationRequest(BigDecimal latitude, BigDecimal longitude) {
         this.latitude = latitude;
         this.longitude = longitude;
+        this.timestamp = System.currentTimeMillis();
+    }
+
+    public UpdatePartnerLocationRequest(BigDecimal latitude, BigDecimal longitude, Long timestamp) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.timestamp = timestamp;
     }
 
     public BigDecimal getLatitude() {
@@ -34,6 +44,14 @@ public class UpdatePartnerLocationRequest {
 
     public void setLongitude(BigDecimal longitude) {
         this.longitude = longitude;
+    }
+
+    public Long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
     }
 
     public Long getBookingId() {

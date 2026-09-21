@@ -1,129 +1,257 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { 
-  StyleSheet, Text, View, FlatList, TouchableOpacity, 
+  StyleSheet, Text, View, FlatList, 
   ActivityIndicator, RefreshControl, Alert 
 } from 'react-native';
-import { colors } from '../../theme/colors';
+import { tokens } from '../../theme/tokens';
+import { useTheme } from '../../theme/ThemeContext';
 import { api } from '../../services/api';
 import { Booking } from '../../types';
+import { HeaderBar } from '../../components/common/HeaderBar';
+import { Card } from '../../components/common/Card';
+import { Badge } from '../../components/common/Badge';
+import { Button } from '../../components/common/Button';
+import { 
+  startPartnerTracking, 
+  stopPartnerTracking, 
+  getActiveTrackingBookingId 
+} from '../../services/locationTask';
+import { 
+  Bike, MapPin, Wrench, CheckCircle2, 
+  CreditCard, Radio, Calendar, User, ShieldCheck 
+} from 'lucide-react-native';
 
 export default function WorkerTasksScreen() {
-  const [tasks, setTasks] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const { isDark } = useTheme();
 
-  const loadTasks = async () => {
+  const [tasks, setTasks] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [activeTrackingBookingId, setActiveTrackingBookingId] = useState<number | null>(null);
+  const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
+
+  const loadTasks = useCallback(async () => {
     try {
-      const res = await api.partner.getMyTasks();
+      const [res, trackedId] = await Promise.all([
+        api.partner.getMyTasks(),
+        getActiveTrackingBookingId(),
+      ]);
       setTasks(res || []);
+      setActiveTrackingBookingId(trackedId);
     } catch (e: any) {
       console.error('Failed to load partner tasks:', e);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadTasks();
-  }, []);
+  }, [loadTasks]);
 
   const advanceTask = async (bookingId: number, currentStatus: string) => {
+    setActionLoadingId(bookingId);
     try {
       if (currentStatus === 'PARTNER_ASSIGNED') {
+        // Step 1: Accept Task
         await api.partner.acceptTask(bookingId);
         Alert.alert('Task Accepted!', 'You have accepted this task assignment.');
       } else if (currentStatus === 'PARTNER_ACCEPTED' || currentStatus === 'ACCEPTED') {
+        // Step 2: Start Journey -> Starts real GPS tracking
         await api.partner.startJourney(bookingId);
-        Alert.alert('On The Way! 🚴', 'Customer has been notified that you are en route.');
+
+        // Start Real Physical Device GPS Tracking
+        const trackRes = await startPartnerTracking(bookingId);
+        if (trackRes.success) {
+          Alert.alert(
+            'On The Way! 🚴',
+            'Customer has been notified. Real-time GPS location sharing is now active.'
+          );
+        } else {
+          Alert.alert(
+            'On The Way! (Location Warning)',
+            `Journey started, but location tracking failed: ${trackRes.message}`
+          );
+        }
       } else if (currentStatus === 'ON_THE_WAY' || currentStatus === 'IN_TRANSIT') {
+        // Step 3: Mark Arrived -> Stops real GPS tracking
         await api.partner.markArrived(bookingId);
-        Alert.alert('Arrived! 📍', 'Marked as arrived at customer address.');
+        await stopPartnerTracking();
+        Alert.alert('Arrived at Location! 📍', 'Marked as arrived. GPS location tracking has stopped.');
       } else if (currentStatus === 'ARRIVED') {
+        // Step 4: Start Work
         await api.partner.startWork(bookingId);
+        await stopPartnerTracking();
         Alert.alert('Work Started! 🛠️', 'Timer started for service execution.');
       } else if (currentStatus === 'WORK_STARTED' || currentStatus === 'IN_PROGRESS') {
+        // Step 5: Complete Work
         await api.partner.completeWork(bookingId);
-        Alert.alert('Work Completed! 🎉', 'Service marked as finished. Please record payment.');
+        await stopPartnerTracking();
+        Alert.alert('Work Completed! 🎉', 'Service marked finished. Please confirm payment.');
       } else if (currentStatus === 'WORK_COMPLETED') {
+        // Step 6: Record Payment
         await api.partner.recordPayment(bookingId, 'AFTER_SERVICE');
-        Alert.alert('Payment Recorded! 💰', 'Customer payment confirmed.');
+        await stopPartnerTracking();
+        Alert.alert('Payment Confirmed! 💰', 'Customer payment recorded successfully.');
       }
       loadTasks();
     } catch (err: any) {
       Alert.alert('Action Error', err.message || 'Could not update task status.');
+    } finally {
+      setActionLoadingId(null);
     }
   };
 
-  const getActionLabel = (status: string) => {
+  const getActionConfig = (status: string) => {
     switch (status) {
-      case 'PARTNER_ASSIGNED': return 'Accept Task';
+      case 'PARTNER_ASSIGNED':
+        return { label: 'Accept Task', icon: <CheckCircle2 size={16} color="#000" />, variant: 'primary' as const };
       case 'PARTNER_ACCEPTED':
-      case 'ACCEPTED': return 'Start Journey 🚴';
+      case 'ACCEPTED':
+        return { label: 'Start Journey', icon: <Bike size={16} color="#000" />, variant: 'primary' as const };
       case 'ON_THE_WAY':
-      case 'IN_TRANSIT': return 'Mark Arrived 📍';
-      case 'ARRIVED': return 'Start Work 🛠️';
+      case 'IN_TRANSIT':
+        return { label: 'Mark Arrived', icon: <MapPin size={16} color="#000" />, variant: 'primary' as const };
+      case 'ARRIVED':
+        return { label: 'Start Work', icon: <Wrench size={16} color="#000" />, variant: 'primary' as const };
       case 'WORK_STARTED':
-      case 'IN_PROGRESS': return 'Complete Work 🎉';
-      case 'WORK_COMPLETED': return 'Record Payment 💰';
-      default: return null;
+      case 'IN_PROGRESS':
+        return { label: 'Complete Work', icon: <CheckCircle2 size={16} color="#000" />, variant: 'primary' as const };
+      case 'WORK_COMPLETED':
+        return { label: 'Record Payment', icon: <CreditCard size={16} color="#000" />, variant: 'primary' as const };
+      default:
+        return null;
     }
   };
+
+  const bgPage = isDark ? tokens.colors.dark.bgPage : tokens.colors.light.bgPage;
+  const textColor = isDark ? tokens.colors.dark.textPrimary : tokens.colors.light.textPrimary;
+  const secondaryText = isDark ? tokens.colors.dark.textSecondary : tokens.colors.light.textSecondary;
+  const borderSubtle = isDark ? tokens.colors.dark.borderSubtle : tokens.colors.light.borderSubtle;
 
   const renderCard = ({ item }: { item: Booking }) => {
-    const actionLabel = getActionLabel(item.status);
+    const actionConfig = getActionConfig(item.status);
+    const isTrackingThis = activeTrackingBookingId === item.id;
+    const isActionLoading = actionLoadingId === item.id;
 
     return (
-      <View style={styles.card}>
+      <Card elevation="sm" style={styles.card}>
+        {/* Header Row */}
         <View style={styles.headerRow}>
-          <Text style={styles.code}>#{item.bookingCode || item.id}</Text>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{item.status.replace(/_/g, ' ')}</Text>
+          <Text style={[styles.code, { color: tokens.colors.brand.primary }]}>
+            #{item.bookingCode || item.id}
+          </Text>
+          <Badge
+            label={item.status.replace(/_/g, ' ')}
+            variant={item.status === 'COMPLETED' ? 'success' : item.status === 'ON_THE_WAY' ? 'info' : 'warning'}
+          />
+        </View>
+
+        {/* Live GPS Active Badge */}
+        {isTrackingThis ? (
+          <View style={styles.liveTrackingBanner}>
+            <Radio size={14} color={tokens.colors.status.success} style={{ marginRight: 6 }} />
+            <Text style={styles.liveTrackingText}>
+              REAL GPS LOCATION SHARING ACTIVE
+            </Text>
+          </View>
+        ) : null}
+
+        {/* Service Title */}
+        <Text style={[styles.serviceName, { color: textColor }]}>
+          {item.serviceName}
+        </Text>
+
+        {/* Details List */}
+        <View style={[styles.detailsBox, { borderColor: borderSubtle }]}>
+          <View style={styles.detailRow}>
+            <MapPin size={14} color={secondaryText} style={{ marginRight: 6 }} />
+            <Text style={[styles.detailText, { color: secondaryText }]} numberOfLines={2}>
+              {item.address}, {item.city} {item.pincode ? `(${item.pincode})` : ''}
+            </Text>
+          </View>
+
+          <View style={styles.detailRow}>
+            <User size={14} color={secondaryText} style={{ marginRight: 6 }} />
+            <Text style={[styles.detailText, { color: secondaryText }]}>
+              Customer: {item.userName}
+            </Text>
+          </View>
+
+          <View style={styles.detailRow}>
+            <Calendar size={14} color={secondaryText} style={{ marginRight: 6 }} />
+            <Text style={[styles.detailText, { color: secondaryText }]}>
+              {item.bookingDate} {item.startTime ? `at ${item.startTime}` : ''}
+            </Text>
           </View>
         </View>
 
-        <Text style={styles.serviceName}>{item.serviceName}</Text>
-        <Text style={styles.text}>📍 {item.address}, {item.city}</Text>
-        <Text style={styles.text}>👤 Customer: {item.userName}</Text>
-        <Text style={styles.amount}>Earnings: ₹{item.finalAmount || item.totalAmount}</Text>
+        {/* Earnings & Action Button */}
+        <View style={styles.footerRow}>
+          <View>
+            <Text style={[styles.earningsLabel, { color: secondaryText }]}>Job Payout</Text>
+            <Text style={[styles.earningsValue, { color: tokens.colors.status.success }]}>
+              ₹{item.finalAmount || item.totalAmount}
+            </Text>
+          </View>
 
-        {actionLabel ? (
-          <TouchableOpacity 
-            style={styles.actionBtn} 
-            onPress={() => advanceTask(item.id, item.status)}
-          >
-            <Text style={styles.actionBtnText}>{actionLabel}</Text>
-          </TouchableOpacity>
-        ) : null}
-      </View>
+          {actionConfig ? (
+            <Button
+              title={actionConfig.label}
+              variant={actionConfig.variant}
+              size="md"
+              leftIcon={actionConfig.icon}
+              onPress={() => advanceTask(item.id, item.status)}
+              loading={isActionLoading}
+              disabled={isActionLoading}
+            />
+          ) : null}
+        </View>
+      </Card>
     );
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Field Worker Console</Text>
-        <Text style={styles.sub}>Assigned service jobs & live location updates</Text>
-      </View>
+    <View style={[styles.container, { backgroundColor: bgPage }]}>
+      <HeaderBar
+        title="Field Worker Console"
+        subtitle="Assigned service tasks & GPS location publishing"
+      />
 
       {loading ? (
-        <ActivityIndicator color={colors.primary} style={{ marginTop: 40 }} />
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color={tokens.colors.brand.primary} />
+          <Text style={[styles.loadingText, { color: secondaryText }]}>
+            Loading assigned tasks...
+          </Text>
+        </View>
       ) : (
         <FlatList
           data={tasks}
           keyExtractor={(item) => String(item.id)}
           renderItem={renderCard}
-          contentContainerStyle={{ paddingBottom: 30 }}
+          contentContainerStyle={styles.listContent}
           refreshControl={
-            <RefreshControl 
-              refreshing={refreshing} 
-              onRefresh={() => { setRefreshing(true); loadTasks(); }} 
-              tintColor={colors.primary} 
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => {
+                setRefreshing(true);
+                loadTasks();
+              }}
+              tintColor={tokens.colors.brand.primary}
+              colors={[tokens.colors.brand.primary]}
             />
           }
           ListEmptyComponent={
-            <View style={styles.empty}>
-              <Text style={{ color: '#FFF', fontWeight: '700' }}>No assigned tasks.</Text>
+            <View style={styles.emptyContainer}>
+              <ShieldCheck size={36} color={secondaryText} style={{ marginBottom: 8 }} />
+              <Text style={[styles.emptyTitle, { color: textColor }]}>
+                No Assigned Tasks
+              </Text>
+              <Text style={[styles.emptySub, { color: secondaryText }]}>
+                New assigned service jobs will appear here in real time.
+              </Text>
             </View>
           }
         />
@@ -135,30 +263,24 @@ export default function WorkerTasksScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.dark.bgPage,
-    paddingHorizontal: 20,
-    paddingTop: 54,
   },
-  header: {
-    marginBottom: 20,
+  centerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: tokens.spacing.xl,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#FFF',
+  loadingText: {
+    fontSize: tokens.typography.bodySm.fontSize,
+    marginTop: tokens.spacing.md,
   },
-  sub: {
-    fontSize: 12,
-    color: colors.dark.textMuted,
-    marginTop: 2,
+  listContent: {
+    paddingHorizontal: tokens.spacing.lg,
+    paddingBottom: tokens.spacing.xxxl,
+    paddingTop: tokens.spacing.md,
   },
   card: {
-    backgroundColor: colors.dark.bgCard,
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: colors.dark.borderLight,
+    marginBottom: tokens.spacing.md,
   },
   headerRow: {
     flexDirection: 'row',
@@ -166,52 +288,73 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   code: {
-    fontSize: 11,
+    fontSize: tokens.typography.caption.fontSize,
     fontWeight: '800',
-    color: colors.primary,
+    letterSpacing: 0.5,
   },
-  badge: {
-    backgroundColor: 'rgba(245, 158, 11, 0.2)',
-    paddingHorizontal: 8,
+  liveTrackingBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+    paddingHorizontal: tokens.spacing.sm,
     paddingVertical: 4,
-    borderRadius: 6,
+    borderRadius: tokens.radii.sm,
+    marginTop: tokens.spacing.xs,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.3)',
   },
-  badgeText: {
-    color: colors.primary,
+  liveTrackingText: {
     fontSize: 10,
-    fontWeight: '800',
+    fontWeight: '900',
+    color: tokens.colors.status.success,
+    letterSpacing: 0.5,
   },
   serviceName: {
-    fontSize: 16,
+    fontSize: tokens.typography.h3.fontSize,
     fontWeight: '800',
-    color: '#FFF',
-    marginTop: 6,
+    marginTop: tokens.spacing.xs,
   },
-  text: {
-    fontSize: 13,
-    color: colors.dark.textMuted,
-    marginTop: 4,
+  detailsBox: {
+    marginVertical: tokens.spacing.sm,
+    paddingVertical: tokens.spacing.xs,
+    gap: 4,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
   },
-  amount: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#10B981',
-    marginTop: 8,
-  },
-  actionBtn: {
-    backgroundColor: colors.primary,
-    paddingVertical: 12,
-    borderRadius: 10,
+  detailRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 14,
   },
-  actionBtnText: {
-    color: '#000',
-    fontWeight: '800',
-    fontSize: 14,
+  detailText: {
+    fontSize: tokens.typography.bodySm.fontSize,
+    flex: 1,
   },
-  empty: {
+  footerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 60,
+    marginTop: tokens.spacing.xs,
+  },
+  earningsLabel: {
+    fontSize: tokens.typography.caption.fontSize,
+  },
+  earningsValue: {
+    fontSize: tokens.typography.h3.fontSize,
+    fontWeight: '800',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: tokens.spacing.xxxl,
+    paddingHorizontal: tokens.spacing.xl,
+  },
+  emptyTitle: {
+    fontSize: tokens.typography.h3.fontSize,
+    fontWeight: '700',
+  },
+  emptySub: {
+    fontSize: tokens.typography.bodySm.fontSize,
+    textAlign: 'center',
+    marginTop: 2,
   },
 });
