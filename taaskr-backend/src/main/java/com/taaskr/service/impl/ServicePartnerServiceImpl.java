@@ -434,7 +434,7 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
         Booking booking = verifyPartnerForBooking(partnerEmail, bookingId);
         booking.setWorkCompletedAt(LocalDateTime.now());
 
-        if (booking.getPaymentStatus() == PaymentStatus.PAID || booking.getPaymentMethod() == PaymentMethod.AFTER_SERVICE) {
+        if (booking.getPaymentStatus() == PaymentStatus.PAID) {
             booking.setStatus(BookingStatus.COMPLETED);
             booking = bookingRepository.save(booking);
             payoutService.creditBookingEarnings(booking);
@@ -449,6 +449,15 @@ public class ServicePartnerServiceImpl implements ServicePartnerService {
     @Transactional
     public BookingResponse recordPaymentByPartner(String partnerEmail, Long bookingId, PaymentMethod method) {
         Booking booking = verifyPartnerForBooking(partnerEmail, bookingId);
+
+        if (booking.getStatus() == BookingStatus.PENDING || 
+            booking.getStatus() == BookingStatus.ASSIGNED || 
+            booking.getStatus() == BookingStatus.ACCEPTED || 
+            booking.getStatus() == BookingStatus.PARTNER_ASSIGNED || 
+            booking.getStatus() == BookingStatus.PARTNER_ACCEPTED) {
+            throw new BadRequestException("Cannot collect cash payment before starting journey or service work");
+        }
+
         booking.setPaymentMethod(method != null ? method : PaymentMethod.AFTER_SERVICE);
         booking.setPaymentStatus(PaymentStatus.PAID);
         booking.setPaymentCompletedAt(LocalDateTime.now());

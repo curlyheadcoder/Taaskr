@@ -23,7 +23,7 @@ public interface ServicePartnerRepository extends JpaRepository<ServicePartner, 
 
     Optional<ServicePartner> findByIdAndProviderId(Long id, Long providerId);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE ServicePartner p SET p.currentLatitude = :lat, p.currentLongitude = :lng, p.locationUpdatedAt = :sampleTime WHERE p.id = :id AND (p.locationUpdatedAt IS NULL OR p.locationUpdatedAt < :sampleTime)")
     int updateLocationIfNewer(@Param("id") Long id, @Param("lat") BigDecimal lat, @Param("lng") BigDecimal lng, @Param("sampleTime") LocalDateTime sampleTime);
 }

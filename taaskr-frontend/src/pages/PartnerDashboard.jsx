@@ -830,7 +830,7 @@ export default function PartnerDashboard() {
                     </button>
                   )}
 
-                  {task.status !== 'COMPLETED' && task.status !== 'CANCELLED' && task.status !== 'REJECTED' && task.paymentStatus !== 'PAID' && (
+                  {['ON_THE_WAY', 'IN_TRANSIT', 'ARRIVED', 'ARRIVED_AT_LOCATION', 'WORK_STARTED', 'IN_PROGRESS', 'WORK_IN_PROGRESS', 'WORK_DONE'].includes(task.status) && task.paymentStatus !== 'PAID' && task.paymentStatus !== 'COMPLETED' && (
                     <button
                       onClick={() => handleRecordPayment(task.id)}
                       disabled={isActionBusy}

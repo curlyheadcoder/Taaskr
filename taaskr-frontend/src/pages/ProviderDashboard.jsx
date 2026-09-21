@@ -572,16 +572,23 @@ export default function ProviderDashboard() {
 
   // Filtered booking collections for tabs
   const pendingAssignedBookings = assignedBookings.filter(b => 
-    b.status === 'ASSIGNED' || b.status === 'PENDING'
+    (b.status === 'ASSIGNED' || b.status === 'PENDING') && !b.servicePartnerId && !b.servicePartnerName
   );
   const inTransitBookings = assignedBookings.filter(b => 
     b.status === 'ACCEPTED' || 
     b.status === 'IN_TRANSIT' || 
     b.status === 'IN_PROGRESS' || 
-    (b.status === 'COMPLETED' && b.paymentMethod === 'AFTER_SERVICE' && b.paymentStatus !== 'PAID')
+    b.status === 'ON_THE_WAY' ||
+    b.status === 'ARRIVED' ||
+    b.status === 'PARTNER_ASSIGNED' ||
+    b.status === 'PARTNER_ACCEPTED' ||
+    b.status === 'WORK_STARTED' ||
+    b.status === 'WORK_DONE' ||
+    (b.status === 'COMPLETED' && b.paymentMethod === 'AFTER_SERVICE' && b.paymentStatus !== 'PAID') ||
+    ((b.servicePartnerId || b.servicePartnerName) && (b.paymentStatus !== 'PAID' || b.status !== 'COMPLETED'))
   );
   const completedBookings = assignedBookings.filter(b => 
-    b.status === 'COMPLETED' && (b.paymentStatus === 'PAID' || b.paymentMethod !== 'AFTER_SERVICE')
+    (b.status === 'COMPLETED' || b.status === 'WORK_DONE') && (b.paymentStatus === 'PAID' || b.paymentMethod !== 'AFTER_SERVICE')
   );
 
   const handleAddAvailability = async (e) => {
@@ -1350,8 +1357,8 @@ export default function ProviderDashboard() {
                 );
               })()}
 
-              {/* Step 3: IN_PROGRESS or IN_TRANSIT -> Mark as Completed */}
-              {(job.status === 'IN_TRANSIT' || job.status === 'IN_PROGRESS') && (
+              {/* Step 3: IN_PROGRESS or IN_TRANSIT -> Mark as Completed (Only for direct Provider execution) */}
+              {(job.status === 'IN_TRANSIT' || job.status === 'IN_PROGRESS') && !job.servicePartnerId && !job.servicePartnerName && (
                 <button 
                   onClick={() => handleMarkCompleted(job)} 
                   className="btn btn-success btn-sm"

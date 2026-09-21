@@ -698,6 +698,13 @@ export default function BookingFlow() {
               onChange={(e) => setAddress(e.target.value)}
               disabled={loading}
               required
+              style={{
+                backgroundColor: 'var(--bg-card)',
+                color: '#111827',
+                borderColor: '#D1D5DB',
+                fontWeight: 600,
+                fontSize: '0.9375rem'
+              }}
             />
           </div>
 
@@ -876,6 +883,13 @@ export default function BookingFlow() {
                 onChange={(e) => setCity(e.target.value)}
                 disabled={loading}
                 required
+                style={{
+                  backgroundColor: 'var(--bg-card)',
+                  color: '#111827',
+                  borderColor: '#D1D5DB',
+                  fontWeight: 600,
+                  fontSize: '0.9375rem'
+                }}
               />
             </div>
 
@@ -889,6 +903,13 @@ export default function BookingFlow() {
                 onChange={(e) => setPincode(e.target.value)}
                 disabled={loading}
                 required
+                style={{
+                  backgroundColor: 'var(--bg-card)',
+                  color: '#111827',
+                  borderColor: '#D1D5DB',
+                  fontWeight: 600,
+                  fontSize: '0.9375rem'
+                }}
               />
             </div>
           </div>
@@ -1075,44 +1096,44 @@ export default function BookingFlow() {
               </span>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.8125rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.875rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Scheduled Date:</span>
-                <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>{selectedDate || bookingDate}</span>
+                <span style={{ color: '#4B5563', fontWeight: 600 }}>Scheduled Date:</span>
+                <span style={{ color: '#111827', fontWeight: 700 }}>{selectedDate || bookingDate}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Time Slot:</span>
-                <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>{formatLocalTime(selectedTime || startTime)}</span>
+                <span style={{ color: '#4B5563', fontWeight: 600 }}>Time Slot:</span>
+                <span style={{ color: '#111827', fontWeight: 700 }}>{formatLocalTime(selectedTime || startTime)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Dispatch Mode:</span>
-                <span style={{ color: 'var(--success)', fontWeight: 500 }}>
+                <span style={{ color: '#4B5563', fontWeight: 600 }}>Dispatch Mode:</span>
+                <span style={{ color: '#059669', fontWeight: 700 }}>
                   {isVehicle ? 'Live Driver Auto-Match' : 'Verified Partner Dispatch'}
                 </span>
               </div>
             </div>
 
             <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.875rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', fontSize: '0.8125rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Subtotal:</span>
-                <span style={{ color: 'var(--text-main)', fontWeight: 500, fontFeatureSettings: 'tnum' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', fontSize: '0.875rem' }}>
+                <span style={{ color: '#4B5563', fontWeight: 600 }}>Subtotal:</span>
+                <span style={{ color: '#111827', fontWeight: 700, fontFeatureSettings: 'tnum' }}>
                   {Number(price) === 0 ? 'FREE' : `₹${price}`}
                 </span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', fontSize: '0.8125rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Platform Fee:</span>
-                <span style={{ color: 'var(--success)', fontWeight: 600 }}>FREE</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', fontSize: '0.875rem' }}>
+                <span style={{ color: '#4B5563', fontWeight: 600 }}>Platform Fee:</span>
+                <span style={{ color: '#059669', fontWeight: 700 }}>FREE</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px dashed var(--border-light)' }}>
-                <span style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '0.9375rem' }}>Total Amount:</span>
-                <span style={{ color: Number(price) === 0 ? '#10b981' : 'var(--text-main)', fontWeight: 700, fontSize: '1.2rem', fontFeatureSettings: 'tnum' }}>
+                <span style={{ color: '#111827', fontWeight: 800, fontSize: '0.9375rem' }}>Total Amount:</span>
+                <span style={{ color: Number(price) === 0 ? '#059669' : '#111827', fontWeight: 800, fontSize: '1.25rem', fontFeatureSettings: 'tnum' }}>
                   {Number(price) === 0 ? 'FREE (₹0)' : `₹${price}`}
                 </span>
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.25rem' }}>
-              <Lock size={12} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#4B5563', fontSize: '0.78rem', marginTop: '0.25rem' }}>
+              <Lock size={13} color="#4B5563" />
               <span>256-bit encrypted checkout with verified partner guarantee.</span>
             </div>
           </div>
