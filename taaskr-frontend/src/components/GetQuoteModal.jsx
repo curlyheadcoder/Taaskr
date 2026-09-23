@@ -403,6 +403,14 @@ export default function GetQuoteModal({ isOpen, onClose, initialCategoryId, cate
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  if (!submitting) {
+                    handleSubmit(e);
+                  }
+                }
+              }}
               placeholder="Describe your specific issue or custom service requirement details..."
               style={{
                 width: '100%',

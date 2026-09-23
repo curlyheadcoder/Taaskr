@@ -160,6 +160,14 @@ export default function RejectTaskModal({
               setReason(e.target.value);
               if (e.target.value.trim()) setReasonError('');
             }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (!loading) {
+                  handleConfirm();
+                }
+              }
+            }}
             placeholder="e.g. Vehicle issue, required spare parts unavailable, emergency situation..."
             rows={3}
             disabled={loading}
