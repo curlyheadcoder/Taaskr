@@ -604,22 +604,22 @@ public class Booking {
                 }
                 break;
             case WORK_COMPLETED:
-                if (this.status != BookingStatus.WORK_STARTED && this.status != BookingStatus.IN_PROGRESS && this.status != BookingStatus.ARRIVED && this.status != BookingStatus.ON_THE_WAY && this.status != BookingStatus.ACCEPTED) {
+                if (this.status != BookingStatus.WORK_STARTED && this.status != BookingStatus.IN_PROGRESS && this.status != BookingStatus.ARRIVED && this.status != BookingStatus.ON_THE_WAY && this.status != BookingStatus.IN_TRANSIT && this.status != BookingStatus.ACCEPTED) {
                     throw new com.taaskr.exception.BadRequestException("Cannot complete work for booking in state " + this.status);
                 }
                 break;
             case PAYMENT_COMPLETED:
-                if (this.status != BookingStatus.WORK_COMPLETED && this.status != BookingStatus.WORK_STARTED && this.status != BookingStatus.IN_PROGRESS) {
+                if (this.status != BookingStatus.WORK_COMPLETED && this.status != BookingStatus.WORK_STARTED && this.status != BookingStatus.IN_PROGRESS && this.status != BookingStatus.IN_TRANSIT && this.status != BookingStatus.ON_THE_WAY && this.status != BookingStatus.ARRIVED) {
                     throw new com.taaskr.exception.BadRequestException("Cannot record payment for booking in state " + this.status);
                 }
                 break;
             case PROVIDER_APPROVED:
-                if (this.status != BookingStatus.WORK_COMPLETED && this.status != BookingStatus.PAYMENT_COMPLETED) {
+                if (this.status != BookingStatus.WORK_COMPLETED && this.status != BookingStatus.PAYMENT_COMPLETED && this.status != BookingStatus.IN_PROGRESS && this.status != BookingStatus.IN_TRANSIT && this.status != BookingStatus.ON_THE_WAY && this.status != BookingStatus.ARRIVED) {
                     throw new com.taaskr.exception.BadRequestException("Cannot approve booking in state " + this.status);
                 }
                 break;
             case COMPLETED:
-                if (this.status != BookingStatus.PAYMENT_COMPLETED && this.status != BookingStatus.WORK_COMPLETED && this.status != BookingStatus.PROVIDER_APPROVED && this.status != BookingStatus.IN_PROGRESS && this.status != BookingStatus.WORK_STARTED) {
+                if (this.status != BookingStatus.PAYMENT_COMPLETED && this.status != BookingStatus.WORK_COMPLETED && this.status != BookingStatus.PROVIDER_APPROVED && this.status != BookingStatus.IN_PROGRESS && this.status != BookingStatus.WORK_STARTED && this.status != BookingStatus.IN_TRANSIT && this.status != BookingStatus.ON_THE_WAY && this.status != BookingStatus.ARRIVED) {
                     throw new com.taaskr.exception.BadRequestException("Cannot mark completed for booking in state " + this.status);
                 }
                 break;

@@ -225,4 +225,17 @@ public class ServiceExecutionWorkflowTests {
             providerWorkflowService.updateBookingStatus(providerUser.getEmail(), booking.getId(), request);
         });
     }
+
+    @Test
+    void testDirectProviderMarkCompletedFromInTransit() {
+        Booking booking = createBooking(providerProfile, null, BookingStatus.IN_TRANSIT);
+
+        UpdateProviderBookingStatusRequest request = new UpdateProviderBookingStatusRequest();
+        request.setStatus(BookingStatus.COMPLETED);
+
+        ProviderBookingResponse response = providerWorkflowService.updateBookingStatus(providerUser.getEmail(), booking.getId(), request);
+        assertNotNull(response);
+        assertEquals(BookingStatus.COMPLETED, response.getStatus());
+        assertNotNull(response.getWorkCompletedAt(), "workCompletedAt timestamp must be set when marked completed from IN_TRANSIT");
+    }
 }
