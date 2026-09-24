@@ -12,6 +12,7 @@ import { tokens } from './src/theme/tokens';
 import { ThemeProvider } from './src/theme/ThemeContext';
 
 import LoginScreen from './src/screens/auth/LoginScreen';
+import ForgotPasswordScreen from './src/screens/auth/ForgotPasswordScreen';
 import HomeScreen from './src/screens/customer/HomeScreen';
 import BookingScreen from './src/screens/customer/BookingScreen';
 import MyBookingsScreen from './src/screens/customer/MyBookingsScreen';
@@ -238,7 +239,10 @@ function RootNavigator() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!isAuthenticated ? (
-          <Stack.Screen name="Login" component={LoginScreen} />
+          <>
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+          </>
         ) : role === 'ADMIN' ? (
           <Stack.Screen name="Main" component={AdminTabNavigator} />
         ) : role === 'PROVIDER' ? (
