@@ -79,9 +79,9 @@ export default function Login() {
             gap: '0.4rem',
             padding: '0.3rem 0.85rem',
             borderRadius: '20px',
-            backgroundColor: 'rgba(56, 189, 248, 0.14)',
-            border: '1px solid rgba(56, 189, 248, 0.35)',
-            color: '#38bdf8',
+            backgroundColor: 'var(--primary-subtle)',
+            border: '1px solid var(--border-light)',
+            color: 'var(--primary)',
             fontSize: '0.75rem',
             fontWeight: 700,
             textTransform: 'uppercase',
@@ -187,7 +187,7 @@ export default function Login() {
                   to="/forgot-password"
                   style={{
                     fontSize: '0.8rem',
-                    color: '#38bdf8',
+                    color: 'var(--primary)',
                     textDecoration: 'none',
                     fontWeight: 600
                   }}
@@ -250,8 +250,8 @@ export default function Login() {
               style={{
                 width: '100%',
                 padding: '0.9rem',
-                backgroundColor: '#38bdf8',
-                color: '#0f172a',
+                backgroundColor: 'var(--primary)',
+                color: '#FFFFFF',
                 border: 'none',
                 borderRadius: '12px',
                 fontSize: '0.95rem',
@@ -262,13 +262,13 @@ export default function Login() {
                 justifyContent: 'center',
                 gap: '0.5rem',
                 transition: 'all 0.2s ease',
-                boxShadow: '0 4px 14px rgba(56, 189, 248, 0.35)',
+                boxShadow: '0 4px 14px var(--primary-subtle)',
                 marginTop: '0.5rem'
               }}
             >
               {loading ? 'Authenticating...' : (
                 <>
-                  <span>Sign In</span>
+                  <span>Sign In to Customer Portal</span>
                   <ArrowRight size={18} />
                 </>
               )}
@@ -284,7 +284,7 @@ export default function Login() {
             color: 'var(--text-muted)'
           }}>
             Don't have an account yet?{' '}
-            <Link to="/register" style={{ color: '#38bdf8', fontWeight: 600, textDecoration: 'none' }}>
+            <Link to="/register" style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'none' }}>
               Create Account
             </Link>
           </div>
@@ -303,14 +303,14 @@ export default function Login() {
         }}>
           <span>
             Service Provider?{' '}
-            <Link to="/login/provider" style={{ color: '#a855f7', textDecoration: 'none', fontWeight: 600 }}>
+            <Link to="/login/provider" style={{ color: '#14B8A6', textDecoration: 'none', fontWeight: 600 }}>
               Provider Portal
             </Link>
           </span>
           <span>•</span>
           <span>
             Fleet Partner?{' '}
-            <Link to="/login/partner" style={{ color: '#34d399', textDecoration: 'none', fontWeight: 600 }}>
+            <Link to="/login/partner" style={{ color: '#2DD4BF', textDecoration: 'none', fontWeight: 600 }}>
               Partner Console
             </Link>
           </span>

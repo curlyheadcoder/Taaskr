@@ -146,12 +146,14 @@ function AppContent() {
 
   useEffect(() => {
     document.body.classList.remove('theme-user', 'theme-provider', 'theme-admin');
-    if (location.pathname.startsWith('/admin')) {
+    const path = location.pathname.toLowerCase();
+    
+    if (path.includes('admin')) {
       document.body.classList.add('theme-admin');
       document.title = 'Taaskr Operations Console';
-    } else if (location.pathname.startsWith('/provider') || location.pathname.startsWith('/partner')) {
+    } else if (path.includes('provider') || path.includes('partner')) {
       document.body.classList.add('theme-provider');
-      document.title = location.pathname.startsWith('/partner') ? 'Taaskr Service Partner Console' : 'Taaskr Pro Partner Portal';
+      document.title = path.includes('partner') ? 'Taaskr Service Partner Console' : 'Taaskr Pro Partner Portal';
     } else {
       document.body.classList.add('theme-user');
       document.title = 'Taaskr — On-Demand Services Marketplace';
