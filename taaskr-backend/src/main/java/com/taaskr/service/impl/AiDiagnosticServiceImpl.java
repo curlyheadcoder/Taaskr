@@ -352,6 +352,7 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
                 "Location: %s.\n" +
                 "Rules:\n" +
                 "- NEVER hallucinate services, prices, or fake statuses.\n" +
+                "- When user asks about car washing, car cleaning, car detailing, or auto care (including typos like 'car clearing'), select Car Cleaning or Car Spa & Detailing.\n" +
                 "- When user asks about cleaning (bathroom, kitchen, home), select the exact Cleaning service.\n" +
                 "- When user asks about wall cracks, plaster, masonry, or painting, select Masonry & Brickwork or Interior Wall Painting - NEVER AC/RO!\n" +
                 "- When user asks to move furniture or goods, select a Logistics/Vehicle service (Mini Truck, Loading Vehicle, Truck).\n" +
@@ -438,6 +439,7 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
                 "Location: %s.\n" +
                 "Rules:\n" +
                 "- NEVER hallucinate non-existent services, prices, or fake statuses.\n" +
+                "- When user asks about car washing, car cleaning, car detailing, or auto care (including typos like 'car clearing'), select Car Cleaning or Car Spa & Detailing.\n" +
                 "- When user asks about cleaning (bathroom, kitchen, home), select the exact Cleaning service.\n" +
                 "- When user asks about wall cracks, plaster, masonry, or painting, select Masonry & Brickwork or Interior Wall Painting - NEVER AC/RO!\n" +
                 "- When user asks to move furniture, shift goods, or relocate between locations, select a Logistics/Vehicle service (Mini Truck, Loading Vehicle, Truck).\n" +
@@ -532,9 +534,71 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
         return containsAny(text, "spaceship", "rocket", "supersonic", "jet engine", "airplane", "aeroplane", "aircraft", "helicopter", "submarine", "train", "passport", "visa", "flight ticket", "hotel booking", "astrology", "crypto", "stock market", "casino");
     }
 
+    private String normalizeQuery(String raw) {
+        if (raw == null) return "";
+        String text = raw.toLowerCase().trim();
+
+        // Common typos & misspellings map
+        text = text.replaceAll("\\bcar\\s+clearing\\b", "car cleaning");
+        text = text.replaceAll("\\bcar\\s+cleaing\\b", "car cleaning");
+        text = text.replaceAll("\\bcar\\s+wshing\\b", "car washing");
+        text = text.replaceAll("\\bcarwash\\b", "car wash");
+        text = text.replaceAll("\\bcarwashing\\b", "car washing");
+        text = text.replaceAll("\\bauto\\s+wash\\b", "car cleaning");
+        text = text.replaceAll("\\bac\\s+reppair\\b", "ac repair");
+        text = text.replaceAll("\\bac\\s+coolng\\b", "ac cooling");
+        text = text.replaceAll("\\bplumbin\\b", "plumbing");
+        text = text.replaceAll("\\beletrician\\b", "electrician");
+        text = text.replaceAll("\\bswichboard\\b", "switchboard");
+        text = text.replaceAll("\\bgeysar\\b", "geyser");
+        text = text.replaceAll("\\bro\\s+purifyer\\b", "ro purifier");
+        text = text.replaceAll("\\bpurifyer\\b", "purifier");
+        text = text.replaceAll("\\bcockrosh\\b", "cockroach");
+        text = text.replaceAll("\\btermittes\\b", "termite");
+        text = text.replaceAll("\\bsovfa\\b", "sofa");
+        text = text.replaceAll("\\bbathrom\\b", "bathroom");
+
+        // Heuristic: If query has "car" and "clearing"/"wash"/"clean", ensure "car cleaning" is present
+        if (text.contains("car") && (text.contains("clearing") || text.contains("cleaing") || text.contains("washing") || text.contains("wash") || text.contains("spa"))) {
+            if (!text.contains("car cleaning") && !text.contains("car spa")) {
+                text = text + " car cleaning";
+            }
+        }
+        return text;
+    }
+
+    private int levenshteinDistance(String s1, String s2) {
+        if (s1 == null || s2 == null) return 999;
+        int[][] dp = new int[s1.length() + 1][s2.length() + 1];
+        for (int i = 0; i <= s1.length(); i++) dp[i][0] = i;
+        for (int j = 0; j <= s2.length(); j++) dp[0][j] = j;
+        for (int i = 1; i <= s1.length(); i++) {
+            for (int j = 1; j <= s2.length(); j++) {
+                int cost = s1.charAt(i - 1) == s2.charAt(j - 1) ? 0 : 1;
+                dp[i][j] = Math.min(Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1), dp[i - 1][j - 1] + cost);
+            }
+        }
+        return dp[s1.length()][s2.length()];
+    }
+
     private List<Service> searchCatalogServices(String query, List<Service> services) {
-        String lower = query.toLowerCase().trim();
+        String lower = normalizeQuery(query);
         List<Service> results = new ArrayList<>();
+
+        // 0. Vehicle & Auto Care Priority (Car Washing, Car Spa, Car Detailing)
+        if (containsAny(lower, "car", "carwash", "auto care", "auto wash", "vehicle wash", "bike wash", "detailing")) {
+            if (containsAny(lower, "wash", "washing", "clean", "cleaning", "clearing", "spa", "detailing", "foam", "care")) {
+                if (containsAny(lower, "spa", "detailing", "wax", "polish")) {
+                    List<Service> spa = services.stream().filter(s -> s.getName().toLowerCase().contains("car spa") || s.getName().toLowerCase().contains("detailing")).toList();
+                    if (!spa.isEmpty()) return spa;
+                }
+                List<Service> carClean = services.stream().filter(s -> s.getName().toLowerCase().contains("car cleaning")).toList();
+                if (!carClean.isEmpty()) return carClean;
+
+                List<Service> anyCarWash = services.stream().filter(s -> s.getName().toLowerCase().contains("car")).toList();
+                if (!anyCarWash.isEmpty()) return anyCarWash;
+            }
+        }
 
         // 1. Cleaning domain priority (Bathroom, Kitchen, Sofa, Full Home)
         if (containsAny(lower, "clean", "cleaning", "maid", "mop", "housekeeping", "dust", "sanitization", "sanitize", "stain", "washroom", "bathroom", "sofa shampoo")) {
@@ -798,14 +862,21 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
             if (!results.isEmpty()) return results;
         }
 
-        // 17. General word boundary matching fallback (strictly checking whole words >= 4 letters)
-        Set<String> stopWords = Set.of("have", "need", "needs", "some", "want", "please", "suggest", "service", "services", "from", "with", "this", "that", "help");
+        // 17. General word boundary & Levenshtein distance fuzzy matching fallback
+        Set<String> stopWords = Set.of("have", "need", "needs", "some", "want", "please", "suggest", "service", "services", "from", "with", "this", "that", "help", "available", "is", "possible");
         for (Service s : services) {
             String nameLower = s.getName().toLowerCase();
             for (String word : lower.split("[\\s,.]+")) {
                 if (word.length() < 4 || stopWords.contains(word)) continue;
                 if (hasWord(nameLower, word)) {
                     if (!results.contains(s)) results.add(s);
+                } else {
+                    for (String sWord : nameLower.split("[\\s,.]+")) {
+                        if (sWord.length() < 4) continue;
+                        if (levenshteinDistance(word, sWord) <= 2) {
+                            if (!results.contains(s)) results.add(s);
+                        }
+                    }
                 }
             }
         }
