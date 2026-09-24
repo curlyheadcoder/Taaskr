@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-down';
-import { useNavigate as useNavigateDom, Link as LinkDom } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
-import { Lock, Mail, AlertCircle, ArrowRight, Eye, EyeOff, UserCheck, Sparkles } from 'lucide-react';
+import { Lock, Mail, AlertCircle, ArrowRight, Eye, EyeOff, Sparkles } from 'lucide-react';
 import TaaskrLogo from '../components/TaaskrLogo';
 
 export default function CustomerLogin() {
-  const navigate = useNavigateDom();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -132,9 +131,9 @@ export default function CustomerLogin() {
           <div className="form-group" style={{ marginBottom: '1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
               <label className="form-label" style={{ margin: 0 }}>Password</label>
-              <LinkDom to="/forgot-password" style={{ fontSize: '0.78rem', color: '#0284c7', fontWeight: 600 }}>
+              <Link to="/forgot-password" style={{ fontSize: '0.78rem', color: '#0284c7', fontWeight: 600 }}>
                 Forgot password?
-              </LinkDom>
+              </Link>
             </div>
             <div style={{ position: 'relative' }}>
               <Lock size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
@@ -202,13 +201,13 @@ export default function CustomerLogin() {
         <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.8125rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
           <div>
             <span style={{ color: 'var(--text-muted)' }}>Don't have an account? </span>
-            <LinkDom to="/register" style={{ color: '#0284c7', fontWeight: 600 }}>Create an Account</LinkDom>
+            <Link to="/register" style={{ color: '#0284c7', fontWeight: 600 }}>Create an Account</Link>
           </div>
           <div style={{ fontSize: '0.78rem' }}>
             <span style={{ color: 'var(--text-muted)' }}>Service Business or Partner? </span>
-            <LinkDom to="/provider-login" style={{ color: '#8b5cf6', fontWeight: 600 }}>Provider Login</LinkDom>
+            <Link to="/provider-login" style={{ color: '#8b5cf6', fontWeight: 600 }}>Provider Login</Link>
             <span style={{ color: 'var(--text-muted)' }}> • </span>
-            <LinkDom to="/partner-login" style={{ color: '#10b981', fontWeight: 600 }}>Worker Login</LinkDom>
+            <Link to="/partner-login" style={{ color: '#10b981', fontWeight: 600 }}>Worker Login</Link>
           </div>
         </div>
       </div>
