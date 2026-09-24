@@ -64,9 +64,9 @@ export default function AdminLogin() {
             gap: '0.4rem',
             padding: '0.3rem 0.85rem',
             borderRadius: '20px',
-            backgroundColor: 'rgba(239, 68, 68, 0.15)',
-            border: '1px solid rgba(239, 68, 68, 0.35)',
-            color: '#f87171',
+            backgroundColor: 'rgba(139, 92, 246, 0.15)',
+            border: '1px solid rgba(139, 92, 246, 0.35)',
+            color: '#a78bfa',
             fontSize: '0.75rem',
             fontWeight: 700,
             textTransform: 'uppercase',
@@ -151,7 +151,7 @@ export default function AdminLogin() {
                 <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)', margin: 0 }}>
                   Master Key / Password
                 </label>
-                <Link to="/forgot-password" style={{ fontSize: '0.78rem', color: '#f87171', fontWeight: 600, textDecoration: 'none' }}>
+                <Link to="/forgot-password" style={{ fontSize: '0.78rem', color: '#a78bfa', fontWeight: 600, textDecoration: 'none' }}>
                   Forgot key?
                 </Link>
               </div>
@@ -204,7 +204,7 @@ export default function AdminLogin() {
               style={{
                 width: '100%',
                 padding: '0.85rem',
-                backgroundColor: '#ef4444',
+                backgroundColor: '#8b5cf6',
                 color: '#FFFFFF',
                 border: 'none',
                 borderRadius: '10px',
@@ -215,7 +215,7 @@ export default function AdminLogin() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '0.5rem',
-                boxShadow: '0 8px 20px -4px rgba(239, 68, 68, 0.4)'
+                boxShadow: '0 8px 20px -4px rgba(139, 92, 246, 0.4)'
               }}
             >
               <span>{loading ? 'Authenticating...' : 'Sign In to Executive Console'}</span>

@@ -68,9 +68,9 @@ export default function ProviderLogin() {
             gap: '0.4rem',
             padding: '0.3rem 0.85rem',
             borderRadius: '20px',
-            backgroundColor: 'rgba(168, 85, 247, 0.15)',
-            border: '1px solid rgba(168, 85, 247, 0.35)',
-            color: '#a855f7',
+            backgroundColor: 'rgba(20, 184, 166, 0.15)',
+            border: '1px solid rgba(20, 184, 166, 0.35)',
+            color: '#2dd4bf',
             fontSize: '0.75rem',
             fontWeight: 700,
             textTransform: 'uppercase',
@@ -156,7 +156,7 @@ export default function ProviderLogin() {
                 <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)', margin: 0 }}>
                   Password
                 </label>
-                <Link to="/forgot-password" style={{ fontSize: '0.78rem', color: '#a855f7', fontWeight: 600, textDecoration: 'none' }}>
+                <Link to="/forgot-password" style={{ fontSize: '0.78rem', color: '#2dd4bf', fontWeight: 600, textDecoration: 'none' }}>
                   Forgot password?
                 </Link>
               </div>
@@ -212,8 +212,8 @@ export default function ProviderLogin() {
               style={{
                 width: '100%',
                 padding: '0.85rem',
-                backgroundColor: '#a855f7',
-                color: '#FFFFFF',
+                backgroundColor: '#14b8a6',
+                color: '#041215',
                 border: 'none',
                 borderRadius: '10px',
                 fontSize: '0.95rem',
@@ -223,7 +223,7 @@ export default function ProviderLogin() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '0.5rem',
-                boxShadow: '0 8px 20px -4px rgba(168, 85, 247, 0.4)'
+                boxShadow: '0 8px 20px -4px rgba(20, 184, 166, 0.4)'
               }}
             >
               <span>{loading ? 'Authenticating...' : 'Sign In to Provider Console'}</span>
@@ -240,7 +240,7 @@ export default function ProviderLogin() {
           }}>
             <div>
               <span style={{ color: 'var(--text-muted)' }}>Want to list your business on Taaskr? </span>
-              <Link to="/register?role=PROVIDER" style={{ color: '#a855f7', fontWeight: 700, textDecoration: 'none' }}>
+              <Link to="/register?role=PROVIDER" style={{ color: '#2dd4bf', fontWeight: 700, textDecoration: 'none' }}>
                 Register Business
               </Link>
             </div>
