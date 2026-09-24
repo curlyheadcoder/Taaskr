@@ -159,7 +159,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/login" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }} className="footer-link">
+                <Link to="/login/provider" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }} className="footer-link">
                   Partner Console Login
                 </Link>
               </li>

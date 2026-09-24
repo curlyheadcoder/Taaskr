@@ -3,22 +3,40 @@ import {
   StyleSheet, Text, View, TextInput, TouchableOpacity, 
   ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView 
 } from 'react-native';
-import { Eye, EyeOff } from 'lucide-react-native';
+import { Eye, EyeOff, User, Briefcase, Wrench, ShieldCheck } from 'lucide-react-native';
 import { useAuthStore } from '../../store/useAuthStore';
 import { colors } from '../../theme/colors';
 
+const ROLES = [
+  { id: 'customer', label: 'User', expectedRole: 'USER', icon: User, accent: colors.primary },
+  { id: 'provider', label: 'Provider', expectedRole: 'PROVIDER', icon: Briefcase, accent: '#8b5cf6' },
+  { id: 'partner', label: 'Worker', expectedRole: 'SERVICE_PARTNER', icon: Wrench, accent: '#10b981' },
+  { id: 'admin', label: 'Admin', expectedRole: 'ADMIN', icon: ShieldCheck, accent: '#ef4444' },
+];
+
 export default function LoginScreen({ navigation }: any) {
+  const [selectedRole, setSelectedRole] = useState('customer');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const { login, isLoading, error } = useAuthStore();
+  const [validationError, setValidationError] = useState('');
+  const { login, isLoading, error: authError } = useAuthStore();
+
+  const activeRoleConfig = ROLES.find(r => r.id === selectedRole) || ROLES[0];
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) return;
+    setValidationError('');
     try {
       await login(email.trim(), password.trim());
-    } catch (e) {}
+      
+      // Note: Zustand auth state handles login state update
+    } catch (e: any) {
+      // Error handled by store
+    }
   };
+
+  const currentError = validationError || authError;
 
   return (
     <KeyboardAvoidingView 
@@ -32,19 +50,55 @@ export default function LoginScreen({ navigation }: any) {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Sign In to Account</Text>
+          <View style={styles.headerRow}>
+            <Text style={styles.cardTitle}>Sign In</Text>
+            <View style={[styles.roleBadge, { borderColor: activeRoleConfig.accent }]}>
+              <Text style={[styles.roleBadgeText, { color: activeRoleConfig.accent }]}>
+                {activeRoleConfig.label} Portal
+              </Text>
+            </View>
+          </View>
 
-          {error ? (
+          {/* Role Switcher Pills */}
+          <View style={styles.roleTabs}>
+            {ROLES.map((r) => {
+              const IconComp = r.icon;
+              const isSelected = selectedRole === r.id;
+              return (
+                <TouchableOpacity
+                  key={r.id}
+                  style={[
+                    styles.roleTab,
+                    isSelected && { backgroundColor: r.accent }
+                  ]}
+                  onPress={() => {
+                    setSelectedRole(r.id);
+                    setValidationError('');
+                  }}
+                >
+                  <IconComp size={14} color={isSelected ? '#000' : colors.dark.textMuted} />
+                  <Text style={[
+                    styles.roleTabText,
+                    isSelected && { color: '#000', fontWeight: '700' }
+                  ]}>
+                    {r.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {currentError ? (
             <View style={styles.errorBox}>
-              <Text style={styles.errorText}>{error}</Text>
+              <Text style={styles.errorText}>{currentError}</Text>
             </View>
           ) : null}
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email or Mobile Number</Text>
+            <Text style={styles.label}>Email Address</Text>
             <TextInput
               style={styles.input}
-              placeholder="e.g. user@taaskr.com or 9876543210"
+              placeholder="user@taaskr.com"
               placeholderTextColor={colors.dark.textMuted}
               value={email}
               onChangeText={setEmail}
@@ -84,14 +138,18 @@ export default function LoginScreen({ navigation }: any) {
           </View>
 
           <TouchableOpacity 
-            style={[styles.btnPrimary, isLoading && styles.btnDisabled]}
+            style={[
+              styles.btnPrimary, 
+              { backgroundColor: activeRoleConfig.accent },
+              isLoading && styles.btnDisabled
+            ]}
             onPress={handleLogin}
             disabled={isLoading}
           >
             {isLoading ? (
               <ActivityIndicator color="#000" />
             ) : (
-              <Text style={styles.btnText}>Sign In</Text>
+              <Text style={styles.btnText}>Sign In as {activeRoleConfig.label}</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -112,7 +170,7 @@ const styles = StyleSheet.create({
   },
   brandHeader: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 28,
   },
   brandTitle: {
     fontSize: 40,
@@ -135,11 +193,49 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.dark.borderLight,
   },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   cardTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: '#FFF',
+  },
+  roleBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  roleBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  roleTabs: {
+    flexDirection: 'row',
+    backgroundColor: colors.dark.bgSubtle,
+    borderRadius: 12,
+    padding: 4,
     marginBottom: 20,
+    gap: 4,
+  },
+  roleTab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    borderRadius: 8,
+    gap: 4,
+  },
+  roleTabText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.dark.textMuted,
   },
   errorBox: {
     backgroundColor: colors.status.errorBg,
@@ -197,7 +293,6 @@ const styles = StyleSheet.create({
     color: '#FFF',
   },
   btnPrimary: {
-    backgroundColor: colors.primary,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',

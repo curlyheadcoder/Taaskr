@@ -167,6 +167,13 @@ function AppContent() {
               {/* Public Access Routes */}
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/login/customer" element={<Login />} />
+              <Route path="/login/provider" element={<Login />} />
+              <Route path="/provider-login" element={<Login />} />
+              <Route path="/login/partner" element={<Login />} />
+              <Route path="/partner-login" element={<Login />} />
+              <Route path="/login/admin" element={<Login />} />
+              <Route path="/admin-login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
