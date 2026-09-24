@@ -16,6 +16,19 @@ const COMING_SOON_CITIES = [
   { city: 'Jabalpur', area: 'Wright Town & Civil Lines' }
 ];
 
+const FALLBACK_SEARCH_SERVICES = [
+  { id: 1, name: 'AC Service & Deep Cleaning', categoryName: 'Appliances & Electrical', basePrice: 499 },
+  { id: 2, name: 'Sofa & Upholstery Deep Cleaning', categoryName: 'Plumbing & Cleaning', basePrice: 799 },
+  { id: 3, name: 'Full Home Pest Control Treatment', categoryName: 'Pest Control', basePrice: 999 },
+  { id: 4, name: 'Men Grooming & Hair Styling', categoryName: 'Salon & Massage / Wellness', basePrice: 349 },
+  { id: 5, name: 'Women Spa & Herbal Facial', categoryName: 'Salon & Massage / Wellness', basePrice: 899 },
+  { id: 6, name: 'Express Goods & House Shifting Transport', categoryName: 'Logistics & Shifting', basePrice: 1299 },
+  { id: 7, name: 'Electrician Quick Fix & MCB Replacement', categoryName: 'Appliances & Electrical', basePrice: 199 },
+  { id: 8, name: 'Plumbing Leakage & Pipe Repair', categoryName: 'Plumbing & Cleaning', basePrice: 249 },
+  { id: 9, name: 'Car Wash & Waterless Auto Polish', categoryName: 'Vehicle & Auto Care', basePrice: 599 },
+  { id: 10, name: 'Interior Wall Painting & Waterproofing', categoryName: 'Civil & Property Maintenance', basePrice: 1499 }
+];
+
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -179,11 +192,14 @@ export default function Navbar() {
   useEffect(() => {
     if (isDark) {
       document.body.classList.add('dark');
+      document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
     } else {
       document.body.classList.remove('dark');
+      document.documentElement.classList.remove('dark');
       localStorage.setItem('theme', 'light');
     }
+    window.dispatchEvent(new CustomEvent('theme_change', { detail: { isDark } }));
   }, [isDark]);
 
   // Keyboard shortcut (Ctrl+K / Cmd+K) to focus search
@@ -210,10 +226,13 @@ export default function Navbar() {
         ]);
         if (isMounted) {
           setCategories(cats || []);
-          setAllServices((servs || []).filter(s => s.active !== false));
+          const activeServs = (servs || []).filter(s => s.active !== false);
+          setAllServices(activeServs.length > 0 ? activeServs : FALLBACK_SEARCH_SERVICES);
         }
       } catch (err) {
-        console.error('Failed to pre-load catalog for search:', err);
+        if (isMounted) {
+          setAllServices(FALLBACK_SEARCH_SERVICES);
+        }
       }
     };
     loadCatalog();
@@ -226,10 +245,11 @@ export default function Navbar() {
       setSearchResults([]);
       return;
     }
+    const pool = (allServices && allServices.length > 0) ? allServices : FALLBACK_SEARCH_SERVICES;
     const qTokens = searchQuery.toLowerCase().trim().split(/\s+/).filter(Boolean);
-    const results = allServices.filter(service => {
+    const results = pool.filter(service => {
       const cat = categories.find(c => c.id === service.categoryId);
-      const catName = (cat?.name || '').toLowerCase();
+      const catName = (cat?.name || service.categoryName || '').toLowerCase();
       const sName = (service.name || '').toLowerCase();
       const sDesc = (service.description || '').toLowerCase();
       const fullText = `${sName} ${catName} ${sDesc}`;
@@ -650,7 +670,15 @@ export default function Navbar() {
                 }
               }}
               onKeyDown={(e) => {
-                if (e.key === 'Escape') setSearchOpen(false);
+                if (e.key === 'Escape') {
+                  setSearchOpen(false);
+                } else if (e.key === 'Enter') {
+                  e.preventDefault();
+                  if (searchResults && searchResults.length > 0) {
+                    setSearchOpen(false);
+                    navigate(`/services/${searchResults[0].id}`);
+                  }
+                }
               }}
               style={{
                 width: '100%',
