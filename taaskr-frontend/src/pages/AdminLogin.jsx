@@ -56,7 +56,7 @@ export default function AdminLogin() {
         {/* Brand Header */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{ display: 'inline-flex', marginBottom: '0.85rem' }}>
-            <TaaskrLogo size={52} />
+            <TaaskrLogo size={52} variant="admin" />
           </div>
           <div style={{
             display: 'inline-flex',

@@ -71,7 +71,7 @@ export default function Login() {
         {/* Customer Portal Header */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{ display: 'inline-flex', marginBottom: '0.85rem' }}>
-            <TaaskrLogo size={52} />
+            <TaaskrLogo size={52} variant="user" />
           </div>
           <div style={{
             display: 'inline-flex',

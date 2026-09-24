@@ -52,13 +52,13 @@ export default function TaaskrLogo({
     brandConfig = {
       name: 'provider',
       label: 'Pro',
-      primary: '#0D9488',
+      primary: '#14B8A6',
       primaryLight: '#5EEAD4',
-      primaryDark: '#0F766E',
+      primaryDark: '#0D9488',
       glow: '#14B8A6',
-      badgeBg: 'rgba(13, 148, 136, 0.16)',
-      badgeBorder: 'rgba(13, 148, 136, 0.45)',
-      badgeColor: '#0D9488',
+      badgeBg: 'rgba(20, 184, 166, 0.16)',
+      badgeBorder: 'rgba(20, 184, 166, 0.45)',
+      badgeColor: '#14B8A6',
       tagText: 'PRO'
     };
   } else if (effectiveVariant === 'admin') {
