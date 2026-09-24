@@ -110,12 +110,20 @@ export default function Login() {
       window.dispatchEvent(new Event('storage'));
 
       const userRole = res.role;
+      const targetFrom = location.state?.from;
+
       if (userRole === 'ADMIN') {
         navigate('/admin');
       } else if (userRole === 'PROVIDER') {
         navigate('/provider');
       } else if (userRole === 'SERVICE_PARTNER') {
         navigate('/partner');
+      } else if (targetFrom) {
+        if (typeof targetFrom === 'string') {
+          navigate(targetFrom);
+        } else {
+          navigate(targetFrom.pathname + (targetFrom.search || ''), { state: targetFrom.state });
+        }
       } else {
         navigate('/');
       }

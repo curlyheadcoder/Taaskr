@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { api } from '../services/api';
 
 export default function ProtectedRoute({ children, allowedRoles }) {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const location = useLocation();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -50,12 +51,13 @@ export default function ProtectedRoute({ children, allowedRoles }) {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     if (user.role === 'PROVIDER') return <Navigate to="/provider" replace />;
     if (user.role === 'ADMIN') return <Navigate to="/admin" replace />;
+    if (user.role === 'SERVICE_PARTNER') return <Navigate to="/partner" replace />;
     return <Navigate to="/" replace />;
   }
 
