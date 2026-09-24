@@ -389,7 +389,7 @@ export default function Navbar() {
                 transition: 'var(--transition-fast)'
               }}
             >
-              <MapPin size={14} color="var(--primary)" />
+              <MapPin size={14} color="#F59E0B" />
               <span style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {currentLocation.city || 'Indore'}
               </span>
@@ -858,13 +858,13 @@ export default function Navbar() {
                 gap: '0.35rem',
                 padding: '0.35rem 0.75rem',
                 borderRadius: '20px',
-                backgroundColor: location.pathname === '/bookings' && location.search.includes('disputes') ? 'rgba(79, 70, 229, 0.14)' : 'var(--bg-subtle)',
-                border: location.pathname === '/bookings' && location.search.includes('disputes') ? '1px solid rgba(79, 70, 229, 0.35)' : '1px solid var(--border-light)',
+                backgroundColor: location.pathname === '/bookings' && location.search.includes('disputes') ? 'rgba(245, 158, 11, 0.14)' : 'var(--bg-subtle)',
+                border: location.pathname === '/bookings' && location.search.includes('disputes') ? '1px solid rgba(245, 158, 11, 0.35)' : '1px solid var(--border-light)',
                 transition: 'all 0.2s ease',
-                boxShadow: location.pathname === '/bookings' && location.search.includes('disputes') ? '0 0 10px rgba(79, 70, 229, 0.15)' : 'none'
+                boxShadow: location.pathname === '/bookings' && location.search.includes('disputes') ? '0 0 10px rgba(245, 158, 11, 0.15)' : 'none'
               }}
             >
-              <Headphones size={14} color="var(--primary)" />
+              <Headphones size={14} color="#F59E0B" />
               <span>Help Desk</span>
             </button>
           </div>
@@ -895,7 +895,7 @@ export default function Navbar() {
               boxShadow: '0 0 14px rgba(139, 92, 246, 0.22)'
             }}
           >
-            <Headphones size={14} color="#A78BFA" />
+            <Headphones size={14} color="#F59E0B" />
             <span>Help Desk</span>
           </button>
         )}
@@ -925,7 +925,7 @@ export default function Navbar() {
               boxShadow: providerTab === 'discussions' ? '0 0 12px rgba(var(--primary-rgb), 0.22)' : 'none'
             }}
           >
-            <Headphones size={14} color="var(--primary)" />
+            <Headphones size={14} color="#F59E0B" />
             <span>Help Desk</span>
           </button>
         )}
@@ -950,7 +950,7 @@ export default function Navbar() {
               border: '1px solid var(--border-light)'
             }}
           >
-            <Headphones size={14} color="var(--primary)" />
+            <Headphones size={14} color="#F59E0B" />
             <span>Help Desk</span>
           </button>
         )}
@@ -1273,9 +1273,41 @@ export default function Navbar() {
             <Link to="/login" className="btn btn-ghost btn-sm" style={{ textDecoration: 'none' }}>
               Sign In
             </Link>
-            <Link to="/register" className="btn btn-primary btn-sm" style={{ textDecoration: 'none' }}>
-              Get Started
-            </Link>
+            {!location.pathname.toLowerCase().includes('login') && (
+              (location.pathname.toLowerCase().includes('provider') || location.pathname.toLowerCase().includes('partner') || location.search.toLowerCase().includes('role=provider') || location.search.toLowerCase().includes('role=partner')) ? (
+                <Link
+                  to="/register?role=PROVIDER"
+                  className="btn btn-sm"
+                  style={{
+                    textDecoration: 'none',
+                    backgroundColor: '#14B8A6',
+                    color: '#FFFFFF',
+                    fontWeight: 700,
+                    borderRadius: '8px',
+                    padding: '0.4rem 0.85rem',
+                    boxShadow: '0 4px 12px rgba(20, 184, 166, 0.35)'
+                  }}
+                >
+                  Register Business
+                </Link>
+              ) : (
+                <Link
+                  to="/register"
+                  className="btn btn-sm"
+                  style={{
+                    textDecoration: 'none',
+                    backgroundColor: '#F59E0B',
+                    color: '#0F172A',
+                    fontWeight: 700,
+                    borderRadius: '8px',
+                    padding: '0.4rem 0.85rem',
+                    boxShadow: '0 4px 12px rgba(245, 158, 11, 0.35)'
+                  }}
+                >
+                  Register
+                </Link>
+              )
+            )}
           </div>
         )}
       </div>
