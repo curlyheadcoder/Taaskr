@@ -52,24 +52,11 @@ export default function PartnerLogin() {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '2.5rem 1rem',
-      position: 'relative',
-      background: 'radial-gradient(circle at 50% 20%, rgba(6, 30, 22, 0.95) 0%, #030d09 100%)'
+      backgroundColor: 'var(--bg-page)',
+      color: 'var(--text-main)',
+      transition: 'all 0.2s ease'
     }}>
-      {/* Emerald Ambient Mesh */}
-      <div style={{
-        position: 'absolute',
-        top: '10%',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '600px',
-        height: '400px',
-        background: 'radial-gradient(circle, rgba(52, 211, 153, 0.22) 0%, rgba(0,0,0,0) 70%)',
-        filter: 'blur(60px)',
-        pointerEvents: 'none',
-        zIndex: 0
-      }} />
-
-      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: '480px' }}>
+      <div style={{ width: '100%', maxWidth: '480px' }}>
         {/* Brand Header */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{ display: 'inline-flex', marginBottom: '0.85rem' }}>
@@ -91,37 +78,37 @@ export default function PartnerLogin() {
             marginBottom: '0.75rem'
           }}>
             <Wrench size={14} />
-            <span>Field Technician & Driver Console</span>
+            <span>Service Partner Console</span>
           </div>
 
           <h1 style={{
             fontSize: '1.8rem',
             fontWeight: 900,
-            color: '#F8FAFC',
+            color: 'var(--text-main)',
             marginBottom: '0.3rem',
             letterSpacing: '-0.03em'
           }}>
-            Service Partner Sign In
+            Technician Dispatch Login
           </h1>
-          <p style={{ color: '#94A3B8', fontSize: '0.875rem', margin: 0 }}>
-            Access assigned job dispatches, turn-by-turn navigation, and proof of service.
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', margin: 0 }}>
+            Access assigned daily tasks, live job routes, and proof of work.
           </p>
         </div>
 
-        {/* Glassmorphic Panel */}
+        {/* Dynamic Theme Panel */}
         <div style={{
-          backgroundColor: 'rgba(6, 30, 22, 0.85)',
-          backdropFilter: 'blur(20px)',
+          backgroundColor: 'var(--bg-card)',
           borderRadius: '20px',
-          border: '1px solid rgba(52, 211, 153, 0.35)',
-          boxShadow: '0 20px 40px -10px rgba(52, 211, 153, 0.22)',
-          padding: '2.25rem'
+          border: '1px solid var(--border-light)',
+          boxShadow: 'var(--shadow-lg)',
+          padding: '2.25rem',
+          transition: 'all 0.2s ease'
         }}>
           {error && (
             <div style={{
-              background: 'rgba(239, 68, 68, 0.15)',
-              border: '1px solid rgba(239, 68, 68, 0.35)',
-              color: '#f87171',
+              background: 'rgba(239, 68, 68, 0.12)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              color: '#ef4444',
               padding: '0.75rem 0.9rem',
               borderRadius: '10px',
               fontSize: '0.8125rem',
@@ -137,28 +124,27 @@ export default function PartnerLogin() {
 
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: '1.25rem' }}>
-              <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: '#CBD5E1', marginBottom: '0.4rem' }}>
-                Worker Login Email
+              <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
+                Technician Email or Phone
               </label>
               <div style={{ position: 'relative' }}>
-                <Mail size={17} color="#64748B" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+                <Mail size={17} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                 <input
-                  type="email"
-                  placeholder="worker@provider.com"
+                  type="text"
+                  placeholder="tech@taaskr.com"
                   style={{
                     width: '100%',
                     padding: '0.75rem 0.85rem 0.75rem 42px',
-                    backgroundColor: 'rgba(30, 41, 59, 0.7)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    backgroundColor: 'var(--bg-subtle)',
+                    border: '1px solid var(--border-light)',
                     borderRadius: '10px',
-                    color: '#F8FAFC',
+                    color: 'var(--text-main)',
                     fontSize: '0.9rem',
                     outline: 'none'
                   }}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
-                  autoComplete="email"
                   required
                 />
               </div>
@@ -166,7 +152,7 @@ export default function PartnerLogin() {
 
             <div style={{ marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#CBD5E1', margin: 0 }}>
+                <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)', margin: 0 }}>
                   Password
                 </label>
                 <Link to="/forgot-password" style={{ fontSize: '0.78rem', color: '#34d399', fontWeight: 600, textDecoration: 'none' }}>
@@ -174,24 +160,23 @@ export default function PartnerLogin() {
                 </Link>
               </div>
               <div style={{ position: 'relative' }}>
-                <Lock size={17} color="#64748B" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+                <Lock size={17} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   style={{
                     width: '100%',
                     padding: '0.75rem 44px 0.75rem 42px',
-                    backgroundColor: 'rgba(30, 41, 59, 0.7)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    backgroundColor: 'var(--bg-subtle)',
+                    border: '1px solid var(--border-light)',
                     borderRadius: '10px',
-                    color: '#F8FAFC',
+                    color: 'var(--text-main)',
                     fontSize: '0.9rem',
                     outline: 'none'
                   }}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading}
-                  autoComplete="current-password"
                   required
                 />
                 <button
@@ -204,15 +189,13 @@ export default function PartnerLogin() {
                     transform: 'translateY(-50%)',
                     background: 'none',
                     border: 'none',
-                    color: '#94A3B8',
+                    color: 'var(--text-muted)',
                     cursor: 'pointer',
                     padding: '4px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}
-                  tabIndex={-1}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -226,7 +209,7 @@ export default function PartnerLogin() {
                 width: '100%',
                 padding: '0.85rem',
                 backgroundColor: '#34d399',
-                color: '#030D09',
+                color: '#064e3b',
                 border: 'none',
                 borderRadius: '10px',
                 fontSize: '0.95rem',
@@ -239,7 +222,7 @@ export default function PartnerLogin() {
                 boxShadow: '0 8px 20px -4px rgba(52, 211, 153, 0.4)'
               }}
             >
-              <span>{loading ? 'Authenticating...' : 'Sign In as Worker'}</span>
+              <span>{loading ? 'Authenticating...' : 'Sign In to Dispatch Console'}</span>
               <ArrowRight size={18} />
             </button>
           </form>
@@ -247,19 +230,14 @@ export default function PartnerLogin() {
           <div style={{
             marginTop: '1.5rem',
             paddingTop: '1rem',
-            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+            borderTop: '1px solid var(--border-light)',
             textAlign: 'center',
-            fontSize: '0.8125rem'
+            fontSize: '0.78rem'
           }}>
-            <div style={{ color: '#94A3B8', fontSize: '0.78rem' }}>
-              Field worker accounts are created by your business manager.
-            </div>
-            <div style={{ marginTop: '0.65rem', fontSize: '0.78rem' }}>
-              <span style={{ color: '#64748B' }}>Not a worker? </span>
-              <Link to="/login" style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: 600 }}>
-                Customer Login
-              </Link>
-            </div>
+            <span style={{ color: 'var(--text-muted)' }}>Looking for consumer services? </span>
+            <Link to="/login" style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: 600 }}>
+              Customer Sign In
+            </Link>
           </div>
         </div>
       </div>

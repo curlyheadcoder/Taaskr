@@ -63,24 +63,11 @@ export default function Login() {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '2.5rem 1rem',
-      position: 'relative',
-      background: 'radial-gradient(circle at 50% 20%, rgba(15, 23, 42, 0.95) 0%, #090d16 100%)'
+      backgroundColor: 'var(--bg-page)',
+      color: 'var(--text-main)',
+      transition: 'all 0.2s ease'
     }}>
-      {/* Background Cyan Glow Mesh */}
-      <div style={{
-        position: 'absolute',
-        top: '12%',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '560px',
-        height: '380px',
-        background: 'radial-gradient(circle, rgba(56, 189, 248, 0.2) 0%, rgba(0,0,0,0) 70%)',
-        filter: 'blur(60px)',
-        pointerEvents: 'none',
-        zIndex: 0
-      }} />
-
-      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: '480px' }}>
+      <div style={{ width: '100%', maxWidth: '480px' }}>
         {/* Customer Portal Header */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{ display: 'inline-flex', marginBottom: '0.85rem' }}>
@@ -108,25 +95,25 @@ export default function Login() {
           <h1 style={{
             fontSize: '1.9rem',
             fontWeight: 900,
-            color: '#F8FAFC',
+            color: 'var(--text-main)',
             marginBottom: '0.4rem',
             letterSpacing: '-0.025em'
           }}>
             Welcome Back to Taaskr
           </h1>
-          <p style={{ color: '#94A3B8', fontSize: '0.925rem', margin: 0, lineHeight: 1.5 }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.925rem', margin: 0, lineHeight: 1.5 }}>
             Sign in to track your service dispatches, bookings, and saved locations.
           </p>
         </div>
 
-        {/* GLASSMORPHIC CUSTOMER FORM PANEL */}
+        {/* DYNAMIC THEME FORM PANEL */}
         <div style={{
-          backgroundColor: 'rgba(15, 23, 42, 0.85)',
-          backdropFilter: 'blur(20px)',
+          backgroundColor: 'var(--bg-card)',
           borderRadius: '20px',
-          border: '1px solid rgba(56, 189, 248, 0.3)',
-          boxShadow: '0 20px 40px -10px rgba(56, 189, 248, 0.15)',
-          padding: '2.25rem'
+          border: '1px solid var(--border-light)',
+          boxShadow: 'var(--shadow-lg)',
+          padding: '2.25rem',
+          transition: 'all 0.2s ease'
         }}>
           {error && (
             <div style={{
@@ -153,7 +140,7 @@ export default function Login() {
                 display: 'block',
                 fontSize: '0.825rem',
                 fontWeight: 600,
-                color: '#CBD5E1',
+                color: 'var(--text-secondary)',
                 marginBottom: '0.45rem'
               }}>
                 Email or Phone Number
@@ -164,7 +151,7 @@ export default function Login() {
                   left: '1rem',
                   top: '50%',
                   transform: 'translateY(-50%)',
-                  color: '#64748B'
+                  color: 'var(--text-muted)'
                 }} />
                 <input
                   type="text"
@@ -175,16 +162,14 @@ export default function Login() {
                   style={{
                     width: '100%',
                     padding: '0.8rem 1rem 0.8rem 2.75rem',
-                    backgroundColor: 'rgba(30, 41, 59, 0.6)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    backgroundColor: 'var(--bg-subtle)',
+                    border: '1px solid var(--border-light)',
                     borderRadius: '12px',
-                    color: '#F8FAFC',
+                    color: 'var(--text-main)',
                     fontSize: '0.925rem',
                     outline: 'none',
                     transition: 'border-color 0.2s ease'
                   }}
-                  onFocus={(e) => e.target.style.borderColor = '#38bdf8'}
-                  onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
                 />
               </div>
             </div>
@@ -194,7 +179,7 @@ export default function Login() {
                 <label style={{
                   fontSize: '0.825rem',
                   fontWeight: 600,
-                  color: '#CBD5E1'
+                  color: 'var(--text-secondary)'
                 }}>
                   Password
                 </label>
@@ -217,7 +202,7 @@ export default function Login() {
                   left: '1rem',
                   top: '50%',
                   transform: 'translateY(-50%)',
-                  color: '#64748B'
+                  color: 'var(--text-muted)'
                 }} />
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -228,16 +213,14 @@ export default function Login() {
                   style={{
                     width: '100%',
                     padding: '0.8rem 2.75rem 0.8rem 2.75rem',
-                    backgroundColor: 'rgba(30, 41, 59, 0.6)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    backgroundColor: 'var(--bg-subtle)',
+                    border: '1px solid var(--border-light)',
                     borderRadius: '12px',
-                    color: '#F8FAFC',
+                    color: 'var(--text-main)',
                     fontSize: '0.925rem',
                     outline: 'none',
                     transition: 'border-color 0.2s ease'
                   }}
-                  onFocus={(e) => e.target.style.borderColor = '#38bdf8'}
-                  onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
                 />
                 <button
                   type="button"
@@ -249,7 +232,7 @@ export default function Login() {
                     transform: 'translateY(-50%)',
                     background: 'none',
                     border: 'none',
-                    color: '#64748B',
+                    color: 'var(--text-muted)',
                     cursor: 'pointer',
                     padding: 0,
                     display: 'flex',
@@ -295,10 +278,10 @@ export default function Login() {
           <div style={{
             marginTop: '1.75rem',
             paddingTop: '1.25rem',
-            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+            borderTop: '1px solid var(--border-light)',
             textAlign: 'center',
             fontSize: '0.875rem',
-            color: '#94A3B8'
+            color: 'var(--text-muted)'
           }}>
             Don't have an account yet?{' '}
             <Link to="/register" style={{ color: '#38bdf8', fontWeight: 600, textDecoration: 'none' }}>
@@ -316,7 +299,7 @@ export default function Login() {
           gap: '1.5rem',
           flexWrap: 'wrap',
           fontSize: '0.825rem',
-          color: '#64748B'
+          color: 'var(--text-muted)'
         }}>
           <span>
             Service Provider?{' '}

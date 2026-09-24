@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { 
-  Briefcase, Mail, Lock, AlertCircle, ArrowRight, Eye, EyeOff, Building2, CheckCircle2 
+  Briefcase, Mail, Lock, AlertCircle, ArrowRight, Eye, EyeOff, Building2 
 } from 'lucide-react';
 import TaaskrLogo from '../components/TaaskrLogo';
 
@@ -52,24 +52,11 @@ export default function ProviderLogin() {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '2.5rem 1rem',
-      position: 'relative',
-      background: 'radial-gradient(circle at 50% 20%, rgba(24, 15, 38, 0.95) 0%, #0b0714 100%)'
+      backgroundColor: 'var(--bg-page)',
+      color: 'var(--text-main)',
+      transition: 'all 0.2s ease'
     }}>
-      {/* Purple Ambient Mesh */}
-      <div style={{
-        position: 'absolute',
-        top: '10%',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '600px',
-        height: '400px',
-        background: 'radial-gradient(circle, rgba(168, 85, 247, 0.25) 0%, rgba(0,0,0,0) 70%)',
-        filter: 'blur(60px)',
-        pointerEvents: 'none',
-        zIndex: 0
-      }} />
-
-      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: '480px' }}>
+      <div style={{ width: '100%', maxWidth: '480px' }}>
         {/* Brand Header */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{ display: 'inline-flex', marginBottom: '0.85rem' }}>
@@ -97,31 +84,31 @@ export default function ProviderLogin() {
           <h1 style={{
             fontSize: '1.8rem',
             fontWeight: 900,
-            color: '#F8FAFC',
+            color: 'var(--text-main)',
             marginBottom: '0.3rem',
             letterSpacing: '-0.03em'
           }}>
             Provider Pro Console
           </h1>
-          <p style={{ color: '#94A3B8', fontSize: '0.875rem', margin: 0 }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', margin: 0 }}>
             Manage service catalog, staff dispatches, and business earnings.
           </p>
         </div>
 
-        {/* Glassmorphic Panel */}
+        {/* Dynamic Theme Panel */}
         <div style={{
-          backgroundColor: 'rgba(24, 15, 38, 0.85)',
-          backdropFilter: 'blur(20px)',
+          backgroundColor: 'var(--bg-card)',
           borderRadius: '20px',
-          border: '1px solid rgba(168, 85, 247, 0.35)',
-          boxShadow: '0 20px 40px -10px rgba(168, 85, 247, 0.25)',
-          padding: '2.25rem'
+          border: '1px solid var(--border-light)',
+          boxShadow: 'var(--shadow-lg)',
+          padding: '2.25rem',
+          transition: 'all 0.2s ease'
         }}>
           {error && (
             <div style={{
-              background: 'rgba(239, 68, 68, 0.15)',
-              border: '1px solid rgba(239, 68, 68, 0.35)',
-              color: '#f87171',
+              background: 'rgba(239, 68, 68, 0.12)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              color: '#ef4444',
               padding: '0.75rem 0.9rem',
               borderRadius: '10px',
               fontSize: '0.8125rem',
@@ -137,21 +124,21 @@ export default function ProviderLogin() {
 
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: '1.25rem' }}>
-              <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: '#CBD5E1', marginBottom: '0.4rem' }}>
+              <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
                 Provider Email Address
               </label>
               <div style={{ position: 'relative' }}>
-                <Mail size={17} color="#64748B" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+                <Mail size={17} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                 <input
                   type="email"
                   placeholder="partner@company.com"
                   style={{
                     width: '100%',
                     padding: '0.75rem 0.85rem 0.75rem 42px',
-                    backgroundColor: 'rgba(30, 41, 59, 0.7)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    backgroundColor: 'var(--bg-subtle)',
+                    border: '1px solid var(--border-light)',
                     borderRadius: '10px',
-                    color: '#F8FAFC',
+                    color: 'var(--text-main)',
                     fontSize: '0.9rem',
                     outline: 'none'
                   }}
@@ -166,7 +153,7 @@ export default function ProviderLogin() {
 
             <div style={{ marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#CBD5E1', margin: 0 }}>
+                <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)', margin: 0 }}>
                   Password
                 </label>
                 <Link to="/forgot-password" style={{ fontSize: '0.78rem', color: '#a855f7', fontWeight: 600, textDecoration: 'none' }}>
@@ -174,17 +161,17 @@ export default function ProviderLogin() {
                 </Link>
               </div>
               <div style={{ position: 'relative' }}>
-                <Lock size={17} color="#64748B" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+                <Lock size={17} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   style={{
                     width: '100%',
                     padding: '0.75rem 44px 0.75rem 42px',
-                    backgroundColor: 'rgba(30, 41, 59, 0.7)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    backgroundColor: 'var(--bg-subtle)',
+                    border: '1px solid var(--border-light)',
                     borderRadius: '10px',
-                    color: '#F8FAFC',
+                    color: 'var(--text-main)',
                     fontSize: '0.9rem',
                     outline: 'none'
                   }}
@@ -204,7 +191,7 @@ export default function ProviderLogin() {
                     transform: 'translateY(-50%)',
                     background: 'none',
                     border: 'none',
-                    color: '#94A3B8',
+                    color: 'var(--text-muted)',
                     cursor: 'pointer',
                     padding: '4px',
                     display: 'flex',
@@ -247,18 +234,18 @@ export default function ProviderLogin() {
           <div style={{
             marginTop: '1.5rem',
             paddingTop: '1rem',
-            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+            borderTop: '1px solid var(--border-light)',
             textAlign: 'center',
             fontSize: '0.8125rem'
           }}>
             <div>
-              <span style={{ color: '#94A3B8' }}>Want to list your business on Taaskr? </span>
+              <span style={{ color: 'var(--text-muted)' }}>Want to list your business on Taaskr? </span>
               <Link to="/register?role=PROVIDER" style={{ color: '#a855f7', fontWeight: 700, textDecoration: 'none' }}>
                 Register Business
               </Link>
             </div>
             <div style={{ marginTop: '0.65rem', fontSize: '0.78rem' }}>
-              <span style={{ color: '#64748B' }}>Not a provider? </span>
+              <span style={{ color: 'var(--text-muted)' }}>Not a provider? </span>
               <Link to="/login" style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: 600 }}>
                 Customer Login
               </Link>
