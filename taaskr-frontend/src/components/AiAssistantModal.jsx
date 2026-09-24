@@ -178,7 +178,7 @@ export default function AiAssistantModal() {
           color: '#ffffff',
           border: '1px solid rgba(255, 255, 255, 0.25)',
           borderRadius: 'var(--radius-full)',
-          boxShadow: '0 8px 24px rgba(22, 168, 255, 0.4)',
+          boxShadow: '0 8px 24px var(--accent-glow)',
           cursor: 'pointer',
           fontWeight: 700,
           fontSize: '0.875rem',

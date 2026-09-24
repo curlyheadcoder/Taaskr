@@ -347,19 +347,25 @@ export default function Navbar() {
       height: '58px',
       transition: 'var(--transition-smooth)'
     }}>
-      {/* Left Section: Brand Logo & Navigation Links */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexShrink: 0 }}>
-        <Link 
-          to={user?.role === 'SERVICE_PARTNER' ? '/partner' : user?.role === 'PROVIDER' ? '/provider' : user?.role === 'ADMIN' ? '/admin' : '/'} 
-          style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}
-        >
-          <TaaskrLogo 
-            size={28} 
-            withText={true} 
-            textSize="1.25rem" 
-            variant={user?.role === 'SERVICE_PARTNER' || user?.role === 'PROVIDER' ? 'provider' : user?.role === 'ADMIN' ? 'admin' : 'user'} 
-          />
-        </Link>
+        {/* Left Section: Brand Logo & Navigation Links */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexShrink: 0 }}>
+          <Link 
+            to={user?.role === 'SERVICE_PARTNER' ? '/partner' : user?.role === 'PROVIDER' ? '/provider' : user?.role === 'ADMIN' ? '/admin' : '/'} 
+            style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}
+          >
+            <TaaskrLogo 
+              size={28} 
+              withText={true} 
+              textSize="1.25rem" 
+              variant={
+                (user?.role === 'ADMIN' || location.pathname.toLowerCase().includes('admin'))
+                  ? 'admin'
+                  : (user?.role === 'PROVIDER' || user?.role === 'SERVICE_PARTNER' || location.pathname.toLowerCase().includes('provider') || location.pathname.toLowerCase().includes('partner') || location.search.toLowerCase().includes('role=provider') || location.search.toLowerCase().includes('role=partner'))
+                    ? 'provider'
+                    : 'user'
+              } 
+            />
+          </Link>
 
         {/* Location Selector (User / Guest Only) */}
         {isCustomerView && (
