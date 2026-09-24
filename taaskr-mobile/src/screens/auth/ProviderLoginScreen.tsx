@@ -3,22 +3,26 @@ import {
   StyleSheet, Text, View, TextInput, TouchableOpacity, 
   ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView 
 } from 'react-native';
-import { Eye, EyeOff } from 'lucide-react-native';
+import { Eye, EyeOff, Briefcase, ArrowLeft } from 'lucide-react-native';
 import { useAuthStore } from '../../store/useAuthStore';
 import { colors } from '../../theme/colors';
 
-export default function LoginScreen({ navigation }: any) {
+export default function ProviderLoginScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const { login, isLoading, error } = useAuthStore();
+  const [validationError, setValidationError] = useState('');
+  const { login, isLoading, error: authError } = useAuthStore();
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) return;
+    setValidationError('');
     try {
       await login(email.trim(), password.trim());
     } catch (e: any) {}
   };
+
+  const currentError = validationError || authError;
 
   return (
     <KeyboardAvoidingView 
@@ -26,25 +30,33 @@ export default function LoginScreen({ navigation }: any) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Login')}>
+          <ArrowLeft color="#FFF" size={18} />
+          <Text style={styles.backText}>Customer Login</Text>
+        </TouchableOpacity>
+
         <View style={styles.brandHeader}>
-          <Text style={styles.brandTitle}>Taaskr<Text style={styles.brandDot}>.</Text></Text>
-          <Text style={styles.brandSubtitle}>On-Demand Doorstep Services Marketplace</Text>
+          <View style={styles.iconContainer}>
+            <Briefcase color="#8b5cf6" size={28} />
+          </View>
+          <Text style={styles.brandTitle}>Provider Pro</Text>
+          <Text style={styles.brandSubtitle}>Business Owner & Dispatch Console</Text>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Customer Sign In</Text>
+          <Text style={styles.cardTitle}>Provider Sign In</Text>
 
-          {error ? (
+          {currentError ? (
             <View style={styles.errorBox}>
-              <Text style={styles.errorText}>{error}</Text>
+              <Text style={styles.errorText}>{currentError}</Text>
             </View>
           ) : null}
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email or Mobile Number</Text>
+            <Text style={styles.label}>Provider Email</Text>
             <TextInput
               style={styles.input}
-              placeholder="e.g. user@taaskr.com or 9876543210"
+              placeholder="partner@company.com"
               placeholderTextColor={colors.dark.textMuted}
               value={email}
               onChangeText={setEmail}
@@ -57,7 +69,7 @@ export default function LoginScreen({ navigation }: any) {
             <View style={styles.labelRow}>
               <Text style={styles.label}>Password</Text>
               <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
-                <Text style={styles.forgotText}>Forgot password?</Text>
+                <Text style={[styles.forgotText, { color: '#8b5cf6' }]}>Forgot password?</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.passwordWrapper}>
@@ -72,7 +84,6 @@ export default function LoginScreen({ navigation }: any) {
               <TouchableOpacity 
                 style={styles.eyeButton} 
                 onPress={() => setShowPassword(!showPassword)}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 {showPassword ? (
                   <EyeOff color={colors.dark.textMuted} size={20} />
@@ -89,17 +100,10 @@ export default function LoginScreen({ navigation }: any) {
             disabled={isLoading}
           >
             {isLoading ? (
-              <ActivityIndicator color="#000" />
+              <ActivityIndicator color="#FFF" />
             ) : (
-              <Text style={styles.btnText}>Sign In</Text>
+              <Text style={styles.btnText}>Sign In to Provider Console</Text>
             )}
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={styles.providerLink}
-            onPress={() => navigation.navigate('ProviderLogin')}
-          >
-            <Text style={styles.providerLinkText}>Service Provider Business Login →</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -117,18 +121,36 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexGrow: 1,
   },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    gap: 8,
+  },
+  backText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   brandHeader: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 28,
+  },
+  iconContainer: {
+    width: 54,
+    height: 54,
+    borderRadius: 16,
+    backgroundColor: 'rgba(139, 92, 246, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
   },
   brandTitle: {
-    fontSize: 40,
+    fontSize: 32,
     fontWeight: '900',
     color: '#FFF',
-    letterSpacing: -1,
-  },
-  brandDot: {
-    color: colors.primary,
   },
   brandSubtitle: {
     fontSize: 14,
@@ -140,7 +162,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 24,
     borderWidth: 1,
-    borderColor: colors.dark.borderLight,
+    borderColor: 'rgba(139, 92, 246, 0.3)',
   },
   cardTitle: {
     fontSize: 20,
@@ -177,7 +199,6 @@ const styles = StyleSheet.create({
   forgotText: {
     fontSize: 12,
     fontWeight: '600',
-    color: colors.primary,
   },
   passwordWrapper: {
     position: 'relative',
@@ -204,7 +225,7 @@ const styles = StyleSheet.create({
     color: '#FFF',
   },
   btnPrimary: {
-    backgroundColor: colors.primary,
+    backgroundColor: '#8b5cf6',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
@@ -216,18 +237,6 @@ const styles = StyleSheet.create({
   btnText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#000',
-  },
-  providerLink: {
-    alignItems: 'center',
-    marginTop: 20,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: colors.dark.borderLight,
-  },
-  providerLinkText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#8b5cf6',
+    color: '#FFF',
   },
 });

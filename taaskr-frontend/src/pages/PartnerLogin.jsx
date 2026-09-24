@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-down';
-import { useNavigate as useNavigateDom, Link as LinkDom } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
-import { Lock, Mail, AlertCircle, ArrowRight, Eye, EyeOff, UserCheck, Sparkles } from 'lucide-react';
+import { Lock, Mail, AlertCircle, ArrowRight, Eye, EyeOff, Wrench, Navigation } from 'lucide-react';
 import TaaskrLogo from '../components/TaaskrLogo';
 
-export default function CustomerLogin() {
-  const navigate = useNavigateDom();
+export default function PartnerLogin() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -16,14 +15,14 @@ export default function CustomerLogin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) {
-      setError('Please enter your email and password');
+      setError('Please enter your worker email and password');
       return;
     }
     setError('');
     setLoading(true);
 
     try {
-      const res = await api.auth.login(email.trim(), password.trim(), 'USER');
+      const res = await api.auth.login(email.trim(), password.trim(), 'SERVICE_PARTNER');
       window.dispatchEvent(new Event('auth_change'));
       window.dispatchEvent(new Event('storage'));
 
@@ -37,7 +36,7 @@ export default function CustomerLogin() {
         navigate('/');
       }
     } catch (err) {
-      setError(err.message || 'Authentication failed. Please verify your email and password.');
+      setError(err.message || 'Worker authentication failed. Please verify your assigned worker login details.');
     } finally {
       setLoading(false);
     }
@@ -57,7 +56,7 @@ export default function CustomerLogin() {
         width: '100%',
         padding: '2.25rem',
         borderRadius: '16px',
-        borderTop: '4px solid #0284c7'
+        borderTop: '4px solid #10b981'
       }}>
         {/* Brand Header */}
         <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
@@ -71,24 +70,24 @@ export default function CustomerLogin() {
             gap: '0.4rem',
             padding: '0.25rem 0.75rem',
             borderRadius: '20px',
-            backgroundColor: 'rgba(2, 132, 199, 0.12)',
-            border: '1px solid rgba(2, 132, 199, 0.3)',
-            color: '#0284c7',
+            backgroundColor: 'rgba(16, 185, 129, 0.12)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            color: '#10b981',
             fontSize: '0.75rem',
             fontWeight: 700,
             textTransform: 'uppercase',
             letterSpacing: '0.04em',
             marginBottom: '0.75rem'
           }}>
-            <Sparkles size={13} />
-            <span>Customer Account Portal</span>
+            <Wrench size={13} />
+            <span>Field Technician & Driver Console</span>
           </div>
 
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.25rem', letterSpacing: '-0.02em' }}>
-            Customer Sign In
+            Service Partner Sign In
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: 1.45 }}>
-            Access your doorstep service bookings, live tracking, and estimates.
+            View assigned task dispatches, update job status, and capture proof of service.
           </p>
         </div>
 
@@ -112,12 +111,12 @@ export default function CustomerLogin() {
 
         <form onSubmit={handleSubmit}>
           <div className="form-group" style={{ marginBottom: '1.25rem' }}>
-            <label className="form-label">Email Address</label>
+            <label className="form-label">Worker Login Email</label>
             <div style={{ position: 'relative' }}>
               <Mail size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
               <input
                 type="email"
-                placeholder="user@example.com"
+                placeholder="worker@provider.com"
                 className="form-control"
                 style={{ paddingLeft: '38px' }}
                 value={email}
@@ -132,9 +131,9 @@ export default function CustomerLogin() {
           <div className="form-group" style={{ marginBottom: '1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
               <label className="form-label" style={{ margin: 0 }}>Password</label>
-              <LinkDom to="/forgot-password" style={{ fontSize: '0.78rem', color: '#0284c7', fontWeight: 600 }}>
+              <Link to="/forgot-password" style={{ fontSize: '0.78rem', color: '#10b981', fontWeight: 600 }}>
                 Forgot password?
-              </LinkDom>
+              </Link>
             </div>
             <div style={{ position: 'relative' }}>
               <Lock size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
@@ -180,7 +179,7 @@ export default function CustomerLogin() {
             className="btn" 
             style={{ 
               width: '100%', 
-              backgroundColor: '#0284c7', 
+              backgroundColor: '#10b981', 
               color: '#FFFFFF',
               fontWeight: 700,
               padding: '0.75rem',
@@ -194,21 +193,20 @@ export default function CustomerLogin() {
             }} 
             disabled={loading}
           >
-            <span>{loading ? 'Authenticating...' : 'Sign In as Customer'}</span>
+            <span>{loading ? 'Authenticating...' : 'Sign In as Service Worker'}</span>
             <ArrowRight size={16} />
           </button>
         </form>
 
         <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.8125rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
           <div>
-            <span style={{ color: 'var(--text-muted)' }}>Don't have an account? </span>
-            <LinkDom to="/register" style={{ color: '#0284c7', fontWeight: 600 }}>Create an Account</LinkDom>
+            <span style={{ color: 'var(--text-muted)' }}>Worker logins are provisioned by your Provider business administrator.</span>
           </div>
           <div style={{ fontSize: '0.78rem' }}>
-            <span style={{ color: 'var(--text-muted)' }}>Service Business or Partner? </span>
-            <LinkDom to="/provider-login" style={{ color: '#8b5cf6', fontWeight: 600 }}>Provider Login</LinkDom>
+            <span style={{ color: 'var(--text-muted)' }}>Not a worker? </span>
+            <Link to="/login" style={{ color: '#0284c7', fontWeight: 600 }}>Customer Sign In</Link>
             <span style={{ color: 'var(--text-muted)' }}> • </span>
-            <LinkDom to="/partner-login" style={{ color: '#10b981', fontWeight: 600 }}>Worker Login</LinkDom>
+            <Link to="/provider-login" style={{ color: '#8b5cf6', fontWeight: 600 }}>Provider Console</Link>
           </div>
         </div>
       </div>

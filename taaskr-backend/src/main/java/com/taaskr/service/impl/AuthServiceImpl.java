@@ -177,6 +177,14 @@ public class AuthServiceImpl implements AuthService {
                 .or(() -> userRepository.findByPhone(identifier))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email or phone: " + identifier));
 
+        if (request.getExpectedRole() != null && !request.getExpectedRole().isBlank()) {
+            String expected = request.getExpectedRole().trim().toUpperCase();
+            String actual = user.getRole().name();
+            if (!actual.equals(expected) && !actual.equals("ADMIN")) {
+                throw new BadRequestException("Access denied: Account is registered as " + actual + ". Please use the " + actual + " login portal.");
+            }
+        }
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(user.getEmail(), request.getPassword())
         );

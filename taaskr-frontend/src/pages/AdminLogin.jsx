@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-down';
-import { useNavigate as useNavigateDom, Link as LinkDom } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
-import { Lock, Mail, AlertCircle, ArrowRight, Eye, EyeOff, UserCheck, Sparkles } from 'lucide-react';
+import { Lock, Mail, AlertCircle, ArrowRight, Eye, EyeOff, ShieldCheck, ShieldAlert } from 'lucide-react';
 import TaaskrLogo from '../components/TaaskrLogo';
 
-export default function CustomerLogin() {
-  const navigate = useNavigateDom();
+export default function AdminLogin() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -16,28 +15,24 @@ export default function CustomerLogin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) {
-      setError('Please enter your email and password');
+      setError('Please provide administrator credentials');
       return;
     }
     setError('');
     setLoading(true);
 
     try {
-      const res = await api.auth.login(email.trim(), password.trim(), 'USER');
+      const res = await api.auth.login(email.trim(), password.trim(), 'ADMIN');
       window.dispatchEvent(new Event('auth_change'));
       window.dispatchEvent(new Event('storage'));
 
       if (res.role === 'ADMIN') {
         navigate('/admin');
-      } else if (res.role === 'PROVIDER') {
-        navigate('/provider');
-      } else if (res.role === 'SERVICE_PARTNER') {
-        navigate('/partner');
       } else {
-        navigate('/');
+        setError('Access Denied: Your account does not have Administrator privileges.');
       }
     } catch (err) {
-      setError(err.message || 'Authentication failed. Please verify your email and password.');
+      setError(err.message || 'Admin authentication failed. Please verify your credentials.');
     } finally {
       setLoading(false);
     }
@@ -57,7 +52,8 @@ export default function CustomerLogin() {
         width: '100%',
         padding: '2.25rem',
         borderRadius: '16px',
-        borderTop: '4px solid #0284c7'
+        borderTop: '4px solid #ef4444',
+        boxShadow: '0 20px 25px -5px rgba(239, 68, 68, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.2)'
       }}>
         {/* Brand Header */}
         <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
@@ -71,25 +67,42 @@ export default function CustomerLogin() {
             gap: '0.4rem',
             padding: '0.25rem 0.75rem',
             borderRadius: '20px',
-            backgroundColor: 'rgba(2, 132, 199, 0.12)',
-            border: '1px solid rgba(2, 132, 199, 0.3)',
-            color: '#0284c7',
+            backgroundColor: 'rgba(239, 68, 68, 0.12)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            color: '#ef4444',
             fontSize: '0.75rem',
             fontWeight: 700,
             textTransform: 'uppercase',
             letterSpacing: '0.04em',
             marginBottom: '0.75rem'
           }}>
-            <Sparkles size={13} />
-            <span>Customer Account Portal</span>
+            <ShieldCheck size={13} />
+            <span>Executive Command Center</span>
           </div>
 
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.25rem', letterSpacing: '-0.02em' }}>
-            Customer Sign In
+            Admin Portal Sign In
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: 1.45 }}>
-            Access your doorstep service bookings, live tracking, and estimates.
+            Internal platform oversight, user compliance, and financial reconciliation.
           </p>
+        </div>
+
+        {/* Security Warning Notice */}
+        <div style={{
+          backgroundColor: 'rgba(239, 68, 68, 0.08)',
+          border: '1px solid rgba(239, 68, 68, 0.2)',
+          borderRadius: '8px',
+          padding: '0.65rem 0.85rem',
+          fontSize: '0.78rem',
+          color: '#f87171',
+          marginBottom: '1.25rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem'
+        }}>
+          <ShieldAlert size={16} style={{ flexShrink: 0 }} />
+          <span>Restricted Portal. Unauthorised access attempts are logged and monitored.</span>
         </div>
 
         {error && (
@@ -112,12 +125,12 @@ export default function CustomerLogin() {
 
         <form onSubmit={handleSubmit}>
           <div className="form-group" style={{ marginBottom: '1.25rem' }}>
-            <label className="form-label">Email Address</label>
+            <label className="form-label">Admin Email</label>
             <div style={{ position: 'relative' }}>
               <Mail size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
               <input
                 type="email"
-                placeholder="user@example.com"
+                placeholder="admin@taaskr.com"
                 className="form-control"
                 style={{ paddingLeft: '38px' }}
                 value={email}
@@ -132,9 +145,9 @@ export default function CustomerLogin() {
           <div className="form-group" style={{ marginBottom: '1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
               <label className="form-label" style={{ margin: 0 }}>Password</label>
-              <LinkDom to="/forgot-password" style={{ fontSize: '0.78rem', color: '#0284c7', fontWeight: 600 }}>
+              <Link to="/forgot-password" style={{ fontSize: '0.78rem', color: '#ef4444', fontWeight: 600 }}>
                 Forgot password?
-              </LinkDom>
+              </Link>
             </div>
             <div style={{ position: 'relative' }}>
               <Lock size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
@@ -180,7 +193,7 @@ export default function CustomerLogin() {
             className="btn" 
             style={{ 
               width: '100%', 
-              backgroundColor: '#0284c7', 
+              backgroundColor: '#ef4444', 
               color: '#FFFFFF',
               fontWeight: 700,
               padding: '0.75rem',
@@ -194,22 +207,15 @@ export default function CustomerLogin() {
             }} 
             disabled={loading}
           >
-            <span>{loading ? 'Authenticating...' : 'Sign In as Customer'}</span>
+            <span>{loading ? 'Authenticating...' : 'Sign In to Admin Portal'}</span>
             <ArrowRight size={16} />
           </button>
         </form>
 
-        <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.8125rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-          <div>
-            <span style={{ color: 'var(--text-muted)' }}>Don't have an account? </span>
-            <LinkDom to="/register" style={{ color: '#0284c7', fontWeight: 600 }}>Create an Account</LinkDom>
-          </div>
-          <div style={{ fontSize: '0.78rem' }}>
-            <span style={{ color: 'var(--text-muted)' }}>Service Business or Partner? </span>
-            <LinkDom to="/provider-login" style={{ color: '#8b5cf6', fontWeight: 600 }}>Provider Login</LinkDom>
-            <span style={{ color: 'var(--text-muted)' }}> • </span>
-            <LinkDom to="/partner-login" style={{ color: '#10b981', fontWeight: 600 }}>Worker Login</LinkDom>
-          </div>
+        <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.8125rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem' }}>
+          <Link to="/login" style={{ color: 'var(--text-muted)', fontWeight: 500, textDecoration: 'underline' }}>
+            Return to Customer Website
+          </Link>
         </div>
       </div>
     </div>

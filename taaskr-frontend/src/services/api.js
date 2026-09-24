@@ -81,10 +81,10 @@ export const api = {
   // AUTHENTICATION
   // ----------------------------------------
   auth: {
-    login: async (email, password) => {
+    login: async (email, password, expectedRole = null) => {
       const res = await makeRequest('/api/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password, expectedRole })
       });
       if (res && res.token) {
         localStorage.setItem('taaskr_token', res.token);

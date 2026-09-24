@@ -12,6 +12,7 @@ import { tokens } from './src/theme/tokens';
 import { ThemeProvider } from './src/theme/ThemeContext';
 
 import LoginScreen from './src/screens/auth/LoginScreen';
+import ProviderLoginScreen from './src/screens/auth/ProviderLoginScreen';
 import ForgotPasswordScreen from './src/screens/auth/ForgotPasswordScreen';
 import HomeScreen from './src/screens/customer/HomeScreen';
 import BookingScreen from './src/screens/customer/BookingScreen';
@@ -241,6 +242,7 @@ function RootNavigator() {
         {!isAuthenticated ? (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="ProviderLogin" component={ProviderLoginScreen} />
             <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
           </>
         ) : role === 'ADMIN' ? (

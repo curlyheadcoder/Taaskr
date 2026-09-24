@@ -26,6 +26,9 @@ const lazyWithRetry = (importFn) =>
 // Page Views (Code-Split via dynamic imports with auto-recovery for fast initial load)
 const Home = lazyWithRetry(() => import('./pages/Home'));
 const Login = lazyWithRetry(() => import('./pages/Login'));
+const ProviderLogin = lazyWithRetry(() => import('./pages/ProviderLogin'));
+const PartnerLogin = lazyWithRetry(() => import('./pages/PartnerLogin'));
+const AdminLogin = lazyWithRetry(() => import('./pages/AdminLogin'));
 const Register = lazyWithRetry(() => import('./pages/Register'));
 const ForgotPassword = lazyWithRetry(() => import('./pages/ForgotPassword'));
 const VerifyEmail = lazyWithRetry(() => import('./pages/VerifyEmail'));
@@ -168,12 +171,12 @@ function AppContent() {
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/login/customer" element={<Login />} />
-              <Route path="/login/provider" element={<Login />} />
-              <Route path="/provider-login" element={<Login />} />
-              <Route path="/login/partner" element={<Login />} />
-              <Route path="/partner-login" element={<Login />} />
-              <Route path="/login/admin" element={<Login />} />
-              <Route path="/admin-login" element={<Login />} />
+              <Route path="/login/provider" element={<ProviderLogin />} />
+              <Route path="/provider-login" element={<ProviderLogin />} />
+              <Route path="/login/partner" element={<PartnerLogin />} />
+              <Route path="/partner-login" element={<PartnerLogin />} />
+              <Route path="/login/admin" element={<AdminLogin />} />
+              <Route path="/admin-login" element={<AdminLogin />} />
               <Route path="/register" element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
