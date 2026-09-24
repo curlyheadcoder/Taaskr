@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { api } from '../services/api';
 import { Wrench, Truck, AlertCircle, ArrowRight, UserCheck, ShieldCheck } from 'lucide-react';
 import TaaskrLogo from '../components/TaaskrLogo';
 
 export default function Register() {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -16,6 +18,15 @@ export default function Register() {
     city: '',
     pincode: ''
   });
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const roleParam = params.get('role');
+    if (roleParam && (roleParam.toUpperCase() === 'PROVIDER' || roleParam.toUpperCase() === 'SERVICE_PARTNER')) {
+      setFormData(prev => ({ ...prev, role: 'PROVIDER' }));
+    }
+  }, [location.search]);
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -82,7 +93,7 @@ export default function Register() {
       }}>
         <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
           <div style={{ display: 'inline-flex', marginBottom: '0.85rem' }}>
-            <TaaskrLogo size={46} />
+            <TaaskrLogo size={46} variant={formData.role === 'PROVIDER' ? 'provider' : 'user'} />
           </div>
           <h1 style={{ fontSize: '1.45rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.25rem', letterSpacing: '-0.02em' }}>
             Create Your Account
