@@ -817,11 +817,6 @@ export default function BookingFlow() {
                     >
                       {isSelected && <CheckCircle2 size={13} color="var(--primary)" />}
                       <span>{slot.label}</span>
-                      {isPast && (
-                        <span style={{ fontSize: '0.58rem', color: 'var(--error)', position: 'absolute', top: '2px', right: '4px', textTransform: 'uppercase', fontWeight: 800 }}>
-                          Passed
-                        </span>
-                      )}
                     </button>
                   );
                 })}
