@@ -25,6 +25,129 @@ public class DatabaseSchemaMigrationRunner implements CommandLineRunner {
         remediateNullVersionColumns();
         migrateVehiclesProviderIdConstraint();
         harmonizeStandardCategories();
+        ensureObservabilityTablesAndSeed();
+    }
+
+    private void ensureObservabilityTablesAndSeed() {
+        try {
+            log.info("[DB Migration] Verifying Observability Platform database schema and configuration seed...");
+            
+            jdbcTemplate.execute("""
+                CREATE TABLE IF NOT EXISTS monitored_endpoints (
+                    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                    name VARCHAR(120) NOT NULL,
+                    http_method VARCHAR(10) NOT NULL DEFAULT 'GET',
+                    url_path VARCHAR(255) NOT NULL,
+                    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+                    timeout_ms INT NOT NULL DEFAULT 5000,
+                    failure_threshold INT NOT NULL DEFAULT 3,
+                    recovery_threshold INT NOT NULL DEFAULT 2,
+                    latency_threshold_ms INT NOT NULL DEFAULT 1000,
+                    current_state VARCHAR(20) NOT NULL DEFAULT 'UNKNOWN',
+                    consecutive_failures INT DEFAULT 0,
+                    consecutive_successes INT DEFAULT 0,
+                    last_check_time DATETIME NULL,
+                    last_success_time DATETIME NULL,
+                    last_failure_time DATETIME NULL,
+                    last_status_code INT NULL,
+                    last_response_time_ms BIGINT NULL,
+                    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+                );
+            """);
+
+            jdbcTemplate.execute("""
+                CREATE TABLE IF NOT EXISTS health_check_results (
+                    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                    endpoint_id BIGINT NOT NULL,
+                    status_code INT NULL,
+                    response_time_ms BIGINT NOT NULL,
+                    success BOOLEAN NOT NULL,
+                    error_message VARCHAR(500) NULL,
+                    checked_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+                );
+            """);
+
+            jdbcTemplate.execute("""
+                CREATE TABLE IF NOT EXISTS monitoring_incidents (
+                    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                    endpoint_id BIGINT NOT NULL,
+                    status VARCHAR(20) NOT NULL DEFAULT 'OPEN',
+                    severity VARCHAR(20) NOT NULL DEFAULT 'HIGH',
+                    started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    last_observed_failure DATETIME NULL,
+                    resolved_at DATETIME NULL,
+                    current_status_code INT NULL,
+                    failure_reason VARCHAR(500) NULL,
+                    failed_check_count INT DEFAULT 1,
+                    escalation_level INT DEFAULT 1,
+                    acknowledged_by VARCHAR(100) NULL,
+                    acknowledged_at DATETIME NULL
+                );
+            """);
+
+            jdbcTemplate.execute("""
+                CREATE TABLE IF NOT EXISTS monitoring_alerts (
+                    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                    incident_id BIGINT NULL,
+                    endpoint_id BIGINT NOT NULL,
+                    alert_type VARCHAR(50) NOT NULL,
+                    severity VARCHAR(20) NOT NULL DEFAULT 'HIGH',
+                    message VARCHAR(500) NOT NULL,
+                    state VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+                    escalation_level INT DEFAULT 1,
+                    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    resolved_at DATETIME NULL
+                );
+            """);
+
+            jdbcTemplate.execute("""
+                CREATE TABLE IF NOT EXISTS alert_escalations (
+                    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                    incident_id BIGINT NOT NULL,
+                    escalation_level INT NOT NULL DEFAULT 1,
+                    delay_minutes INT NOT NULL DEFAULT 5,
+                    channel_type VARCHAR(20) NOT NULL DEFAULT 'EMAIL',
+                    recipient VARCHAR(255) NULL,
+                    status VARCHAR(20) NOT NULL DEFAULT 'SENT',
+                    triggered_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+                );
+            """);
+
+            jdbcTemplate.execute("""
+                CREATE TABLE IF NOT EXISTS monitoring_configurations (
+                    id BIGINT PRIMARY KEY,
+                    monitoring_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+                    check_interval_seconds INT NOT NULL DEFAULT 30,
+                    default_timeout_ms INT NOT NULL DEFAULT 5000,
+                    default_failure_threshold INT NOT NULL DEFAULT 3,
+                    default_recovery_threshold INT NOT NULL DEFAULT 2,
+                    default_latency_threshold_ms INT NOT NULL DEFAULT 1000,
+                    health_check_retention_days INT NOT NULL DEFAULT 30,
+                    incident_retention_days INT NOT NULL DEFAULT 90,
+                    alert_retention_days INT NOT NULL DEFAULT 90,
+                    email_notifications_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+                    admin_notification_email VARCHAR(255) NULL DEFAULT 'admin@taaskr.com',
+                    slack_webhook_url VARCHAR(500) NULL,
+                    teams_webhook_url VARCHAR(500) NULL
+                );
+            """);
+
+            // Seed default config
+            jdbcTemplate.execute("""
+                INSERT INTO monitoring_configurations (
+                    id, monitoring_enabled, check_interval_seconds, default_timeout_ms,
+                    default_failure_threshold, default_recovery_threshold, default_latency_threshold_ms,
+                    health_check_retention_days, incident_retention_days, alert_retention_days,
+                    email_notifications_enabled, admin_notification_email
+                )
+                SELECT 1, true, 30, 5000, 3, 2, 1000, 30, 90, 90, false, 'admin@taaskr.com' FROM DUAL
+                WHERE NOT EXISTS (SELECT 1 FROM monitoring_configurations WHERE id = 1);
+            """);
+
+            log.info("[DB Migration] Observability schema tables verified successfully.");
+        } catch (Exception e) {
+            log.warn("[DB Migration] Notice while ensuring observability tables: {}", e.getMessage());
+        }
     }
 
     private void remediateNullVersionColumns() {

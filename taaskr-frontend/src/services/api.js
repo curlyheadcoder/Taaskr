@@ -613,6 +613,85 @@ export const api = {
       return makeRequest('/actuator/health');
     },
 
+    getObservabilityOverview: async () => {
+      return makeRequest('/api/v1/admin/observability/overview');
+    },
+
+    getMonitoredEndpoints: async () => {
+      return makeRequest('/api/v1/admin/observability/endpoints');
+    },
+
+    createMonitoredEndpoint: async (data) => {
+      return makeRequest('/api/v1/admin/observability/endpoints', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+    },
+
+    toggleMonitoredEndpoint: async (id, enabled) => {
+      return makeRequest(`/api/v1/admin/observability/endpoints/${id}/toggle?enabled=${enabled}`, {
+        method: 'POST'
+      });
+    },
+
+    deleteMonitoredEndpoint: async (id) => {
+      return makeRequest(`/api/v1/admin/observability/endpoints/${id}`, {
+        method: 'DELETE'
+      });
+    },
+
+    discoverMonitoredEndpoints: async () => {
+      return makeRequest('/api/v1/admin/observability/endpoints/discover', {
+        method: 'POST'
+      });
+    },
+
+    triggerEndpointCheck: async (id) => {
+      return makeRequest(`/api/v1/admin/observability/endpoints/${id}/check`, {
+        method: 'POST'
+      });
+    },
+
+    getEndpointHistory: async (id, limit = 20) => {
+      return makeRequest(`/api/v1/admin/observability/endpoints/${id}/history?limit=${limit}`);
+    },
+
+    getObservabilityIncidents: async (status) => {
+      const url = status ? `/api/v1/admin/observability/incidents?status=${status}` : '/api/v1/admin/observability/incidents';
+      return makeRequest(url);
+    },
+
+    acknowledgeIncident: async (id) => {
+      return makeRequest(`/api/v1/admin/observability/incidents/${id}/acknowledge`, {
+        method: 'POST'
+      });
+    },
+
+    resolveIncident: async (id) => {
+      return makeRequest(`/api/v1/admin/observability/incidents/${id}/resolve`, {
+        method: 'POST'
+      });
+    },
+
+    getObservabilityAlerts: async (state = 'ALL') => {
+      return makeRequest(`/api/v1/admin/observability/alerts?state=${state}`);
+    },
+
+    getObservabilityEscalations: async () => {
+      return makeRequest('/api/v1/admin/observability/escalations');
+    },
+
+    getObservabilityConfig: async () => {
+      return makeRequest('/api/v1/admin/observability/config');
+    },
+
+    updateObservabilityConfig: async (data) => {
+      return makeRequest('/api/v1/admin/observability/config', {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+    },
+
     getDiscussions: async (status) => {
       const url = status ? `/api/admin/discussions?status=${status}` : '/api/admin/discussions';
       return makeRequest(url);
