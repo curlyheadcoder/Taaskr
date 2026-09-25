@@ -26,10 +26,15 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
 
+import org.springframework.beans.factory.annotation.Value;
+
 @Service
 public class ObservabilityServiceImpl implements ObservabilityService, CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(ObservabilityServiceImpl.class);
+
+    @Value("${server.port:8081}")
+    private int serverPort;
 
     private final MonitoredEndpointRepository endpointRepository;
     private final HealthCheckResultRepository resultRepository;
@@ -243,11 +248,17 @@ public class ObservabilityServiceImpl implements ObservabilityService, CommandLi
     @Override
     @Transactional
     public List<MonitoredEndpointDto> autoDiscoverApiEndpoints() {
+        // Fix legacy /api/health endpoint path to /api/v1/observability/health
+        endpointRepository.findByUrlPathAndHttpMethod("/api/health", "GET").ifPresent(ep -> {
+            ep.setUrlPath("/api/v1/observability/health");
+            endpointRepository.save(ep);
+        });
+
         List<MonitoredEndpoint> discovered = new ArrayList<>();
 
         record PredefinedEndpoint(String name, String method, String path, int timeoutMs, int latencyThresholdMs) {}
         List<PredefinedEndpoint> standardEndpoints = List.of(
-                new PredefinedEndpoint("Public Health Probe", "GET", "/api/health", 2000, 300),
+                new PredefinedEndpoint("Public Health Probe", "GET", "/api/v1/observability/health", 2000, 300),
                 new PredefinedEndpoint("Spring Boot Actuator Probe", "GET", "/actuator/health", 3000, 500),
                 new PredefinedEndpoint("Prometheus Metrics Stream", "GET", "/actuator/prometheus", 3000, 500),
                 new PredefinedEndpoint("Service Catalog Categories", "GET", "/api/v1/services/categories", 3000, 500),
@@ -320,7 +331,7 @@ public class ObservabilityServiceImpl implements ObservabilityService, CommandLi
         try {
             // Local check vs external
             String targetUrl = endpoint.getUrlPath().startsWith("http") ? 
-                    endpoint.getUrlPath() : "http://localhost:8080" + endpoint.getUrlPath();
+                    endpoint.getUrlPath() : "http://localhost:" + serverPort + endpoint.getUrlPath();
 
             HttpMethod method = HttpMethod.valueOf(endpoint.getHttpMethod().toUpperCase());
             ResponseEntity<String> response = restTemplate.exchange(targetUrl, method, null, String.class);

@@ -330,66 +330,110 @@ export default function SystemObservabilityTab({ totalBookings = 0, totalProvide
         </div>
       </div>
 
-      {/* 11 Workspace Navigation Tabs */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.4rem',
-        borderBottom: '1px solid var(--border-light)',
-        paddingBottom: '0.6rem',
-        overflowX: 'auto',
-        whiteSpace: 'nowrap'
-      }}>
-        {[
-          { id: 'overview', label: 'Overview', icon: <BarChart2 size={15} /> },
-          { id: 'api_health', label: 'API Health', icon: <Activity size={15} /> },
-          { id: 'uptime', label: 'Uptime', icon: <Clock size={15} /> },
-          { id: 'performance', label: 'Performance', icon: <Zap size={15} /> },
-          { id: 'incidents', label: 'Incidents', icon: <AlertTriangle size={15} />, badge: incidents.filter(i => i.status !== 'RESOLVED').length },
-          { id: 'alerts', label: 'Alerts', icon: <Bell size={15} />, badge: alerts.filter(a => a.state === 'ACTIVE').length },
-          { id: 'escalations', label: 'Escalations', icon: <Shield size={15} /> },
-          { id: 'metrics', label: 'Metrics', icon: <Radio size={15} /> },
-          { id: 'infrastructure', label: 'Infrastructure', icon: <Cpu size={15} /> },
-          { id: 'database', label: 'Database', icon: <Database size={15} /> },
-          { id: 'configuration', label: 'Configuration', icon: <Settings size={15} /> }
-        ].map(tab => {
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.45rem',
-                padding: '0.55rem 1.05rem',
-                borderRadius: '10px',
-                border: 'none',
-                backgroundColor: isActive ? 'var(--primary)' : 'transparent',
-                color: isActive ? '#ffffff' : 'var(--text-muted)',
-                fontWeight: isActive ? 700 : 600,
-                fontSize: '0.85rem',
-                cursor: 'pointer',
-                transition: 'var(--transition-fast)'
-              }}
-            >
-              {tab.icon}
-              <span>{tab.label}</span>
-              {tab.badge !== undefined && tab.badge > 0 && (
-                <span style={{
-                  padding: '0.15rem 0.45rem',
-                  borderRadius: '999px',
-                  backgroundColor: isActive ? 'rgba(255,255,255,0.25)' : 'rgba(239, 68, 68, 0.15)',
-                  color: isActive ? '#ffffff' : '#ef4444',
-                  fontSize: '0.72rem',
-                  fontWeight: 800
-                }}>
-                  {tab.badge}
-                </span>
-              )}
-            </button>
-          );
-        })}
+      {/* Interactive Control Center Tiles Grid Navigation */}
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
+          <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Layers size={18} style={{ color: 'var(--primary)' }} />
+            Observability Modules & Telemetry Engines
+          </h3>
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Click any module tile to activate workspace</span>
+        </div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+          gap: '0.85rem'
+        }}>
+          {[
+            { id: 'overview', label: 'Overview', tagline: 'Global SLA & Health', icon: <BarChart2 size={18} /> },
+            { id: 'api_health', label: 'API Health', tagline: `${overview?.healthyEndpointsCount || endpoints.filter(e => e.currentState === 'HEALTHY').length} / ${endpoints.length || 6} Healthy`, icon: <Activity size={18} /> },
+            { id: 'uptime', label: 'Uptime SLA', tagline: `${overview?.uptimePercentage24h || 100}% (24H)`, icon: <Clock size={18} /> },
+            { id: 'performance', label: 'Performance', tagline: `${overview?.avgResponseTimeMs || 12.5} ms Avg`, icon: <Zap size={18} /> },
+            { 
+              id: 'incidents', 
+              label: 'Incidents', 
+              tagline: incidents.filter(i => i.status !== 'RESOLVED').length > 0 ? `${incidents.filter(i => i.status !== 'RESOLVED').length} Active` : 'All Resolved', 
+              icon: <AlertTriangle size={18} />, 
+              badge: incidents.filter(i => i.status !== 'RESOLVED').length,
+              badgeColor: '#ef4444'
+            },
+            { 
+              id: 'alerts', 
+              label: 'Alert Board', 
+              tagline: alerts.filter(a => a.state === 'ACTIVE').length > 0 ? `${alerts.filter(a => a.state === 'ACTIVE').length} Active` : 'Zero Alerts', 
+              icon: <Bell size={18} />, 
+              badge: alerts.filter(a => a.state === 'ACTIVE').length,
+              badgeColor: '#f59e0b'
+            },
+            { id: 'escalations', label: 'Escalations', tagline: 'Notification Matrix', icon: <Shield size={18} /> },
+            { id: 'metrics', label: 'JVM Metrics', tagline: 'Heap, GC & Threads', icon: <Radio size={18} /> },
+            { id: 'infrastructure', label: 'Infrastructure', tagline: 'CPU & Disk Runtime', icon: <Cpu size={18} /> },
+            { id: 'database', label: 'Database', tagline: 'HikariCP & Migration', icon: <Database size={18} /> },
+            { id: 'configuration', label: 'Configuration', tagline: 'SLA & Alert Settings', icon: <Settings size={18} /> },
+            { id: 'prometheus', label: 'Prometheus TSDB', tagline: 'Live Scraper (Port 9090)', icon: <ExternalLink size={18} />, isExternal: true },
+            { id: 'grafana', label: 'Grafana Workspace', tagline: 'Visual Dashboards (Port 3000)', icon: <ExternalLink size={18} />, isExternal: true }
+          ].map(tile => {
+            const isActive = activeTab === tile.id;
+            return (
+              <button
+                key={tile.id}
+                onClick={() => setActiveTab(tile.id)}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  justifyContent: 'space-between',
+                  padding: '1rem',
+                  borderRadius: '14px',
+                  border: isActive ? '2px solid var(--primary)' : '1px solid var(--border-light)',
+                  backgroundColor: 'var(--bg-card)',
+                  color: 'var(--text-main)',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  position: 'relative',
+                  transition: 'transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease',
+                  boxShadow: isActive ? '0 4px 16px rgba(79, 70, 229, 0.25)' : 'var(--shadow-sm)'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '0.6rem' }}>
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
+                    backgroundColor: isActive ? 'var(--primary)' : 'rgba(79, 70, 229, 0.12)',
+                    color: isActive ? '#ffffff' : 'var(--primary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    {tile.icon}
+                  </div>
+
+                  {tile.badge !== undefined && tile.badge > 0 && (
+                    <span style={{
+                      padding: '0.2rem 0.55rem',
+                      borderRadius: '999px',
+                      backgroundColor: tile.badgeColor || '#ef4444',
+                      color: '#ffffff',
+                      fontSize: '0.72rem',
+                      fontWeight: 800
+                    }}>
+                      {tile.badge}
+                    </span>
+                  )}
+                </div>
+
+                <div>
+                  <div style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--text-main)' }}>{tile.label}</div>
+                  <div style={{ fontSize: '0.75rem', color: isActive ? 'var(--primary)' : 'var(--text-muted)', fontWeight: 600, marginTop: '0.15rem' }}>
+                    {tile.tagline}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* SECTION 1: OVERVIEW */}
@@ -938,6 +982,133 @@ export default function SystemObservabilityTab({ totalBookings = 0, totalProvide
             </button>
           </div>
         </form>
+      )}
+
+      {/* SECTION 12: PROMETHEUS METRICS ENGINE */}
+      {activeTab === 'prometheus' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div className="premium-card" style={{ padding: '1.5rem', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)', borderRadius: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <h4 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <ExternalLink size={20} style={{ color: 'var(--primary)' }} />
+                Prometheus Time-Series Telemetry Engine
+              </h4>
+              <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                Scrapes spring boot actuator metrics (`/actuator/prometheus`) every 5 seconds. Running on port 9090.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <a
+                href="http://localhost:8081/actuator/prometheus"
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  padding: '0.6rem 1.15rem',
+                  borderRadius: '10px',
+                  backgroundColor: 'var(--bg-page)',
+                  border: '1px solid var(--border-light)',
+                  color: 'var(--text-main)',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem'
+                }}
+              >
+                <Terminal size={15} /> Raw Stream (/actuator/prometheus)
+              </a>
+
+              <a
+                href="http://localhost:9090"
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  padding: '0.6rem 1.15rem',
+                  borderRadius: '10px',
+                  backgroundColor: 'var(--primary)',
+                  color: '#ffffff',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem'
+                }}
+              >
+                <ExternalLink size={15} /> Launch Prometheus UI (Port 9090)
+              </a>
+            </div>
+          </div>
+
+          <div className="premium-card" style={{ padding: '1.25rem', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ height: '550px', width: '100%', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-light)' }}>
+              <iframe
+                src="http://localhost:9090"
+                title="Prometheus Web UI"
+                style={{ width: '100%', height: '100%', border: 'none', backgroundColor: '#ffffff' }}
+              />
+            </div>
+            <div style={{ padding: '0.85rem 1rem', borderRadius: '10px', backgroundColor: 'var(--bg-page)', border: '1px solid var(--border-light)', fontSize: '0.82rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyBetween: 'space-between', gap: '0.75rem' }}>
+              <span>💡 <b>Container Status Note:</b> If the embedded preview is blank, make sure the local Docker container is running:</span>
+              <code style={{ padding: '0.3rem 0.6rem', borderRadius: '6px', backgroundColor: 'var(--bg-card)', color: 'var(--primary)', fontWeight: 700 }}>docker compose -f docker-compose.monitoring.yml up -d</code>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SECTION 13: GRAFANA WORKSPACE */}
+      {activeTab === 'grafana' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div className="premium-card" style={{ padding: '1.5rem', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)', borderRadius: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <h4 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <ExternalLink size={20} style={{ color: 'var(--primary)' }} />
+                Grafana Visual Dashboard Workspace
+              </h4>
+              <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                Automated Grafana dashboards & Prometheus datasource provisioning. Default credentials: <b>admin</b> / <b>admin</b>.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <a
+                href="http://localhost:3000"
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  padding: '0.6rem 1.15rem',
+                  borderRadius: '10px',
+                  backgroundColor: 'var(--primary)',
+                  color: '#ffffff',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem'
+                }}
+              >
+                <ExternalLink size={15} /> Launch Grafana UI (Port 3000)
+              </a>
+            </div>
+          </div>
+
+          <div className="premium-card" style={{ padding: '1.25rem', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-light)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ height: '550px', width: '100%', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-light)' }}>
+              <iframe
+                src="http://localhost:3000"
+                title="Grafana Visual Workspace"
+                style={{ width: '100%', height: '100%', border: 'none', backgroundColor: '#ffffff' }}
+              />
+            </div>
+            <div style={{ padding: '0.85rem 1rem', borderRadius: '10px', backgroundColor: 'var(--bg-page)', border: '1px solid var(--border-light)', fontSize: '0.82rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyBetween: 'space-between', gap: '0.75rem' }}>
+              <span>🚀 <b>Grafana Setup Note:</b> Start Grafana & Prometheus containers via:</span>
+              <code style={{ padding: '0.3rem 0.6rem', borderRadius: '6px', backgroundColor: 'var(--bg-card)', color: 'var(--primary)', fontWeight: 700 }}>docker compose -f docker-compose.monitoring.yml up -d</code>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* CREATE ENDPOINT MODAL */}
