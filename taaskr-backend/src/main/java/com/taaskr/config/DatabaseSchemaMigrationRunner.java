@@ -152,10 +152,19 @@ public class DatabaseSchemaMigrationRunner implements CommandLineRunner {
 
     private void remediateNullVersionColumns() {
         try {
-            log.info("[DB Migration] Remediating NULL version columns across entities to preserve optimistic locking integrity...");
+            log.info("[DB Migration] Remediating NULL/missing version columns across entities to preserve optimistic locking integrity...");
             String[] tables = {"provider_profiles", "service_partners", "bookings", "availability_slots"};
             for (String table : tables) {
                 try {
+                    try {
+                        jdbcTemplate.execute("ALTER TABLE " + table + " ADD COLUMN IF NOT EXISTS version BIGINT DEFAULT 0 NOT NULL");
+                    } catch (Exception e) {
+                        try {
+                            jdbcTemplate.execute("ALTER TABLE " + table + " ADD COLUMN version BIGINT DEFAULT 0 NOT NULL");
+                        } catch (Exception ignored) {
+                            // Column already exists
+                        }
+                    }
                     int updated = jdbcTemplate.update("UPDATE " + table + " SET version = 0 WHERE version IS NULL");
                     if (updated > 0) {
                         log.info("[DB Migration] Fixed {} rows with NULL version in table '{}'", updated, table);
