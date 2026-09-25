@@ -16,6 +16,21 @@ import {
 
 const CANONICAL_CATEGORIES = [
   {
+    id: 'vehicle_autocare',
+    name: 'Vehicle & Auto Care',
+    matcher: (cName, sName) => {
+      const c = (cName || '').toLowerCase().trim();
+      if (c === 'vehicle & auto care' || c === 'auto care' || c === 'vehicle care' || (c.includes('auto') && !c.includes('automation')) || (c.includes('vehicle') && !c.includes('on-demand') && !c.includes('logistics') && !c.includes('transport'))) {
+        return true;
+      }
+      const s = (sName || '').toLowerCase();
+      if (s.includes('car') || s.includes('bike') || s.includes('auto') || s.includes('vehicle') || s.includes('detailing') || s.includes('jump start') || s.includes('tyre') || s.includes('tire') || s.includes('brake')) {
+        return true;
+      }
+      return false;
+    }
+  },
+  {
     id: 'appliances_electrical',
     name: 'Appliances & Electrical',
     matcher: (cName, sName) => {
@@ -39,10 +54,19 @@ const CANONICAL_CATEGORIES = [
     name: 'Plumbing & Cleaning',
     matcher: (cName, sName) => {
       const c = (cName || '').toLowerCase().trim();
+      const s = (sName || '').toLowerCase().trim();
+
+      // Exclude vehicle/automotive services completely from Plumbing & Cleaning
+      if (
+        c.includes('vehicle') || c.includes('auto') || c.includes('car') || c.includes('bike') || c.includes('logistics') ||
+        s.includes('car') || s.includes('bike') || s.includes('auto') || s.includes('vehicle') || s.includes('tyre') || s.includes('tire') || s.includes('brake')
+      ) {
+        return false;
+      }
+
       if (c === 'plumbing & cleaning' || c === 'plumbing' || c === 'cleaning' || c === 'plumb' || c === 'clean') {
         return true;
       }
-      const s = (sName || '').toLowerCase();
       if (s.includes('switch') || s.includes('wire') || s.includes('mcb') || s.includes('fan') ||
         s.includes('ac ') || s.includes('air condition') || s.includes('ro ') || s.includes('purifier') ||
         s.includes('geyser') || s.includes('inverter') || s.includes('microwave') ||
@@ -116,22 +140,6 @@ const CANONICAL_CATEGORIES = [
       const s = (sName || '').toLowerCase();
       if (s.includes('laptop') || s.includes('pc ') || s.includes('computer') || s.includes('wi-fi') ||
         s.includes('router') || s.includes('mesh') || s.includes('smart tv') || s.includes('printer')) {
-        return true;
-      }
-      return false;
-    }
-  },
-  {
-    id: 'vehicle_autocare',
-    name: 'Vehicle & Auto Care',
-    matcher: (cName, sName) => {
-      const c = (cName || '').toLowerCase().trim();
-      if (c === 'vehicle & auto care' || c === 'auto care' || c === 'vehicle care' || (c.includes('auto') && !c.includes('automation')) || (c.includes('vehicle') && !c.includes('on-demand') && !c.includes('logistics') && !c.includes('transport'))) {
-        return true;
-      }
-      const s = (sName || '').toLowerCase();
-      if (s.includes('car foam') || s.includes('bike foam') || s.includes('detailing') ||
-        s.includes('car wash') || s.includes('bike wash') || s.includes('jump start') || s.includes('battery jump')) {
         return true;
       }
       return false;
@@ -212,6 +220,20 @@ const mapServiceToCanonical = (service, rawCategories = []) => {
   const rawCat = (rawCategories || []).find(c => c && c.id === service.categoryId);
   const catName = rawCat?.name || service.categoryName || service.category?.name || '';
   const sName = service.name || '';
+  const cLower = catName.toLowerCase().trim();
+  const sLower = sName.toLowerCase().trim();
+
+  // Explicit vehicle checks
+  if (
+    cLower === 'vehicle & auto care' || cLower === 'vehicle care' || cLower.includes('auto care') ||
+    sLower.includes('car ') || sLower.startsWith('car') || sLower.includes('bike') || sLower.includes('vehicle') || sLower.includes('auto care')
+  ) {
+    return {
+      ...service,
+      canonicalCategoryId: 'vehicle_autocare',
+      canonicalCategoryName: 'Vehicle & Auto Care'
+    };
+  }
 
   for (const canon of CANONICAL_CATEGORIES) {
     if (canon.matcher(catName, sName)) {
@@ -271,7 +293,34 @@ const HERO_PALETTES = [
 const getCategoryTheme = (categoryIdentifier) => {
   const key = (categoryIdentifier || '').toLowerCase().trim();
 
-  // 1. Appliances & Electrical
+  // 1. Vehicle & Auto Care
+  if (
+    key === 'vehicle_autocare' ||
+    key.includes('vehicle') ||
+    key.includes('auto care') ||
+    key.includes('car') ||
+    key.includes('bike') ||
+    key.includes('jump start') ||
+    key.includes('detailing') ||
+    key.includes('car foam') ||
+    key.includes('bike foam') ||
+    key.includes('chain lube') ||
+    key.includes('tyre') ||
+    key.includes('puncture')
+  ) {
+    return {
+      id: 'vehicle_autocare',
+      icon: <Car size={24} strokeWidth={2.2} />,
+      image: 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=400&q=80',
+      primary: '#0284C7',
+      accentBg: 'linear-gradient(135deg, #0284C7 0%, #2563EB 100%)',
+      glow: 'rgba(2, 132, 199, 0.35)',
+      color: '#0284C7',
+      bg: 'rgba(2, 132, 199, 0.08)'
+    };
+  }
+
+  // 2. Appliances & Electrical
   if (
     key === 'appliances_electrical' ||
     key.includes('appliance') ||
@@ -305,7 +354,7 @@ const getCategoryTheme = (categoryIdentifier) => {
     };
   }
 
-  // 2. Plumbing & Cleaning
+  // 3. Plumbing & Cleaning
   if (
     key === 'plumbing_cleaning' ||
     ((key.includes('plumb') ||
@@ -324,8 +373,10 @@ const getCategoryTheme = (categoryIdentifier) => {
       key.includes('degreas') ||
       key.includes('housekeep')) &&
       !key.includes('pest') &&
-      !key.includes('car wash') &&
-      !key.includes('bike wash'))
+      !key.includes('car') &&
+      !key.includes('bike') &&
+      !key.includes('vehicle') &&
+      !key.includes('auto'))
   ) {
     return {
       id: 'plumbing_cleaning',
@@ -453,33 +504,6 @@ const getCategoryTheme = (categoryIdentifier) => {
       glow: 'rgba(99, 102, 241, 0.35)',
       color: '#4F46E5',
       bg: 'rgba(99, 102, 241, 0.08)'
-    };
-  }
-
-  // 7. Vehicle & Auto Care
-  if (
-    key === 'vehicle_autocare' ||
-    key.includes('vehicle') ||
-    key.includes('auto care') ||
-    key.includes('car wash') ||
-    key.includes('bike wash') ||
-    key.includes('jump start') ||
-    key.includes('detailing') ||
-    key.includes('car foam') ||
-    key.includes('bike foam') ||
-    key.includes('chain lube') ||
-    key.includes('tyre') ||
-    key.includes('puncture')
-  ) {
-    return {
-      id: 'vehicle_autocare',
-      icon: <Car size={24} strokeWidth={2.2} />,
-      image: 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=400&q=80',
-      primary: '#0284C7',
-      accentBg: 'linear-gradient(135deg, #0284C7 0%, #2563EB 100%)',
-      glow: 'rgba(2, 132, 199, 0.35)',
-      color: '#0284C7',
-      bg: 'rgba(2, 132, 199, 0.08)'
     };
   }
 
