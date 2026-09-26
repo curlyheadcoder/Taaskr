@@ -352,7 +352,7 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
                 if (!userBookings.isEmpty()) {
                     userContext.append("User Active/Past Bookings: [");
                     userContext.append(userBookings.stream()
-                            .map(b -> "Booking #" + b.getId() + ": " + b.getServiceName() + " (Status: " + b.getStatus() + ", Date: " + b.getScheduledDate() + ", Total: ₹" + b.getTotalPrice() + ")")
+                            .map(b -> "Booking #" + b.getId() + ": " + b.getServiceName() + " (Status: " + b.getStatus() + ", Date: " + b.getBookingDate() + ", Total: ₹" + (b.getFinalAmount() != null ? b.getFinalAmount() : b.getTotalAmount()) + ")")
                             .collect(Collectors.joining("; ")));
                     userContext.append("]. ");
                 }
