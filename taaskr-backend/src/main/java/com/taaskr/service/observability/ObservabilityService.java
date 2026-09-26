@@ -42,4 +42,6 @@ public interface ObservabilityService {
     MonitoringConfigDto updateConfiguration(MonitoringConfigDto request);
 
     int purgeOldHealthCheckResults();
+
+    void resetStaleIncidentsAndAlerts();
 }

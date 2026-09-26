@@ -62,7 +62,7 @@ public class ObservabilityPlatformTests {
         List<MonitoredEndpointDto> discovered = observabilityService.autoDiscoverApiEndpoints();
         assertNotNull(discovered);
         assertTrue(discovered.size() >= 5);
-        assertTrue(discovered.stream().anyMatch(e -> e.getUrlPath().equals("/api/health")));
+        assertTrue(discovered.stream().anyMatch(e -> e.getUrlPath().equals("/api/v1/observability/health")));
     }
 
     @Test

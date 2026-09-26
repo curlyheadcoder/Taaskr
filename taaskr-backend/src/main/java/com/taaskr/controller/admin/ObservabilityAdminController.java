@@ -113,4 +113,10 @@ public class ObservabilityAdminController {
     public ResponseEntity<MonitoringConfigDto> updateConfiguration(@RequestBody MonitoringConfigDto request) {
         return ResponseEntity.ok(observabilityService.updateConfiguration(request));
     }
+
+    @PostMapping("/reset-baseline")
+    public ResponseEntity<Map<String, String>> resetStaleBaseline() {
+        observabilityService.resetStaleIncidentsAndAlerts();
+        return ResponseEntity.ok(Map.of("message", "Stale incidents and active alerts reset successfully."));
+    }
 }

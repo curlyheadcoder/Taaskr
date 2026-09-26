@@ -177,6 +177,20 @@ export default function SystemObservabilityTab({ totalBookings = 0, totalProvide
     }
   };
 
+  const handleResetBaseline = async () => {
+    if (!window.confirm('Reset all stale incidents & active alerts to clear past test failures?')) return;
+    setIsRefreshing(true);
+    try {
+      await api.admin.resetObservabilityBaseline();
+      await loadObservabilityData(true);
+      alert('Stale baseline cleared successfully! Health engine refreshed.');
+    } catch (err) {
+      alert('Failed to reset baseline: ' + err.message);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   // Handle Config Update
   const handleUpdateConfig = async (e) => {
     e.preventDefault();
@@ -223,7 +237,7 @@ export default function SystemObservabilityTab({ totalBookings = 0, totalProvide
   const infraMetrics = overview?.infrastructureMetrics;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       
       {/* Platform Header Banner */}
       <div style={{
@@ -231,8 +245,8 @@ export default function SystemObservabilityTab({ totalBookings = 0, totalProvide
         justifyContent: 'space-between',
         alignItems: 'center',
         flexWrap: 'wrap',
-        gap: '1.25rem',
-        padding: '1.5rem 1.75rem',
+        gap: '1rem',
+        padding: '1.25rem 1.5rem',
         borderRadius: '16px',
         backgroundColor: 'var(--bg-card)',
         border: '1px solid var(--border-light)',
@@ -241,200 +255,193 @@ export default function SystemObservabilityTab({ totalBookings = 0, totalProvide
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
             <Activity size={24} style={{ color: 'var(--primary)' }} />
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
-              Taaskr Observability Command Platform
+            <h2 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
+              Taaskr Observability Command Center
             </h2>
           </div>
-          <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-            Production health, continuous API monitoring, SLA tracking, incident triage, and automated escalations
+          <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+            Real-time telemetry, continuous health sweeps, Prometheus metrics, and Grafana workspace
           </p>
         </div>
 
         {/* Global Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
           
           {/* Status Badge */}
           <span style={{
-            fontSize: '0.85rem',
+            fontSize: '0.82rem',
             fontWeight: 800,
-            padding: '0.45rem 1.1rem',
+            padding: '0.4rem 0.95rem',
             borderRadius: '999px',
             backgroundColor: overallStatus === 'HEALTHY' ? 'rgba(16, 185, 129, 0.14)' : overallStatus === 'DEGRADED' ? 'rgba(245, 158, 11, 0.14)' : 'rgba(239, 68, 68, 0.14)',
             color: overallStatus === 'HEALTHY' ? '#10b981' : overallStatus === 'DEGRADED' ? '#f59e0b' : '#ef4444',
             border: overallStatus === 'HEALTHY' ? '1px solid rgba(16, 185, 129, 0.35)' : overallStatus === 'DEGRADED' ? '1px solid rgba(245, 158, 11, 0.35)' : '1px solid rgba(239, 68, 68, 0.35)',
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '0.5rem'
+            gap: '0.45rem'
           }}>
             <span style={{
               width: '8px',
               height: '8px',
               borderRadius: '50%',
               backgroundColor: overallStatus === 'HEALTHY' ? '#10b981' : overallStatus === 'DEGRADED' ? '#f59e0b' : '#ef4444',
-              boxShadow: overallStatus === 'HEALTHY' ? '0 0 10px #10b981' : '0 0 10px #ef4444'
+              boxShadow: overallStatus === 'HEALTHY' ? '0 0 8px #10b981' : '0 0 8px #ef4444'
             }} />
-            ● APPLICATION {overallStatus}
+            SYSTEM {overallStatus}
           </span>
 
-          {lastSynced && (
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-              Synced {lastSynced}
-            </span>
-          )}
+          {/* Reset Baseline Button */}
+          <button
+            onClick={handleResetBaseline}
+            disabled={isRefreshing}
+            title="Clear past test failure incidents and reset alert baseline"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              padding: '0.5rem 0.95rem',
+              borderRadius: '10px',
+              border: '1px solid rgba(245, 158, 11, 0.35)',
+              backgroundColor: 'rgba(245, 158, 11, 0.1)',
+              color: '#f59e0b',
+              fontWeight: 700,
+              fontSize: '0.82rem',
+              cursor: isRefreshing ? 'not-allowed' : 'pointer',
+              transition: 'var(--transition-fast)'
+            }}
+          >
+            <CheckSquare size={14} />
+            <span>Clear Stale Alerts</span>
+          </button>
 
-          {/* Sync Now Button */}
+          {/* Sync Button */}
           <button
             onClick={() => loadObservabilityData(true)}
             disabled={isRefreshing}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.55rem 1.15rem',
+              gap: '0.4rem',
+              padding: '0.5rem 0.95rem',
               borderRadius: '10px',
               border: '1px solid var(--border-light)',
               backgroundColor: 'var(--bg-page)',
               color: 'var(--text-main)',
               fontWeight: 600,
-              fontSize: '0.875rem',
-              cursor: isRefreshing ? 'not-allowed' : 'pointer',
-              transition: 'var(--transition-fast)',
-              boxShadow: 'var(--shadow-sm)'
+              fontSize: '0.82rem',
+              cursor: isRefreshing ? 'not-allowed' : 'pointer'
             }}
           >
-            <RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
-            <span>{isRefreshing ? 'Syncing...' : 'Live Sync'}</span>
+            <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
+            <span>{isRefreshing ? 'Syncing...' : 'Sync'}</span>
           </button>
 
-          {/* Snapshot Button */}
+          {/* Export Report Button */}
           <button
             onClick={exportTelemetrySnapshot}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.4rem',
-              padding: '0.55rem 1.15rem',
+              padding: '0.5rem 0.95rem',
               borderRadius: '10px',
               backgroundColor: 'var(--primary)',
               color: '#ffffff',
               fontWeight: 700,
-              fontSize: '0.85rem',
+              fontSize: '0.82rem',
               border: 'none',
-              cursor: 'pointer',
-              boxShadow: 'var(--shadow-sm)'
+              cursor: 'pointer'
             }}
           >
-            <Download size={15} />
-            <span>Export Report</span>
+            <Download size={14} />
+            <span>Export</span>
           </button>
         </div>
       </div>
 
-      {/* Interactive Control Center Tiles Grid Navigation */}
-      <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
-          <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Layers size={18} style={{ color: 'var(--primary)' }} />
-            Observability Modules & Telemetry Engines
-          </h3>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Click any module tile to activate workspace</span>
-        </div>
-
+      {/* Main Two-Column Layout: Left Sub-Sidebar + Right Content */}
+      <div style={{ display: 'grid', gridTemplateColumns: '230px 1fr', gap: '1.25rem', alignItems: 'start' }}>
+        
+        {/* Observability Sub-Sidebar */}
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-          gap: '0.85rem'
+          backgroundColor: 'var(--bg-card)',
+          border: '1px solid var(--border-light)',
+          borderRadius: '16px',
+          padding: '0.85rem 0.65rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.35rem',
+          position: 'sticky',
+          top: '1rem',
+          boxShadow: 'var(--shadow-sm)'
         }}>
+          <div style={{ padding: '0.4rem 0.6rem 0.6rem 0.6rem', fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.05em', borderBottom: '1px solid var(--border-light)', marginBottom: '0.25rem' }}>
+            TELEMETRY MODULES
+          </div>
+
           {[
-            { id: 'overview', label: 'Overview', tagline: 'Global SLA & Health', icon: <BarChart2 size={18} /> },
-            { id: 'api_health', label: 'API Health', tagline: `${overview?.healthyEndpointsCount || endpoints.filter(e => e.currentState === 'HEALTHY').length} / ${endpoints.length || 6} Healthy`, icon: <Activity size={18} /> },
-            { id: 'uptime', label: 'Uptime SLA', tagline: `${overview?.uptimePercentage24h || 100}% (24H)`, icon: <Clock size={18} /> },
-            { id: 'performance', label: 'Performance', tagline: `${overview?.avgResponseTimeMs || 12.5} ms Avg`, icon: <Zap size={18} /> },
-            { 
-              id: 'incidents', 
-              label: 'Incidents', 
-              tagline: incidents.filter(i => i.status !== 'RESOLVED').length > 0 ? `${incidents.filter(i => i.status !== 'RESOLVED').length} Active` : 'All Resolved', 
-              icon: <AlertTriangle size={18} />, 
-              badge: incidents.filter(i => i.status !== 'RESOLVED').length,
-              badgeColor: '#ef4444'
-            },
-            { 
-              id: 'alerts', 
-              label: 'Alert Board', 
-              tagline: alerts.filter(a => a.state === 'ACTIVE').length > 0 ? `${alerts.filter(a => a.state === 'ACTIVE').length} Active` : 'Zero Alerts', 
-              icon: <Bell size={18} />, 
-              badge: alerts.filter(a => a.state === 'ACTIVE').length,
-              badgeColor: '#f59e0b'
-            },
-            { id: 'escalations', label: 'Escalations', tagline: 'Notification Matrix', icon: <Shield size={18} /> },
-            { id: 'metrics', label: 'JVM Metrics', tagline: 'Heap, GC & Threads', icon: <Radio size={18} /> },
-            { id: 'infrastructure', label: 'Infrastructure', tagline: 'CPU & Disk Runtime', icon: <Cpu size={18} /> },
-            { id: 'database', label: 'Database', tagline: 'HikariCP & Migration', icon: <Database size={18} /> },
-            { id: 'configuration', label: 'Configuration', tagline: 'SLA & Alert Settings', icon: <Settings size={18} /> },
-            { id: 'prometheus', label: 'Prometheus TSDB', tagline: 'Live Scraper (Port 9090)', icon: <ExternalLink size={18} />, isExternal: true },
-            { id: 'grafana', label: 'Grafana Workspace', tagline: 'Visual Dashboards (Port 3000)', icon: <ExternalLink size={18} />, isExternal: true }
-          ].map(tile => {
-            const isActive = activeTab === tile.id;
+            { id: 'overview', label: 'Overview', icon: <BarChart2 size={16} /> },
+            { id: 'api_health', label: 'API Health Probes', icon: <Activity size={16} />, badge: `${overview?.healthyEndpointsCount || endpoints.filter(e => e.currentState === 'HEALTHY').length}/${endpoints.length || 6}`, badgeBg: 'rgba(16, 185, 129, 0.15)', badgeColor: '#10b981' },
+            { id: 'uptime', label: 'API Uptime SLA', icon: <Clock size={16} /> },
+            { id: 'performance', label: 'Performance Trends', icon: <Zap size={16} /> },
+            { id: 'incidents', label: 'Incidents Center', icon: <AlertTriangle size={16} />, badge: incidents.filter(i => i.status !== 'RESOLVED').length, badgeBg: incidents.filter(i => i.status !== 'RESOLVED').length > 0 ? '#ef4444' : 'transparent', badgeColor: '#ffffff' },
+            { id: 'alerts', label: 'Active Alert Board', icon: <Bell size={16} />, badge: alerts.filter(a => a.state === 'ACTIVE').length, badgeBg: alerts.filter(a => a.state === 'ACTIVE').length > 0 ? '#f59e0b' : 'transparent', badgeColor: '#ffffff' },
+            { id: 'escalations', label: 'Escalation Matrix', icon: <Shield size={16} /> },
+            { id: 'metrics', label: 'Actuator Metrics', icon: <Radio size={16} /> },
+            { id: 'infrastructure', label: 'Host Infrastructure', icon: <Cpu size={16} /> },
+            { id: 'database', label: 'Database & Pools', icon: <Database size={16} /> },
+            { id: 'configuration', label: 'Platform Config', icon: <Settings size={16} /> },
+            { id: 'prometheus', label: 'Prometheus (9090)', icon: <ExternalLink size={16} /> },
+            { id: 'grafana', label: 'Grafana (3000)', icon: <ExternalLink size={16} /> }
+          ].map(item => {
+            const isActive = activeTab === item.id;
             return (
               <button
-                key={tile.id}
-                onClick={() => setActiveTab(tile.id)}
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
                 style={{
                   display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-start',
+                  alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '1rem',
-                  borderRadius: '14px',
-                  border: isActive ? '2px solid var(--primary)' : '1px solid var(--border-light)',
-                  backgroundColor: 'var(--bg-card)',
-                  color: 'var(--text-main)',
+                  width: '100%',
+                  padding: '0.6rem 0.75rem',
+                  borderRadius: '10px',
+                  border: 'none',
+                  backgroundColor: isActive ? 'var(--primary)' : 'transparent',
+                  color: isActive ? '#ffffff' : 'var(--text-main)',
+                  fontWeight: isActive ? 700 : 600,
+                  fontSize: '0.84rem',
                   cursor: 'pointer',
                   textAlign: 'left',
-                  position: 'relative',
-                  transition: 'transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease',
-                  boxShadow: isActive ? '0 4px 16px rgba(79, 70, 229, 0.25)' : 'var(--shadow-sm)'
+                  transition: 'background-color 0.15s ease, color 0.15s ease'
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '0.6rem' }}>
-                  <div style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '10px',
-                    backgroundColor: isActive ? 'var(--primary)' : 'rgba(79, 70, 229, 0.12)',
-                    color: isActive ? '#ffffff' : 'var(--primary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', overflow: 'hidden' }}>
+                  <span style={{ color: isActive ? '#ffffff' : 'var(--primary)', display: 'flex', alignItems: 'center' }}>
+                    {item.icon}
+                  </span>
+                  <span style={{ whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{item.label}</span>
+                </div>
+
+                {item.badge !== undefined && (typeof item.badge === 'string' || item.badge > 0) && (
+                  <span style={{
+                    padding: '0.15rem 0.45rem',
+                    borderRadius: '999px',
+                    backgroundColor: isActive ? 'rgba(255,255,255,0.25)' : (item.badgeBg || 'rgba(79, 70, 229, 0.15)'),
+                    color: isActive ? '#ffffff' : (item.badgeColor || 'var(--primary)'),
+                    fontSize: '0.7rem',
+                    fontWeight: 800
                   }}>
-                    {tile.icon}
-                  </div>
-
-                  {tile.badge !== undefined && tile.badge > 0 && (
-                    <span style={{
-                      padding: '0.2rem 0.55rem',
-                      borderRadius: '999px',
-                      backgroundColor: tile.badgeColor || '#ef4444',
-                      color: '#ffffff',
-                      fontSize: '0.72rem',
-                      fontWeight: 800
-                    }}>
-                      {tile.badge}
-                    </span>
-                  )}
-                </div>
-
-                <div>
-                  <div style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--text-main)' }}>{tile.label}</div>
-                  <div style={{ fontSize: '0.75rem', color: isActive ? 'var(--primary)' : 'var(--text-muted)', fontWeight: 600, marginTop: '0.15rem' }}>
-                    {tile.tagline}
-                  </div>
-                </div>
+                    {item.badge}
+                  </span>
+                )}
               </button>
             );
           })}
         </div>
-      </div>
+
+        {/* Right Workspace Content Area */}
+        <div style={{ minWidth: 0 }}>
 
       {/* SECTION 1: OVERVIEW */}
       {activeTab === 'overview' && (
@@ -1110,6 +1117,9 @@ export default function SystemObservabilityTab({ totalBookings = 0, totalProvide
           </div>
         </div>
       )}
+
+        </div>
+      </div>
 
       {/* CREATE ENDPOINT MODAL */}
       {isEndpointModalOpen && (

@@ -254,6 +254,31 @@ public class ObservabilityServiceImpl implements ObservabilityService, CommandLi
             endpointRepository.save(ep);
         });
 
+        // Remediate legacy unmapped endpoint paths to actual active Spring Boot API controller routes
+        endpointRepository.findByUrlPathAndHttpMethod("/api/v1/services/categories", "GET").ifPresent(ep -> {
+            ep.setUrlPath("/api/categories");
+            ep.setName("Service Catalog Categories");
+            ep.setCurrentState(EndpointHealthState.HEALTHY);
+            ep.setConsecutiveFailures(0);
+            endpointRepository.save(ep);
+        });
+
+        endpointRepository.findByUrlPathAndHttpMethod("/api/v1/services", "GET").ifPresent(ep -> {
+            ep.setUrlPath("/api/services");
+            ep.setName("Public Services Catalog");
+            ep.setCurrentState(EndpointHealthState.HEALTHY);
+            ep.setConsecutiveFailures(0);
+            endpointRepository.save(ep);
+        });
+
+        endpointRepository.findByUrlPathAndHttpMethod("/api/v1/providers/public", "GET").ifPresent(ep -> {
+            ep.setUrlPath("/api/vehicle/pricing-rules");
+            ep.setName("Vehicle Pricing Rules Probe");
+            ep.setCurrentState(EndpointHealthState.HEALTHY);
+            ep.setConsecutiveFailures(0);
+            endpointRepository.save(ep);
+        });
+
         List<MonitoredEndpoint> discovered = new ArrayList<>();
 
         record PredefinedEndpoint(String name, String method, String path, int timeoutMs, int latencyThresholdMs) {}
@@ -261,9 +286,9 @@ public class ObservabilityServiceImpl implements ObservabilityService, CommandLi
                 new PredefinedEndpoint("Public Health Probe", "GET", "/api/v1/observability/health", 2000, 300),
                 new PredefinedEndpoint("Spring Boot Actuator Probe", "GET", "/actuator/health", 3000, 500),
                 new PredefinedEndpoint("Prometheus Metrics Stream", "GET", "/actuator/prometheus", 3000, 500),
-                new PredefinedEndpoint("Service Catalog Categories", "GET", "/api/v1/services/categories", 3000, 500),
-                new PredefinedEndpoint("Public Services Catalog", "GET", "/api/v1/services", 3000, 500),
-                new PredefinedEndpoint("Provider Telemetry Probe", "GET", "/api/v1/providers/public", 4000, 800)
+                new PredefinedEndpoint("Service Catalog Categories", "GET", "/api/categories", 3000, 500),
+                new PredefinedEndpoint("Public Services Catalog", "GET", "/api/services", 3000, 500),
+                new PredefinedEndpoint("Vehicle Pricing Rules Probe", "GET", "/api/vehicle/pricing-rules", 4000, 800)
         );
 
         for (PredefinedEndpoint pe : standardEndpoints) {
@@ -575,5 +600,24 @@ public class ObservabilityServiceImpl implements ObservabilityService, CommandLi
         int deletedCount = resultRepository.deleteByCheckedAtBefore(thresholdDate);
         log.info("[Observability Retention] Purged {} health check records older than {} days ({})", deletedCount, retentionDays, thresholdDate);
         return deletedCount;
+    }
+
+    @Override
+    @Transactional
+    public void resetStaleIncidentsAndAlerts() {
+        log.info("[Observability] Admin triggered manual baseline reset for all stale incidents and alerts...");
+        List<MonitoringIncident> openIncidents = incidentRepository.findByStatusIn(List.of(IncidentStatus.OPEN, IncidentStatus.ACKNOWLEDGED));
+        for (MonitoringIncident inc : openIncidents) {
+            inc.setStatus(IncidentStatus.RESOLVED);
+            inc.setResolvedAt(LocalDateTime.now());
+            incidentRepository.save(inc);
+        }
+
+        List<MonitoringAlert> activeAlerts = alertRepository.findByState(AlertState.ACTIVE);
+        for (MonitoringAlert alt : activeAlerts) {
+            alt.setState(AlertState.RESOLVED);
+            alt.setResolvedAt(LocalDateTime.now());
+            alertRepository.save(alt);
+        }
     }
 }

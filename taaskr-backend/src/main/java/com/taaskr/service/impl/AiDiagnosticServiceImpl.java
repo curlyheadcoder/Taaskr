@@ -345,9 +345,35 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
                 .map(s -> s.getId() + ":" + s.getName() + " (" + s.getCategory().getName() + " - ₹" + s.getPrice() + ")")
                 .collect(Collectors.joining(", "));
 
+        StringBuilder userContext = new StringBuilder();
+        if (userEmail != null && !userEmail.isBlank() && !"anonymousUser".equalsIgnoreCase(userEmail)) {
+            try {
+                List<BookingResponse> userBookings = bookingService.getMyBookings(userEmail);
+                if (!userBookings.isEmpty()) {
+                    userContext.append("User Active/Past Bookings: [");
+                    userContext.append(userBookings.stream()
+                            .map(b -> "Booking #" + b.getId() + ": " + b.getServiceName() + " (Status: " + b.getStatus() + ", Date: " + b.getScheduledDate() + ", Total: ₹" + b.getTotalPrice() + ")")
+                            .collect(Collectors.joining("; ")));
+                    userContext.append("]. ");
+                }
+            } catch (Exception e) {
+                log.warn("Could not append user bookings to Gemini prompt: {}", e.getMessage());
+            }
+        }
+
+        StringBuilder historyContext = new StringBuilder();
+        if (request != null && request.getHistory() != null && !request.getHistory().isEmpty()) {
+            historyContext.append("Recent Chat History: [");
+            historyContext.append(request.getHistory().stream()
+                    .map(h -> h.getRole() + ": " + h.getContent())
+                    .collect(Collectors.joining(" | ")));
+            historyContext.append("]. ");
+        }
+
         String prompt = String.format(
                 "You are Taasky, the intelligent AI assistant for Taaskr on-demand home services.\n" +
                 "Real Catalog: [%s].\n" +
+                "%s%s" +
                 "User query: \"%s\".\n" +
                 "Location: %s.\n" +
                 "Rules:\n" +
@@ -358,10 +384,10 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
                 "- When user asks to move furniture or goods, select a Logistics/Vehicle service (Mini Truck, Loading Vehicle, Truck).\n" +
                 "- When the issue relates to electrical sparks, switchboards, wiring, MCB, or shocks, match Switchboard & Wiring Repair.\n" +
                 "- If the user wants to send a parcel/package/document, select an On-Demand Vehicle (Electric Bike, Petrol Bike, etc.).\n" +
-                "- If the user asks about bookings, set intent to 'MY_BOOKINGS'.\n" +
+                "- If the user asks about their bookings or status, set intent to 'MY_BOOKINGS'.\n" +
                 "- If service is completely outside home/logistics services, set intent to 'UNSUPPORTED' and serviceId to null.\n" +
                 "- Output ONLY JSON: {\"intent\": \"SEARCH|DETAILS|AVAILABILITY|MY_BOOKINGS|CANCEL|UNSUPPORTED\", \"serviceId\": <number or null>, \"reply\": \"<helpful conversational message>\"}",
-                catalogSummary, query, request != null && request.getCity() != null ? request.getCity() : "Indore"
+                catalogSummary, userContext.toString(), historyContext.toString(), query, request != null && request.getCity() != null ? request.getCity() : "Indore"
         );
 
         Map<String, Object> body = Map.of(

@@ -45,14 +45,26 @@ const handleResponse = async (res) => {
 };
 
 const makeRequest = async (path, options = {}) => {
-  const response = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    headers: {
-      ...getHeaders(),
-      ...options.headers
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+  try {
+    const response = await fetch(`${BASE_URL}${path}`, {
+      ...options,
+      signal: options.signal || controller.signal,
+      headers: {
+        ...getHeaders(),
+        ...options.headers
+      }
+    });
+    return await handleResponse(response);
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error('API server unreachable or request timed out after 15s');
     }
-  });
-  return handleResponse(response);
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 };
 
 const makeMultipartRequest = async (path, formData, options = {}) => {
@@ -61,16 +73,28 @@ const makeMultipartRequest = async (path, formData, options = {}) => {
   if (token && token !== 'undefined' && token !== 'null') {
     headers['Authorization'] = `Bearer ${token}`;
   }
-  const response = await fetch(`${BASE_URL}${path}`, {
-    method: 'POST',
-    body: formData,
-    ...options,
-    headers: {
-      ...headers,
-      ...options.headers
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+  try {
+    const response = await fetch(`${BASE_URL}${path}`, {
+      method: 'POST',
+      body: formData,
+      ...options,
+      signal: options.signal || controller.signal,
+      headers: {
+        ...headers,
+        ...options.headers
+      }
+    });
+    return await handleResponse(response);
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error('API server unreachable or request timed out after 15s');
     }
-  });
-  return handleResponse(response);
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 };
 
 // ==========================================
@@ -615,6 +639,12 @@ export const api = {
 
     getObservabilityOverview: async () => {
       return makeRequest('/api/v1/admin/observability/overview');
+    },
+
+    resetObservabilityBaseline: async () => {
+      return makeRequest('/api/v1/admin/observability/reset-baseline', {
+        method: 'POST'
+      });
     },
 
     getMonitoredEndpoints: async () => {
