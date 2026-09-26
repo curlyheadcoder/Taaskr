@@ -12,4 +12,9 @@ public interface AlertEscalationRepository extends JpaRepository<AlertEscalation
     List<AlertEscalation> findByIncidentIdOrderByTriggeredAtAsc(Long incidentId);
 
     List<AlertEscalation> findTop50ByOrderByTriggeredAtDesc();
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Query("DELETE FROM AlertEscalation e WHERE e.incident.id IN :incidentIds")
+    void deleteByIncidentIdIn(List<Long> incidentIds);
 }

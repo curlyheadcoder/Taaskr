@@ -34,4 +34,9 @@ public interface HealthCheckResultRepository extends JpaRepository<HealthCheckRe
     @Transactional
     @Query("DELETE FROM HealthCheckResult r WHERE r.checkedAt < :before")
     int deleteByCheckedAtBefore(LocalDateTime before);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM HealthCheckResult r WHERE r.endpoint.id = :endpointId")
+    void deleteByEndpointId(Long endpointId);
 }

@@ -17,4 +17,9 @@ public interface MonitoringAlertRepository extends JpaRepository<MonitoringAlert
     long countByState(AlertState state);
 
     boolean existsByIncidentIdAndAlertTypeAndState(Long incidentId, String alertType, AlertState state);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Query("DELETE FROM MonitoringAlert a WHERE a.incident.id IN :incidentIds")
+    void deleteByIncidentIdIn(List<Long> incidentIds);
 }

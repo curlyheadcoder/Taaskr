@@ -18,4 +18,11 @@ public interface MonitoringIncidentRepository extends JpaRepository<MonitoringIn
     long countByStatus(IncidentStatus status);
 
     List<MonitoringIncident> findTop50ByOrderByStartedAtDesc();
+
+    List<MonitoringIncident> findByEndpointId(Long endpointId);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Query("DELETE FROM MonitoringIncident i WHERE i.endpoint.id = :endpointId")
+    void deleteByEndpointId(Long endpointId);
 }

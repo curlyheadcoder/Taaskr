@@ -132,7 +132,6 @@ export default function AiAssistantModal() {
   };
 
   const handleCancelBooking = async (bookingId) => {
-    if (!window.confirm(`Are you sure you want to cancel booking #${bookingId}?`)) return;
     setCancellingBookingId(bookingId);
     try {
       await api.bookings.cancel(bookingId, 'Cancelled via Taasky AI Assistant');
@@ -149,7 +148,16 @@ export default function AiAssistantModal() {
         }
       ]);
     } catch (err) {
-      alert(`Could not cancel booking: ${err.message}`);
+      setMessages(prev => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          sender: 'taasky',
+          text: `Could not cancel booking #${bookingId}: ${err.message || 'Please try again.'}`,
+          isError: true,
+          suggestedPrompts: ['Show my active bookings', 'Contact support']
+        }
+      ]);
     } finally {
       setCancellingBookingId(null);
     }

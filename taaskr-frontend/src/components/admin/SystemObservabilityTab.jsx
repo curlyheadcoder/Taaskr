@@ -5,7 +5,7 @@ import {
   AlertTriangle, ExternalLink, Activity, Shield, Layers, 
   Users, Check, Terminal, Download, Pause, Play, Search,
   Filter, Wifi, HardDrive, Radio, CheckSquare, Zap, BarChart2,
-  Plus, Trash2, Edit, AlertCircle, Bell, BellOff, Settings, Slash, HelpCircle
+  Plus, Trash2, Edit, AlertCircle, Bell, BellOff, Settings, Slash, HelpCircle, X
 } from 'lucide-react';
 
 export default function SystemObservabilityTab({ totalBookings = 0, totalProviders = 0, totalUsers = 0 }) {
@@ -93,14 +93,24 @@ export default function SystemObservabilityTab({ totalBookings = 0, totalProvide
     return () => clearInterval(interval);
   }, [alertFilterState]);
 
+  // Custom Toast & Modal Box State
+  const [toast, setToast] = useState(null); // { message: string, type: 'success' | 'error' | 'info' }
+  const [confirmModal, setConfirmModal] = useState(null); // { title: string, message: string, onConfirm: function }
+
+  const showToast = (message, type = 'info') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
+
   // Handle Endpoint Actions
   const handleAutoDiscover = async () => {
     setIsRefreshing(true);
     try {
       await api.admin.discoverMonitoredEndpoints();
       await loadObservabilityData(true);
+      showToast('APIs auto-discovered and health probes updated!', 'success');
     } catch (err) {
-      alert('Failed to auto-discover endpoints: ' + err.message);
+      showToast('Failed to auto-discover endpoints: ' + err.message, 'error');
     } finally {
       setIsRefreshing(false);
     }
@@ -121,29 +131,37 @@ export default function SystemObservabilityTab({ totalBookings = 0, totalProvide
         recoveryThreshold: 2,
         latencyThresholdMs: 1000
       });
+      showToast('New monitored endpoint added successfully!', 'success');
       loadObservabilityData(true);
     } catch (err) {
-      alert('Failed to create endpoint: ' + err.message);
+      showToast('Failed to create endpoint: ' + err.message, 'error');
     }
   };
 
   const handleToggleEndpoint = async (id, currentEnabled) => {
     try {
       await api.admin.toggleMonitoredEndpoint(id, !currentEnabled);
+      showToast(`Endpoint ${!currentEnabled ? 'enabled' : 'disabled'}`, 'info');
       loadObservabilityData(true);
     } catch (err) {
-      alert('Failed to toggle endpoint: ' + err.message);
+      showToast('Failed to toggle endpoint: ' + err.message, 'error');
     }
   };
 
-  const handleDeleteEndpoint = async (id) => {
-    if (!window.confirm('Are you sure you want to remove this endpoint from monitoring?')) return;
-    try {
-      await api.admin.deleteMonitoredEndpoint(id);
-      loadObservabilityData(true);
-    } catch (err) {
-      alert('Failed to delete endpoint: ' + err.message);
-    }
+  const handleDeleteEndpoint = (id) => {
+    setConfirmModal({
+      title: 'Delete Monitored Endpoint',
+      message: 'Are you sure you want to remove this endpoint from monitoring? This will delete associated probe records.',
+      onConfirm: async () => {
+        try {
+          await api.admin.deleteMonitoredEndpoint(id);
+          showToast('Endpoint removed from monitoring platform.', 'success');
+          loadObservabilityData(true);
+        } catch (err) {
+          showToast('Failed to delete endpoint: ' + err.message, 'error');
+        }
+      }
+    });
   };
 
   const handleTriggerCheck = async (id) => {
@@ -151,8 +169,9 @@ export default function SystemObservabilityTab({ totalBookings = 0, totalProvide
     try {
       await api.admin.triggerEndpointCheck(id);
       await loadObservabilityData(true);
+      showToast('Health check executed successfully!', 'success');
     } catch (err) {
-      alert('Failed to run check: ' + err.message);
+      showToast('Failed to run check: ' + err.message, 'error');
     } finally {
       setIsRefreshing(false);
     }
@@ -162,33 +181,40 @@ export default function SystemObservabilityTab({ totalBookings = 0, totalProvide
   const handleAcknowledgeIncident = async (id) => {
     try {
       await api.admin.acknowledgeIncident(id);
+      showToast('Incident acknowledged.', 'info');
       loadObservabilityData(true);
     } catch (err) {
-      alert('Failed to acknowledge incident: ' + err.message);
+      showToast('Failed to acknowledge incident: ' + err.message, 'error');
     }
   };
 
   const handleResolveIncident = async (id) => {
     try {
       await api.admin.resolveIncident(id);
+      showToast('Incident resolved successfully.', 'success');
       loadObservabilityData(true);
     } catch (err) {
-      alert('Failed to resolve incident: ' + err.message);
+      showToast('Failed to resolve incident: ' + err.message, 'error');
     }
   };
 
-  const handleResetBaseline = async () => {
-    if (!window.confirm('Reset all stale incidents & active alerts to clear past test failures?')) return;
-    setIsRefreshing(true);
-    try {
-      await api.admin.resetObservabilityBaseline();
-      await loadObservabilityData(true);
-      alert('Stale baseline cleared successfully! Health engine refreshed.');
-    } catch (err) {
-      alert('Failed to reset baseline: ' + err.message);
-    } finally {
-      setIsRefreshing(false);
-    }
+  const handleResetBaseline = () => {
+    setConfirmModal({
+      title: 'Reset Observability Baseline',
+      message: 'Reset all stale incidents & active alerts to clear past test failures and restore HEALTHY status?',
+      onConfirm: async () => {
+        setIsRefreshing(true);
+        try {
+          await api.admin.resetObservabilityBaseline();
+          await loadObservabilityData(true);
+          showToast('Stale baseline cleared successfully! Health engine refreshed to HEALTHY.', 'success');
+        } catch (err) {
+          showToast('Failed to reset baseline: ' + err.message, 'error');
+        } finally {
+          setIsRefreshing(false);
+        }
+      }
+    });
   };
 
   // Handle Config Update
@@ -196,10 +222,10 @@ export default function SystemObservabilityTab({ totalBookings = 0, totalProvide
     e.preventDefault();
     try {
       await api.admin.updateObservabilityConfig(config);
-      alert('Observability configuration saved successfully!');
+      showToast('Observability configuration saved successfully!', 'success');
       loadObservabilityData(true);
     } catch (err) {
-      alert('Failed to save config: ' + err.message);
+      showToast('Failed to save config: ' + err.message, 'error');
     }
   };
 
@@ -1226,7 +1252,105 @@ export default function SystemObservabilityTab({ totalBookings = 0, totalProvide
                 Create Endpoint
               </button>
             </div>
-          </form>
+      {/* CUSTOM CONFIRMATION POPUP MODAL BOX */}
+      {confirmModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          backdropFilter: 'blur(6px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999
+        }}>
+          <div style={{
+            width: '100%',
+            maxWidth: '440px',
+            backgroundColor: '#111827',
+            border: '1px solid rgba(255,255,255,0.15)',
+            borderRadius: '20px',
+            padding: '1.75rem',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1.25rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{ padding: '0.6rem', borderRadius: '12px', backgroundColor: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>
+                <AlertCircle size={22} />
+              </div>
+              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#f9fafb' }}>
+                {confirmModal.title}
+              </h3>
+            </div>
+            <p style={{ margin: 0, fontSize: '0.9rem', color: '#9ca3af', lineHeight: 1.5 }}>
+              {confirmModal.message}
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
+              <button
+                onClick={() => setConfirmModal(null)}
+                style={{
+                  padding: '0.6rem 1.25rem',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  backgroundColor: 'transparent',
+                  color: '#d1d5db',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  const action = confirmModal.onConfirm;
+                  setConfirmModal(null);
+                  if (action) action();
+                }}
+                style={{
+                  padding: '0.6rem 1.25rem',
+                  borderRadius: '10px',
+                  border: 'none',
+                  backgroundColor: '#ef4444',
+                  color: '#ffffff',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer'
+                }}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CUSTOM TOAST NOTIFICATION POPUP BOX */}
+      {toast && (
+        <div style={{
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          padding: '0.85rem 1.35rem',
+          borderRadius: '14px',
+          backgroundColor: '#111827',
+          border: toast.type === 'error' ? '1px solid rgba(239,68,68,0.4)' : toast.type === 'success' ? '1px solid rgba(16,185,129,0.4)' : '1px solid rgba(59,130,246,0.4)',
+          color: '#ffffff',
+          boxShadow: '0 20px 25px -5px rgba(0,0,0,0.5)',
+          fontSize: '0.875rem',
+          fontWeight: 600
+        }}>
+          {toast.type === 'error' ? <AlertCircle size={18} style={{ color: '#ef4444' }} /> : toast.type === 'success' ? <CheckCircle2 size={18} style={{ color: '#10b981' }} /> : <Zap size={18} style={{ color: '#3b82f6' }} />}
+          <span>{toast.message}</span>
+          <button onClick={() => setToast(null)} style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', padding: 0, marginLeft: '0.5rem' }}>
+            <X size={16} />
+          </button>
         </div>
       )}
 

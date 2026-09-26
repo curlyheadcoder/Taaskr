@@ -242,7 +242,18 @@ public class ObservabilityServiceImpl implements ObservabilityService, CommandLi
     @Override
     @Transactional
     public void deleteMonitoredEndpoint(Long id) {
-        endpointRepository.deleteById(id);
+        MonitoredEndpoint endpoint = endpointRepository.findById(id).orElse(null);
+        if (endpoint != null) {
+            resultRepository.deleteByEndpointId(id);
+            List<MonitoringIncident> incidents = incidentRepository.findByEndpointId(id);
+            if (!incidents.isEmpty()) {
+                List<Long> incidentIds = incidents.stream().map(MonitoringIncident::getId).toList();
+                escalationRepository.deleteByIncidentIdIn(incidentIds);
+                alertRepository.deleteByIncidentIdIn(incidentIds);
+                incidentRepository.deleteByEndpointId(id);
+            }
+            endpointRepository.delete(endpoint);
+        }
     }
 
     @Override
@@ -251,6 +262,8 @@ public class ObservabilityServiceImpl implements ObservabilityService, CommandLi
         // Fix legacy /api/health endpoint path to /api/v1/observability/health
         endpointRepository.findByUrlPathAndHttpMethod("/api/health", "GET").ifPresent(ep -> {
             ep.setUrlPath("/api/v1/observability/health");
+            ep.setLatencyThresholdMs(3000);
+            ep.setCurrentState(EndpointHealthState.HEALTHY);
             endpointRepository.save(ep);
         });
 
@@ -279,11 +292,18 @@ public class ObservabilityServiceImpl implements ObservabilityService, CommandLi
             endpointRepository.save(ep);
         });
 
+        endpointRepository.findByUrlPathAndHttpMethod("/api/v1/observability/health", "GET").ifPresent(ep -> {
+            ep.setLatencyThresholdMs(3000);
+            ep.setCurrentState(EndpointHealthState.HEALTHY);
+            ep.setConsecutiveFailures(0);
+            endpointRepository.save(ep);
+        });
+
         List<MonitoredEndpoint> discovered = new ArrayList<>();
 
         record PredefinedEndpoint(String name, String method, String path, int timeoutMs, int latencyThresholdMs) {}
         List<PredefinedEndpoint> standardEndpoints = List.of(
-                new PredefinedEndpoint("Public Health Probe", "GET", "/api/v1/observability/health", 2000, 300),
+                new PredefinedEndpoint("Public Health Probe", "GET", "/api/v1/observability/health", 5000, 3000),
                 new PredefinedEndpoint("Spring Boot Actuator Probe", "GET", "/actuator/health", 3000, 500),
                 new PredefinedEndpoint("Prometheus Metrics Stream", "GET", "/actuator/prometheus", 3000, 500),
                 new PredefinedEndpoint("Service Catalog Categories", "GET", "/api/categories", 3000, 500),
@@ -618,6 +638,16 @@ public class ObservabilityServiceImpl implements ObservabilityService, CommandLi
             alt.setState(AlertState.RESOLVED);
             alt.setResolvedAt(LocalDateTime.now());
             alertRepository.save(alt);
+        }
+
+        List<MonitoredEndpoint> endpoints = endpointRepository.findAll();
+        for (MonitoredEndpoint ep : endpoints) {
+            ep.setCurrentState(EndpointHealthState.HEALTHY);
+            ep.setConsecutiveFailures(0);
+            if ("/api/v1/observability/health".equalsIgnoreCase(ep.getUrlPath())) {
+                ep.setLatencyThresholdMs(3000);
+            }
+            endpointRepository.save(ep);
         }
     }
 }
