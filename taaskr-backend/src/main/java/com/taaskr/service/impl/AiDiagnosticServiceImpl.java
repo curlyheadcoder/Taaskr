@@ -177,6 +177,47 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
             return res;
         }
 
+        // 0.1 Quick Reply & Navigation Follow-up Handlers
+        if (containsAny(lower, "check another date", "check date", "another date", "change date", "different date")) {
+            AiChatResponse res = new AiChatResponse("Which target date would you like to check technician availability for? You can ask for 'tomorrow', 'next Monday', or specify any preferred date.");
+            res.setIntent("AVAILABILITY_HELP");
+            res.setActionType("NONE");
+            res.setQuickReplies(List.of("AC Repair Tomorrow", "Electrician Today", "Plumbing Availability", "Show my active bookings"));
+            return res;
+        }
+
+        if (containsAny(lower, "check details", "view service details", "service details", "more details")) {
+            AiChatResponse res = new AiChatResponse("Click the 'Book This Service' button on any recommended service card to view complete service inclusions, pricing breakdown, and warranty details before booking.");
+            res.setIntent("DETAILS_HELP");
+            res.setActionType("NONE");
+            res.setQuickReplies(List.of("AC Repair", "Kitchen sink pipe is leaking", "Send Parcel", "All Services"));
+            return res;
+        }
+
+        if (containsAny(lower, "book another service", "explore services", "all services", "browse services", "other services")) {
+            AiChatResponse res = new AiChatResponse("You can explore all our active service domains on Taaskr: Appliances & Electrical, Plumbing & Cleaning, Pest Control, Salon & Wellness, or Logistics & Shifting. What do you need help with?");
+            res.setIntent("EXPLORE");
+            res.setActionType("NONE");
+            res.setQuickReplies(List.of("AC Repair", "Full Home Cleaning", "Send Parcel", "Electrician"));
+            return res;
+        }
+
+        if (containsAny(lower, "help with booking", "how to book")) {
+            AiChatResponse res = new AiChatResponse("To book a service, select any recommended service card above and click 'Book This Service'. You can choose your date, preferred time window, and delivery address at checkout.");
+            res.setIntent("BOOKING_HELP");
+            res.setActionType("NONE");
+            res.setQuickReplies(List.of("AC Repair", "Send Parcel", "Show my active bookings"));
+            return res;
+        }
+
+        if (lower.equals("log in") || lower.equals("login")) {
+            AiChatResponse res = new AiChatResponse("Please use the 'Login' button at the top right corner of the header to log in to your Taaskr account.");
+            res.setIntent("NAVIGATE");
+            res.setActionType("NONE");
+            res.setQuickReplies(List.of("Explore Services", "AC Repair"));
+            return res;
+        }
+
         // 1. Intent: User asks about their bookings ("What bookings do I have?", "my bookings", "active orders", "show my active bookings")
         if (containsAny(lower, "booking", "bookings", "active orders", "my orders") || hasWord(lower, "my booking", "my bookings", "active booking", "booking status", "track booking", "what bookings", "show bookings", "my orders")) {
             if (userEmail == null || userEmail.isBlank() || "anonymousUser".equalsIgnoreCase(userEmail)) {
