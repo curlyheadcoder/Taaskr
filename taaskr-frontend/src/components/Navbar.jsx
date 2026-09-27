@@ -533,30 +533,7 @@ export default function Navbar() {
           </div>
         )}
 
-        {/* Workspace Navigation Links */}
-        <nav style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
-          {isCustomerView && user && (
-            <Link 
-              to="/bookings" 
-              style={{
-                padding: '0.45rem 0.75rem',
-                borderRadius: '8px',
-                fontSize: '0.85rem',
-                fontWeight: location.pathname === '/bookings' ? 600 : 500,
-                color: location.pathname === '/bookings' ? 'var(--secondary-accent)' : 'var(--text-secondary)',
-                backgroundColor: location.pathname === '/bookings' ? 'var(--icon-container)' : 'transparent',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                textDecoration: 'none',
-                transition: 'var(--transition-fast)'
-              }}
-            >
-              <Calendar size={15} />
-              <span>My Bookings</span>
-            </Link>
-          )}
-        </nav>
+
       </div>
 
       {/* Center Section: Admin Console (Admin) | Provider Console & Connect with Admin (Provider) | Global Service Search (Customer) */}
