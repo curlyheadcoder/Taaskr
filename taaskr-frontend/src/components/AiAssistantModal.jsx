@@ -189,7 +189,29 @@ export default function AiAssistantModal() {
     }
   };
 
-  if (roleLoading || role === 'ADMIN' || role === 'PROVIDER') {
+  // Reset chat state and close modal on logout
+  useEffect(() => {
+    if (!role || role !== 'USER') {
+      setIsOpen(false);
+      setMessages([
+        {
+          id: 'welcome',
+          sender: 'taasky',
+          text: "Hi! I'm Taasky, your AI assistant on Taaskr. How can I help you today? You can ask me to find services, check pricing, lookup real-time availability, or check your active bookings.",
+          suggestedPrompts: [
+            'I want to send my parcel across the city',
+            'AC is not cooling properly',
+            'Kitchen sink pipe is leaking',
+            'Show my active bookings',
+            'What vehicle options are available?'
+          ]
+        }
+      ]);
+    }
+  }, [role]);
+
+  // Hide Taasky completely when logged out or when user is ADMIN/PROVIDER
+  if (roleLoading || !role || role !== 'USER') {
     return null;
   }
 
