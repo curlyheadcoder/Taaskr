@@ -89,7 +89,11 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void clearAll(String userEmail) {
         User user = getUserByEmail(userEmail);
-        notificationRepository.deleteAllForUser(user.getId());
+        try {
+            notificationRepository.deleteByUserId(user.getId());
+        } catch (Exception e) {
+            notificationRepository.deleteAllForUser(user.getId());
+        }
     }
 
     @Override

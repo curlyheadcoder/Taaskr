@@ -72,8 +72,15 @@ export default function Navbar() {
         api.notifications.getAll(),
         api.notifications.getUnreadCount()
       ]);
-      setNotifications(list || []);
-      setUnreadCount(typeof countData === 'number' ? countData : (countData?.unreadCount || 0));
+      const clearedTimeStr = localStorage.getItem('taaskr_cleared_notifications_time');
+      const clearedTime = clearedTimeStr ? new Date(clearedTimeStr).getTime() : 0;
+      const filteredList = (list || []).filter(n => {
+        if (!clearedTime) return true;
+        const nTime = n.createdAt ? new Date(n.createdAt).getTime() : Date.now();
+        return nTime > clearedTime;
+      });
+      setNotifications(filteredList);
+      setUnreadCount(filteredList.filter(n => !n.isRead).length);
     } catch (e) {
       // ignore
     }
@@ -107,11 +114,12 @@ export default function Navbar() {
   };
 
   const handleClearAllNotifications = async () => {
+    localStorage.setItem('taaskr_cleared_notifications_time', new Date().toISOString());
+    setNotifications([]);
+    setUnreadCount(0);
     try {
       await api.notifications.clearAll();
     } catch (e) {}
-    setNotifications([]);
-    setUnreadCount(0);
   };
 
   const handleNotificationClick = async (n) => {
