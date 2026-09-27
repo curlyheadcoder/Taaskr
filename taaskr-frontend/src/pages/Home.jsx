@@ -1390,25 +1390,35 @@ export default function Home() {
     'printer repair': 'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?auto=format&fit=crop&w=600&q=80',
 
     // 7. Vehicle & Auto Care
-    'doorstep eco car foam wash & vacuum': '/vehicle-car-maintenance.jpg',
-    'car wash': '/vehicle-car-maintenance.jpg',
-    'doorstep bike foam wash & chain lube': '/vehicle-car-maintenance.jpg',
-    'bike wash': '/vehicle-car-maintenance.jpg',
-    'deep car interior detailing & polishing': '/vehicle-car-maintenance.jpg',
-    'car cleaning': '/vehicle-car-maintenance.jpg',
-    'car spa & detailing': '/vehicle-car-maintenance.jpg',
+    'doorstep eco car foam wash & vacuum': '/vehicle-car-cleaning.jpg',
+    'car wash': '/vehicle-car-cleaning.jpg',
+    'doorstep bike foam wash & chain lube': '/vehicle-car-cleaning.jpg',
+    'bike wash': '/vehicle-car-cleaning.jpg',
+    'car cleaning': '/vehicle-car-cleaning.jpg',
+
+    'deep car interior detailing & polishing': '/vehicle-car-spa.jpg',
+    'car spa & detailing': '/vehicle-car-spa.jpg',
+    'car spa': '/vehicle-car-spa.jpg',
+
     'car maintenance': '/vehicle-car-maintenance.jpg',
     'engine oil change': '/vehicle-car-maintenance.jpg',
     'general car service': '/vehicle-car-maintenance.jpg',
-    'car diagnostics': '/vehicle-car-maintenance.jpg',
-    'exterior care': '/vehicle-car-maintenance.jpg',
+
+    'car diagnostics': '/vehicle-car-diagnostics.jpg',
+    'obd diagnostic scan': '/vehicle-car-diagnostics.jpg',
+
+    'exterior care': '/vehicle-exterior-care.jpg',
+    'headlight restoration': '/vehicle-exterior-care.jpg',
+
+    'car electrical repair': '/vehicle-car-electrical.jpg',
+
+    'emergency car assistance': '/vehicle-emergency-assistance.jpg',
+    'roadside assistance': '/vehicle-emergency-assistance.jpg',
 
     'car battery jump start assistance': '/vehicle-battery-service.jpg',
     'battery service': '/vehicle-battery-service.jpg',
     'battery health check': '/vehicle-battery-service.jpg',
     'battery replacement': '/vehicle-battery-service.jpg',
-    'car electrical repair': '/vehicle-battery-service.jpg',
-    'emergency car assistance': '/vehicle-battery-service.jpg',
 
     'tyre service': '/vehicle-tyre-service.jpg',
     'tyre replacement': '/vehicle-tyre-service.jpg',
@@ -1497,7 +1507,19 @@ export default function Home() {
         serviceImage = '/vehicle-brake-service.jpg';
       } else if ((name.includes('car') || name.includes('vehicle') || name.includes('auto')) && (name.includes('ac') || name.includes('cooling'))) {
         serviceImage = '/vehicle-car-ac-service.jpg';
-      } else if (name.includes('car ') || name.includes('bike wash') || name.includes('detailing') || name.includes('auto care') || name.includes('vehicle')) {
+      } else if (name.includes('wash') || name.includes('car cleaning') || name.includes('foam')) {
+        serviceImage = '/vehicle-car-cleaning.jpg';
+      } else if (name.includes('spa') || name.includes('detail') || name.includes('polish')) {
+        serviceImage = '/vehicle-car-spa.jpg';
+      } else if (name.includes('diagnostic') || name.includes('obd') || name.includes('scanner')) {
+        serviceImage = '/vehicle-car-diagnostics.jpg';
+      } else if (name.includes('electrical') || name.includes('fuse') || name.includes('wiring')) {
+        serviceImage = '/vehicle-car-electrical.jpg';
+      } else if (name.includes('exterior') || name.includes('headlight') || name.includes('windshield')) {
+        serviceImage = '/vehicle-exterior-care.jpg';
+      } else if (name.includes('emergency') || name.includes('roadside') || name.includes('breakdown')) {
+        serviceImage = '/vehicle-emergency-assistance.jpg';
+      } else if (name.includes('maintenance') || name.includes('oil change') || name.includes('service')) {
         serviceImage = '/vehicle-car-maintenance.jpg';
       } else if (name.includes('laptop') || name.includes('pc ') || name.includes('computer') || name.includes('router') || name.includes('tv ') || name.includes('printer')) {
         serviceImage = 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=600&q=80';
