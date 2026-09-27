@@ -42,8 +42,34 @@ export default function AiAssistantModal() {
     if (isOpen) {
       scrollToBottom();
       inputRef.current?.focus();
+
+      // Proactive Active Booking Detection for logged-in users
+      const checkActiveBookings = async () => {
+        try {
+          const bookings = await api.bookings.getMyBookings();
+          if (bookings && Array.isArray(bookings) && bookings.length > 0) {
+            const active = bookings.filter(b => b.status !== 'COMPLETED' && b.status !== 'CANCELLED');
+            if (active.length > 0) {
+              setMessages(prev => {
+                if (prev.some(m => m.id === 'proactive-active-booking')) return prev;
+                return [
+                  ...prev,
+                  {
+                    id: 'proactive-active-booking',
+                    sender: 'taasky',
+                    text: `⚡ Active Order Update: You have ${active.length} active booking(s) currently in progress. Here is the latest dispatch status:`,
+                    userBookings: active,
+                    suggestedPrompts: ['Show my active bookings', 'Kitchen sink pipe is leaking', 'AC is not cooling properly']
+                  }
+                ];
+              });
+            }
+          }
+        } catch (e) {}
+      };
+      checkActiveBookings();
     }
-  }, [messages, isOpen]);
+  }, [isOpen]);
 
   // Listen to open_taasky_with_prompt global event
   useEffect(() => {
