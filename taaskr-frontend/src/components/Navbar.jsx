@@ -5,7 +5,7 @@ import TaaskrLogo from './TaaskrLogo';
 import { 
   Sun, Moon, Briefcase, ShieldCheck, Calendar, Grid, LogOut, 
   MapPin, Search, ChevronDown, Bot, Navigation, X, Check, ArrowRight, Command, AlertCircle, MessageSquare, Bell,
-  Headphones, HelpCircle, LifeBuoy, CreditCard
+  Headphones, HelpCircle, LifeBuoy, CreditCard, Trash2
 } from 'lucide-react';
 
 const ACTIVE_CITY = { city: 'Indore', area: 'Indore Metro (All Service Zones)', status: 'ACTIVE' };
@@ -104,6 +104,14 @@ export default function Navbar() {
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
       setUnreadCount(0);
     } catch (e) {}
+  };
+
+  const handleClearAllNotifications = async () => {
+    try {
+      await api.notifications.markAllAsRead();
+    } catch (e) {}
+    setNotifications([]);
+    setUnreadCount(0);
   };
 
   const handleNotificationClick = async (n) => {
@@ -1025,25 +1033,57 @@ export default function Navbar() {
                   alignItems: 'center',
                   backgroundColor: 'var(--bg-subtle)'
                 }}>
-                  <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-main)' }}>
-                    Notifications
+                  <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <span>Notifications</span>
+                    {notifications.length > 0 && (
+                      <span style={{ fontSize: '0.7rem', padding: '0.1rem 0.45rem', borderRadius: '999px', backgroundColor: 'var(--primary-subtle)', color: 'var(--primary)', fontWeight: 700 }}>
+                        {notifications.length}
+                      </span>
+                    )}
                   </div>
-                  {unreadCount > 0 && (
-                    <button
-                      onClick={handleMarkAllAsRead}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: 'var(--primary)',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        padding: 0
-                      }}
-                    >
-                      Mark all as read
-                    </button>
-                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={handleMarkAllAsRead}
+                        title="Mark all notifications as read"
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--primary)',
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          padding: 0
+                        }}
+                      >
+                        Mark read
+                      </button>
+                    )}
+                    {notifications.length > 0 && (
+                      <button
+                        onClick={handleClearAllNotifications}
+                        title="Clear all notifications"
+                        style={{
+                          background: 'none',
+                          color: '#EF4444',
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.25rem',
+                          padding: '0.2rem 0.5rem',
+                          borderRadius: '6px',
+                          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                          border: '1px solid rgba(239, 68, 68, 0.25)',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        <Trash2 size={12} />
+                        <span>Clear All</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div style={{ maxHeight: '340px', overflowY: 'auto' }}>
