@@ -207,6 +207,11 @@ export const api = {
     logout: () => {
       localStorage.removeItem('taaskr_token');
       localStorage.removeItem('taaskr_current_user');
+      localStorage.removeItem('taasky_chat');
+      localStorage.removeItem('taasky_messages');
+      sessionStorage.removeItem('taasky_chat');
+      sessionStorage.removeItem('taasky_messages');
+      window.dispatchEvent(new CustomEvent('taasky_clear_chat'));
     }
   },
 

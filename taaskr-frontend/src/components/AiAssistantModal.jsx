@@ -7,6 +7,19 @@ import {
 } from 'lucide-react';
 import { useUserRole } from '../hooks/useUserRole';
 
+const INITIAL_WELCOME_MESSAGE = {
+  id: 'welcome',
+  sender: 'taasky',
+  text: "Hi! I'm Taasky, your AI assistant on Taaskr. How can I help you today? You can ask me to find services, check pricing, lookup real-time availability, or check your active bookings.",
+  suggestedPrompts: [
+    'I want to send my parcel across the city',
+    'AC is not cooling properly',
+    'Kitchen sink pipe is leaking',
+    'Show my active bookings',
+    'What vehicle options are available?'
+  ]
+};
+
 export default function AiAssistantModal() {
   const navigate = useNavigate();
   const { role, loading: roleLoading } = useUserRole();
@@ -16,20 +29,7 @@ export default function AiAssistantModal() {
   const [cancellingBookingId, setCancellingBookingId] = useState(null);
   const [cancelStatus, setCancelStatus] = useState({});
 
-  const [messages, setMessages] = useState([
-    {
-      id: 'welcome',
-      sender: 'taasky',
-      text: "Hi! I'm Taasky, your AI assistant on Taaskr. How can I help you today? You can ask me to find services, check pricing, lookup real-time availability, or check your active bookings.",
-      suggestedPrompts: [
-        'I want to send my parcel across the city',
-        'AC is not cooling properly',
-        'Kitchen sink pipe is leaking',
-        'Show my active bookings',
-        'What vehicle options are available?'
-      ]
-    }
-  ]);
+  const [messages, setMessages] = useState([INITIAL_WELCOME_MESSAGE]);
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -40,6 +40,10 @@ export default function AiAssistantModal() {
 
   useEffect(() => {
     if (isOpen) {
+      // 1. Every time Taasky is opened, start with a fresh chat history!
+      setMessages([INITIAL_WELCOME_MESSAGE]);
+      setInputMessage('');
+
       scrollToBottom();
       inputRef.current?.focus();
 
@@ -189,24 +193,23 @@ export default function AiAssistantModal() {
     }
   };
 
-  // Reset chat state and close modal on logout
+  // Clear chat history & state on logout or custom clear event
+  useEffect(() => {
+    const handleClearChat = () => {
+      setIsOpen(false);
+      setMessages([INITIAL_WELCOME_MESSAGE]);
+      setInputMessage('');
+    };
+
+    window.addEventListener('taasky_clear_chat', handleClearChat);
+    return () => window.removeEventListener('taasky_clear_chat', handleClearChat);
+  }, []);
+
   useEffect(() => {
     if (!role || role !== 'USER') {
       setIsOpen(false);
-      setMessages([
-        {
-          id: 'welcome',
-          sender: 'taasky',
-          text: "Hi! I'm Taasky, your AI assistant on Taaskr. How can I help you today? You can ask me to find services, check pricing, lookup real-time availability, or check your active bookings.",
-          suggestedPrompts: [
-            'I want to send my parcel across the city',
-            'AC is not cooling properly',
-            'Kitchen sink pipe is leaking',
-            'Show my active bookings',
-            'What vehicle options are available?'
-          ]
-        }
-      ]);
+      setMessages([INITIAL_WELCOME_MESSAGE]);
+      setInputMessage('');
     }
   }, [role]);
 
@@ -328,20 +331,52 @@ export default function AiAssistantModal() {
                 </div>
               </div>
 
-              <button
-                onClick={() => setIsOpen(false)}
-                title="Close Assistant"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--text-muted)',
-                  cursor: 'pointer',
-                  padding: '0.35rem',
-                  borderRadius: '6px'
-                }}
-              >
-                <X size={18} />
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMessages([INITIAL_WELCOME_MESSAGE]);
+                    setInputMessage('');
+                  }}
+                  title="Start Fresh Chat"
+                  style={{
+                    background: 'var(--bg-subtle)',
+                    border: '1px solid var(--border-light)',
+                    color: 'var(--text-muted)',
+                    cursor: 'pointer',
+                    padding: '0.3rem 0.6rem',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    fontSize: '0.75rem',
+                    fontWeight: 600
+                  }}
+                >
+                  <RefreshCw size={13} />
+                  <span>New Chat</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsOpen(false);
+                    setMessages([INITIAL_WELCOME_MESSAGE]);
+                    setInputMessage('');
+                  }}
+                  title="Close Assistant"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-muted)',
+                    cursor: 'pointer',
+                    padding: '0.35rem',
+                    borderRadius: '6px'
+                  }}
+                >
+                  <X size={18} />
+                </button>
+              </div>
             </div>
 
             {/* Chat Messages Stream */}
