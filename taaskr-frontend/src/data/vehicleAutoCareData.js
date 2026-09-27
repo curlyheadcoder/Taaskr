@@ -8,7 +8,7 @@ export const VEHICLE_AUTO_CARE_SERVICES = [
     canonicalCategoryId: 'vehicle_autocare',
     startingPrice: 150,
     description: 'Professional doorstep car wash, interior vacuuming, foam wash & full deep cleaning.',
-    image: 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=600&q=80',
+    image: '/vehicle-car-maintenance.jpg',
     options: [
       { id: 'ext_wash', name: 'Top Wash (Exterior Wash)', price: 150, duration: '30–45 min', description: 'High-pressure exterior body wash, tyre cleaning & micro-fiber wipe down.' },
       { id: 'int_wash', name: 'Interior Wash (Vacuum & Dashboard)', price: 150, duration: '45–60 min', description: 'Complete interior vacuuming, footmat washing & dashboard dust removal.' },
@@ -26,7 +26,7 @@ export const VEHICLE_AUTO_CARE_SERVICES = [
     canonicalCategoryId: 'vehicle_autocare',
     startingPrice: 799,
     description: 'High-end paint correction, ceramic wax polish, leather conditioning & complete car detailing.',
-    image: 'https://images.unsplash.com/photo-1607860108855-64acf2078ed9?auto=format&fit=crop&w=600&q=80',
+    image: '/vehicle-car-maintenance.jpg',
     options: [
       { id: 'basic_spa', name: 'Basic Car Spa', price: 799, duration: '1.5–2 hrs', description: 'Snow foam wash, dashboard conditioning, tyre shine & liquid wax coat.' },
       { id: 'int_spa', name: 'Interior Spa', price: 999, duration: '2–2.5 hrs', description: 'Steam sanitization, leather conditioning, AC vent cleaning & anti-bacterial spray.' },
@@ -42,7 +42,7 @@ export const VEHICLE_AUTO_CARE_SERVICES = [
     canonicalCategoryId: 'vehicle_autocare',
     startingPrice: 299,
     description: 'Doorstep AC cooling check, refrigerant gas refill, filter cleaning & compressor diagnostics.',
-    image: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=600&q=80',
+    image: '/vehicle-car-ac-service.jpg',
     options: [
       { id: 'ac_inspect', name: 'AC Inspection', price: 299, duration: '30–45 min', description: 'Pressure test, vent temperature readout & compressor leak check.' },
       { id: 'ac_clean', name: 'AC Cleaning', price: 699, duration: '1–1.5 hrs', description: 'Cabin filter cleaning, evaporator foam spray & vent disinfectant.' },
@@ -58,7 +58,7 @@ export const VEHICLE_AUTO_CARE_SERVICES = [
     canonicalCategoryId: 'vehicle_autocare',
     startingPrice: 699,
     description: 'Engine oil replacement, oil filter change, coolant flush & comprehensive general periodic maintenance.',
-    image: 'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=600&q=80',
+    image: '/vehicle-car-maintenance.jpg',
     options: [
       { id: 'engine_oil', name: 'Engine Oil Change', price: 699, duration: '30–45 min', description: 'Drain old engine oil and top-up fresh synthetic/semi-synthetic oil.', note: 'Oil grade & capacity vary by car model; actual oil cost billed per specifications.' },
       { id: 'oil_filter_change', name: 'Engine Oil + Oil Filter Change', price: 999, duration: '45–60 min', description: 'Fresh engine oil fill + replacement of OEM oil filter & sump washer.' },
@@ -74,7 +74,7 @@ export const VEHICLE_AUTO_CARE_SERVICES = [
     canonicalCategoryId: 'vehicle_autocare',
     startingPrice: 299,
     description: 'Brake pad inspection, rotor cleaning, hydraulic fluid replacement & stopping safety servicing.',
-    image: 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=600&q=80',
+    image: '/vehicle-brake-service.jpg',
     options: [
       { id: 'brake_inspect', name: 'Brake Inspection', price: 299, duration: '30–45 min', description: 'Visual thickness check of brake pads, rotors, calipers & fluid moisture level.' },
       { id: 'brake_clean', name: 'Brake Cleaning & Servicing', price: 499, duration: '45–60 min', description: 'High-pressure brake dust removal, caliper greasing & pad sanding.' },
@@ -90,7 +90,7 @@ export const VEHICLE_AUTO_CARE_SERVICES = [
     canonicalCategoryId: 'vehicle_autocare',
     startingPrice: 199,
     description: 'Doorstep battery health check, terminal anti-corrosion cleaning, jump start & new battery installation.',
-    image: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=600&q=80',
+    image: '/vehicle-battery-service.jpg',
     options: [
       { id: 'battery_check', name: 'Battery Check', price: 199, duration: '15–30 min', description: 'Digital multimeter voltage test & cold-cranking amp (CCA) health rating.' },
       { id: 'battery_terminal', name: 'Battery Terminal Cleaning', price: 199, duration: '15–30 min', description: 'Corrosion scale removal, terminal wire brush clean & anti-oxidant gel application.' },
@@ -106,7 +106,7 @@ export const VEHICLE_AUTO_CARE_SERVICES = [
     canonicalCategoryId: 'vehicle_autocare',
     startingPrice: 99,
     description: 'Doorstep tubeless puncture fix, spare wheel fitting, tyre rotation & pressure check.',
-    image: 'https://images.unsplash.com/photo-1578844251758-2f71da64c96f?auto=format&fit=crop&w=600&q=80',
+    image: '/vehicle-tyre-service.jpg',
     options: [
       { id: 'tyre_pressure', name: 'Tyre Pressure Check', price: 99, duration: '15–20 min', description: 'Digital PSI gauge pressure check & top-up for all 5 tyres.' },
       { id: 'puncture_repair', name: 'Puncture Repair', price: 149, duration: '20–30 min', description: 'Doorstep tubeless puncture repair with rubber strip insertion & leak test.' },
@@ -122,7 +122,7 @@ export const VEHICLE_AUTO_CARE_SERVICES = [
     canonicalCategoryId: 'vehicle_autocare',
     startingPrice: 199,
     description: 'Headlight bulb replacement, blown fuse fix, wiper blade installation & minor electrical troubleshooting.',
-    image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80',
+    image: '/vehicle-battery-service.jpg',
     options: [
       { id: 'bulb_replace', name: 'Bulb Replacement', price: 199, duration: '20–30 min', description: 'Headlight, taillight, indicator, or fog light bulb replacement.' },
       { id: 'fuse_replace', name: 'Fuse Replacement', price: 199, duration: '20–30 min', description: 'Blown fuse tracing in main fuse box & fresh rated fuse fitting.' },
@@ -138,7 +138,7 @@ export const VEHICLE_AUTO_CARE_SERVICES = [
     canonicalCategoryId: 'vehicle_autocare',
     startingPrice: 399,
     description: 'Computerized OBD-II scanner code check, check engine light diagnosis & pre-purchase inspection.',
-    image: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=600&q=80',
+    image: '/vehicle-car-maintenance.jpg',
     options: [
       { id: 'bat_charg_diag', name: 'Battery & Charging Diagnosis', price: 399, duration: '30–45 min', description: 'Digital diagnostic report on battery health, alternator current & starter draw.' },
       { id: 'obd_scan', name: 'OBD Diagnostic Scan', price: 499, duration: '30–45 min', description: 'Computerized OBD-II port scanner analysis for ECU trouble codes & sensor data.' },
@@ -154,7 +154,7 @@ export const VEHICLE_AUTO_CARE_SERVICES = [
     canonicalCategoryId: 'vehicle_autocare',
     startingPrice: 299,
     description: 'Headlight restoration, windshield chip repair, exterior machine polish & scratch touch-ups.',
-    image: 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=600&q=80',
+    image: '/vehicle-car-maintenance.jpg',
     options: [
       { id: 'windshield_chip', name: 'Windshield Chip Repair', price: 299, duration: '30–60 min', description: 'Resin injection for bullseye or star windshield glass chips to prevent crack spreading.' },
       { id: 'ext_wiper_replace', name: 'Wiper Replacement', price: 299, duration: '20–30 min', description: 'Pair of premium silicon rubber wiper blades installation.' },
@@ -170,7 +170,7 @@ export const VEHICLE_AUTO_CARE_SERVICES = [
     canonicalCategoryId: 'vehicle_autocare',
     startingPrice: 249,
     description: '24/7 doorstep & roadside breakdown assistance: jump start, flat tyre, battery & minor fixes.',
-    image: 'https://images.unsplash.com/photo-1501700493788-fa1a4fc9fe62?auto=format&fit=crop&w=600&q=80',
+    image: '/vehicle-battery-service.jpg',
     options: [
       { id: 'emg_jump_start', name: 'Jump Start Assistance', price: 249, duration: '20–30 min', description: 'Urgent booster cable jump start for dead car batteries.' },
       { id: 'emg_bat_assist', name: 'Battery Assistance', price: 249, duration: '20–45 min', description: 'On-site battery voltage test, terminal fix or temporary loaner battery setup.' },

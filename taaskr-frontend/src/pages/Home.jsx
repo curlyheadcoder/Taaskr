@@ -311,7 +311,7 @@ const getCategoryTheme = (categoryIdentifier) => {
     return {
       id: 'vehicle_autocare',
       icon: <Car size={24} strokeWidth={2.2} />,
-      image: 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=400&q=80',
+      image: '/vehicle-car-maintenance.jpg',
       primary: '#0284C7',
       accentBg: 'linear-gradient(135deg, #0284C7 0%, #2563EB 100%)',
       glow: 'rgba(2, 132, 199, 0.35)',
@@ -1390,12 +1390,38 @@ export default function Home() {
     'printer repair': 'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?auto=format&fit=crop&w=600&q=80',
 
     // 7. Vehicle & Auto Care
-    'doorstep eco car foam wash & vacuum': 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=600&q=80',
-    'car wash': 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=600&q=80',
-    'doorstep bike foam wash & chain lube': 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=600&q=80',
-    'bike wash': 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=600&q=80',
-    'deep car interior detailing & polishing': 'https://images.unsplash.com/photo-1607860108855-64acf2078ed9?auto=format&fit=crop&w=600&q=80',
-    'car battery jump start assistance': 'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=600&q=80',
+    'doorstep eco car foam wash & vacuum': '/vehicle-car-maintenance.jpg',
+    'car wash': '/vehicle-car-maintenance.jpg',
+    'doorstep bike foam wash & chain lube': '/vehicle-car-maintenance.jpg',
+    'bike wash': '/vehicle-car-maintenance.jpg',
+    'deep car interior detailing & polishing': '/vehicle-car-maintenance.jpg',
+    'car cleaning': '/vehicle-car-maintenance.jpg',
+    'car spa & detailing': '/vehicle-car-maintenance.jpg',
+    'car maintenance': '/vehicle-car-maintenance.jpg',
+    'engine oil change': '/vehicle-car-maintenance.jpg',
+    'general car service': '/vehicle-car-maintenance.jpg',
+    'car diagnostics': '/vehicle-car-maintenance.jpg',
+    'exterior care': '/vehicle-car-maintenance.jpg',
+
+    'car battery jump start assistance': '/vehicle-battery-service.jpg',
+    'battery service': '/vehicle-battery-service.jpg',
+    'battery health check': '/vehicle-battery-service.jpg',
+    'battery replacement': '/vehicle-battery-service.jpg',
+    'car electrical repair': '/vehicle-battery-service.jpg',
+    'emergency car assistance': '/vehicle-battery-service.jpg',
+
+    'tyre service': '/vehicle-tyre-service.jpg',
+    'tyre replacement': '/vehicle-tyre-service.jpg',
+    'tyre rotation': '/vehicle-tyre-service.jpg',
+    'wheel balancing': '/vehicle-tyre-service.jpg',
+    'wheel alignment': '/vehicle-tyre-service.jpg',
+    'puncture repair': '/vehicle-tyre-service.jpg',
+
+    'brake service': '/vehicle-brake-service.jpg',
+    'brake pad replacement': '/vehicle-brake-service.jpg',
+
+    'car ac service': '/vehicle-car-ac-service.jpg',
+    'ac service + gas refill': '/vehicle-car-ac-service.jpg',
 
     // 8. Home Help & Errand Services
     'daily domestic helper / maid on demand': 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80',
@@ -1463,8 +1489,16 @@ export default function Home() {
         serviceImage = '/bed-bug-control.jpg';
       } else if (name.includes('pest') || name.includes('cockroach') || name.includes('ant') || name.includes('spider') || name.includes('insect')) {
         serviceImage = '/home-pest-control.jpg';
-      } else if (name.includes('car ') || name.includes('bike wash') || name.includes('detailing') || name.includes('jump start')) {
-        serviceImage = 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=600&q=80';
+      } else if (name.includes('tyre') || name.includes('tire') || name.includes('wheel') || name.includes('puncture')) {
+        serviceImage = '/vehicle-tyre-service.jpg';
+      } else if (name.includes('battery') || name.includes('jump start')) {
+        serviceImage = '/vehicle-battery-service.jpg';
+      } else if (name.includes('brake')) {
+        serviceImage = '/vehicle-brake-service.jpg';
+      } else if ((name.includes('car') || name.includes('vehicle') || name.includes('auto')) && (name.includes('ac') || name.includes('cooling'))) {
+        serviceImage = '/vehicle-car-ac-service.jpg';
+      } else if (name.includes('car ') || name.includes('bike wash') || name.includes('detailing') || name.includes('auto care') || name.includes('vehicle')) {
+        serviceImage = '/vehicle-car-maintenance.jpg';
       } else if (name.includes('laptop') || name.includes('pc ') || name.includes('computer') || name.includes('router') || name.includes('tv ') || name.includes('printer')) {
         serviceImage = 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=600&q=80';
       } else if (name.includes('maid') || name.includes('cook') || name.includes('chef') || name.includes('laundry') || name.includes('grocery') || name.includes('medicine')) {
@@ -2649,7 +2683,7 @@ export default function Home() {
                         loading="lazy"
                         onError={(e) => {
                           e.target.onerror = null;
-                          e.target.src = 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=600&q=80';
+                          e.target.src = '/vehicle-car-maintenance.jpg';
                         }}
                       />
                       <span 
