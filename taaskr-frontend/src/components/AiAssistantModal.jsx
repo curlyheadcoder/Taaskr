@@ -40,38 +40,12 @@ export default function AiAssistantModal() {
 
   useEffect(() => {
     if (isOpen) {
-      // 1. Every time Taasky is opened, start with a fresh chat history!
+      // Every time Taasky is opened, start with a fresh clean chat!
       setMessages([INITIAL_WELCOME_MESSAGE]);
       setInputMessage('');
 
       scrollToBottom();
       inputRef.current?.focus();
-
-      // Proactive Active Booking Detection for logged-in users
-      const checkActiveBookings = async () => {
-        try {
-          const bookings = await api.bookings.getMyBookings();
-          if (bookings && Array.isArray(bookings) && bookings.length > 0) {
-            const active = bookings.filter(b => b.status !== 'COMPLETED' && b.status !== 'CANCELLED');
-            if (active.length > 0) {
-              setMessages(prev => {
-                if (prev.some(m => m.id === 'proactive-active-booking')) return prev;
-                return [
-                  ...prev,
-                  {
-                    id: 'proactive-active-booking',
-                    sender: 'taasky',
-                    text: `⚡ Active Order Update: You have ${active.length} active booking(s) currently in progress. Here is the latest dispatch status:`,
-                    userBookings: active,
-                    suggestedPrompts: ['Show my active bookings', 'Kitchen sink pipe is leaking', 'AC is not cooling properly']
-                  }
-                ];
-              });
-            }
-          }
-        } catch (e) {}
-      };
-      checkActiveBookings();
     }
   }, [isOpen]);
 
