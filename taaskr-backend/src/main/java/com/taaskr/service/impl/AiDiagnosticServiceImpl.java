@@ -177,8 +177,8 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
             return res;
         }
 
-        // 1. Intent: User asks about their bookings ("What bookings do I have?", "my bookings", "active orders")
-        if (hasWord(lower, "my booking", "my bookings", "active booking", "booking status", "track booking", "what bookings", "show bookings", "my orders")) {
+        // 1. Intent: User asks about their bookings ("What bookings do I have?", "my bookings", "active orders", "show my active bookings")
+        if (containsAny(lower, "booking", "bookings", "active orders", "my orders") || hasWord(lower, "my booking", "my bookings", "active booking", "booking status", "track booking", "what bookings", "show bookings", "my orders")) {
             if (userEmail == null || userEmail.isBlank() || "anonymousUser".equalsIgnoreCase(userEmail)) {
                 AiChatResponse res = new AiChatResponse("Please log in to view and manage your active bookings.");
                 res.setIntent("MY_BOOKINGS");
@@ -685,22 +685,12 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
             if (!results.isEmpty()) return results;
         }
 
-        // 3. Moving / Shifting / Furniture Relocation / Heavy Transport Priority
-        if (isMovingOrShiftingQuery(lower)) {
+        // 3. Moving / Shifting / Furniture Relocation / Vehicle / Parcel Transport Priority
+        if (isMovingOrShiftingQuery(lower) || isParcelQuery(lower) || containsAny(lower, "vehicle", "vehicles", "transport", "logistics", "parcel")) {
             for (Service s : services) {
                 String n = s.getName().toLowerCase();
-                if (n.contains("mini truck") || n.contains("loading vehicle") || n.contains("truck") || n.contains("tempo") || n.contains("heavy truck")) {
-                    results.add(s);
-                }
-            }
-            if (!results.isEmpty()) return results;
-        }
-
-        // 4. Small Parcel / Express Courier Priority
-        if (isParcelQuery(lower)) {
-            for (Service s : services) {
-                String n = s.getName().toLowerCase();
-                if (n.contains("bike") || n.contains("rickshaw") || n.contains("courier") || n.contains("parcel")) {
+                String cat = s.getCategory() != null ? s.getCategory().getName().toLowerCase() : "";
+                if (n.contains("mini truck") || n.contains("loading vehicle") || n.contains("truck") || n.contains("tempo") || n.contains("bike") || n.contains("courier") || n.contains("parcel") || n.contains("transport") || cat.contains("logistics") || cat.contains("shifting")) {
                     results.add(s);
                 }
             }
