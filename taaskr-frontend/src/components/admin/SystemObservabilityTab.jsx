@@ -1252,6 +1252,9 @@ export default function SystemObservabilityTab({ totalBookings = 0, totalProvide
                 Create Endpoint
               </button>
             </div>
+          </form>
+        </div>
+      )}
       {/* CUSTOM CONFIRMATION POPUP MODAL BOX */}
       {confirmModal && (
         <div style={{
