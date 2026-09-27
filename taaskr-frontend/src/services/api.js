@@ -919,6 +919,12 @@ export const api = {
       return makeRequest('/api/notifications/read-all', {
         method: 'POST'
       });
+    },
+
+    clearAll: async () => {
+      return makeRequest('/api/notifications/clear-all', {
+        method: 'DELETE'
+      });
     }
   },
 

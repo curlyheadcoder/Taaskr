@@ -64,6 +64,24 @@ public class NotificationController {
         return Map.of("success", true, "message", "All notifications marked as read");
     }
 
+    @DeleteMapping("/clear-all")
+    public Map<String, Object> clearAllNotifications(Authentication authentication) {
+        notificationService.clearAll(authentication.getName());
+        return Map.of("success", true, "message", "All notifications cleared permanently from database");
+    }
+
+    @DeleteMapping
+    public Map<String, Object> clearAllNotificationsDelete(Authentication authentication) {
+        notificationService.clearAll(authentication.getName());
+        return Map.of("success", true, "message", "All notifications cleared permanently from database");
+    }
+
+    @PostMapping("/clear-all")
+    public Map<String, Object> clearAllNotificationsPost(Authentication authentication) {
+        notificationService.clearAll(authentication.getName());
+        return Map.of("success", true, "message", "All notifications cleared permanently from database");
+    }
+
     @PostMapping("/push-token")
     public Map<String, Object> registerPushToken(@jakarta.validation.Valid @RequestBody com.taaskr.dto.notification.PushTokenRequest request,
                                                 Authentication authentication) {

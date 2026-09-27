@@ -108,7 +108,7 @@ export default function Navbar() {
 
   const handleClearAllNotifications = async () => {
     try {
-      await api.notifications.markAllAsRead();
+      await api.notifications.clearAll();
     } catch (e) {}
     setNotifications([]);
     setUnreadCount(0);

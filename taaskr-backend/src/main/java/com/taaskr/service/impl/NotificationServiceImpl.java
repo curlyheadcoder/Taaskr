@@ -87,6 +87,12 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    public void clearAll(String userEmail) {
+        User user = getUserByEmail(userEmail);
+        notificationRepository.deleteAllForUser(user.getId());
+    }
+
+    @Override
     public void sendNotification(User user, String title, String message, NotificationType type, String refType, Long refId) {
         if (user == null) return;
         Notification notification = new Notification(user, title, message, type, refType, refId);

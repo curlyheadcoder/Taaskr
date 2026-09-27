@@ -15,6 +15,7 @@ public interface NotificationService {
     Map<String, Object> getUnreadCount(String userEmail);
     NotificationResponse markAsRead(Long id, String userEmail);
     void markAllAsRead(String userEmail);
+    void clearAll(String userEmail);
 
     void sendNotification(User user, String title, String message, NotificationType type, String refType, Long refId);
     void sendNotificationByUserId(Long userId, String title, String message, NotificationType type, String refType, Long refId);
