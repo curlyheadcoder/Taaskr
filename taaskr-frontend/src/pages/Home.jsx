@@ -6,6 +6,7 @@ import GetQuoteModal from '../components/GetQuoteModal';
 import VehicleVariantModal from '../components/VehicleVariantModal';
 import { VEHICLE_AUTO_CARE_SERVICES } from '../data/vehicleAutoCareData';
 import { APPLIANCES_ELECTRICAL_SERVICES } from '../data/appliancesElectricalData';
+import { CIVIL_MAINTENANCE_SERVICES } from '../data/civilMaintenanceData';
 import {
   Search, ShieldCheck, Tag, CreditCard, Star, LayoutList,
   Droplets, Zap, Paintbrush, Leaf, Truck, Settings,
@@ -2860,6 +2861,98 @@ export default function Home() {
               })}
             </div>
           </div>
+        ) : (selectedCategory === 'civil_maintenance' || categories.find(c => c.id === selectedCategory)?.name?.toLowerCase().includes('civil') || categories.find(c => c.id === selectedCategory)?.name?.toLowerCase().includes('carpentry') || categories.find(c => c.id === selectedCategory)?.name?.toLowerCase().includes('property maintenance')) ? (
+          /* Umbrella Services Grid for Civil & Property Maintenance */
+          <div>
+            <div className="grid-cols-4">
+              {CIVIL_MAINTENANCE_SERVICES.map((umbrella) => {
+                const optionCount = umbrella.options.length;
+                return (
+                  <div
+                    key={umbrella.id}
+                    className="service-card"
+                    style={{
+                      '--service-color': '#f59e0b',
+                      '--service-primary': '#f59e0b',
+                      '--service-glow': 'rgba(245, 158, 11, 0.25)',
+                      '--service-bg': 'rgba(245, 158, 11, 0.08)',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => {
+                      setSelectedVehicleUmbrella(umbrella);
+                      setIsVehicleModalOpen(true);
+                    }}
+                  >
+                    <div className="service-card-image-box" style={{ position: 'relative' }}>
+                      <img
+                        src={umbrella.image}
+                        alt={umbrella.name}
+                        className="service-card-img"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = '/civil-carpentry-repair.jpg';
+                        }}
+                      />
+                      <span 
+                        style={{
+                          position: 'absolute',
+                          top: '10px',
+                          right: '10px',
+                          backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                          color: '#ffffff',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          padding: '0.2rem 0.55rem',
+                          borderRadius: '12px',
+                          backdropFilter: 'blur(4px)',
+                          zIndex: 2
+                        }}
+                      >
+                        {optionCount} Options
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
+                      <h3 className="service-card-title">{umbrella.name}</h3>
+                    </div>
+
+                    <span className="service-category-tag" style={{ color: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+                      Civil & Property Maintenance
+                    </span>
+
+                    <p className="service-card-desc" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.4, marginBottom: '0.85rem' }}>
+                      {umbrella.description}
+                    </p>
+
+                    <div className="service-card-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '0.75rem', borderTop: '1px solid var(--border-subtle)' }}>
+                      <div>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>
+                          Starting from
+                        </div>
+                        <span className="service-price" style={{ color: '#f59e0b', fontWeight: 800 }}>
+                          ₹{umbrella.startingPrice}
+                        </span>
+                      </div>
+
+                      <button 
+                        type="button"
+                        className="service-cta" 
+                        style={{ backgroundColor: '#f59e0b', color: '#ffffff' }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedVehicleUmbrella(umbrella);
+                          setIsVehicleModalOpen(true);
+                        }}
+                      >
+                        <span>Options</span> <ChevronRight size={14} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         ) : loading ? (
           <div className="grid-cols-4">
             {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
@@ -2919,6 +3012,12 @@ export default function Home() {
                         sName.includes('fan') || sName.includes('switchboard') ||
                         sName.includes('inverter') || sName.includes('microwave');
 
+                      const isCivilService = service.canonicalCategoryId === 'civil_maintenance' ||
+                        sName.includes('carpent') || sName.includes('furniture') ||
+                        sName.includes('drilling') || sName.includes('mounting') ||
+                        sName.includes('paint') || sName.includes('waterproof') ||
+                        sName.includes('til') || sName.includes('mason');
+
                       if (isVehicleService) {
                         const matchedUmbrella = VEHICLE_AUTO_CARE_SERVICES.find(u => 
                           u.name.toLowerCase() === sName ||
@@ -2933,6 +3032,14 @@ export default function Home() {
                           sName.includes(u.name.toLowerCase().replace(' services', '')) ||
                           u.options.some(o => o.name.toLowerCase().includes(sName) || sName.includes(o.name.toLowerCase()))
                         ) || APPLIANCES_ELECTRICAL_SERVICES[0];
+                        setSelectedVehicleUmbrella(matchedUmbrella);
+                        setIsVehicleModalOpen(true);
+                      } else if (isCivilService) {
+                        const matchedUmbrella = CIVIL_MAINTENANCE_SERVICES.find(u => 
+                          u.name.toLowerCase() === sName ||
+                          sName.includes(u.name.toLowerCase().replace(' services', '')) ||
+                          u.options.some(o => o.name.toLowerCase().includes(sName) || sName.includes(o.name.toLowerCase()))
+                        ) || CIVIL_MAINTENANCE_SERVICES[0];
                         setSelectedVehicleUmbrella(matchedUmbrella);
                         setIsVehicleModalOpen(true);
                       } else {
