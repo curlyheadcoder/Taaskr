@@ -5,6 +5,7 @@ import Pagination from '../components/Pagination';
 import GetQuoteModal from '../components/GetQuoteModal';
 import VehicleVariantModal from '../components/VehicleVariantModal';
 import { VEHICLE_AUTO_CARE_SERVICES } from '../data/vehicleAutoCareData';
+import { APPLIANCES_ELECTRICAL_SERVICES } from '../data/appliancesElectricalData';
 import {
   Search, ShieldCheck, Tag, CreditCard, Star, LayoutList,
   Droplets, Zap, Paintbrush, Leaf, Truck, Settings,
@@ -2767,6 +2768,98 @@ export default function Home() {
               })}
             </div>
           </div>
+        ) : (selectedCategory === 'appliances_electrical' || categories.find(c => c.id === selectedCategory)?.name?.toLowerCase().includes('appliance') || categories.find(c => c.id === selectedCategory)?.name?.toLowerCase().includes('electrical')) ? (
+          /* Umbrella Services Grid for Appliances & Electrical */
+          <div>
+            <div className="grid-cols-4">
+              {APPLIANCES_ELECTRICAL_SERVICES.map((umbrella) => {
+                const optionCount = umbrella.options.length;
+                return (
+                  <div
+                    key={umbrella.id}
+                    className="service-card"
+                    style={{
+                      '--service-color': '#0ea5e9',
+                      '--service-primary': '#0ea5e9',
+                      '--service-glow': 'rgba(14, 165, 233, 0.25)',
+                      '--service-bg': 'rgba(14, 165, 233, 0.08)',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => {
+                      setSelectedVehicleUmbrella(umbrella);
+                      setIsVehicleModalOpen(true);
+                    }}
+                  >
+                    <div className="service-card-image-box" style={{ position: 'relative' }}>
+                      <img
+                        src={umbrella.image}
+                        alt={umbrella.name}
+                        className="service-card-img"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = '/ac-servicing.jpg';
+                        }}
+                      />
+                      <span 
+                        style={{
+                          position: 'absolute',
+                          top: '10px',
+                          right: '10px',
+                          backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                          color: '#ffffff',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          padding: '0.2rem 0.55rem',
+                          borderRadius: '12px',
+                          backdropFilter: 'blur(4px)',
+                          zIndex: 2
+                        }}
+                      >
+                        {optionCount} Options
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
+                      <h3 className="service-card-title">{umbrella.name}</h3>
+                    </div>
+
+                    <span className="service-category-tag" style={{ color: '#0ea5e9', backgroundColor: 'rgba(14, 165, 233, 0.1)', border: '1px solid rgba(14, 165, 233, 0.3)' }}>
+                      Appliances & Electrical
+                    </span>
+
+                    <p className="service-card-desc" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.4, marginBottom: '0.85rem' }}>
+                      {umbrella.description}
+                    </p>
+
+                    <div className="service-card-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '0.75rem', borderTop: '1px solid var(--border-subtle)' }}>
+                      <div>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>
+                          Starting from
+                        </div>
+                        <span className="service-price" style={{ color: '#0ea5e9', fontWeight: 800 }}>
+                          ₹{umbrella.startingPrice}
+                        </span>
+                      </div>
+
+                      <button 
+                        type="button"
+                        className="service-cta" 
+                        style={{ backgroundColor: '#0ea5e9', color: '#ffffff' }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedVehicleUmbrella(umbrella);
+                          setIsVehicleModalOpen(true);
+                        }}
+                      >
+                        <span>Options</span> <ChevronRight size={14} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         ) : loading ? (
           <div className="grid-cols-4">
             {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
@@ -2818,12 +2911,28 @@ export default function Home() {
                         sName.includes('car wash') ||
                         sName.includes('auto care');
 
+                      const isApplianceService = service.canonicalCategoryId === 'appliances_electrical' ||
+                        sName.includes('ac ') || sName.includes('air condition') ||
+                        sName.includes('ro ') || sName.includes('purifier') ||
+                        sName.includes('refrigerator') || sName.includes('fridge') ||
+                        sName.includes('washing machine') || sName.includes('geyser') ||
+                        sName.includes('fan') || sName.includes('switchboard') ||
+                        sName.includes('inverter') || sName.includes('microwave');
+
                       if (isVehicleService) {
                         const matchedUmbrella = VEHICLE_AUTO_CARE_SERVICES.find(u => 
                           u.name.toLowerCase() === sName ||
                           sName.includes(u.name.toLowerCase()) ||
                           u.id === 'car_cleaning'
                         ) || VEHICLE_AUTO_CARE_SERVICES[0];
+                        setSelectedVehicleUmbrella(matchedUmbrella);
+                        setIsVehicleModalOpen(true);
+                      } else if (isApplianceService) {
+                        const matchedUmbrella = APPLIANCES_ELECTRICAL_SERVICES.find(u => 
+                          u.name.toLowerCase() === sName ||
+                          sName.includes(u.name.toLowerCase().replace(' services', '')) ||
+                          u.options.some(o => o.name.toLowerCase().includes(sName) || sName.includes(o.name.toLowerCase()))
+                        ) || APPLIANCES_ELECTRICAL_SERVICES[0];
                         setSelectedVehicleUmbrella(matchedUmbrella);
                         setIsVehicleModalOpen(true);
                       } else {

@@ -23,9 +23,9 @@ export default function VehicleVariantModal({ isOpen, onClose, umbrellaService }
         serviceName: fullServiceName,
         price: selectedOption.price,
         duration: selectedOption.duration,
-        categoryName: 'Vehicle & Auto Care',
+        categoryName: umbrellaService.categoryName || 'Home Service',
         packageDescription: `Selected Variant: ${selectedOption.name} (${selectedOption.duration}). ${selectedOption.description}`,
-        isVehicle: false
+        isVehicle: umbrellaService.canonicalCategoryId === 'vehicle_autocare'
       }
     });
   };
