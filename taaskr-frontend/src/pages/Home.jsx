@@ -2975,10 +2975,10 @@ export default function Home() {
                     key={umbrella.id}
                     className="service-card"
                     style={{
-                      '--service-color': '#0284C7',
-                      '--service-primary': '#0284C7',
-                      '--service-glow': 'rgba(2, 132, 199, 0.25)',
-                      '--service-bg': 'rgba(2, 132, 199, 0.08)',
+                      '--service-color': '#06B6D4',
+                      '--service-primary': '#06B6D4',
+                      '--service-glow': 'rgba(6, 182, 212, 0.25)',
+                      '--service-bg': 'rgba(6, 182, 212, 0.08)',
                       cursor: 'pointer'
                     }}
                     onClick={() => {
@@ -3026,7 +3026,7 @@ export default function Home() {
                       <h3 className="service-card-title">{umbrella.name}</h3>
                     </div>
 
-                    <span className="service-category-tag" style={{ color: '#0284C7', backgroundColor: 'rgba(2, 132, 199, 0.1)', border: '1px solid rgba(2, 132, 199, 0.3)' }}>
+                    <span className="service-category-tag" style={{ color: '#06B6D4', backgroundColor: 'rgba(6, 182, 212, 0.1)', border: '1px solid rgba(6, 182, 212, 0.3)' }}>
                       Plumbing & Cleaning
                     </span>
 
@@ -3039,7 +3039,7 @@ export default function Home() {
                         <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>
                           Starting from
                         </div>
-                        <span className="service-price" style={{ color: '#0284C7', fontWeight: 800 }}>
+                        <span className="service-price" style={{ color: '#06B6D4', fontWeight: 800 }}>
                           ₹{umbrella.startingPrice}
                         </span>
                       </div>
@@ -3048,7 +3048,7 @@ export default function Home() {
                         <button 
                           type="button"
                           className="service-cta" 
-                          style={{ backgroundColor: '#0284C7', color: '#ffffff' }}
+                          style={{ backgroundColor: '#06B6D4', color: '#ffffff' }}
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedVehicleUmbrella(umbrella);
@@ -3061,7 +3061,7 @@ export default function Home() {
                         <button 
                           type="button"
                           className="service-cta" 
-                          style={{ backgroundColor: '#0284C7', color: '#ffffff' }}
+                          style={{ backgroundColor: '#06B6D4', color: '#ffffff' }}
                           onClick={(e) => {
                             e.stopPropagation();
                             navigate('/booking-flow', { state: { serviceName: umbrella.name, price: umbrella.startingPrice, categoryName: 'Plumbing & Cleaning' } });
