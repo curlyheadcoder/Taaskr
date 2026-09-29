@@ -244,7 +244,7 @@ export default function VehicleVariantModal({ isOpen, onClose, umbrellaService }
               transition: 'all 0.2s ease'
             }}
           >
-            <span>Proceed with {selectedOption?.name?.split(' ')[0]}</span>
+            <span>Proceed with {umbrellaService?.name}</span>
             <ChevronRight size={18} />
           </button>
         </div>

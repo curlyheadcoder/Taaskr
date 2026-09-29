@@ -9,6 +9,7 @@ import { VEHICLE_AUTO_CARE_SERVICES } from '../data/vehicleAutoCareData';
 import { APPLIANCES_ELECTRICAL_SERVICES } from '../data/appliancesElectricalData';
 import { CIVIL_MAINTENANCE_SERVICES } from '../data/civilMaintenanceData';
 import { PAINT_SERVICES_CATALOG } from '../data/paintServicesData';
+import { PLUMBING_CLEANING_SERVICES } from '../data/plumbingCleaningData';
 import {
   Search, ShieldCheck, Tag, CreditCard, Star, LayoutList,
   Droplets, Zap, Paintbrush, Leaf, Truck, Settings,
@@ -73,12 +74,17 @@ const CANONICAL_CATEGORIES = [
       }
       if (s.includes('switch') || s.includes('wire') || s.includes('mcb') || s.includes('fan') ||
         s.includes('ac ') || s.includes('air condition') || s.includes('ro ') || s.includes('purifier') ||
-        s.includes('geyser') || s.includes('inverter') || s.includes('microwave') ||
+        s.includes('inverter') || s.includes('microwave') ||
         s.includes('refrigerator') || s.includes('washing machine')) {
         return false;
       }
       if (s.includes('tap') || s.includes('pipe') || s.includes('drain') || s.includes('leak') ||
-        s.includes('bathroom') || s.includes('clean') || s.includes('sofa') || s.includes('carpet') || s.includes('chimney')) {
+        s.includes('bathroom') || s.includes('clean') || s.includes('sofa') || s.includes('carpet') ||
+        s.includes('chimney') || s.includes('mattress') || s.includes('floor') || s.includes('window') ||
+        s.includes('water tank') || s.includes('move-in') || s.includes('move-out') || s.includes('post-construction') ||
+        s.includes('office') || s.includes('commercial') || s.includes('basin') || s.includes('sink') ||
+        s.includes('toilet') || s.includes('flush') || s.includes('pipeline') || s.includes('shower') ||
+        s.includes('mixer') || s.includes('geyser plumbing') || s.includes('emergency plumbing')) {
         return true;
       }
       return (c.includes('plumb') || c.includes('clean')) && !c.includes('pest');
@@ -2957,6 +2963,119 @@ export default function Home() {
               })}
             </div>
           </div>
+        ) : (selectedCategory === 'plumbing_cleaning' || categories.find(c => c.id === selectedCategory)?.name?.toLowerCase().includes('plumb') || categories.find(c => c.id === selectedCategory)?.name?.toLowerCase().includes('clean')) ? (
+          /* Umbrella Services Grid for Plumbing & Cleaning */
+          <div>
+            <div className="grid-cols-4">
+              {PLUMBING_CLEANING_SERVICES.map((umbrella) => {
+                const optionCount = umbrella.options ? umbrella.options.length : 0;
+                const hasOptions = optionCount > 0;
+                return (
+                  <div
+                    key={umbrella.id}
+                    className="service-card"
+                    style={{
+                      '--service-color': '#0284C7',
+                      '--service-primary': '#0284C7',
+                      '--service-glow': 'rgba(2, 132, 199, 0.25)',
+                      '--service-bg': 'rgba(2, 132, 199, 0.08)',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => {
+                      if (hasOptions) {
+                        setSelectedVehicleUmbrella(umbrella);
+                        setIsVehicleModalOpen(true);
+                      } else {
+                        navigate('/booking-flow', { state: { serviceName: umbrella.name, price: umbrella.startingPrice, categoryName: 'Plumbing & Cleaning' } });
+                      }
+                    }}
+                  >
+                    <div className="service-card-image-box" style={{ position: 'relative' }}>
+                      <img
+                        src={umbrella.image}
+                        alt={umbrella.name}
+                        className="service-card-img"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = '/bathroom-cleaning.jpg';
+                        }}
+                      />
+                      {hasOptions && (
+                        <span 
+                          style={{
+                            position: 'absolute',
+                            top: '10px',
+                            right: '10px',
+                            backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                            color: '#ffffff',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            padding: '0.2rem 0.55rem',
+                            borderRadius: '12px',
+                            backdropFilter: 'blur(4px)',
+                            zIndex: 2
+                          }}
+                        >
+                          {optionCount} Options
+                        </span>
+                      )}
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
+                      <h3 className="service-card-title">{umbrella.name}</h3>
+                    </div>
+
+                    <span className="service-category-tag" style={{ color: '#0284C7', backgroundColor: 'rgba(2, 132, 199, 0.1)', border: '1px solid rgba(2, 132, 199, 0.3)' }}>
+                      Plumbing & Cleaning
+                    </span>
+
+                    <p className="service-card-desc" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.4, marginBottom: '0.85rem' }}>
+                      {umbrella.description}
+                    </p>
+
+                    <div className="service-card-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '0.75rem', borderTop: '1px solid var(--border-subtle)' }}>
+                      <div>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>
+                          Starting from
+                        </div>
+                        <span className="service-price" style={{ color: '#0284C7', fontWeight: 800 }}>
+                          ₹{umbrella.startingPrice}
+                        </span>
+                      </div>
+
+                      {hasOptions ? (
+                        <button 
+                          type="button"
+                          className="service-cta" 
+                          style={{ backgroundColor: '#0284C7', color: '#ffffff' }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedVehicleUmbrella(umbrella);
+                            setIsVehicleModalOpen(true);
+                          }}
+                        >
+                          <span>Options</span> <ChevronRight size={14} />
+                        </button>
+                      ) : (
+                        <button 
+                          type="button"
+                          className="service-cta" 
+                          style={{ backgroundColor: '#0284C7', color: '#ffffff' }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate('/booking-flow', { state: { serviceName: umbrella.name, price: umbrella.startingPrice, categoryName: 'Plumbing & Cleaning' } });
+                          }}
+                        >
+                          <span>Book</span> <ArrowRight size={13} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         ) : loading ? (
           <div className="grid-cols-4">
             {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
@@ -3024,6 +3143,16 @@ export default function Home() {
 
                       const isPaintService = sName.includes('paint') || sName.includes('putty') || sName.includes('primer') || sName.includes('texture');
 
+                      const isPlumbingCleaningService = service.canonicalCategoryId === 'plumbing_cleaning' ||
+                        sName.includes('plumb') || sName.includes('clean') || sName.includes('sofa') ||
+                        sName.includes('carpet') || sName.includes('mattress') || sName.includes('floor') ||
+                        sName.includes('window') || sName.includes('chimney') || sName.includes('move') ||
+                        sName.includes('construction') || sName.includes('office') || sName.includes('commercial') ||
+                        sName.includes('basin') || sName.includes('sink') || sName.includes('toilet') ||
+                        sName.includes('flush') || sName.includes('drain') || sName.includes('pipe') ||
+                        sName.includes('shower') || sName.includes('mixer') || sName.includes('tap') ||
+                        sName.includes('emergency');
+
                       if (isPaintService) {
                         const matchedPaint = PAINT_SERVICES_CATALOG.find(p => 
                           p.name.toLowerCase() === sName ||
@@ -3054,6 +3183,14 @@ export default function Home() {
                           sName.includes(u.name.toLowerCase().replace(' services', '')) ||
                           u.options.some(o => o.name.toLowerCase().includes(sName) || sName.includes(o.name.toLowerCase()))
                         ) || CIVIL_MAINTENANCE_SERVICES[0];
+                        setSelectedVehicleUmbrella(matchedUmbrella);
+                        setIsVehicleModalOpen(true);
+                      } else if (isPlumbingCleaningService) {
+                        const matchedUmbrella = PLUMBING_CLEANING_SERVICES.find(u => 
+                          u.name.toLowerCase() === sName ||
+                          sName.includes(u.name.toLowerCase()) ||
+                          u.options.some(o => o.name.toLowerCase().includes(sName) || sName.includes(o.name.toLowerCase()))
+                        ) || PLUMBING_CLEANING_SERVICES[0];
                         setSelectedVehicleUmbrella(matchedUmbrella);
                         setIsVehicleModalOpen(true);
                       } else {
