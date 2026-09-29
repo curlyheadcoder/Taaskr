@@ -12,6 +12,38 @@ import {
   UserCheck, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 
+const getProviderServiceTag = (provider) => {
+  if (!provider) return 'General On-Demand Service';
+  if (provider.serviceTag) return provider.serviceTag;
+  if (provider.name && provider.name.includes('(') && provider.name.includes(')')) {
+    const match = provider.name.match(/\(([^)]+)\)/);
+    if (match && match[1]) return match[1];
+  }
+  if (provider.title) return provider.title;
+  if (provider.categoryName) return provider.categoryName;
+  if (provider.email) {
+    const e = provider.email.toLowerCase();
+    if (e.includes('ro@')) return 'RO & Water Purifier Service';
+    if (e.includes('ac@')) return 'AC & HVAC Servicing';
+    if (e.includes('electrician@')) return 'Switchboard & Electrical Repair';
+    if (e.includes('plumber@')) return 'Plumbing & Pipeline Leakage Repair';
+    if (e.includes('appliance@')) return 'Washing Machine & Appliance Repair';
+    if (e.includes('salon@')) return 'Salon, Haircut & Beauty at Home';
+    if (e.includes('pest@')) return 'Pest & Cockroach Eradication';
+    if (e.includes('carpenter@')) return 'Carpentry & Woodwork Repair';
+    if (e.includes('tech@')) return 'Laptop Diagnostics & Smart Automation';
+    if (e.includes('autocare@')) return 'Car Spa & Auto Detailing Specialist';
+    if (e.includes('homehelp@')) return 'Domestic Helper & Home Chef';
+    if (e.includes('nurse@')) return 'Elderly Care & Home Nursing';
+    if (e.includes('security@')) return 'CCTV & Smart Security Setup';
+    if (e.includes('guard@')) return 'Verified Security Guard Protection';
+    if (e.includes('driver.ramesh@')) return 'Mini Truck Goods Transport Driver';
+    if (e.includes('driver.suresh@')) return '3W Commercial Loading Driver';
+    if (e.includes('driver.ajay@')) return 'Express Parcel & Courier Delivery';
+  }
+  return 'General On-Demand Service';
+};
+
 export default function AdminDashboard() {
   const [categories, setCategories] = useState([]);
   const [services, setServices] = useState([]);
@@ -1405,6 +1437,7 @@ export default function AdminDashboard() {
                   <thead>
                     <tr>
                       <th>Provider Name</th>
+                      <th>Service Provided</th>
                       <th>Contact Info</th>
                       <th>Location</th>
                       <th>Rating</th>
@@ -1419,6 +1452,21 @@ export default function AdminDashboard() {
                         <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>
                           <div>{p.name}</div>
                           <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>ID #{p.id}</div>
+                        </td>
+                        <td>
+                          <span style={{
+                            display: 'inline-block',
+                            backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                            color: 'var(--primary)',
+                            border: '1px solid rgba(56, 189, 248, 0.3)',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            padding: '0.25rem 0.55rem',
+                            borderRadius: '6px',
+                            whiteSpace: 'nowrap'
+                          }}>
+                            🏷️ {getProviderServiceTag(p)}
+                          </span>
                         </td>
                         <td style={{ color: 'var(--text-muted)' }}>
                           <div>{p.email}</div>
