@@ -2784,10 +2784,10 @@ export default function Home() {
                     key={umbrella.id}
                     className="service-card"
                     style={{
-                      '--service-color': '#0ea5e9',
-                      '--service-primary': '#0ea5e9',
-                      '--service-glow': 'rgba(14, 165, 233, 0.25)',
-                      '--service-bg': 'rgba(14, 165, 233, 0.08)',
+                      '--service-color': '#F59E0B',
+                      '--service-primary': '#F59E0B',
+                      '--service-glow': 'rgba(245, 158, 11, 0.25)',
+                      '--service-bg': 'rgba(245, 158, 11, 0.08)',
                       cursor: 'pointer'
                     }}
                     onClick={() => {
@@ -2829,7 +2829,7 @@ export default function Home() {
                       <h3 className="service-card-title">{umbrella.name}</h3>
                     </div>
 
-                    <span className="service-category-tag" style={{ color: '#0ea5e9', backgroundColor: 'rgba(14, 165, 233, 0.1)', border: '1px solid rgba(14, 165, 233, 0.3)' }}>
+                    <span className="service-category-tag" style={{ color: '#F59E0B', backgroundColor: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
                       Appliances & Electrical
                     </span>
 
@@ -2842,7 +2842,7 @@ export default function Home() {
                         <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>
                           Starting from
                         </div>
-                        <span className="service-price" style={{ color: '#0ea5e9', fontWeight: 800 }}>
+                        <span className="service-price" style={{ color: '#F59E0B', fontWeight: 800 }}>
                           ₹{umbrella.startingPrice}
                         </span>
                       </div>
@@ -2850,7 +2850,7 @@ export default function Home() {
                       <button 
                         type="button"
                         className="service-cta" 
-                        style={{ backgroundColor: '#0ea5e9', color: '#ffffff' }}
+                        style={{ backgroundColor: '#F59E0B', color: '#ffffff' }}
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedVehicleUmbrella(umbrella);
