@@ -4,9 +4,11 @@ import { api } from '../services/api';
 import Pagination from '../components/Pagination';
 import GetQuoteModal from '../components/GetQuoteModal';
 import VehicleVariantModal from '../components/VehicleVariantModal';
+import PaintVariantModal from '../components/PaintVariantModal';
 import { VEHICLE_AUTO_CARE_SERVICES } from '../data/vehicleAutoCareData';
 import { APPLIANCES_ELECTRICAL_SERVICES } from '../data/appliancesElectricalData';
 import { CIVIL_MAINTENANCE_SERVICES } from '../data/civilMaintenanceData';
+import { PAINT_SERVICES_CATALOG } from '../data/paintServicesData';
 import {
   Search, ShieldCheck, Tag, CreditCard, Star, LayoutList,
   Droplets, Zap, Paintbrush, Leaf, Truck, Settings,
@@ -1113,6 +1115,8 @@ export default function Home() {
   const [quoteModalCatId, setQuoteModalCatId] = useState(null);
   const [selectedVehicleUmbrella, setSelectedVehicleUmbrella] = useState(null);
   const [isVehicleModalOpen, setIsVehicleModalOpen] = useState(false);
+  const [selectedPaintService, setSelectedPaintService] = useState(null);
+  const [isPaintModalOpen, setIsPaintModalOpen] = useState(false);
   const [currentLocation, setCurrentLocation] = useState(() => {
     try {
       const saved = localStorage.getItem('taaskr_location');
@@ -3018,7 +3022,17 @@ export default function Home() {
                         sName.includes('paint') || sName.includes('waterproof') ||
                         sName.includes('til') || sName.includes('mason');
 
-                      if (isVehicleService) {
+                      const isPaintService = sName.includes('paint') || sName.includes('putty') || sName.includes('primer') || sName.includes('texture');
+
+                      if (isPaintService) {
+                        const matchedPaint = PAINT_SERVICES_CATALOG.find(p => 
+                          p.name.toLowerCase() === sName ||
+                          sName.includes(p.name.toLowerCase()) ||
+                          p.options.some(o => o.name.toLowerCase().includes(sName) || sName.includes(o.name.toLowerCase()))
+                        ) || PAINT_SERVICES_CATALOG[0];
+                        setSelectedPaintService(matchedPaint);
+                        setIsPaintModalOpen(true);
+                      } else if (isVehicleService) {
                         const matchedUmbrella = VEHICLE_AUTO_CARE_SERVICES.find(u => 
                           u.name.toLowerCase() === sName ||
                           sName.includes(u.name.toLowerCase()) ||
@@ -3236,6 +3250,12 @@ export default function Home() {
         isOpen={isVehicleModalOpen}
         onClose={() => setIsVehicleModalOpen(false)}
         umbrellaService={selectedVehicleUmbrella}
+      />
+
+      <PaintVariantModal
+        isOpen={isPaintModalOpen}
+        onClose={() => setIsPaintModalOpen(false)}
+        paintService={selectedPaintService}
       />
     </div>
   );

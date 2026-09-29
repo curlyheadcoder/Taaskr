@@ -180,6 +180,18 @@ public class DataSeeder {
         seedService(serviceRepository, "Flooring & Tiling", "Floor tiling, regrouting, and cracked tile repair services", new BigDecimal("1499.00"), 480, civil);
         seedService(serviceRepository, "Roof & Terrace Maintenance", "Terrace inspection, rain drain clearing, and protective heat-reflective coating", new BigDecimal("1999.00"), 360, civil);
         seedService(serviceRepository, "Home Renovation", "General home civil restructuring, partition remodeling, and repairs", new BigDecimal("4999.00"), 480, civil);
+        
+        // Paint Services (Sub-services under Civil & Property Maintenance)
+        seedService(serviceRepository, "Interior Wall Painting", "Painting of interior walls for bedrooms, living rooms, kitchens, offices and other indoor spaces", new BigDecimal("12.00"), 240, civil);
+        seedService(serviceRepository, "Exterior Wall Painting", "Painting of exterior walls, building facades and other outdoor surfaces", new BigDecimal("15.00"), 360, civil);
+        seedService(serviceRepository, "Full House Painting", "Complete painting service covering the required interior and/or exterior areas of a residential property", new BigDecimal("14.00"), 480, civil);
+        seedService(serviceRepository, "Door & Window Painting", "Painting and refinishing of wooden or metal doors and windows", new BigDecimal("499.00"), 120, civil);
+        seedService(serviceRepository, "Wall Repainting", "Refreshing previously painted walls with a new paint finish", new BigDecimal("10.00"), 180, civil);
+        seedService(serviceRepository, "Texture Painting", "Decorative texture and designer wall finishing", new BigDecimal("45.00"), 240, civil);
+        seedService(serviceRepository, "Waterproof Painting", "Painting/coating solutions intended to improve resistance to moisture and water exposure", new BigDecimal("25.00"), 240, civil);
+        seedService(serviceRepository, "Commercial Painting", "Painting services for offices, shops and other commercial properties", new BigDecimal("12.00"), 360, civil);
+        seedService(serviceRepository, "Touch-Up & Minor Painting", "Small-area repairs, patches and touch-up painting", new BigDecimal("499.00"), 90, civil);
+        seedService(serviceRepository, "Putty & Primer Work", "Surface preparation involving putty and primer before painting", new BigDecimal("8.00"), 180, civil);
 
         // 6. Tech & Home Automation
         seedService(serviceRepository, "Laptop & PC Diagnostics / OS Setup", "RAM/SSD upgrades, OS installation, virus cleanup, and thermal paste replacement", new BigDecimal("499.00"), 60, techElectronics);
@@ -320,6 +332,15 @@ public class DataSeeder {
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "carpenter@taaskr.com", 4.7, 110, 8, "Master carpenter for custom woodwork, civil maintenance, drilling, and furniture setup",
                 serviceRepository, List.of("Carpentry & Furniture Repair", "Furniture Assembly & Flatpack Setup", "Drilling, Hanging & Wall Mounting", "Interior Wall Painting & Touch-up", "Masonry & Brickwork", "Waterproofing", "Flooring & Tiling", "Roof & Terrace Maintenance", "Home Renovation"));
+
+        setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
+                "painter@taaskr.com", 4.9, 145, 9, "Master painter and surface preparation expert for residential and commercial painting, texture, and waterproofing",
+                serviceRepository, List.of(
+                        "Interior Wall Painting", "Exterior Wall Painting", "Full House Painting",
+                        "Door & Window Painting", "Wall Repainting", "Texture Painting",
+                        "Waterproof Painting", "Commercial Painting", "Touch-Up & Minor Painting",
+                        "Putty & Primer Work", "Interior Wall Painting & Touch-up", "Waterproofing"
+                ));
 
         setupProviderProfileAndServices(userRepository, providerProfileRepository, providerServiceRepository, availabilitySlotRepository,
                 "tech@taaskr.com", 4.9, 78, 5, "Hardware, Wi-Fi mesh networking, and smart TV mounting specialist",

@@ -239,10 +239,13 @@ public class BookingServiceImpl implements BookingService {
             booking.setDropPincode(request.getDropPincode() != null ? request.getDropPincode().trim() : request.getPincode().trim());
             booking.setDropLatitude(request.getDropLatitude());
             booking.setDropLongitude(request.getDropLongitude());
-            booking.setPackageDescription(request.getPackageDescription());
             booking.setPackageWeightKg(request.getPackageWeightKg());
             booking.setDistanceKm(distanceKm);
             booking.setVehicle(matchedVehicle);
+        }
+
+        if (request.getPackageDescription() != null) {
+            booking.setPackageDescription(request.getPackageDescription());
         }
 
         boolean isFreeConsultation = (calculatedFare != null && calculatedFare.compareTo(BigDecimal.ZERO) == 0)
