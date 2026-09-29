@@ -9,8 +9,8 @@ export const PLUMBING_CLEANING_SERVICES = [
     canonicalCategoryId: 'plumbing_cleaning',
     startingPrice: 999,
     description: 'Complete multi-room deep cleaning, move-in/move-out pre-occupancy sanitization, and floor scrubbing.',
-    image: '/kitchen-cleaning.jpg',
-    images: ['/kitchen-cleaning.jpg'],
+    image: '/home-full-cleaning.jpg',
+    images: ['/home-full-cleaning.jpg'],
     options: [
       {
         id: 'home_1bhk',
@@ -226,8 +226,8 @@ export const PLUMBING_CLEANING_SERVICES = [
     canonicalCategoryId: 'plumbing_cleaning',
     startingPrice: 299,
     description: 'Mechanized floor scrubbing, streak-free window glass cleaning, post-construction & office deep cleaning.',
-    image: '/bathroom-cleaning.jpg',
-    images: ['/bathroom-cleaning.jpg'],
+    image: '/floor-window-cleaning.jpg',
+    images: ['/floor-window-cleaning.jpg'],
     options: [
       {
         id: 'window_glass',
@@ -331,8 +331,8 @@ export const PLUMBING_CLEANING_SERVICES = [
     canonicalCategoryId: 'plumbing_cleaning',
     startingPrice: 199,
     description: 'Repair of washbasins, kitchen sinks, western commodes, flush tanks, and jet sprays.',
-    image: '/tap-repair.jpg',
-    images: ['/tap-repair.jpg'],
+    image: '/toilet-sanitary-repair.jpg',
+    images: ['/toilet-sanitary-repair.jpg'],
     options: [
       {
         id: 'basin_leak_trap',
@@ -443,8 +443,8 @@ export const PLUMBING_CLEANING_SERVICES = [
     canonicalCategoryId: 'plumbing_cleaning',
     startingPrice: 149,
     description: 'Installation of toilets, washbasins, geyser plumbing lines, water tank fittings, and accessories.',
-    image: '/tap-repair.jpg',
-    images: ['/tap-repair.jpg'],
+    image: '/geyser-plumbing-install.jpg',
+    images: ['/geyser-plumbing-install.jpg'],
     options: [
       {
         id: 'bathroom_acc_install',
