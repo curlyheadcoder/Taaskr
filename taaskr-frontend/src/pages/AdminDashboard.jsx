@@ -86,11 +86,7 @@ export default function AdminDashboard() {
   const [experts, setExperts] = useState(() => {
     try {
       const saved = localStorage.getItem('taaskr_registered_experts');
-      return saved ? JSON.parse(saved) : [
-        { id: 1, name: 'Vikramaditya Sharma', category: 'Vehicle & Auto Care', title: 'Senior Automotive Diagnostics Lead', phone: '+91 98765-43210', experience: '14 Yrs', status: 'ACTIVE' },
-        { id: 2, name: 'Rajesh Kumar', category: 'Appliances & Electrical', title: 'Principal HVAC & Electrical Engineer', phone: '+91 98765-43211', experience: '12 Yrs', status: 'ACTIVE' },
-        { id: 3, name: 'Rameshwar Patel', category: 'Plumbing & Cleaning', title: 'Master Hydraulic & Seepage Inspector', phone: '+91 98765-43212', experience: '15 Yrs', status: 'ACTIVE' }
-      ];
+      return saved ? JSON.parse(saved) : [];
     } catch (e) {
       return [];
     }
