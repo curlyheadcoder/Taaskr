@@ -1286,6 +1286,36 @@ export default function Home() {
     );
   });
 
+  const getDisplayedCategoryServicesCount = () => {
+    if (!selectedCategory) return filteredServices.length;
+
+    const catObj = (categories || []).find(c => c && c.id === selectedCategory);
+    const catNameLower = (catObj?.name || '').toLowerCase();
+    const isVehicle = selectedCategory === 'vehicle_autocare' || catNameLower.includes('vehicle') || catNameLower.includes('auto care');
+    const isAppliance = selectedCategory === 'appliances_electrical' || catNameLower.includes('appliance') || catNameLower.includes('electrical');
+    const isCivil = selectedCategory === 'civil_maintenance' || catNameLower.includes('civil') || catNameLower.includes('carpentry') || catNameLower.includes('property maintenance');
+    const isPlumbing = selectedCategory === 'plumbing_cleaning' || catNameLower.includes('plumb') || catNameLower.includes('clean');
+
+    let list = [];
+    if (isVehicle) list = VEHICLE_AUTO_CARE_SERVICES;
+    else if (isAppliance) list = APPLIANCES_ELECTRICAL_SERVICES;
+    else if (isCivil) list = CIVIL_MAINTENANCE_SERVICES;
+    else if (isPlumbing) list = PLUMBING_CLEANING_SERVICES;
+    else return filteredServices.length;
+
+    if (searchQuery.trim() !== '') {
+      const q = searchQuery.toLowerCase().trim();
+      return list.filter(item => {
+        const name = (item.name || '').toLowerCase();
+        const desc = (item.description || '').toLowerCase();
+        return name.includes(q) || desc.includes(q);
+      }).length;
+    }
+    return list.length;
+  };
+
+  const displayedCategoryServicesCount = getDisplayedCategoryServicesCount();
+
   const EXACT_SERVICE_IMAGES = {
     // 1. Appliances & Electrical
     'ac repair & service': '/ac-repair.jpg',
@@ -2661,7 +2691,7 @@ export default function Home() {
         {selectedCategory ? (
           <div id="services-catalog-grid-top" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', scrollMarginTop: '100px' }}>
             <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', fontWeight: 700 }}>
-              Showing {filteredServices.length} {filteredServices.length === 1 ? 'service' : 'services'} in{' '}
+              Showing {displayedCategoryServicesCount} {displayedCategoryServicesCount === 1 ? 'service' : 'services'} in{' '}
               <span style={{ color: getCategoryTheme(selectedCategory).primary, fontWeight: 800 }}>
                 {categories.find(c => c.id === selectedCategory)?.name || 'Selected Category'}
               </span>
@@ -2670,7 +2700,7 @@ export default function Home() {
         ) : searchQuery.trim() !== '' ? (
           <div id="services-catalog-grid-top" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', scrollMarginTop: '100px' }}>
             <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', fontWeight: 700 }}>
-              Search results for "{searchQuery}" ({filteredServices.length} {filteredServices.length === 1 ? 'service' : 'services'})
+              Search results for "{searchQuery}" ({displayedCategoryServicesCount} {displayedCategoryServicesCount === 1 ? 'service' : 'services'})
             </h3>
           </div>
         ) : null}

@@ -419,12 +419,17 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
                 "Location: %s.\n" +
                 "Rules:\n" +
                 "- NEVER hallucinate services, prices, or fake statuses.\n" +
+                "- Main Categories & Service Bundles:\n" +
+                "  * Vehicle & Auto Care: Car Cleaning, Car Spa & Detailing, Car AC Service, Car Maintenance.\n" +
+                "  * Appliances & Electrical: AC Services, RO Purifier Services, Refrigerator Services, Washing Machine Services, Fan & Electrical Services, Geyser & Water Heater Services, Inverter & Battery Services, Microwave & OTG Services.\n" +
+                "  * Plumbing & Cleaning: Full House Deep Cleaning, Kitchen & Chimney Cleaning, Bathroom & Water Tank Cleaning, Sofa, Carpet & Upholstery Cleaning, Heavy-Duty & Commercial Cleaning, Tap, Mixer & Shower Repair, Sanitaryware & Toilet Repair Services, Drainage Unclogging & Pipe Leakage Fix, Plumbing Installation & Geyser Connection.\n" +
+                "  * Civil & Property Maintenance: Carpentry & Furniture Services, Drilling, Hanging & Wall Mounting, Interior Painting & Wall Care, Waterproofing & Tiling Services.\n" +
                 "- When user asks about car washing, car cleaning, car detailing, or auto care (including typos like 'car clearing'), select Car Cleaning or Car Spa & Detailing.\n" +
                 "- When user asks about cleaning (bathroom, kitchen, home), select the exact Cleaning service.\n" +
-                "- When user asks about wall cracks, plaster, masonry, or painting, select Masonry & Brickwork or Interior Wall Painting - NEVER AC/RO!\n" +
+                "- When user asks about wall cracks, plaster, masonry, painting, drilling, or carpentry, select Interior Painting & Wall Care, Drilling, Hanging & Wall Mounting, or Carpentry & Furniture Services.\n" +
                 "- When user asks to move furniture or goods, select a Logistics/Vehicle service (Mini Truck, Loading Vehicle, Truck).\n" +
-                "- When the issue relates to electrical sparks, switchboards, wiring, MCB, or shocks, match Switchboard & Wiring Repair.\n" +
-                "- If the user wants to send a parcel/package/document, select an On-Demand Vehicle (Electric Bike, Petrol Bike, etc.).\n" +
+                "- When the issue relates to electrical sparks, switchboards, wiring, MCB, or shocks, match Fan & Electrical Services or Switchboard & Wiring Repair.\n" +
+                "- If the user wants to send a parcel/package/document, select an On-Demand Vehicle/Courier service.\n" +
                 "- If the user asks about their bookings or status, set intent to 'MY_BOOKINGS'.\n" +
                 "- If service is completely outside home/logistics services, set intent to 'UNSUPPORTED' and serviceId to null.\n" +
                 "- Output ONLY JSON: {\"intent\": \"SEARCH|DETAILS|AVAILABILITY|MY_BOOKINGS|CANCEL|UNSUPPORTED\", \"serviceId\": <number or null>, \"reply\": \"<helpful conversational message>\"}",
@@ -506,12 +511,17 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
                 "Location: %s.\n" +
                 "Rules:\n" +
                 "- NEVER hallucinate non-existent services, prices, or fake statuses.\n" +
+                "- Main Categories & Service Bundles:\n" +
+                "  * Vehicle & Auto Care: Car Cleaning, Car Spa & Detailing, Car AC Service, Car Maintenance.\n" +
+                "  * Appliances & Electrical: AC Services, RO Purifier Services, Refrigerator Services, Washing Machine Services, Fan & Electrical Services, Geyser & Water Heater Services, Inverter & Battery Services, Microwave & OTG Services.\n" +
+                "  * Plumbing & Cleaning: Full House Deep Cleaning, Kitchen & Chimney Cleaning, Bathroom & Water Tank Cleaning, Sofa, Carpet & Upholstery Cleaning, Heavy-Duty & Commercial Cleaning, Tap, Mixer & Shower Repair, Sanitaryware & Toilet Repair Services, Drainage Unclogging & Pipe Leakage Fix, Plumbing Installation & Geyser Connection.\n" +
+                "  * Civil & Property Maintenance: Carpentry & Furniture Services, Drilling, Hanging & Wall Mounting, Interior Painting & Wall Care, Waterproofing & Tiling Services.\n" +
                 "- When user asks about car washing, car cleaning, car detailing, or auto care (including typos like 'car clearing'), select Car Cleaning or Car Spa & Detailing.\n" +
                 "- When user asks about cleaning (bathroom, kitchen, home), select the exact Cleaning service.\n" +
-                "- When user asks about wall cracks, plaster, masonry, or painting, select Masonry & Brickwork or Interior Wall Painting - NEVER AC/RO!\n" +
+                "- When user asks about wall cracks, plaster, masonry, painting, drilling, or carpentry, select Interior Painting & Wall Care, Drilling, Hanging & Wall Mounting, or Carpentry & Furniture Services.\n" +
                 "- When user asks to move furniture, shift goods, or relocate between locations, select a Logistics/Vehicle service (Mini Truck, Loading Vehicle, Truck).\n" +
-                "- When the issue relates to electrical sparks, switchboards, wiring, MCB, or shocks, match Switchboard & Wiring Repair.\n" +
-                "- If the user wants to send a parcel/package/goods, select an On-Demand Vehicle/Courier service (Electric Bike, Petrol Bike, Mini Truck, etc.).\n" +
+                "- When the issue relates to electrical sparks, switchboards, wiring, MCB, or shocks, match Fan & Electrical Services or Switchboard & Wiring Repair.\n" +
+                "- If the user wants to send a parcel/package/goods, select an On-Demand Vehicle/Courier service.\n" +
                 "- If the user asks about their active bookings, set intent to 'MY_BOOKINGS'.\n" +
                 "- If greeting or pleasantry, set intent to 'GREETING', serviceId to null, and reply warmly.\n" +
                 "- If completely outside home/logistics services, set intent to 'UNSUPPORTED' and serviceId to null.\n" +
