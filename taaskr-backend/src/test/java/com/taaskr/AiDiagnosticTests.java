@@ -311,5 +311,32 @@ public class AiDiagnosticTests {
         assertTrue(chatRes.getReply().toLowerCase().contains("do not offer") || chatRes.getReply().toLowerCase().contains("don't currently offer"), 
                 "Should honestly state service is unsupported");
     }
+
+    @Test
+    void testSpecificServiceNameMatching() {
+        ServiceCategory autoCat = serviceCategoryRepository.findByNameIgnoreCase("Vehicle & Auto Care").orElseGet(() -> {
+            ServiceCategory cat = new ServiceCategory();
+            cat.setName("Vehicle & Auto Care");
+            cat.setDescription("Auto care");
+            cat.setActive(true);
+            return serviceCategoryRepository.save(cat);
+        });
+
+        Service carWash = new Service();
+        carWash.setName("Car Cleaning");
+        carWash.setCategory(autoCat);
+        carWash.setPrice(BigDecimal.valueOf(150));
+        carWash.setDurationMinutes(45);
+        carWash.setActive(true);
+        serviceRepository.save(carWash);
+
+        com.taaskr.dto.ai.AiChatRequest chatReq = new com.taaskr.dto.ai.AiChatRequest("I want car cleaning service");
+        com.taaskr.dto.ai.AiChatResponse chatRes = aiDiagnosticService.chat(null, chatReq);
+
+        assertNotNull(chatRes);
+        assertNotNull(chatRes.getServices());
+        assertFalse(chatRes.getServices().isEmpty());
+        assertEquals("Car Cleaning", chatRes.getServices().get(0).getName());
+    }
 }
 

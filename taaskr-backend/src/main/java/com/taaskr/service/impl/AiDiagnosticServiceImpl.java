@@ -660,6 +660,125 @@ public class AiDiagnosticServiceImpl implements AiDiagnosticService {
 
     private List<Service> searchCatalogServices(String query, List<Service> services) {
         String lower = normalizeQuery(query);
+        if (lower.isBlank() || services == null || services.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // --- PHASE 1: DIRECT HIGH-PRECISION NAME & KEYWORD SCORE-BASED MATCHING ---
+        Map<Service, Integer> scores = new HashMap<>();
+
+        for (Service s : services) {
+            String sName = s.getName().toLowerCase().trim();
+            String catName = s.getCategory() != null ? s.getCategory().getName().toLowerCase().trim() : "";
+            int score = 0;
+
+            if (sName.equals(lower)) {
+                score += 1000;
+            } else if (lower.contains(sName)) {
+                score += 850;
+            } else if (sName.contains(lower) && lower.length() >= 3) {
+                score += 800;
+            }
+
+            // Target domain & keyword combination scoring
+            if (containsAny(lower, "car wash", "car cleaning", "auto cleaning", "car clean", "auto wash") && (sName.contains("car cleaning") || sName.contains("car wash"))) {
+                score += 900;
+            }
+            if (containsAny(lower, "car spa", "detailing", "wax", "polish") && (sName.contains("car spa") || sName.contains("detailing"))) {
+                score += 900;
+            }
+            if (containsAny(lower, "car ac") && sName.contains("car ac")) {
+                score += 950;
+            }
+            if (containsAny(lower, "car maint", "car service") && sName.contains("car maintenance")) {
+                score += 900;
+            }
+            if (containsAny(lower, "ac repair", "ac cooling", "ac hot air", "ac not working") && (sName.contains("ac repair") || sName.equals("ac services"))) {
+                score += 900;
+            }
+            if (containsAny(lower, "ac install", "ac mounting") && sName.contains("ac install")) {
+                score += 950;
+            }
+            if (containsAny(lower, "ac maint", "ac servicing", "jet wash") && (sName.contains("ac maintenance") || sName.equals("ac services"))) {
+                score += 900;
+            }
+            if (hasWord(lower, "ro", "aquaguard", "purifier") && (sName.contains("ro ") || sName.contains("purifier"))) {
+                score += 850;
+            }
+            if (containsAny(lower, "geyser", "water heater") && (sName.contains("geyser") || sName.contains("water heater"))) {
+                score += 850;
+            }
+            if (containsAny(lower, "switchboard", "spark", "short circuit", "mcb", "fuse", "electric shock") && (sName.contains("switchboard") || sName.contains("fan & electrical") || sName.contains("wiring"))) {
+                score += 850;
+            }
+            if (hasWord(lower, "fan", "ceiling fan", "exhaust fan") && (sName.contains("fan") || sName.contains("fan & electrical"))) {
+                score += 850;
+            }
+            if (containsAny(lower, "full home", "home cleaning", "deep cleaning", "house cleaning") && (sName.contains("full home") || sName.contains("home & full house"))) {
+                score += 850;
+            }
+            if (containsAny(lower, "bathroom", "washroom", "toilet clean") && (sName.contains("bathroom") || sName.contains("bathroom & water tank"))) {
+                score += 850;
+            }
+            if (containsAny(lower, "kitchen", "chimney") && (sName.contains("kitchen") || sName.contains("chimney"))) {
+                score += 850;
+            }
+            if (containsAny(lower, "sofa", "carpet", "upholstery") && (sName.contains("sofa") || sName.contains("carpet") || sName.contains("upholstery"))) {
+                score += 850;
+            }
+            if (containsAny(lower, "tap", "faucet", "mixer") && (sName.contains("tap") || sName.contains("faucet") || sName.contains("mixer"))) {
+                score += 850;
+            }
+            if (containsAny(lower, "pipe leak", "water leak", "leaking pipe") && (sName.contains("pipe") || sName.contains("leak") || sName.contains("drainage"))) {
+                score += 850;
+            }
+            if (containsAny(lower, "drain", "unclog", "choked", "blockage") && (sName.contains("drain") || sName.contains("blockage") || sName.contains("unclog"))) {
+                score += 850;
+            }
+            if (containsAny(lower, "carpenter", "carpentry", "furniture repair") && (sName.contains("carpentry") || sName.contains("carpenter"))) {
+                score += 850;
+            }
+            if (containsAny(lower, "drill", "wall mount", "hanging") && (sName.contains("drilling") || sName.contains("mounting"))) {
+                score += 850;
+            }
+            if (containsAny(lower, "paint", "painting", "wall paint") && (sName.contains("paint") || sName.contains("painting"))) {
+                score += 850;
+            }
+            if (containsAny(lower, "waterproof", "waterproofing") && sName.contains("waterproof")) {
+                score += 850;
+            }
+            if (containsAny(lower, "pest", "cockroach", "termite", "bed bug") && (sName.contains("pest") || sName.contains("cockroach") || sName.contains("termite"))) {
+                score += 850;
+            }
+            if (containsAny(lower, "haircut", "salon", "makeup", "massage") && (sName.contains("haircut") || sName.contains("salon") || sName.contains("makeup") || sName.contains("massage"))) {
+                score += 850;
+            }
+            if (containsAny(lower, "laptop", "wi-fi", "router", "smart tv", "printer") && (sName.contains("laptop") || sName.contains("wi-fi") || sName.contains("tv") || sName.contains("printer"))) {
+                score += 850;
+            }
+            if (isMovingOrShiftingQuery(lower) && (sName.contains("mini truck") || sName.contains("loading vehicle") || sName.contains("truck") || sName.contains("tempo") || catName.contains("logistics"))) {
+                score += 900;
+            }
+            if (isParcelQuery(lower) && (sName.contains("bike") || sName.contains("courier") || sName.contains("parcel") || catName.contains("logistics"))) {
+                score += 900;
+            }
+
+            if (score > 0) {
+                scores.put(s, score);
+            }
+        }
+
+        if (!scores.isEmpty()) {
+            int maxScore = Collections.max(scores.values());
+            if (maxScore >= 500) {
+                return scores.entrySet().stream()
+                        .filter(e -> e.getValue() >= (int)(maxScore * 0.8))
+                        .sorted((e1, e2) -> Integer.compare(e2.getValue(), e1.getValue()))
+                        .map(Map.Entry::getKey)
+                        .collect(Collectors.toList());
+            }
+        }
+
         List<Service> results = new ArrayList<>();
 
         // 0. Vehicle & Auto Care Priority (Car Washing, Car Spa, Car Detailing)

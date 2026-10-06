@@ -131,6 +131,15 @@ public class DataSeeder {
         ServiceCategory vehicleCategory = seedCategory(categoryRepository, "Logistics", "Intra-city on-demand goods transport and vehicle with driver service.");
 
         // 1. Plumbing & Cleaning
+        seedService(serviceRepository, "Home & Full House Cleaning", "Complete multi-room deep cleaning, move-in/move-out pre-occupancy sanitization, and floor scrubbing.", new BigDecimal("999.00"), 180, plumbingCleaning);
+        seedService(serviceRepository, "Kitchen & Chimney Cleaning", "Oil stain degreasing, chimney filter & duct scrub, gas stove cleaning, and sink sanitization.", new BigDecimal("399.00"), 60, plumbingCleaning);
+        seedService(serviceRepository, "Bathroom & Water Tank Cleaning", "Tile scrubbing, hard water descaling, sanitaryware disinfection, and overhead water tank cleaning.", new BigDecimal("299.00"), 45, plumbingCleaning);
+        seedService(serviceRepository, "Sofa, Carpet & Upholstery Cleaning", "High-suction wet extraction shampooing for fabric sofas, cushions, carpets, and mattresses.", new BigDecimal("299.00"), 45, plumbingCleaning);
+        seedService(serviceRepository, "Heavy-Duty & Commercial Cleaning", "Floor scrubbing & polishing, window facade cleaning, post-construction and office cleaning.", new BigDecimal("1499.00"), 180, plumbingCleaning);
+        seedService(serviceRepository, "Tap, Mixer & Shower Repair", "Fixing dripping taps, hot/cold wall mixer cartridges, shower heads, and diverter valves.", new BigDecimal("149.00"), 30, plumbingCleaning);
+        seedService(serviceRepository, "Sanitaryware & Toilet Repair Services", "Western/Indian commode repair, flush tank valve replacement, and washbasin coupling fixes.", new BigDecimal("249.00"), 45, plumbingCleaning);
+        seedService(serviceRepository, "Drainage Unclogging & Pipe Leakage Fix", "Emergency pipe leakage repair, bottle trap unclogging, and main sewer line clearing.", new BigDecimal("199.00"), 45, plumbingCleaning);
+        seedService(serviceRepository, "Plumbing Installation & Geyser Connection", "Geyser inlet/outlet piping, water tank plumbing, and dishwasher/sink plumbing installation.", new BigDecimal("249.00"), 45, plumbingCleaning);
         seedService(serviceRepository, "Bathroom Cleaning", "Deep tile scrubbing, lime stain removal, hard water descaling, and sanitaryware disinfection.", new BigDecimal("299.00"), 45, plumbingCleaning);
         seedService(serviceRepository, "Full Home Cleaning", "Complete multi-room deep cleaning, floor scrubbing, furniture dusting, and sanitization.", new BigDecimal("999.00"), 180, plumbingCleaning);
         seedService(serviceRepository, "Kitchen Cleaning", "Thorough oil degreasing, counter scrub, cabinet exterior wipe, and sink sanitization.", new BigDecimal("399.00"), 60, plumbingCleaning);
@@ -166,6 +175,14 @@ public class DataSeeder {
         seedService(serviceRepository, "Emergency Plumbing", "Priority rapid dispatch for urgent pipe bursts, heavy water leaks, and severe blockages.", new BigDecimal("399.00"), 45, plumbingCleaning);
         
         // 2. Appliances & Electrical
+        seedService(serviceRepository, "AC Services", "Complete Air Conditioner installation, uninstallation, high-pressure jet maintenance, cooling repair & gas refill.", new BigDecimal("499.00"), 120, appliancesElectrical);
+        seedService(serviceRepository, "RO Purifier Services", "Doorstep Reverse Osmosis (RO) water purifier installation, routine maintenance, filter replacement & pump repairs.", new BigDecimal("399.00"), 90, appliancesElectrical);
+        seedService(serviceRepository, "Refrigerator Services", "Single door, double door, and side-by-side refrigerator repair, maintenance, gasket replacement & gas charging.", new BigDecimal("399.00"), 90, appliancesElectrical);
+        seedService(serviceRepository, "Washing Machine Services", "Top load, front load & semi-automatic washing machine repair, installation, uninstallation & descaling maintenance.", new BigDecimal("349.00"), 90, appliancesElectrical);
+        seedService(serviceRepository, "Fan & Electrical Services", "Ceiling fan, exhaust fan, switchboard, MCB fuse box & household electrical wiring repairs & installation.", new BigDecimal("199.00"), 45, appliancesElectrical);
+        seedService(serviceRepository, "Geyser & Water Heater Services", "Storage and instant geyser installation, descaling servicing, heating element & thermostat replacement.", new BigDecimal("399.00"), 60, appliancesElectrical);
+        seedService(serviceRepository, "Inverter & Battery Services", "Home inverter setup, battery distilled water top-up, terminal desulfation & PCB repairs.", new BigDecimal("349.00"), 45, appliancesElectrical);
+        seedService(serviceRepository, "Microwave & OTG Services", "Solo, grill, and convection microwave oven diagnostics, heating element repairs & turntable fixes.", new BigDecimal("299.00"), 60, appliancesElectrical);
         seedService(serviceRepository, "Switchboard & Wiring Repair", "Repair or replace faulty switch boards, tripped MCBs, and wiring", new BigDecimal("349.00"), 60, appliancesElectrical);
         seedService(serviceRepository, "Ceiling & Exhaust Fan Repair", "Ceiling and exhaust fan motor, capacitor, and regulator repair", new BigDecimal("299.00"), 60, appliancesElectrical);
         seedService(serviceRepository, "Geyser & Water Heater Servicing", "Element descaling, thermostat inspection, and leak repairs for storage/instant geysers", new BigDecimal("449.00"), 60, appliancesElectrical);
@@ -195,6 +212,9 @@ public class DataSeeder {
         seedService(serviceRepository, "Full Body Stress Relief Therapy", "Rejuvenating full body Swedish / Ayurvedic oil massage by certified wellness therapists", new BigDecimal("1299.00"), 90, salonWellness);
 
         // 5. Civil & Property Maintenance
+        seedService(serviceRepository, "Carpentry & Furniture Services", "Fixing misaligned cabinet hinges, drawer channels, hydraulic bed lifts, and wooden door repair", new BigDecimal("399.00"), 60, civil);
+        seedService(serviceRepository, "Interior Painting & Wall Care", "Putty filling, primer, and premium acrylic emulsion roller painting for rooms or accent walls", new BigDecimal("999.00"), 240, civil);
+        seedService(serviceRepository, "Waterproofing & Tiling Services", "Roof slab, terrace, and bathroom waterproofing chemical coating and tile floor repair", new BigDecimal("1499.00"), 360, civil);
         seedService(serviceRepository, "Carpentry & Furniture Repair", "Fixing misaligned cabinet hinges, drawer channels, hydraulic bed lifts, and wooden doors", new BigDecimal("399.00"), 60, civil);
         seedService(serviceRepository, "Furniture Assembly & Flatpack Setup", "Assembly of flatpack wardrobes, beds, TV units, and study desks from IKEA/Amazon/Pepperfry", new BigDecimal("499.00"), 90, civil);
         seedService(serviceRepository, "Drilling, Hanging & Wall Mounting", "Precision hammer-drilling for wall art, mirrors, curtain rods, and bathroom towel racks", new BigDecimal("249.00"), 45, civil);
